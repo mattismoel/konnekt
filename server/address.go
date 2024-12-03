@@ -5,6 +5,7 @@ import (
 )
 
 type Address struct {
+	ID          int64  `json:"id"`
 	Country     string `json:"country"`
 	City        string `json:"city"`
 	Street      string `json:"street"`
@@ -30,7 +31,6 @@ func (a Address) Validate() error {
 	if strings.TrimSpace(a.Street) == "" {
 		return Errorf(ERRINVALID, "Street must be set")
 	}
-
 	if strings.TrimSpace(a.HouseNumber) == "" {
 		return Errorf(ERRINVALID, "House number must be set")
 	}

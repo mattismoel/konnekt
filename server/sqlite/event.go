@@ -10,12 +10,6 @@ import (
 	"github.com/mattismoel/konnekt"
 )
 
-// FindEventByID(context.Context, int64) (Event, error)
-// FindEvents(context.Context, EventFilter) ([]Event, error)
-// CreateEvent(context.Context, Event) (int64, error)
-// UpdateEvent(context.Context, int64, EventUpdate) (Event, error)
-// DeleteEvent(context.Context, int64) error
-
 type eventService struct {
 	repo *Repository
 }
@@ -127,6 +121,10 @@ func (s eventService) DeleteEvent(ctx context.Context, id int64) error {
 	}
 
 	defer tx.Rollback()
+
+	if err = deleteEventAddress(ctx, tx, id); err != nil {
+		return err
+	}
 
 	if err = deleteEvent(ctx, tx, id); err != nil {
 		return err

@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/mattismoel/konnekt"
 )
@@ -52,6 +53,7 @@ func findEventAddress(ctx context.Context, tx *sql.Tx, eventId int64) (konnekt.A
 
 	query = `
 	SELECT
+		id,
 		country,
 		city,
 		street,
@@ -62,6 +64,7 @@ func findEventAddress(ctx context.Context, tx *sql.Tx, eventId int64) (konnekt.A
 	var address konnekt.Address
 
 	err = tx.QueryRowContext(ctx, query, addressID).Scan(
+		&address.ID,
 		&address.Country,
 		&address.City,
 		&address.Street,
@@ -72,6 +75,7 @@ func findEventAddress(ctx context.Context, tx *sql.Tx, eventId int64) (konnekt.A
 		return konnekt.Address{}, err
 	}
 
+	fmt.Println(address)
 	return address, nil
 }
 
@@ -121,4 +125,20 @@ func updateEventAddress(ctx context.Context, tx *sql.Tx, eventId int64, update k
 	}
 
 	return address, nil
+}
+
+func deleteEventAddress(ctx context.Context, tx *sql.Tx, eventID int64) error {
+	address, err := findEventAddress(ctx, tx, eventID)
+	if err != nil {
+		return err
+	}
+
+	query := "DELETE FROM address WHERE id = ?"
+
+	_, err = tx.ExecContext(ctx, query, address.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
