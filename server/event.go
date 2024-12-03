@@ -1,7 +1,6 @@
 package konnekt
 
 import (
-	"context"
 	"slices"
 	"strings"
 	"time"
@@ -17,14 +16,6 @@ type Event struct {
 	ToDate      time.Time `json:"toDate"`
 	Address     Address   `json:"address"`
 	Genres      []Genre   `json:"genres"`
-}
-
-type EventService interface {
-	FindEventByID(context.Context, int64) (Event, error)
-	FindEvents(context.Context, EventFilter) ([]Event, error)
-	CreateEvent(context.Context, Event) (int64, error)
-	UpdateEvent(context.Context, int64, EventUpdate) (Event, error)
-	DeleteEvent(context.Context, int64) error
 }
 
 func (e Event) Validate() error {
