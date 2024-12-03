@@ -37,26 +37,6 @@ func (s server) handleGetEventById() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {}
 }
 
-type CreateEventLoad struct {
-	Title       string            `json:"title"`
-	Description string            `json:"description"`
-	FromDate    time.Time         `json:"fromDate"`
-	ToDate      time.Time         `json:"toDate"`
-	Address     CreateAddressLoad `json:"address"`
-	Genres      []CreateGenreLoad `json:"genres"`
-}
-
-type CreateAddressLoad struct {
-	Country     string `json:"country"`
-	City        string `json:"city"`
-	Street      string `json:"street"`
-	HouseNumber string `json:"houseNumber"`
-}
-
-type CreateGenreLoad struct {
-	Name string `json:"name"`
-}
-
 func (s server) handleCreateEvent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var load konnekt.Event
