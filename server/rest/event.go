@@ -1,9 +1,8 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
-	"time"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt"
@@ -46,12 +45,11 @@ func (s server) handleCreateEvent() http.HandlerFunc {
 			Error(w, r, err)
 		}
 
-		event, err := s.eventService.CreateEvent(r.Context(), load)
+		_, err = s.eventService.CreateEvent(r.Context(), load)
 		if err != nil {
 			Error(w, r, err)
+			return
 		}
-
-		fmt.Printf("%+v\n", event)
 	}
 }
 
@@ -60,5 +58,17 @@ func (s server) handleUpdateEvent() http.HandlerFunc {
 }
 
 func (s server) handleDeleteEvent() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {}
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			Error(w, r, err)
+			return
+		}
+
+		err = s.eventService.DeleteEvent(r.Context(), int64(id))
+		if err != nil {
+			Error(w, r, err)
+			return
+		}
+	}
 }
