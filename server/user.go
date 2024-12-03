@@ -3,8 +3,6 @@ package konnekt
 import (
 	"net/mail"
 	"strings"
-
-	"github.com/mattismoel/konnekt"
 )
 
 type User struct {
@@ -32,20 +30,20 @@ type UpdateUser struct {
 
 func (u User) Validate() error {
 	if u.ID < 0 {
-		return konnekt.Errorf(konnekt.ERRINVALID, "ID must be a non-negative integer")
+		return Errorf(ERRINVALID, "ID must be a non-negative integer")
 	}
 
 	if strings.TrimSpace(u.FirstName) == "" {
-		return konnekt.Error(konnekt.ERRINVALID, "First name must be set")
+		return Errorf(ERRINVALID, "First name must be set")
 	}
 
 	if strings.TrimSpace(u.LastName) == "" {
-		return konnekt.Error(konnekt.ERRINVALID, "Last name must be set")
+		return Errorf(ERRINVALID, "Last name must be set")
 	}
 
 	_, err := mail.ParseAddress(u.Email)
 	if err != nil {
-		return konnekt.Error(konnekt.ERRINVALID, "Invalid email")
+		return Errorf(ERRINVALID, "Invalid email")
 	}
 
 	return nil
