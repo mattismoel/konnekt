@@ -29,3 +29,24 @@ type UpdateUser struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 }
+
+func (u User) Validate() error {
+	if u.ID < 0 {
+		return konnekt.Errorf(konnekt.ERRINVALID, "ID must be a non-negative integer")
+	}
+
+	if strings.TrimSpace(u.FirstName) == "" {
+		return konnekt.Error(konnekt.ERRINVALID, "First name must be set")
+	}
+
+	if strings.TrimSpace(u.LastName) == "" {
+		return konnekt.Error(konnekt.ERRINVALID, "Last name must be set")
+	}
+
+	_, err := mail.ParseAddress(u.Email)
+	if err != nil {
+		return konnekt.Error(konnekt.ERRINVALID, "Invalid email")
+	}
+
+	return nil
+}
