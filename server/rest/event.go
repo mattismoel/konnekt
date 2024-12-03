@@ -33,7 +33,21 @@ func (s server) handleGetEvents() http.HandlerFunc {
 }
 
 func (s server) handleGetEventById() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {}
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			Error(w, r, err)
+			return
+		}
+
+		event, err := s.eventService.FindEventByID(r.Context(), int64(id))
+		if err != nil {
+			Error(w, r, err)
+			return
+		}
+
+		writeJSON(w, http.StatusFound, event)
+	}
 }
 
 func (s server) handleCreateEvent() http.HandlerFunc {
