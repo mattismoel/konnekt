@@ -34,11 +34,16 @@ func (e Event) Validate() error {
 	if e.FromDate.IsZero() {
 		return Errorf(ERRINVALID, "FromDate must be set")
 	}
+
 	if e.ToDate.IsZero() {
 		return Errorf(ERRINVALID, "ToDate must be set")
 	}
 
-	if e.Genres != nil && len(e.Genres) == 0 {
+	if err := e.Address.Validate(); err != nil {
+		return err
+	}
+
+	if e.Genres == nil || len(e.Genres) == 0 {
 		return Errorf(ERRINVALID, "Genre count must be at least 1")
 	}
 
