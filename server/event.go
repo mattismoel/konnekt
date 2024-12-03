@@ -61,7 +61,7 @@ type EventUpdate struct {
 	FromDate    time.Time      `json:"fromDate"`
 	ToDate      time.Time      `json:"toDate"`
 	Address     *AddressUpdate `json:"address"`
-	GenreNames  []string       `json:"genreNames"`
+	Genres      []string       `json:"genres"`
 }
 
 func (e Event) Equals(a Event) bool {

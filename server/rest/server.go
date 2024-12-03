@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"strconv"
@@ -32,7 +31,6 @@ func NewServer(cfg Cfg) (*server, error) {
 	}
 
 	addr := net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port))
-	fmt.Println("ADDR", addr)
 
 	s := &server{
 		server: &http.Server{

@@ -290,6 +290,15 @@ func updateEvent(ctx context.Context, tx *sql.Tx, id int64, update konnekt.Event
 		event.ToDate = v
 	}
 
+	genres := []konnekt.Genre{}
+	for _, genreName := range update.Genres {
+		genres = append(genres, konnekt.Genre{Name: genreName})
+	}
+
+	if genres != nil && len(genres) > 0 {
+		event.Genres = genres
+	}
+
 	if err := event.Validate(); err != nil {
 		return konnekt.Event{}, err
 	}
@@ -316,7 +325,6 @@ func updateEvent(ctx context.Context, tx *sql.Tx, id int64, update konnekt.Event
 		return konnekt.Event{}, err
 	}
 
-	// Return early, if address is not to be updated.
 	if update.Address != nil {
 		event.Address, err = updateEventAddress(ctx, tx, event.ID, *update.Address)
 		if err != nil {
@@ -324,25 +332,18 @@ func updateEvent(ctx context.Context, tx *sql.Tx, id int64, update konnekt.Event
 		}
 	}
 
-	if update.GenreNames == nil || len(update.GenreNames) <= 0 {
+	if update.Genres == nil || len(update.Genres) <= 0 {
 		return event, nil
 	}
 
-	for i, genreName := range update.GenreNames {
-		exists, err := doesGenreExist(ctx, tx, genreName)
+	for i, genreName := range update.Genres {
+		event.Genres[i], err = insertGenre(ctx, tx, konnekt.Genre{Name: genreName})
 		if err != nil {
 			return konnekt.Event{}, err
 		}
-
-		if !exists {
-			event.Genres[i], err = insertGenre(ctx, tx, konnekt.Genre{Name: genreName})
-			if err != nil {
-				return konnekt.Event{}, err
-			}
-		}
 	}
 
-	err = setEventGenres(ctx, tx, event.ID, update.GenreNames)
+	err = setEventGenres(ctx, tx, event.ID, update.Genres)
 	if err != nil {
 		return konnekt.Event{}, err
 	}

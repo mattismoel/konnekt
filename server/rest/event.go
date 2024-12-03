@@ -43,6 +43,7 @@ func (s server) handleCreateEvent() http.HandlerFunc {
 		err := readJSON(r, &load)
 		if err != nil {
 			Error(w, r, err)
+			return
 		}
 
 		_, err = s.eventService.CreateEvent(r.Context(), load)
@@ -54,7 +55,27 @@ func (s server) handleCreateEvent() http.HandlerFunc {
 }
 
 func (s server) handleUpdateEvent() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {}
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			Error(w, r, err)
+			return
+		}
+
+		var load konnekt.EventUpdate
+
+		err = readJSON(r, &load)
+		if err != nil {
+			Error(w, r, err)
+			return
+		}
+
+		_, err = s.eventService.UpdateEvent(r.Context(), int64(id), load)
+		if err != nil {
+			Error(w, r, err)
+			return
+		}
+	}
 }
 
 func (s server) handleDeleteEvent() http.HandlerFunc {

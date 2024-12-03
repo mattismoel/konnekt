@@ -189,7 +189,7 @@ func TestUpdateEvent(t *testing.T) {
 			Street:      ptr.From("Updated Street"),
 			HouseNumber: ptr.From("Updated House Number"),
 		},
-		GenreNames: []string{"Pop", "Indie"},
+		Genres: []string{"Pop", "Indie"},
 	}
 
 	tests := map[string]test{
@@ -234,7 +234,7 @@ func TestUpdateEvent(t *testing.T) {
 		},
 		"Genres Update": {
 			update: konnekt.EventUpdate{
-				GenreNames: updatedEvent.GenreNames,
+				Genres: updatedEvent.Genres,
 			},
 			wantEvent: konnekt.Event{
 				ID:          1,

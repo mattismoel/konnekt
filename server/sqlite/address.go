@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"github.com/mattismoel/konnekt"
 )
@@ -75,7 +74,6 @@ func findEventAddress(ctx context.Context, tx *sql.Tx, eventId int64) (konnekt.A
 		return konnekt.Address{}, err
 	}
 
-	fmt.Println(address)
 	return address, nil
 }
 
