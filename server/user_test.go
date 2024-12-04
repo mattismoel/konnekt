@@ -6,6 +6,8 @@ import (
 	"github.com/mattismoel/konnekt"
 )
 
+type userUpdaterFunc func(konnekt.User) konnekt.User
+
 var baseUser = konnekt.User{
 	ID:        1,
 	Email:     "test@mail.com",
@@ -15,45 +17,45 @@ var baseUser = konnekt.User{
 
 func TestUserValidate(t *testing.T) {
 	type test struct {
-		userMod  func(u konnekt.User) konnekt.User
+		updater  userUpdaterFunc
 		wantCode string
 	}
 
 	tests := map[string]test{
 		"Valid user": {
-			userMod:  nil,
+			updater:  nil,
 			wantCode: "",
 		},
 		"Negative ID": {
-			userMod: func(u konnekt.User) konnekt.User {
+			updater: func(u konnekt.User) konnekt.User {
 				u.ID = -1
 				return u
 			},
 			wantCode: konnekt.ERRINVALID,
 		},
 		"Empty email": {
-			userMod: func(u konnekt.User) konnekt.User {
+			updater: func(u konnekt.User) konnekt.User {
 				u.Email = ""
 				return u
 			},
 			wantCode: konnekt.ERRINVALID,
 		},
 		"Invalid email": {
-			userMod: func(u konnekt.User) konnekt.User {
+			updater: func(u konnekt.User) konnekt.User {
 				u.Email = ""
 				return u
 			},
 			wantCode: konnekt.ERRINVALID,
 		},
 		"No first name": {
-			userMod: func(u konnekt.User) konnekt.User {
+			updater: func(u konnekt.User) konnekt.User {
 				u.FirstName = ""
 				return u
 			},
 			wantCode: konnekt.ERRINVALID,
 		},
 		"No last name": {
-			userMod: func(u konnekt.User) konnekt.User {
+			updater: func(u konnekt.User) konnekt.User {
 				u.LastName = ""
 				return u
 			},
@@ -65,8 +67,8 @@ func TestUserValidate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			user := baseUser
 
-			if tt.userMod != nil {
-				user = tt.userMod(user)
+			if tt.updater != nil {
+				user = tt.updater(user)
 			}
 
 			err := user.Validate()
