@@ -82,3 +82,70 @@ func TestUserValidate(t *testing.T) {
 	}
 }
 
+func TestUsersEqual(t *testing.T) {
+	type test struct {
+		aUpdater   userUpdaterFunc
+		bUpdater   userUpdaterFunc
+		wantEquals bool
+	}
+
+	tests := map[string]test{
+		"Equal": {
+			aUpdater:   nil,
+			bUpdater:   nil,
+			wantEquals: true,
+		},
+		"Email differ": {
+			aUpdater: nil,
+			bUpdater: func(u konnekt.User) konnekt.User {
+				u.Email = "other@mail.com"
+				return u
+			},
+			wantEquals: false,
+		},
+		"First Name differ": {
+			aUpdater: nil,
+			bUpdater: func(u konnekt.User) konnekt.User {
+				u.FirstName = "Sophie"
+				return u
+			},
+			wantEquals: false,
+		},
+		"Last name differ": {
+			aUpdater: nil,
+			bUpdater: func(u konnekt.User) konnekt.User {
+				u.LastName = "Johnson"
+				return u
+			},
+			wantEquals: false,
+		},
+		"ID differ": {
+			aUpdater: nil,
+			bUpdater: func(u konnekt.User) konnekt.User {
+				u.ID = 999
+				return u
+			},
+			wantEquals: false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			a, b := baseUser, baseUser
+
+			if tt.aUpdater != nil {
+				a = tt.aUpdater(a)
+			}
+
+			if tt.bUpdater != nil {
+				b = tt.bUpdater(b)
+			}
+
+			isEqual := a.Equals(b)
+
+			if isEqual != tt.wantEquals {
+				t.Fatalf("got %v, want %v", isEqual, tt.wantEquals)
+			}
+		})
+	}
+}

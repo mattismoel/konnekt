@@ -48,3 +48,23 @@ func (u User) Validate() error {
 
 	return nil
 }
+
+func (u1 User) Equals(u2 User) bool {
+	if strings.TrimSpace(u1.Email) != strings.TrimSpace(u2.Email) {
+		return false
+	}
+
+	if strings.TrimSpace(u1.FirstName) != strings.TrimSpace(u2.FirstName) {
+		return false
+	}
+
+	if strings.TrimSpace(u1.LastName) != strings.TrimSpace(u2.LastName) {
+		return false
+	}
+
+	if u1.ID != u2.ID {
+		return false
+	}
+
+	return true
+}
