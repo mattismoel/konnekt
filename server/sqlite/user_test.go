@@ -159,6 +159,49 @@ func TestDeleteUser(t *testing.T) {
 	}
 }
 
+func TestFindUserByID(t *testing.T) {
+	type test struct {
+		id       int64
+		wantUser konnekt.User
+		wantCode string
+	}
+
+	tests := map[string]test{
+		"Valid ID": {
+			id:       1,
+			wantUser: baseUser,
+			wantCode: "",
+		},
+		"Invalid ID": {
+			id:       999,
+			wantUser: konnekt.User{},
+			wantCode: konnekt.ERRNOTFOUND,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			repo, dsn := MustOpenRepo(t)
+			defer MustCloseRepo(t, repo, dsn)
+
+			service := sqlite.NewUserService(repo)
+
+			MustCreateUser(t, context.Background(), repo, baseUser, []byte("Password123!"), []byte("Password123!"))
+
+			user, err := service.FindUserByID(context.Background(), tt.id)
+
+			code := konnekt.ErrorCode(err)
+			if code != tt.wantCode {
+				t.Fatalf("got code %q, want code %q, error: %v", code, tt.wantCode, err)
+			}
+
+			if !user.Equals(tt.wantUser) {
+				t.Fatalf("got %+v, want %+v", user, tt.wantUser)
+			}
+		})
+	}
+}
+
 func MustCreateUser(t testing.TB, ctx context.Context, repo *sqlite.Repository, user konnekt.User, password []byte, passwordConfirm []byte) {
 	t.Helper()
 

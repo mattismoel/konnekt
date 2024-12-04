@@ -77,7 +77,23 @@ func (s userService) DeleteUser(ctx context.Context, id int64) error {
 }
 
 func (s userService) FindUserByID(ctx context.Context, id int64) (konnekt.User, error) {
-	return konnekt.User{}, nil
+	tx, err := s.repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return konnekt.User{}, err
+	}
+
+	defer tx.Rollback()
+
+	users, err := findUsers(ctx, tx, konnekt.UserFilter{ID: &id})
+	if err != nil {
+		return konnekt.User{}, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return konnekt.User{}, err
+	}
+
+	return users[0], nil
 }
 
 func (s userService) FindUsers(ctx context.Context, filter konnekt.UserFilter) ([]konnekt.User, error) {
