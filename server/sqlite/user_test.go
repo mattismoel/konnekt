@@ -9,6 +9,8 @@ import (
 	"github.com/mattismoel/konnekt/sqlite"
 )
 
+type userUpdater func(konnekt.User) konnekt.User
+
 var baseUser = konnekt.User{
 	ID:        1,
 	Email:     "test@mail.com",
@@ -18,7 +20,7 @@ var baseUser = konnekt.User{
 
 func TestCreateUser(t *testing.T) {
 	type test struct {
-		u               konnekt.User
+		updater         userUpdater
 		password        password.Password
 		passwordConfirm password.Password
 		errCode         string
@@ -26,71 +28,67 @@ func TestCreateUser(t *testing.T) {
 
 	tests := map[string]test{
 		"Valid load": {
-			u:               baseUser,
+			updater:         nil,
 			password:        []byte("Password123!"),
 			passwordConfirm: []byte("Password123!"),
 			errCode:         "",
 		},
 		"Invalid email": {
-			u: konnekt.User{
-				Email:     "invalid-email",
-				FirstName: baseUser.FirstName,
-				LastName:  baseUser.LastName,
+			updater: func(u konnekt.User) konnekt.User {
+				u.Email = "invalid-email.com"
+				return u
 			},
 			password:        []byte("Password123!"),
 			passwordConfirm: []byte("Password123!"),
 			errCode:         konnekt.ERRINVALID,
 		},
 		"No email": {
-			u: konnekt.User{
-				Email:     "",
-				FirstName: baseUser.FirstName,
-				LastName:  baseUser.LastName,
+			updater: func(u konnekt.User) konnekt.User {
+				u.Email = " "
+				return u
 			},
 			password:        []byte("Password123!"),
 			passwordConfirm: []byte("Password123!"),
 			errCode:         konnekt.ERRINVALID,
 		},
 		"No First Name": {
-			u: konnekt.User{
-				Email:     baseUser.Email,
-				FirstName: "",
-				LastName:  baseUser.LastName,
+			updater: func(u konnekt.User) konnekt.User {
+				u.FirstName = " "
+				return u
 			},
 			password:        []byte("Password123!"),
 			passwordConfirm: []byte("Password123!"),
 			errCode:         konnekt.ERRINVALID,
 		},
 		"No Last Name": {
-			u: konnekt.User{
-				Email:     baseUser.Email,
-				FirstName: baseUser.FirstName,
-				LastName:  "",
+			updater: func(u konnekt.User) konnekt.User {
+				u.LastName = " "
+				return u
 			},
 			password:        []byte("Password123!"),
 			passwordConfirm: []byte("Password123!"),
 			errCode:         konnekt.ERRINVALID,
 		},
 		"Empty password": {
-			u:               baseUser,
+			updater:         nil,
 			password:        []byte(""),
 			passwordConfirm: []byte("Password123!"),
 			errCode:         konnekt.ERRINVALID,
 		},
 		"Non-matching passwords": {
-			u:               baseUser,
+			updater:         nil,
 			password:        []byte("password!!!!"),
 			passwordConfirm: []byte("Password123!"),
 			errCode:         konnekt.ERRINVALID,
 		},
 		"Nil password": {
-			u:               baseUser,
+			updater:         nil,
 			password:        nil,
 			passwordConfirm: []byte("Password123!"),
 			errCode:         konnekt.ERRINVALID,
 		},
 		"Empty passwords": {
-			u:               baseUser,
+			updater:         nil,
 			password:        []byte(""),
 			passwordConfirm: []byte(""),
 			errCode:         konnekt.ERRINVALID,
@@ -104,7 +102,12 @@ func TestCreateUser(t *testing.T) {
 
 			service := sqlite.NewUserService(repo)
 
-			_, err := service.CreateUser(context.Background(), tt.u, tt.password, tt.passwordConfirm)
+			user := baseUser
+			if tt.updater != nil {
+				user = tt.updater(user)
+			}
+
+			_, err := service.CreateUser(context.Background(), user, tt.password, tt.passwordConfirm)
 
 			code := konnekt.ErrorCode(err)
 
