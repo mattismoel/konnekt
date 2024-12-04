@@ -8,7 +8,6 @@ import (
 )
 
 func TestErrorCode(t *testing.T) {
-
 	type test struct {
 		error    error
 		wantCode string

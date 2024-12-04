@@ -7,6 +7,8 @@ import (
 	"github.com/mattismoel/konnekt"
 )
 
+type eventUpdaterFunc func(konnekt.Event) konnekt.Event
+
 var now = time.Now()
 
 var baseEvent = konnekt.Event{
@@ -24,99 +26,67 @@ var baseEvent = konnekt.Event{
 
 func TestEventEquals(t *testing.T) {
 	type test struct {
-		a          konnekt.Event
-		b          konnekt.Event
+		aUpdater   eventUpdaterFunc
+		bUpdater   eventUpdaterFunc
 		wantEquals bool
 	}
 
 	tests := map[string]test{
 		"Equal": {
-			a:          baseEvent,
-			b:          baseEvent,
+			aUpdater:   nil,
+			bUpdater:   nil,
 			wantEquals: true,
 		},
 		"Title Differ": {
-			a: baseEvent,
-			b: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       "Other Title",
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
-				Genres:      baseEvent.Genres,
+			aUpdater: nil,
+			bUpdater: func(e konnekt.Event) konnekt.Event {
+				e.Title = "Other Title"
+				return e
 			},
 			wantEquals: false,
 		},
 		"Description Differ": {
-			a: baseEvent,
-			b: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: "Other Description",
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
-				Genres:      baseEvent.Genres,
+			aUpdater: nil,
+			bUpdater: func(e konnekt.Event) konnekt.Event {
+				e.Description = "Other Description"
+				return e
 			},
 			wantEquals: false,
 		},
 		"FromDate Differ": {
-			a: baseEvent,
-			b: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate.Add(1 * time.Hour),
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
-				Genres:      baseEvent.Genres,
+			aUpdater: nil,
+			bUpdater: func(e konnekt.Event) konnekt.Event {
+				e.FromDate = baseEvent.FromDate.Add(1 * time.Hour)
+				return e
 			},
 			wantEquals: false,
 		},
 		"ToDate Differ": {
-			a: baseEvent,
-			b: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate.Add(2 * time.Hour),
-				Address:     baseEvent.Address,
-				Genres:      baseEvent.Genres,
+			aUpdater: nil,
+			bUpdater: func(e konnekt.Event) konnekt.Event {
+				e.ToDate = baseEvent.ToDate.Add(2 * time.Hour)
+				return e
 			},
 			wantEquals: false,
 		},
 		"Addresses Differ": {
-			a: baseEvent,
-			b: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address: konnekt.Address{
+			aUpdater: nil,
+			bUpdater: func(e konnekt.Event) konnekt.Event {
+				e.Address = konnekt.Address{
 					Country:     "Sweden",
 					City:        "Stockholm",
 					Street:      "Other Street",
 					HouseNumber: "19B",
-				},
-				Genres: baseEvent.Genres,
+				}
+				return e
 			},
 			wantEquals: false,
 		},
 		"Genres Differ": {
-			a: baseEvent,
-			b: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
-				Genres: []konnekt.Genre{
-					{ID: 5, Name: "New Age"},
-				},
+			aUpdater: nil,
+			bUpdater: func(e konnekt.Event) konnekt.Event {
+				e.Genres = baseGenres[2:]
+				return e
 			},
 			wantEquals: false,
 		},
@@ -124,7 +94,17 @@ func TestEventEquals(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			gotEquals := tt.a.Equals(tt.b)
+			a, b := baseEvent, baseEvent
+
+			if tt.aUpdater != nil {
+				a = tt.aUpdater(a)
+			}
+
+			if tt.bUpdater != nil {
+				b = tt.bUpdater(b)
+			}
+
+			gotEquals := a.Equals(b)
 
 			if gotEquals != tt.wantEquals {
 				t.Fatalf("got %v, want %v", gotEquals, tt.wantEquals)
@@ -135,107 +115,68 @@ func TestEventEquals(t *testing.T) {
 
 func TestEventValidate(t *testing.T) {
 	type test struct {
-		e   konnekt.Event
-		err error
+		updater eventUpdaterFunc
+		err     error
 	}
 
 	tests := map[string]test{
 		"Valid event": {
-			e:   baseEvent,
-			err: nil,
+			updater: nil,
+			err:     nil,
 		},
 		"Negative ID": {
-			e: konnekt.Event{
-				ID:          -1,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
-				Genres:      baseGenres,
+			updater: func(e konnekt.Event) konnekt.Event {
+				e.ID = -1
+				return e
 			},
 			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
 		},
 		"No Title": {
-			e: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       " ",
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
-				Genres:      baseGenres,
+			updater: func(e konnekt.Event) konnekt.Event {
+				e.Title = " "
+				return e
 			},
 			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
 		},
 		"No Description": {
-			e: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: " ",
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
-				Genres:      baseGenres,
+			updater: func(e konnekt.Event) konnekt.Event {
+				e.Description = " "
+				return e
 			},
 			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
 		},
 		"Zero FromDate": {
-			e: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    time.Time{},
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
-				Genres:      baseGenres,
+			updater: func(e konnekt.Event) konnekt.Event {
+				e.FromDate = time.Time{}
+				return e
 			},
 			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
 		},
 		"Zero ToDate": {
-			e: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      time.Time{},
-				Address:     baseEvent.Address,
-				Genres:      baseGenres,
+			updater: func(e konnekt.Event) konnekt.Event {
+				e.ToDate = time.Time{}
+				return e
 			},
 			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
 		},
 		"No Address": {
-			e: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address:     konnekt.Address{},
-				Genres:      baseGenres,
+			updater: func(e konnekt.Event) konnekt.Event {
+				e.Address = konnekt.Address{}
+				return e
 			},
 			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
 		},
 		"Nil Genres": {
-			e: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
+			updater: func(e konnekt.Event) konnekt.Event {
+				e.Genres = nil
+				return e
 			},
 			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
 		},
 		"Empty Genres": {
-			e: konnekt.Event{
-				ID:          baseEvent.ID,
-				Title:       baseEvent.Title,
-				Description: baseEvent.Description,
-				FromDate:    baseEvent.FromDate,
-				ToDate:      baseEvent.ToDate,
-				Address:     baseEvent.Address,
-				Genres:      []konnekt.Genre{},
+			updater: func(e konnekt.Event) konnekt.Event {
+				e.Genres = []konnekt.Genre{}
+				return e
 			},
 			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
 		},
@@ -243,7 +184,13 @@ func TestEventValidate(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			err := tt.e.Validate()
+			event := baseEvent
+
+			if tt.updater != nil {
+				event = tt.updater(event)
+			}
+
+			err := event.Validate()
 
 			if konnekt.ErrorCode(err) != konnekt.ErrorCode(tt.err) {
 				t.Fatalf("got %v, want %v", err, tt.err)
