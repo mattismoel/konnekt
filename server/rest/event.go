@@ -1,12 +1,21 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt"
 )
+
+type EventService interface {
+	FindEventByID(context.Context, int64) (konnekt.Event, error)
+	FindEvents(context.Context, konnekt.EventFilter) ([]konnekt.Event, error)
+	CreateEvent(context.Context, konnekt.Event) (konnekt.Event, error)
+	UpdateEvent(context.Context, int64, konnekt.EventUpdate) (konnekt.Event, error)
+	DeleteEvent(context.Context, int64) error
+}
 
 func (s server) createEventsRoutes() http.Handler {
 	r := chi.NewRouter()

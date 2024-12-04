@@ -13,16 +13,6 @@ type userService struct {
 	repo *Repository
 }
 
-type UserService interface {
-	FindUserByID(context.Context, int64) (konnekt.User, error)
-	FindUsers(context.Context, konnekt.UserFilter) ([]konnekt.User, error)
-
-	CreateUser(context.Context, konnekt.User, password.Password, password.Password) (int64, error)
-
-	UpdateUser(context.Context, konnekt.UpdateUser) (konnekt.User, error)
-	DeleteUser(context.Context, int64) error
-}
-
 func NewUserService(repo *Repository) *userService {
 	return &userService{repo: repo}
 }
@@ -64,6 +54,22 @@ func (s userService) CreateUser(ctx context.Context, user konnekt.User, password
 	}
 
 	return user, nil
+}
+
+func (s userService) DeleteUser(ctx context.Context, id int64) error {
+	return nil
+}
+
+func (s userService) FindUserByID(ctx context.Context, id int64) (konnekt.User, error) {
+	return konnekt.User{}, nil
+}
+
+func (s userService) FindUsers(ctx context.Context, filter konnekt.UserFilter) ([]konnekt.User, error) {
+	return nil, nil
+}
+
+func (s userService) UpdateUser(ctx context.Context, id int64, update konnekt.UpdateUser) (konnekt.User, error) {
+	return konnekt.User{}, nil
 }
 
 func insertUser(ctx context.Context, tx *sql.Tx, user konnekt.User, passwordHash []byte) (konnekt.User, error) {

@@ -21,9 +21,11 @@ func main() {
 	}
 
 	eventService := sqlite.NewEventService(repo)
+	userService := sqlite.NewUserService(repo)
 
 	srv, err := rest.NewServer(rest.Cfg{
 		EventService: eventService,
+		UserService:  userService,
 		Host:         *host,
 		Port:         *port,
 	})
