@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/password"
@@ -57,6 +58,21 @@ func (s userService) CreateUser(ctx context.Context, user konnekt.User, password
 }
 
 func (s userService) DeleteUser(ctx context.Context, id int64) error {
+	tx, err := s.repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	if err = deleteUserByID(ctx, tx, id); err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -65,11 +81,89 @@ func (s userService) FindUserByID(ctx context.Context, id int64) (konnekt.User, 
 }
 
 func (s userService) FindUsers(ctx context.Context, filter konnekt.UserFilter) ([]konnekt.User, error) {
-	return nil, nil
+	tx, err := s.repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback()
+
+	users, err := findUsers(ctx, tx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
 
 func (s userService) UpdateUser(ctx context.Context, id int64, update konnekt.UpdateUser) (konnekt.User, error) {
 	return konnekt.User{}, nil
+}
+
+func findUsers(ctx context.Context, tx *sql.Tx, filter konnekt.UserFilter) ([]konnekt.User, error) {
+	where, args := []string{"\n1 = 1\n"}, []any{}
+
+	if v := filter.Email; v != nil {
+		where, args = append(where, "email = ?\n"), append(args, *v)
+	}
+
+	if v := filter.ID; v != nil {
+		where, args = append(where, "id = ?\n"), append(args, *v)
+	}
+
+	if v := filter.FirstName; v != nil {
+		where, args = append(where, "first_name = ?\n"), append(args, *v)
+	}
+
+	if v := filter.LastName; v != nil {
+		where, args = append(where, "last_name = ?\n"), append(args, *v)
+	}
+
+	query := `
+	SELECT
+		id,
+		email,
+		first_name,
+		last_name
+	FROM user
+	WHERE`
+
+	query += strings.Join(where, " AND ")
+	query += formatLimitOffset(filter.Limit, filter.Offset)
+
+	rows, err := tx.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	users := []konnekt.User{}
+
+	for rows.Next() {
+		var user konnekt.User
+		err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&user.FirstName,
+			&user.LastName,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	if len(users) == 0 || users == nil {
+		return []konnekt.User{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No users found")
+	}
+
+	return users, nil
 }
 
 func insertUser(ctx context.Context, tx *sql.Tx, user konnekt.User, passwordHash []byte) (konnekt.User, error) {
@@ -99,4 +193,15 @@ func insertUser(ctx context.Context, tx *sql.Tx, user konnekt.User, passwordHash
 	}
 
 	return user, nil
+}
+
+func deleteUserByID(ctx context.Context, tx *sql.Tx, id int64) error {
+	query := "DELETE FROM user WHERE id = ?"
+
+	_, err := tx.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

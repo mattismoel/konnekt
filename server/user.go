@@ -13,10 +13,10 @@ type User struct {
 }
 
 type UserFilter struct {
-	ID        int64  `json:"id"`
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	ID        *int64  `json:"id"`
+	Email     *string `json:"email"`
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
 
 	Limit  int `json:"limit"`
 	Offset int `json:"offset"`

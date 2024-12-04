@@ -117,3 +117,54 @@ func TestCreateUser(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteUser(t *testing.T) {
+	type test struct {
+		id       int64
+		wantCode string
+	}
+
+	tests := map[string]test{
+		"Valid ID": {
+			id:       1,
+			wantCode: "",
+		},
+		"Invalid ID": {
+			id:       999,
+			wantCode: "",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			repo, dsn := MustOpenRepo(t)
+			defer MustCloseRepo(t, repo, dsn)
+
+			MustCreateUser(t, context.Background(), repo, baseUser,
+				[]byte("Password123!"), []byte("Password123!"))
+
+			service := sqlite.NewUserService(repo)
+
+			err := service.DeleteUser(context.Background(), tt.id)
+			code := konnekt.ErrorCode(err)
+			if code != tt.wantCode {
+				t.Fatalf("got code %q, want code %q, error: %v", code, tt.wantCode, err)
+			}
+
+			_, err = service.FindUsers(context.Background(), konnekt.UserFilter{Email: &baseUser.Email})
+			if err != nil && konnekt.ErrorCode(err) != konnekt.ERRNOTFOUND {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func MustCreateUser(t testing.TB, ctx context.Context, repo *sqlite.Repository, user konnekt.User, password []byte, passwordConfirm []byte) {
+	t.Helper()
+
+	service := sqlite.NewUserService(repo)
+	_, err := service.CreateUser(ctx, user, password, passwordConfirm)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
