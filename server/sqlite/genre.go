@@ -38,6 +38,26 @@ func (s genreService) GenreByID(ctx context.Context, id int64) (konnekt.Genre, e
 	return genre, nil
 }
 
+func (s genreService) FindGenres(ctx context.Context, filter konnekt.GenreFilter) ([]konnekt.Genre, error) {
+	tx, err := s.repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback()
+
+	genres, err := findGenres(ctx, tx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return genres, nil
+}
+
 func (s genreService) CreateGenre(ctx context.Context, genre konnekt.Genre) (konnekt.Genre, error) {
 	tx, err := s.repo.db.BeginTx(ctx, nil)
 	if err != nil {

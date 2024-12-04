@@ -14,6 +14,7 @@ type server struct {
 
 	eventService EventService
 	userService  UserService
+	genreService GenreService
 }
 
 func NewServer(cfg Cfg) (*server, error) {
@@ -31,6 +32,7 @@ func NewServer(cfg Cfg) (*server, error) {
 
 		eventService: cfg.EventService,
 		userService:  cfg.UserService,
+		genreService: cfg.GenreService,
 	}
 
 	s.server.Handler = http.HandlerFunc(s.mux.ServeHTTP)
@@ -38,6 +40,7 @@ func NewServer(cfg Cfg) (*server, error) {
 	s.mux.Mount("/events", s.createEventsRoutes())
 	s.mux.Mount("/auth", s.createAuthRoutes())
 	s.mux.Mount("/users", s.createUserRoutes())
+	s.mux.Mount("/genres", s.createGenreRoutes())
 
 	return s, nil
 }
