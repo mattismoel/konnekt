@@ -84,7 +84,7 @@ func (s userService) FindUserByID(ctx context.Context, id int64) (konnekt.User, 
 
 	defer tx.Rollback()
 
-	users, err := findUsers(ctx, tx, konnekt.UserFilter{ID: &id})
+	user, err := findUserByID(ctx, tx, id)
 	if err != nil {
 		return konnekt.User{}, err
 	}
@@ -93,7 +93,7 @@ func (s userService) FindUserByID(ctx context.Context, id int64) (konnekt.User, 
 		return konnekt.User{}, err
 	}
 
-	return users[0], nil
+	return user, nil
 }
 
 func (s userService) FindUsers(ctx context.Context, filter konnekt.UserFilter) ([]konnekt.User, error) {
@@ -117,7 +117,32 @@ func (s userService) FindUsers(ctx context.Context, filter konnekt.UserFilter) (
 }
 
 func (s userService) UpdateUser(ctx context.Context, id int64, update konnekt.UpdateUser) (konnekt.User, error) {
-	return konnekt.User{}, nil
+	tx, err := s.repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return konnekt.User{}, err
+	}
+
+	defer tx.Rollback()
+
+	user, err := updateUser(ctx, tx, id, update)
+	if err != nil {
+		return konnekt.User{}, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return konnekt.User{}, err
+	}
+
+	return user, nil
+}
+
+func findUserByID(ctx context.Context, tx *sql.Tx, id int64) (konnekt.User, error) {
+	users, err := findUsers(ctx, tx, konnekt.UserFilter{ID: &id})
+	if err != nil {
+		return konnekt.User{}, err
+	}
+
+	return users[0], nil
 }
 
 func findUsers(ctx context.Context, tx *sql.Tx, filter konnekt.UserFilter) ([]konnekt.User, error) {
@@ -220,4 +245,42 @@ func deleteUserByID(ctx context.Context, tx *sql.Tx, id int64) error {
 	}
 
 	return nil
+}
+
+func updateUser(ctx context.Context, tx *sql.Tx, id int64, update konnekt.UpdateUser) (konnekt.User, error) {
+	user, err := findUserByID(ctx, tx, id)
+	if err != nil {
+		return konnekt.User{}, err
+	}
+
+	if v := update.Email; v != nil {
+		user.Email = *v
+	}
+
+	if v := update.FirstName; v != nil {
+		user.FirstName = *v
+	}
+
+	if v := update.LastName; v != nil {
+		user.LastName = *v
+	}
+
+	if err = user.Validate(); err != nil {
+		return konnekt.User{}, err
+	}
+
+	query := `
+	UPDATE user
+	SET
+		email = ?,
+		first_name = ?,
+		last_name = ?
+	WHERE id = ?`
+
+	_, err = tx.ExecContext(ctx, query, user.Email, user.FirstName, user.LastName, id)
+	if err != nil {
+		return konnekt.User{}, err
+	}
+
+	return user, nil
 }

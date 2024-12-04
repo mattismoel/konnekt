@@ -23,9 +23,9 @@ type UserFilter struct {
 }
 
 type UpdateUser struct {
-	Email     string `json:"email"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	Email     *string `json:"email"`
+	FirstName *string `json:"firstName"`
+	LastName  *string `json:"lastName"`
 }
 
 func (u User) Validate() error {

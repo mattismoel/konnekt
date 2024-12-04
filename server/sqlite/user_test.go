@@ -6,6 +6,7 @@ import (
 
 	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/password"
+	"github.com/mattismoel/konnekt/internal/ptr"
 	"github.com/mattismoel/konnekt/sqlite"
 )
 
@@ -197,6 +198,159 @@ func TestFindUserByID(t *testing.T) {
 
 			if !user.Equals(tt.wantUser) {
 				t.Fatalf("got %+v, want %+v", user, tt.wantUser)
+			}
+		})
+	}
+}
+
+func TestUpdateUser(t *testing.T) {
+	baseUser := konnekt.User{
+		ID:        1,
+		Email:     "test@mail.com",
+		FirstName: "John",
+		LastName:  "Doe",
+	}
+
+	baseUpdate := konnekt.UpdateUser{
+		Email:     ptr.From("new@mail.com"),
+		FirstName: ptr.From("Sophie"),
+		LastName:  ptr.From("Johnson"),
+	}
+
+	type userUpdateUpdater func(konnekt.UpdateUser) konnekt.UpdateUser
+
+	type test struct {
+		id              int64
+		updater         userUpdateUpdater
+		wantCode        string
+		wantUserUpdater userUpdater
+	}
+
+	tests := map[string]test{
+		"Valid load": {
+			id:       1,
+			updater:  nil,
+			wantCode: "",
+			wantUserUpdater: func(u konnekt.User) konnekt.User {
+				u.Email = *baseUpdate.Email
+				u.FirstName = *baseUpdate.FirstName
+				u.LastName = *baseUpdate.LastName
+				return u
+			},
+		},
+		"Email update": {
+			id: 1,
+			updater: func(u konnekt.UpdateUser) konnekt.UpdateUser {
+				return konnekt.UpdateUser{Email: baseUpdate.Email}
+			},
+			wantCode: "",
+			wantUserUpdater: func(u konnekt.User) konnekt.User {
+				u.Email = *baseUpdate.Email
+				return u
+			},
+		},
+		"First name update": {
+			id: 1,
+			updater: func(u konnekt.UpdateUser) konnekt.UpdateUser {
+				return konnekt.UpdateUser{FirstName: baseUpdate.FirstName}
+			},
+			wantCode: "",
+			wantUserUpdater: func(u konnekt.User) konnekt.User {
+				u.FirstName = *baseUpdate.FirstName
+				return u
+			},
+		},
+		"Last name update": {
+			id: 1,
+			updater: func(u konnekt.UpdateUser) konnekt.UpdateUser {
+				return konnekt.UpdateUser{LastName: baseUpdate.LastName}
+			},
+			wantCode: "",
+			wantUserUpdater: func(u konnekt.User) konnekt.User {
+				u.LastName = *baseUpdate.LastName
+				return u
+			},
+		},
+		"Empty update": {
+			id: 1,
+			updater: func(u konnekt.UpdateUser) konnekt.UpdateUser {
+				return konnekt.UpdateUser{}
+			},
+			wantCode: "",
+			wantUserUpdater: func(u konnekt.User) konnekt.User {
+				return baseUser
+			},
+		},
+		"Empty email": {
+			id: 1,
+			updater: func(u konnekt.UpdateUser) konnekt.UpdateUser {
+				return konnekt.UpdateUser{Email: ptr.From("")}
+			},
+			wantCode: konnekt.ERRINVALID,
+			wantUserUpdater: func(u konnekt.User) konnekt.User {
+				return konnekt.User{}
+			},
+		},
+		"Empty first name": {
+			id: 1,
+			updater: func(u konnekt.UpdateUser) konnekt.UpdateUser {
+				return konnekt.UpdateUser{FirstName: ptr.From("")}
+			},
+			wantCode: konnekt.ERRINVALID,
+			wantUserUpdater: func(u konnekt.User) konnekt.User {
+				return konnekt.User{}
+			},
+		},
+		"Empty last name": {
+			id: 1,
+			updater: func(u konnekt.UpdateUser) konnekt.UpdateUser {
+				return konnekt.UpdateUser{LastName: ptr.From("")}
+			},
+			wantCode: konnekt.ERRINVALID,
+			wantUserUpdater: func(u konnekt.User) konnekt.User {
+				return konnekt.User{}
+			},
+		},
+		"Invalid email": {
+			id: 1,
+			updater: func(u konnekt.UpdateUser) konnekt.UpdateUser {
+				return konnekt.UpdateUser{Email: ptr.From("invalid-email.com")}
+			},
+			wantCode: konnekt.ERRINVALID,
+			wantUserUpdater: func(u konnekt.User) konnekt.User {
+				return konnekt.User{}
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			repo, dsn := MustOpenRepo(t)
+			defer MustCloseRepo(t, repo, dsn)
+
+			service := sqlite.NewUserService(repo)
+			MustCreateUser(t, context.Background(), repo, baseUser, []byte("Password123!"), []byte("Password123!"))
+
+			update := baseUpdate
+			if tt.updater != nil {
+				update = tt.updater(update)
+			}
+
+			user, err := service.UpdateUser(context.Background(), tt.id, update)
+
+			code := konnekt.ErrorCode(err)
+
+			if code != tt.wantCode {
+				t.Fatalf("got code %q, want code %q, error: %v", code, tt.wantCode, err)
+			}
+
+			wantUser := baseUser
+			if tt.wantUserUpdater != nil {
+				wantUser = tt.wantUserUpdater(wantUser)
+			}
+
+			if !user.Equals(wantUser) {
+				t.Fatalf("got %+v, want %+v", user, wantUser)
 			}
 		})
 	}
