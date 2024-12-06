@@ -6,14 +6,14 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/mattismoel/konnekt"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
 type EventService interface {
-	FindEventByID(context.Context, int64) (konnekt.Event, error)
-	FindEvents(context.Context, konnekt.EventFilter) ([]konnekt.Event, error)
-	CreateEvent(context.Context, konnekt.Event) (konnekt.Event, error)
-	UpdateEvent(context.Context, int64, konnekt.EventUpdate) (konnekt.Event, error)
+	FindEventByID(context.Context, int64) (service.Event, error)
+	FindEvents(context.Context, service.EventFilter) ([]service.Event, error)
+	CreateEvent(context.Context, service.Event) (service.Event, error)
+	UpdateEvent(context.Context, int64, service.Event) (service.Event, error)
 	DeleteEvent(context.Context, int64) error
 }
 
@@ -31,7 +31,7 @@ func (s server) createEventsRoutes() http.Handler {
 
 func (s server) handleGetEvents() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		events, err := s.eventService.FindEvents(r.Context(), konnekt.EventFilter{})
+		events, err := s.eventService.FindEvents(r.Context(), service.EventFilter{})
 		if err != nil {
 			Error(w, r, err)
 			return
@@ -61,7 +61,7 @@ func (s server) handleGetEventById() http.HandlerFunc {
 
 func (s server) handleCreateEvent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var load konnekt.Event
+		var load service.Event
 
 		err := readJSON(r, &load)
 		if err != nil {
@@ -85,7 +85,7 @@ func (s server) handleUpdateEvent() http.HandlerFunc {
 			return
 		}
 
-		var load konnekt.EventUpdate
+		var load service.Event
 
 		err = readJSON(r, &load)
 		if err != nil {

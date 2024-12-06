@@ -4,8 +4,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/mattismoel/konnekt/rest"
-	"github.com/mattismoel/konnekt/sqlite"
+	"github.com/mattismoel/konnekt/internal/rest"
+	"github.com/mattismoel/konnekt/internal/service"
+	"github.com/mattismoel/konnekt/internal/storage/sqlite"
 )
 
 func main() {
@@ -13,16 +14,20 @@ func main() {
 	host := flag.String("host", "localhost", "Host of the server")
 	port := flag.Int("port", 3000, "The port of the server")
 
-	repo := sqlite.New(*dsn)
+	store := sqlite.NewStore(*dsn)
 
-	err := repo.Open()
+	err := store.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	eventService := sqlite.NewEventService(repo)
-	userService := sqlite.NewUserService(repo)
-	genreService := sqlite.NewGenreService(repo)
+	eventRepo := sqlite.NewEventRepository(store)
+	userRepo := sqlite.NewUserRepository(store)
+	genreRepo := sqlite.NewGenreRepository(store)
+
+	userService := service.NewUserService(userRepo)
+	eventService := service.NewEventService(eventRepo)
+	genreService := service.NewGenreService(genreRepo)
 
 	srv, err := rest.NewServer(rest.Cfg{
 		EventService: eventService,

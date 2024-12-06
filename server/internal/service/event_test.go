@@ -1,33 +1,42 @@
-package konnekt_test
+package service_test
 
 import (
 	"testing"
 	"time"
 
 	"github.com/mattismoel/konnekt"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
-type eventUpdaterFunc func(konnekt.Event) konnekt.Event
+type eventUpdaterFunc func(service.Event) service.Event
 
 var now = time.Now()
 
-var baseEvent = konnekt.Event{
-	ID:          1,
-	Title:       "Base Title",
-	Description: "Base Description",
-	FromDate:    now,
-	ToDate:      now.Add(2 * time.Hour),
-	Address:     baseAddress,
-	Genres: []konnekt.Genre{
-		{ID: 1, Name: "Rock"},
-		{ID: 2, Name: "Punk"},
-	},
-}
-
 func TestEventEquals(t *testing.T) {
+	var genres = []string{"Rock", "Punk", "Hip Hop", "R&B"}
+
+	var baseAddress = service.Address{
+		Country:     "Denmark",
+		City:        "Odense",
+		Street:      "Postenvej",
+		HouseNumber: "18A",
+	}
+
+	var baseEvent = service.Event{
+		ID:          1,
+		Title:       "Base Title",
+		Description: "Base Description",
+		FromDate:    now,
+		ToDate:      now.Add(2 * time.Hour),
+		Address:     baseAddress,
+		Genres:      genres[:2],
+	}
+
+	type updater func(service.Event) service.Event
+
 	type test struct {
-		aUpdater   eventUpdaterFunc
-		bUpdater   eventUpdaterFunc
+		aUpdater   updater
+		bUpdater   updater
 		wantEquals bool
 	}
 
@@ -39,7 +48,7 @@ func TestEventEquals(t *testing.T) {
 		},
 		"Title Differ": {
 			aUpdater: nil,
-			bUpdater: func(e konnekt.Event) konnekt.Event {
+			bUpdater: func(e service.Event) service.Event {
 				e.Title = "Other Title"
 				return e
 			},
@@ -47,7 +56,7 @@ func TestEventEquals(t *testing.T) {
 		},
 		"Description Differ": {
 			aUpdater: nil,
-			bUpdater: func(e konnekt.Event) konnekt.Event {
+			bUpdater: func(e service.Event) service.Event {
 				e.Description = "Other Description"
 				return e
 			},
@@ -55,7 +64,7 @@ func TestEventEquals(t *testing.T) {
 		},
 		"FromDate Differ": {
 			aUpdater: nil,
-			bUpdater: func(e konnekt.Event) konnekt.Event {
+			bUpdater: func(e service.Event) service.Event {
 				e.FromDate = baseEvent.FromDate.Add(1 * time.Hour)
 				return e
 			},
@@ -63,7 +72,7 @@ func TestEventEquals(t *testing.T) {
 		},
 		"ToDate Differ": {
 			aUpdater: nil,
-			bUpdater: func(e konnekt.Event) konnekt.Event {
+			bUpdater: func(e service.Event) service.Event {
 				e.ToDate = baseEvent.ToDate.Add(2 * time.Hour)
 				return e
 			},
@@ -71,8 +80,8 @@ func TestEventEquals(t *testing.T) {
 		},
 		"Addresses Differ": {
 			aUpdater: nil,
-			bUpdater: func(e konnekt.Event) konnekt.Event {
-				e.Address = konnekt.Address{
+			bUpdater: func(e service.Event) service.Event {
+				e.Address = service.Address{
 					Country:     "Sweden",
 					City:        "Stockholm",
 					Street:      "Other Street",
@@ -84,8 +93,8 @@ func TestEventEquals(t *testing.T) {
 		},
 		"Genres Differ": {
 			aUpdater: nil,
-			bUpdater: func(e konnekt.Event) konnekt.Event {
-				e.Genres = baseGenres[2:]
+			bUpdater: func(e service.Event) service.Event {
+				e.Genres = genres[2:]
 				return e
 			},
 			wantEquals: false,
@@ -114,6 +123,25 @@ func TestEventEquals(t *testing.T) {
 }
 
 func TestEventValidate(t *testing.T) {
+	var genres = []string{"Rock", "Punk", "Hip Hop", "R&B"}
+
+	var baseAddress = service.Address{
+		Country:     "Denmark",
+		City:        "Odense",
+		Street:      "Postenvej",
+		HouseNumber: "18A",
+	}
+
+	var baseEvent = service.Event{
+		ID:          1,
+		Title:       "Base Title",
+		Description: "Base Description",
+		FromDate:    now,
+		ToDate:      now.Add(2 * time.Hour),
+		Address:     baseAddress,
+		Genres:      genres[:2],
+	}
+
 	type test struct {
 		updater eventUpdaterFunc
 		err     error
@@ -124,61 +152,54 @@ func TestEventValidate(t *testing.T) {
 			updater: nil,
 			err:     nil,
 		},
-		"Negative ID": {
-			updater: func(e konnekt.Event) konnekt.Event {
-				e.ID = -1
-				return e
-			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
-		},
 		"No Title": {
-			updater: func(e konnekt.Event) konnekt.Event {
+			updater: func(e service.Event) service.Event {
 				e.Title = " "
 				return e
 			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
+			err: service.ErrNoTitle,
 		},
 		"No Description": {
-			updater: func(e konnekt.Event) konnekt.Event {
+			updater: func(e service.Event) service.Event {
 				e.Description = " "
 				return e
 			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
+			err: service.ErrNoDescription,
 		},
 		"Zero FromDate": {
-			updater: func(e konnekt.Event) konnekt.Event {
+			updater: func(e service.Event) service.Event {
 				e.FromDate = time.Time{}
 				return e
 			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
+			err: service.ErrZeroFromDay,
 		},
 		"Zero ToDate": {
-			updater: func(e konnekt.Event) konnekt.Event {
+			updater: func(e service.Event) service.Event {
 				e.ToDate = time.Time{}
 				return e
 			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
+			err: service.ErrZeroToDay,
 		},
 		"No Address": {
-			updater: func(e konnekt.Event) konnekt.Event {
-				e.Address = konnekt.Address{}
+			updater: func(e service.Event) service.Event {
+				e.Address = service.Address{}
 				return e
 			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
+			err: service.ErrEmptyAddress,
 		},
 		"Nil Genres": {
-			updater: func(e konnekt.Event) konnekt.Event {
+			updater: func(e service.Event) service.Event {
 				e.Genres = nil
 				return e
 			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
+			err: service.ErrNoGenres,
 		},
 		"Empty Genres": {
-			updater: func(e konnekt.Event) konnekt.Event {
-				e.Genres = []konnekt.Genre{}
+			updater: func(e service.Event) service.Event {
+				e.Genres = []string{}
 				return e
 			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, ""),
+			err: service.ErrNoGenres,
 		},
 	}
 

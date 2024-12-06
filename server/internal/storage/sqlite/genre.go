@@ -8,38 +8,40 @@ import (
 	"strings"
 
 	"github.com/mattismoel/konnekt"
+	"github.com/mattismoel/konnekt/internal/service"
+	"github.com/mattismoel/konnekt/internal/storage"
 )
 
-type genreService struct {
-	repo *Repository
+type genreRepository struct {
+	store *Store
 }
 
-func NewGenreService(repo *Repository) *genreService {
-	return &genreService{repo: repo}
+func NewGenreRepository(store *Store) *genreRepository {
+	return &genreRepository{store: store}
 }
 
-func (s genreService) GenreByID(ctx context.Context, id int64) (konnekt.Genre, error) {
-	tx, err := s.repo.db.BeginTx(ctx, nil)
+func (s genreRepository) GenreByID(ctx context.Context, id int64) (storage.Genre, error) {
+	tx, err := s.store.BeginTx(ctx, nil)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	defer tx.Rollback()
 
 	genre, err := findGenreByID(ctx, tx, id)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	if err = tx.Commit(); err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	return genre, nil
 }
 
-func (s genreService) FindGenres(ctx context.Context, filter konnekt.GenreFilter) ([]konnekt.Genre, error) {
-	tx, err := s.repo.db.BeginTx(ctx, nil)
+func (s genreRepository) FindGenres(ctx context.Context, filter service.GenreFilter) ([]storage.Genre, error) {
+	tx, err := s.store.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -58,48 +60,48 @@ func (s genreService) FindGenres(ctx context.Context, filter konnekt.GenreFilter
 	return genres, nil
 }
 
-func (s genreService) CreateGenre(ctx context.Context, genre konnekt.Genre) (konnekt.Genre, error) {
-	tx, err := s.repo.db.BeginTx(ctx, nil)
+func (s genreRepository) InsertGenre(ctx context.Context, name string) (storage.Genre, error) {
+	tx, err := s.store.BeginTx(ctx, nil)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
-	genre, err = insertGenre(ctx, tx, genre)
+	genre, err := insertGenre(ctx, tx, name)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	defer tx.Rollback()
 
 	if err = tx.Commit(); err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	return genre, nil
 }
 
-func (s genreService) UpdateGenre(ctx context.Context, id int64, update konnekt.GenreUpdate) (konnekt.Genre, error) {
-	tx, err := s.repo.db.BeginTx(ctx, nil)
+func (s genreRepository) UpdateGenre(ctx context.Context, id int64, newName string) (storage.Genre, error) {
+	tx, err := s.store.BeginTx(ctx, nil)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	defer tx.Rollback()
 
-	genre, err := updateGenre(ctx, tx, id, update)
+	genre, err := updateGenre(ctx, tx, id, newName)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	if err = tx.Commit(); err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	return genre, nil
 }
 
-func (s genreService) DeleteGenre(ctx context.Context, id int64) error {
-	tx, err := s.repo.db.BeginTx(ctx, nil)
+func (s genreRepository) DeleteGenre(ctx context.Context, id int64) error {
+	tx, err := s.store.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -117,68 +119,67 @@ func (s genreService) DeleteGenre(ctx context.Context, id int64) error {
 	return nil
 }
 
-func insertGenres(ctx context.Context, tx *sql.Tx, genres []konnekt.Genre) ([]konnekt.Genre, error) {
-	for _, genre := range genres {
+func insertGenres(ctx context.Context, tx *sql.Tx, genres []string) ([]storage.Genre, error) {
+	insertedGenres := []storage.Genre{}
+
+	for _, genreName := range genres {
 		var err error
-		genre, err = insertGenre(ctx, tx, genre)
+		genre, err := insertGenre(ctx, tx, genreName)
 		if err != nil {
 			return nil, err
 		}
+
+		insertedGenres = append(insertedGenres, genre)
 	}
 
-	return genres, nil
+	return insertedGenres, nil
 }
 
-func findGenreByID(ctx context.Context, tx *sql.Tx, id int64) (konnekt.Genre, error) {
-	genres, err := findGenres(ctx, tx, konnekt.GenreFilter{ID: &id})
+func findGenreByID(ctx context.Context, tx *sql.Tx, id int64) (storage.Genre, error) {
+	genres, err := findGenres(ctx, tx, service.GenreFilter{ID: &id})
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	if len(genres) <= 0 {
-		return konnekt.Genre{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No genres found with id %d", id)
+		return storage.Genre{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No genres found with id %d", id)
 	}
 
 	return genres[0], nil
 }
 
-func findGenreByName(ctx context.Context, tx *sql.Tx, name string) (konnekt.Genre, error) {
-	genres, err := findGenres(ctx, tx, konnekt.GenreFilter{Name: &name})
+func findGenreByName(ctx context.Context, tx *sql.Tx, name string) (storage.Genre, error) {
+	genres, err := findGenres(ctx, tx, service.GenreFilter{Name: &name})
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	if len(genres) <= 0 {
-		return konnekt.Genre{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No genres found with name %q", name)
+		return storage.Genre{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No genres found with name %q", name)
 	}
 
 	return genres[0], nil
 }
 
-func updateGenre(ctx context.Context, tx *sql.Tx, id int64, update konnekt.GenreUpdate) (konnekt.Genre, error) {
+func updateGenre(ctx context.Context, tx *sql.Tx, id int64, newName string) (storage.Genre, error) {
 	genre, err := findGenreByID(ctx, tx, id)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	query := `
 	UPDATE genres
 	SET
-		name = ?
-	WHERE id = ?`
+		name = @name
+	WHERE id = @id`
 
-	if v := update.Name; v != nil {
-		genre.Name = *v
-	}
+	_, err = tx.ExecContext(ctx, query,
+		sql.Named("name", newName),
+		sql.Named("id", id),
+	)
 
-	err = genre.Validate()
 	if err != nil {
-		return konnekt.Genre{}, err
-	}
-
-	_, err = tx.ExecContext(ctx, query, genre.Name, id)
-	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	return genre, nil
@@ -206,7 +207,7 @@ func deleteEventGenres(ctx context.Context, tx *sql.Tx, eventID int64) error {
 	return nil
 }
 
-func setEventGenres(ctx context.Context, tx *sql.Tx, eventID int64, genreNames []string) error {
+func updateEventGenres(ctx context.Context, tx *sql.Tx, eventID int64, genreNames []string) error {
 	err := deleteEventGenres(ctx, tx, eventID)
 	if err != nil {
 		return fmt.Errorf("Could not delete event genres: %v", err)
@@ -238,7 +239,7 @@ func relateGenreToEvent(ctx context.Context, tx *sql.Tx, eventID int64, name str
 	return nil
 }
 
-func findEventGenres(ctx context.Context, tx *sql.Tx, eventId int64) ([]konnekt.Genre, error) {
+func findEventGenres(ctx context.Context, tx *sql.Tx, eventId int64) ([]storage.Genre, error) {
 	query := `
 	SELECT 
 		id, 
@@ -254,10 +255,10 @@ func findEventGenres(ctx context.Context, tx *sql.Tx, eventId int64) ([]konnekt.
 
 	defer rows.Close()
 
-	genres := []konnekt.Genre{}
+	genres := []storage.Genre{}
 
 	for rows.Next() {
-		var genre konnekt.Genre
+		var genre storage.Genre
 		if err := rows.Scan(&genre.ID, &genre.Name); err != nil {
 			return nil, err
 		}
@@ -279,7 +280,7 @@ func doesGenreExist(ctx context.Context, tx *sql.Tx, name string) (bool, error) 
 	return exists, nil
 }
 
-func genreIDs(genres []konnekt.Genre) []int64 {
+func genreIDs(genres []storage.Genre) []int64 {
 	ids := []int64{}
 
 	for _, genre := range genres {
@@ -290,7 +291,7 @@ func genreIDs(genres []konnekt.Genre) []int64 {
 	return ids
 }
 
-func genreNames(genres []konnekt.Genre) []string {
+func genreNames(genres []storage.Genre) []string {
 	names := []string{}
 
 	for _, genre := range genres {
@@ -301,44 +302,42 @@ func genreNames(genres []konnekt.Genre) []string {
 	return names
 }
 
-func insertGenre(ctx context.Context, tx *sql.Tx, genre konnekt.Genre) (konnekt.Genre, error) {
-	exists, err := doesGenreExist(ctx, tx, genre.Name)
+func insertGenre(ctx context.Context, tx *sql.Tx, name string) (storage.Genre, error) {
+	exists, err := doesGenreExist(ctx, tx, name)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	if exists {
-		genre, err := findGenreByName(ctx, tx, genre.Name)
+		genre, err := findGenreByName(ctx, tx, name)
 		if err != nil && !errors.Is(sql.ErrNoRows, err) {
-			return konnekt.Genre{}, err
+			return storage.Genre{}, err
 		}
 
 		return genre, nil
 	}
 
-	if err = genre.Validate(); err != nil {
-		return konnekt.Genre{}, err
-	}
-
 	query := "INSERT OR IGNORE INTO genre (name) VALUES (?) ON CONFLICT (name) DO NOTHING"
 
-	_, err = tx.ExecContext(ctx, query, genre.Name)
+	_, err = tx.ExecContext(ctx, query, name)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
-	query = "SELECT id FROM genre WHERE name = ?"
+	query = "SELECT id, name FROM genre WHERE name = ?"
 
-	err = tx.QueryRowContext(ctx, query, genre.Name).Scan(&genre.ID)
+	var genre storage.Genre
+
+	err = tx.QueryRowContext(ctx, query, name).Scan(&genre.ID, &genre.Name)
 	if err != nil {
-		return konnekt.Genre{}, err
+		return storage.Genre{}, err
 	}
 
 	return genre, nil
 }
 
-func findGenres(ctx context.Context, tx *sql.Tx, filter konnekt.GenreFilter) ([]konnekt.Genre, error) {
-	genres := []konnekt.Genre{}
+func findGenres(ctx context.Context, tx *sql.Tx, filter service.GenreFilter) ([]storage.Genre, error) {
+	genres := []storage.Genre{}
 	var n int
 
 	where, args := []string{"1 = 1\n"}, []any{}
@@ -374,7 +373,7 @@ func findGenres(ctx context.Context, tx *sql.Tx, filter konnekt.GenreFilter) ([]
 	defer rows.Close()
 
 	for rows.Next() {
-		var genre konnekt.Genre
+		var genre storage.Genre
 
 		err := rows.Scan(&genre.ID, &genre.Name, &n)
 		if err != nil {

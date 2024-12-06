@@ -1,4 +1,4 @@
-sqlite/migration/
+internal/storage/sqlite/migration/
 coverage*
 go.sum
 *.db

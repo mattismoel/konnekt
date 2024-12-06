@@ -1,10 +1,20 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mattismoel/konnekt"
+	"github.com/mattismoel/konnekt/internal/service"
 )
+
+type SessionService interface {
+	GenerateSessionToken() (konnekt.SessionToken, error)
+	CreateSession(context.Context, konnekt.SessionToken, int64) (konnekt.Session, error)
+	ValidateSessionToken(context.Context, konnekt.SessionToken) (konnekt.Session, service.User, error)
+	InvalidateSession(context.Context, konnekt.SessionID) error
+}
 
 func (s server) createAuthRoutes() http.Handler {
 	r := chi.NewRouter()

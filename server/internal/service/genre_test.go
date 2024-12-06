@@ -1,19 +1,15 @@
-package konnekt_test
+package service_test
 
 import (
 	"testing"
 
 	"github.com/mattismoel/konnekt"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
-type genreUpdaterFunc func(konnekt.Genre) konnekt.Genre
+type genreUpdaterFunc func(service.Genre) service.Genre
 
-var baseGenres = []konnekt.Genre{
-	{ID: 1, Name: "Rock"},
-	{ID: 2, Name: "Punk"},
-	{ID: 3, Name: "Indie"},
-	{ID: 4, Name: "Pop"},
-}
+var baseGenres = []service.Genre{"Rock", "Punk", "Indie", "Pop"}
 
 func TestGenreEquals(t *testing.T) {
 	type test struct {
@@ -30,15 +26,15 @@ func TestGenreEquals(t *testing.T) {
 		},
 		"Not Equal": {
 			aUpdater: nil,
-			bUpdater: func(g konnekt.Genre) konnekt.Genre {
+			bUpdater: func(g service.Genre) service.Genre {
 				return baseGenres[1]
 			},
 			wantEqual: false,
 		},
 		"Different Names": {
 			aUpdater: nil,
-			bUpdater: func(g konnekt.Genre) konnekt.Genre {
-				g.Name = "Other Genre name"
+			bUpdater: func(g service.Genre) service.Genre {
+				g = "Other Genre name"
 				return g
 			},
 			wantEqual: false,
@@ -77,16 +73,9 @@ func TestGenreValid(t *testing.T) {
 			updater: nil,
 			err:     nil,
 		},
-		"Negative ID": {
-			updater: func(g konnekt.Genre) konnekt.Genre {
-				g.ID = -1
-				return g
-			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, "Error"),
-		},
 		"No Name": {
-			updater: func(g konnekt.Genre) konnekt.Genre {
-				g.Name = " "
+			updater: func(g service.Genre) service.Genre {
+				g = " "
 				return g
 			},
 			err: konnekt.Errorf(konnekt.ERRINVALID, "Error"),

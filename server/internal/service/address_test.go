@@ -1,14 +1,13 @@
-package konnekt_test
+package service_test
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/mattismoel/konnekt"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
-type addressUpdaterFunc func(konnekt.Address) konnekt.Address
-
-var baseAddress = konnekt.Address{
+var baseAddress = service.Address{
 	Country:     "Denmark",
 	City:        "Odense",
 	Street:      "Postenvej",
@@ -16,49 +15,51 @@ var baseAddress = konnekt.Address{
 }
 
 func TestAddressValidate(t *testing.T) {
+	type updater func(service.Address) service.Address
+
 	type test struct {
-		updater  addressUpdaterFunc
-		wantCode string
+		updater updater
+		err     error
 	}
 
 	tests := map[string]test{
 		"Valid Address": {
-			updater:  nil,
-			wantCode: "",
+			updater: nil,
+			err:     nil,
 		},
 		"No Country": {
-			updater: func(a konnekt.Address) konnekt.Address {
+			updater: func(a service.Address) service.Address {
 				a.Country = " "
 				return a
 			},
-			wantCode: konnekt.ERRINVALID,
+			err: service.ErrInvalidCountry,
 		},
 		"No City": {
-			updater: func(a konnekt.Address) konnekt.Address {
+			updater: func(a service.Address) service.Address {
 				a.City = " "
 				return a
 			},
-			wantCode: konnekt.ERRINVALID,
+			err: service.ErrInvalidCity,
 		},
 		"No Street": {
-			updater: func(a konnekt.Address) konnekt.Address {
+			updater: func(a service.Address) service.Address {
 				a.Street = " "
 				return a
 			},
-			wantCode: konnekt.ERRINVALID,
+			err: service.ErrInvalidStreet,
 		},
 		"No House Number": {
-			updater: func(a konnekt.Address) konnekt.Address {
+			updater: func(a service.Address) service.Address {
 				a.HouseNumber = " "
 				return a
 			},
-			wantCode: konnekt.ERRINVALID,
+			err: service.ErrInvalidHouseNumber,
 		},
 		"Empty": {
-			updater: func(a konnekt.Address) konnekt.Address {
-				return konnekt.Address{}
+			updater: func(a service.Address) service.Address {
+				return service.Address{}
 			},
-			wantCode: konnekt.ERRINVALID,
+			err: service.ErrEmptyAddress,
 		},
 	}
 
@@ -71,19 +72,20 @@ func TestAddressValidate(t *testing.T) {
 			}
 
 			err := address.Validate()
-			code := konnekt.ErrorCode(err)
 
-			if code != tt.wantCode {
-				t.Fatalf("got code %q, want code %q, error: %v", code, tt.wantCode, err)
+			if !errors.Is(err, tt.err) {
+				t.Fatalf("got %v, want %v", err, tt.err)
 			}
 		})
 	}
 }
 
 func TestAddressEquals(t *testing.T) {
+	type updater func(service.Address) service.Address
+
 	type test struct {
-		aUpdater   addressUpdaterFunc
-		bUpdater   addressUpdaterFunc
+		aUpdater   updater
+		bUpdater   updater
 		wantEquals bool
 	}
 
@@ -95,7 +97,7 @@ func TestAddressEquals(t *testing.T) {
 		},
 		"Country differ": {
 			aUpdater: nil,
-			bUpdater: func(a konnekt.Address) konnekt.Address {
+			bUpdater: func(a service.Address) service.Address {
 				a.Country = "Sweden"
 				return a
 			},
@@ -103,7 +105,7 @@ func TestAddressEquals(t *testing.T) {
 		},
 		"City differ": {
 			aUpdater: nil,
-			bUpdater: func(a konnekt.Address) konnekt.Address {
+			bUpdater: func(a service.Address) service.Address {
 				a.City = "Stockholm"
 				return a
 			},
@@ -111,7 +113,7 @@ func TestAddressEquals(t *testing.T) {
 		},
 		"Street differ": {
 			aUpdater: nil,
-			bUpdater: func(a konnekt.Address) konnekt.Address {
+			bUpdater: func(a service.Address) service.Address {
 				a.Street = "Otherstreet"
 				return a
 			},
@@ -119,7 +121,7 @@ func TestAddressEquals(t *testing.T) {
 		},
 		"House Number differ": {
 			aUpdater: nil,
-			bUpdater: func(a konnekt.Address) konnekt.Address {
+			bUpdater: func(a service.Address) service.Address {
 				a.HouseNumber = "1C"
 				return a
 			},

@@ -1,38 +1,45 @@
-package konnekt
+package service
 
 import (
+	"errors"
 	"strings"
 )
 
+var (
+	ErrInvalidCountry     = errors.New("Invalid country")
+	ErrInvalidCity        = errors.New("Invalid city")
+	ErrInvalidStreet      = errors.New("Invalid street")
+	ErrInvalidHouseNumber = errors.New("Invalid street number")
+	ErrEmptyAddress       = errors.New("Address is empty")
+)
+
 type Address struct {
-	ID          int64  `json:"id"`
 	Country     string `json:"country"`
 	City        string `json:"city"`
 	Street      string `json:"street"`
 	HouseNumber string `json:"houseNumber"`
 }
 
-type AddressUpdate struct {
-	Country     *string `json:"country"`
-	City        *string `json:"city"`
-	Street      *string `json:"street"`
-	HouseNumber *string `json:"houseNumber"`
-}
-
 func (a Address) Validate() error {
+	emptyAddr := Address{}
+
+	if a == emptyAddr {
+		return ErrEmptyAddress
+	}
+
 	if strings.TrimSpace(a.Country) == "" {
-		return Errorf(ERRINVALID, "Country must be set")
+		return ErrInvalidCountry
 	}
 
 	if strings.TrimSpace(a.City) == "" {
-		return Errorf(ERRINVALID, "City must be set")
+		return ErrInvalidCity
 	}
 
 	if strings.TrimSpace(a.Street) == "" {
-		return Errorf(ERRINVALID, "Street must be set")
+		return ErrInvalidStreet
 	}
 	if strings.TrimSpace(a.HouseNumber) == "" {
-		return Errorf(ERRINVALID, "House number must be set")
+		return ErrInvalidHouseNumber
 	}
 
 	return nil

@@ -6,15 +6,13 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/mattismoel/konnekt"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
 type GenreService interface {
-	GenreByID(context.Context, int64) (konnekt.Genre, error)
-	FindGenres(context.Context, konnekt.GenreFilter) ([]konnekt.Genre, error)
-	CreateGenre(context.Context, konnekt.Genre) (konnekt.Genre, error)
-	UpdateGenre(context.Context, int64, konnekt.GenreUpdate) (konnekt.Genre, error)
-	DeleteGenre(context.Context, int64) error
+	CreateGenre(ctx context.Context, name string) (service.Genre, error)
+	FindGenres(ctx context.Context, filter service.GenreFilter) ([]service.Genre, error)
+	DeleteGenre(ctx context.Context, id int64) error
 }
 
 func (s server) createGenreRoutes() http.Handler {
@@ -29,7 +27,7 @@ func (s server) createGenreRoutes() http.Handler {
 
 func (s server) handleGetGenres() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		genres, err := s.genreService.FindGenres(r.Context(), konnekt.GenreFilter{})
+		genres, err := s.genreService.FindGenres(r.Context(), service.GenreFilter{})
 		if err != nil {
 			Error(w, r, err)
 			return
@@ -41,7 +39,9 @@ func (s server) handleGetGenres() http.HandlerFunc {
 
 func (s server) handleCreateGenre() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var load konnekt.Genre
+		var load struct {
+			Name string `json:"name"`
+		}
 
 		err := readJSON(r, &load)
 		if err != nil {
@@ -49,7 +49,7 @@ func (s server) handleCreateGenre() http.HandlerFunc {
 			return
 		}
 
-		_, err = s.genreService.CreateGenre(r.Context(), load)
+		_, err = s.genreService.CreateGenre(r.Context(), load.Name)
 		if err != nil {
 			Error(w, r, err)
 			return

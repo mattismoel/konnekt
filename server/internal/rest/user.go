@@ -5,18 +5,18 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/password"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
 type UserService interface {
-	FindUserByID(context.Context, int64) (konnekt.User, error)
-	FindUsers(context.Context, konnekt.UserFilter) ([]konnekt.User, error)
-
-	CreateUser(context.Context, konnekt.User, password.Password, password.Password) (konnekt.User, error)
-
-	UpdateUser(context.Context, int64, konnekt.UpdateUser) (konnekt.User, error)
-	DeleteUser(context.Context, int64) error
+	// FindUserByID(context.Context, int64) (konnekt.User, error)
+	// FindUsers(context.Context, konnekt.UserFilter) ([]konnekt.User, error)
+	//
+	CreateUser(context.Context, service.User, password.Password, password.Password) (service.User, error)
+	//
+	// UpdateUser(context.Context, int64, konnekt.UpdateUser) (konnekt.User, error)
+	// DeleteUser(context.Context, int64) error
 }
 
 func (s server) createUserRoutes() http.Handler {
@@ -28,7 +28,7 @@ func (s server) createUserRoutes() http.Handler {
 }
 
 type CreateUserLoad struct {
-	konnekt.User
+	service.User
 	Password        string `json:"password"`
 	PasswordConfirm string `json:"passwordConfirm"`
 }
@@ -43,11 +43,15 @@ func (s server) handleCreateUser() http.HandlerFunc {
 			return
 		}
 
-		user, err := s.userService.CreateUser(r.Context(), konnekt.User{
-			Email:     load.Email,
-			FirstName: load.FirstName,
-			LastName:  load.LastName,
-		}, []byte(load.Password), []byte(load.PasswordConfirm))
+		user, err := s.userService.CreateUser(r.Context(),
+			service.User{
+				Email:     load.Email,
+				FirstName: load.FirstName,
+				LastName:  load.LastName,
+			},
+			[]byte(load.Password),
+			[]byte(load.PasswordConfirm),
+		)
 
 		if err != nil {
 			Error(w, r, err)
