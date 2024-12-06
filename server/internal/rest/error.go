@@ -4,16 +4,16 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/mattismoel/konnekt"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
 var codes = map[string]int{
-	konnekt.ERRCONFLICT:       http.StatusConflict,
-	konnekt.ERRINVALID:        http.StatusBadRequest,
-	konnekt.ERRNOTFOUND:       http.StatusNotFound,
-	konnekt.ERRNOTIMPLEMENTED: http.StatusNotImplemented,
-	konnekt.ERRUNAUTHORIZED:   http.StatusUnauthorized,
-	konnekt.ERRINTERNAL:       http.StatusInternalServerError,
+	service.ERRCONFLICT:       http.StatusConflict,
+	service.ERRINVALID:        http.StatusBadRequest,
+	service.ERRNOTFOUND:       http.StatusNotFound,
+	service.ERRNOTIMPLEMENTED: http.StatusNotImplemented,
+	service.ERRUNAUTHORIZED:   http.StatusUnauthorized,
+	service.ERRINTERNAL:       http.StatusInternalServerError,
 }
 
 type apiError struct {
@@ -22,9 +22,9 @@ type apiError struct {
 }
 
 func Error(w http.ResponseWriter, r *http.Request, err error) {
-	code, message := konnekt.ErrorCode(err), konnekt.ErrorMessage(err)
+	code, message := service.ErrorCode(err), service.ErrorMessage(err)
 
-	if code == konnekt.ERRINTERNAL {
+	if code == service.ERRINTERNAL {
 		logError(r, err)
 	}
 

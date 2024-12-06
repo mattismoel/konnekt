@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/service"
 	"github.com/mattismoel/konnekt/internal/storage"
 )
@@ -182,7 +181,7 @@ func findUsers(ctx context.Context, tx *sql.Tx, filter service.UserFilter) ([]st
 	}
 
 	if len(users) == 0 || users == nil {
-		return []storage.User{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No users found")
+		return []storage.User{}, service.Errorf(service.ERRNOTFOUND, "No users found")
 	}
 
 	return users, nil

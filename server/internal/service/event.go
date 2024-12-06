@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/storage"
 )
 
@@ -78,7 +77,7 @@ type CreateAddressRequest struct {
 func (s eventService) CreateEvent(ctx context.Context, event Event) (Event, error) {
 	err := event.Validate()
 	if err != nil {
-		return Event{}, konnekt.Errorf(konnekt.ERRINVALID, err.Error())
+		return Event{}, Errorf(ERRINVALID, err.Error())
 	}
 
 	repoBaseEvent := storage.BaseEvent{
@@ -120,7 +119,7 @@ func (s eventService) FindEventByID(ctx context.Context, id int64) (Event, error
 	repoEvent, err := s.repo.FindEventByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return Event{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No events found")
+			return Event{}, Errorf(ERRNOTFOUND, "No events found")
 		}
 
 		return Event{}, err
@@ -157,7 +156,7 @@ func (s eventService) FindEvents(ctx context.Context, filter EventFilter) ([]Eve
 	}
 
 	if len(repoEvents) == 0 || repoEvents == nil {
-		return []Event{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No events found")
+		return []Event{}, Errorf(ERRNOTFOUND, "No events found")
 	}
 
 	events := []Event{}
@@ -173,7 +172,7 @@ func (s eventService) UpdateEvent(ctx context.Context, id int64, update Event) (
 	repoEvent, err := s.repo.FindEventByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return Event{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "Event not found")
+			return Event{}, Errorf(ERRNOTFOUND, "Event not found")
 		}
 
 		return Event{}, err

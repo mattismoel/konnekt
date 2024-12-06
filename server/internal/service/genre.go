@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/storage"
 )
 
@@ -35,7 +34,7 @@ func NewGenreService(repo genreRepository) *genreService {
 
 func (s genreService) CreateGenre(ctx context.Context, name string) (Genre, error) {
 	if strings.TrimSpace(name) == "" {
-		return "", konnekt.Errorf(konnekt.ERRINVALID, "Genre name must not be empty")
+		return "", Errorf(ERRINVALID, "Genre name must not be empty")
 	}
 
 	genre, err := s.repo.InsertGenre(ctx, name)
@@ -72,7 +71,7 @@ func (s genreService) FindGenres(ctx context.Context, filter GenreFilter) ([]Gen
 
 func (g Genre) Validate() error {
 	if strings.TrimSpace(string(g)) == "" {
-		return konnekt.Errorf(konnekt.ERRINVALID, "Name must not be empty")
+		return Errorf(ERRINVALID, "Name must not be empty")
 	}
 
 	return nil

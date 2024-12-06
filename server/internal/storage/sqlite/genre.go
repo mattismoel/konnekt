@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/service"
 	"github.com/mattismoel/konnekt/internal/storage"
 )
@@ -142,7 +141,7 @@ func findGenreByID(ctx context.Context, tx *sql.Tx, id int64) (storage.Genre, er
 	}
 
 	if len(genres) <= 0 {
-		return storage.Genre{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No genres found with id %d", id)
+		return storage.Genre{}, service.Errorf(service.ERRNOTFOUND, "No genres found with id %d", id)
 	}
 
 	return genres[0], nil
@@ -155,7 +154,7 @@ func findGenreByName(ctx context.Context, tx *sql.Tx, name string) (storage.Genr
 	}
 
 	if len(genres) <= 0 {
-		return storage.Genre{}, konnekt.Errorf(konnekt.ERRNOTFOUND, "No genres found with name %q", name)
+		return storage.Genre{}, service.Errorf(service.ERRNOTFOUND, "No genres found with name %q", name)
 	}
 
 	return genres[0], nil

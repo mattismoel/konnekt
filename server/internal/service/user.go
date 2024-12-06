@@ -7,7 +7,6 @@ import (
 	"net/mail"
 	"strings"
 
-	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/password"
 	"github.com/mattismoel/konnekt/internal/storage"
 )
@@ -57,11 +56,11 @@ func (s userService) CreateUser(ctx context.Context, user User, password passwor
 
 	passwordErrors := password.Validate()
 	if passwordErrors != nil {
-		return User{}, konnekt.Errorf(konnekt.ERRINVALID, fmt.Sprint(passwordErrors))
+		return User{}, Errorf(ERRINVALID, fmt.Sprint(passwordErrors))
 	}
 
 	if !password.Equals(passwordConfirm) {
-		return User{}, konnekt.Errorf(konnekt.ERRINVALID, "Passwords do not match")
+		return User{}, Errorf(ERRINVALID, "Passwords do not match")
 	}
 
 	passwordHash, err := password.Hash()

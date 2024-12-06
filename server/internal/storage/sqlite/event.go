@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/prnt"
 	"github.com/mattismoel/konnekt/internal/service"
 	"github.com/mattismoel/konnekt/internal/storage"
@@ -226,7 +225,7 @@ func findEventByID(ctx context.Context, tx *sql.Tx, id int64) (storage.Event, er
 	}
 
 	if len(events) == 0 {
-		return storage.Event{}, konnekt.Error{Code: konnekt.ERRNOTFOUND, Message: "Event not found"}
+		return storage.Event{}, service.Error{Code: service.ERRNOTFOUND, Message: "Event not found"}
 	}
 
 	return events[0], nil

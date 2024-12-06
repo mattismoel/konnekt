@@ -1,4 +1,4 @@
-package konnekt
+package service
 
 import (
 	"errors"

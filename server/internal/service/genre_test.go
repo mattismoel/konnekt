@@ -3,7 +3,6 @@ package service_test
 import (
 	"testing"
 
-	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -78,7 +77,7 @@ func TestGenreValid(t *testing.T) {
 				g = " "
 				return g
 			},
-			err: konnekt.Errorf(konnekt.ERRINVALID, "Error"),
+			err: service.Errorf(service.ERRINVALID, "Error"),
 		},
 	}
 
@@ -92,7 +91,7 @@ func TestGenreValid(t *testing.T) {
 
 			err := genre.Validate()
 
-			if konnekt.ErrorCode(err) != konnekt.ErrorCode(tt.err) {
+			if service.ErrorCode(err) != service.ErrorCode(tt.err) {
 				t.Fatalf("got %q, want %q", err, tt.err)
 			}
 		})

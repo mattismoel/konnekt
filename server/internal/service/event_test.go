@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mattismoel/konnekt"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -213,7 +212,7 @@ func TestEventValidate(t *testing.T) {
 
 			err := event.Validate()
 
-			if konnekt.ErrorCode(err) != konnekt.ErrorCode(tt.err) {
+			if service.ErrorCode(err) != service.ErrorCode(tt.err) {
 				t.Fatalf("got %v, want %v", err, tt.err)
 			}
 		})
