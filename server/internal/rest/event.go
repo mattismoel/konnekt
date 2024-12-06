@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -61,9 +62,30 @@ func (s server) handleGetEventById() http.HandlerFunc {
 
 func (s server) handleCreateEvent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		sessionCookie, err := r.Cookie(service.SESSION_COOKIE_NAME)
+		if err != nil {
+			if errors.Is(err, http.ErrNoCookie) {
+				Error(w, r, service.Errorf(service.ERRUNAUTHORIZED, "Unauthorized"))
+				return
+			}
+		}
+
+		token := sessionCookie.Value
+		_, user, err := s.authService.ValidateSessionToken(r.Context(), service.SessionToken(token))
+		if err != nil {
+			Error(w, r, err)
+			return
+		}
+
+		err = s.authService.HasPermission(r.Context(), user.ID, service.PERM_CREATE_EVENT)
+		if err != nil {
+			Error(w, r, err)
+			return
+		}
+
 		var load service.Event
 
-		err := readJSON(r, &load)
+		err = readJSON(r, &load)
 		if err != nil {
 			Error(w, r, err)
 			return

@@ -7,8 +7,8 @@ import (
 
 type Cfg struct {
 	EventService EventService
-	UserService  UserService
 	GenreService GenreService
+	AuthService  AuthService
 	Port         int
 	Host         string
 }
@@ -18,12 +18,12 @@ func (cfg Cfg) Validate() error {
 		return fmt.Errorf("Event service must be set")
 	}
 
-	if cfg.UserService == nil {
-		return fmt.Errorf("User service must be set")
-	}
-
 	if cfg.GenreService == nil {
 		return fmt.Errorf("Genre service must be set")
+	}
+
+	if cfg.AuthService == nil {
+		return fmt.Errorf("Auth service must be set")
 	}
 
 	if strings.TrimSpace(cfg.Host) == "" {

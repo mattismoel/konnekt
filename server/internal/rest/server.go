@@ -13,8 +13,8 @@ type server struct {
 	mux    *chi.Mux
 
 	eventService EventService
-	userService  UserService
 	genreService GenreService
+	authService  AuthService
 }
 
 func NewServer(cfg Cfg) (*server, error) {
@@ -31,15 +31,14 @@ func NewServer(cfg Cfg) (*server, error) {
 		mux: chi.NewRouter(),
 
 		eventService: cfg.EventService,
-		userService:  cfg.UserService,
 		genreService: cfg.GenreService,
+		authService:  cfg.AuthService,
 	}
 
 	s.server.Handler = http.HandlerFunc(s.mux.ServeHTTP)
 
 	s.mux.Mount("/events", s.createEventsRoutes())
 	s.mux.Mount("/auth", s.createAuthRoutes())
-	s.mux.Mount("/users", s.createUserRoutes())
 	s.mux.Mount("/genres", s.createGenreRoutes())
 
 	return s, nil

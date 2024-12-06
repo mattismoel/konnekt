@@ -24,15 +24,17 @@ func main() {
 	eventRepo := sqlite.NewEventRepository(store)
 	userRepo := sqlite.NewUserRepository(store)
 	genreRepo := sqlite.NewGenreRepository(store)
+	sessionRepo := sqlite.NewSessionRepository(store)
+	permissionRepo := sqlite.NewPermissionRepository(store)
 
-	userService := service.NewUserService(userRepo)
 	eventService := service.NewEventService(eventRepo)
 	genreService := service.NewGenreService(genreRepo)
+	authService := service.NewAuthService(sessionRepo, userRepo, permissionRepo)
 
 	srv, err := rest.NewServer(rest.Cfg{
 		EventService: eventService,
-		UserService:  userService,
 		GenreService: genreService,
+		AuthService:  authService,
 		Host:         *host,
 		Port:         *port,
 	})

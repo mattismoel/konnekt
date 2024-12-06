@@ -3,11 +3,9 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/mail"
 	"strings"
 
-	"github.com/mattismoel/konnekt/internal/password"
 	"github.com/mattismoel/konnekt/internal/storage"
 )
 
@@ -38,6 +36,8 @@ type userRepository interface {
 	InsertUser(ctx context.Context, user storage.User) (storage.User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	UpdateUser(ctx context.Context, id int64, update storage.User) (storage.User, error)
+	FindUserByEmail(ctx context.Context, email string) (storage.User, error)
+	FindUserPasswordHash(ctx context.Context, userID int64) ([]byte, error)
 }
 
 type userService struct {
@@ -46,41 +46,6 @@ type userService struct {
 
 func NewUserService(repo userRepository) *userService {
 	return &userService{repo: repo}
-}
-
-func (s userService) CreateUser(ctx context.Context, user User, password password.Password, passwordConfirm password.Password) (User, error) {
-	err := user.Validate()
-	if err != nil {
-		return User{}, err
-	}
-
-	passwordErrors := password.Validate()
-	if passwordErrors != nil {
-		return User{}, Errorf(ERRINVALID, fmt.Sprint(passwordErrors))
-	}
-
-	if !password.Equals(passwordConfirm) {
-		return User{}, Errorf(ERRINVALID, "Passwords do not match")
-	}
-
-	passwordHash, err := password.Hash()
-	if err != nil {
-		return User{}, err
-	}
-
-	repoUser := storage.User{
-		Email:        user.Email,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		PasswordHash: passwordHash,
-	}
-
-	repoUser, err = s.repo.InsertUser(ctx, repoUser)
-	if err != nil {
-		return User{}, err
-	}
-
-	return user, nil
 }
 
 func (u User) Validate() error {

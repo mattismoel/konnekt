@@ -76,6 +76,27 @@ func (s userRepository) FindUserByID(ctx context.Context, id int64) (storage.Use
 	return user, nil
 }
 
+func (s userRepository) FindUserByEmail(ctx context.Context, email string) (storage.User, error) {
+	tx, err := s.store.BeginTx(ctx, nil)
+	if err != nil {
+		return storage.User{}, err
+	}
+
+	defer tx.Rollback()
+
+	user, err := findUserByEmail(ctx, tx, email)
+	if err != nil {
+		return storage.User{}, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return storage.User{}, err
+	}
+
+	return user, nil
+
+}
+
 func (s userRepository) FindUsers(ctx context.Context, filter service.UserFilter) ([]storage.User, error) {
 	tx, err := s.store.BeginTx(ctx, nil)
 	if err != nil {
@@ -114,6 +135,27 @@ func (s userRepository) UpdateUser(ctx context.Context, id int64, update storage
 	}
 
 	return user, nil
+}
+
+func (r userRepository) FindUserPasswordHash(ctx context.Context, userID int64) ([]byte, error) {
+	tx, err := r.store.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback()
+
+	hash, err := findUserPasswordHash(ctx, tx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return hash, nil
+
 }
 
 func findUserByID(ctx context.Context, tx *sql.Tx, id int64) (storage.User, error) {
@@ -268,4 +310,28 @@ func updateUser(ctx context.Context, tx *sql.Tx, id int64, update storage.User) 
 	}
 
 	return update, nil
+}
+
+func findUserByEmail(ctx context.Context, tx *sql.Tx, email string) (storage.User, error) {
+	users, err := findUsers(ctx, tx, service.UserFilter{Email: &email})
+	if err != nil {
+		return storage.User{}, err
+	}
+
+	return users[0], nil
+}
+
+func findUserPasswordHash(ctx context.Context, tx *sql.Tx, userID int64) ([]byte, error) {
+	hash := []byte{}
+
+	query := "SELECT password_hash FROM user WHERE id = @user_id"
+	err := tx.QueryRowContext(ctx, query,
+		sql.Named("user_id", userID),
+	).Scan(&hash)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return hash, nil
 }
