@@ -32,7 +32,7 @@ export class EventController {
     res.sendStatus(200)
   }
 
-  getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getAll = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const events = await this.eventService.getAll()
       res.json(events)

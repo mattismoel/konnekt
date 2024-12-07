@@ -1,5 +1,5 @@
 import { createAddressSchema, type AddressDTO } from "@/address/address.dto";
-import { createGenreSchema, type GenreDTO } from "@/genre/genre.dto";
+import { createGenreSchema } from "@/genre/genre.dto";
 import { z } from "zod";
 
 export type EventDTO = {

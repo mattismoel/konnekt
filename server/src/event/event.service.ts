@@ -1,5 +1,5 @@
 import { createEventSchema, type CreateEventDTO, type EventDTO } from "./event.dto";
-import { NotFoundError, type EventRepository } from "./event.repository";
+import { type EventRepository } from "./event.repository";
 
 
 export class EventService {
