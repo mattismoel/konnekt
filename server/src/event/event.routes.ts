@@ -9,8 +9,8 @@ const eventController = new EventController(eventService);
 
 const router = Router()
 
-router.get("/", async (req, res, next) => { })
-
+router.get("/:id", eventController.getByID)
+router.get("/", eventController.getAll)
 router.post("/", eventController.create)
 router.delete("/:id", eventController.delete)
 

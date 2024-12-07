@@ -41,8 +41,52 @@ export class SQLiteEventRepository implements EventRepository {
       await tx.delete(addressesTable).where(eq(addressesTable.id, eventAddress.id))
     })
   }
-}
 
+  getByID = async (id: number): Promise<EventDTO | null> => {
+    return await db.transaction(async (tx) => {
+      const result = await tx
+        .select()
+        .from(eventsTable)
+        .where(eq(eventsTable.id, id))
+
+      if (result.length <= 0) {
+        return null
+      }
+
+      const { addressID, ...baseEvent } = result[0]
+
+      const genres = await getEventGenres(tx, baseEvent.id)
+      const address = await getEventAddress(tx, baseEvent.id)
+
+      return {
+        ...baseEvent,
+        address,
+        genres: genres.map(genre => genre.name)
+      }
+    })
+  }
+
+  getAll = async (): Promise<EventDTO[]> => {
+    return await db.transaction(async (tx) => {
+      const baseEvents = await tx
+        .select()
+        .from(eventsTable)
+
+      const events = await Promise.all(
+        baseEvents.map(async (baseEvent): Promise<EventDTO> => {
+          const address = await getEventAddress(tx, baseEvent.id)
+          const genres = await getEventGenres(tx, baseEvent.id)
+
+          return {
+            ...baseEvent,
+            address,
+            genres: genres.map(genre => genre.name)
+          }
+        }))
+      return events
+    })
+  }
+}
 
 const insertAddress = async (tx: TX, address: CreateAddressDTO): Promise<AddressDTO> => {
   const result = await tx

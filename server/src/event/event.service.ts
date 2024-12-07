@@ -18,4 +18,20 @@ export class EventService {
   async delete(id: number): Promise<void> {
     await this.eventRepository.delete(id)
   }
+
+  getAll = async (): Promise<EventDTO[]> => {
+    console.log("BEFORE REP")
+    const events = await this.eventRepository.getAll()
+    return events
+  }
+
+  getByID = async (id: number): Promise<EventDTO> => {
+    const event = await this.eventRepository.getByID(id)
+
+    if (!event) {
+      throw Error(`No event found with id ${id}`)
+    }
+
+    return event
+  }
 }

@@ -25,14 +25,18 @@ export class EventController {
       const id = parseInt(req.params.id)
       await this.eventService.delete(id)
     } catch (e) {
-      console.error(e)
       next(e)
     }
 
     res.sendStatus(200)
   }
 
+  getAll = async (req: Request, res: Response): Promise<void> => {
+    console.log("HEllo")
+    const events = await this.eventService.getAll()
+    res.json(events)
+
+  }
+  getByID = async (req: Request, res: Response): Promise<void> => { }
   update = async (req: Request, res: Response): Promise<void> => { }
-  findAll = async (req: Request, res: Response): Promise<void> => { }
-  findByID = async (req: Request, res: Response): Promise<void> => { }
 }
