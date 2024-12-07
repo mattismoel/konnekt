@@ -1,10 +1,15 @@
+import type { ObjectStorage } from "@/shared/objectStorage/objectStorage";
 import { createEventSchema, type CreateEventDTO, type EventDTO } from "./event.dto";
 import { type EventRepository } from "./event.repository";
+import { Readable, Stream } from "stream";
+import sharp from "sharp";
+import { streamToBuffer } from "@/shared/file";
 
 
 export class EventService {
   constructor(
-    private readonly eventRepository: EventRepository
+    private readonly eventRepository: EventRepository,
+    private readonly objectStorage: ObjectStorage
   ) { }
 
   async create(eventData: CreateEventDTO): Promise<EventDTO> {
@@ -28,5 +33,17 @@ export class EventService {
     const event = await this.eventRepository.getByID(id)
 
     return event
+  }
+
+  setCoverImage = async (id: number, buffer: Buffer) => {
+    const key = `events/${id}/cover.jpeg`
+
+    const image = await sharp(buffer)
+      .resize({ fit: "cover", width: 2048 })
+      .jpeg()
+      .toBuffer()
+
+    await this.objectStorage.deleteObject(key)
+    await this.objectStorage.uploadObject(key, image)
   }
 }

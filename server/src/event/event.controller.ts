@@ -57,4 +57,16 @@ export class EventController {
   }
 
   update = async (req: Request, res: Response): Promise<void> => { }
+
+  associateCoverImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const id = parseInt(req.params.id)
+    const file = req.file
+    if (!file) {
+      res.sendStatus(400)
+      return
+    }
+
+    await this.eventService.setCoverImage(id, file.buffer)
+    res.sendStatus(200)
+  }
 }
