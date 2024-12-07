@@ -5,8 +5,8 @@ import { db, type TX } from "@/shared/db/db";
 import { eventsGenresTable, eventsTable } from "@/shared/db/schema/event";
 import { addressesTable } from "@/shared/db/schema/address";
 import { eq, inArray } from "drizzle-orm";
-import type { AddressDTO, CreateAddressDTO } from "@/address/address.dto";
-import type { GenreDTO } from "@/genre/genre.dto";
+import type { GenreDTO } from "@/event/genre.dto";
+import type { AddressDTO, CreateAddressDTO } from "./address.dto";
 
 export class SQLiteEventRepository implements EventRepository {
   async insert(data: CreateEventDTO): Promise<EventDTO> {
