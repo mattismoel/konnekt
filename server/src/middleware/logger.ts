@@ -9,7 +9,6 @@ interface Logger {
 const loggerMiddleware = (logger: Logger): RequestHandler => {
   return (req, res, next) => {
     const startTime = new Date()
-    console.log("Hello")
 
     const { method, path } = req
 
