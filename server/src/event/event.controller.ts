@@ -31,12 +31,24 @@ export class EventController {
     res.sendStatus(200)
   }
 
-  getAll = async (req: Request, res: Response): Promise<void> => {
-    console.log("HEllo")
-    const events = await this.eventService.getAll()
-    res.json(events)
-
+  getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const events = await this.eventService.getAll()
+      res.json(events)
+    } catch (e) {
+      next(e)
+    }
   }
-  getByID = async (req: Request, res: Response): Promise<void> => { }
+
+  getByID = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id)
+      const event = await this.eventService.getByID(id)
+      res.json(event)
+    } catch (e) {
+      next(e)
+    }
+  }
+
   update = async (req: Request, res: Response): Promise<void> => { }
 }

@@ -20,7 +20,6 @@ export class EventService {
   }
 
   getAll = async (): Promise<EventDTO[]> => {
-    console.log("BEFORE REP")
     const events = await this.eventRepository.getAll()
     return events
   }
