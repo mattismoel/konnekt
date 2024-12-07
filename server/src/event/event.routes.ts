@@ -10,7 +10,6 @@ const eventController = new EventController(eventService);
 const router = Router()
 
 router.post("/", async (req, res, next) => {
-  console.log("Hello", req.body)
   await eventController.create(req, res, next)
 })
 
