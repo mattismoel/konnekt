@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@libsql/client": "^0.14.0",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.37.0",
     "express": "^4.21.2",
