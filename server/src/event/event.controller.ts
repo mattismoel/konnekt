@@ -14,7 +14,7 @@ export class EventController {
       res.json(event)
     } catch (e) {
       if (e instanceof ZodError) {
-        res.json(e.flatten())
+        res.status(400).json(e.flatten())
       } else {
         next(e)
       }
