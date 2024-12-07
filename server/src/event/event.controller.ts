@@ -7,7 +7,7 @@ export class EventController {
     private readonly eventService: EventService
   ) { }
 
-  async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+  create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const event = await this.eventService.create(req.body)
       res.json(event)
@@ -20,7 +20,7 @@ export class EventController {
     }
   }
 
-  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+  delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = parseInt(req.params.id)
       await this.eventService.delete(id)
@@ -32,7 +32,7 @@ export class EventController {
     res.sendStatus(200)
   }
 
-  async update(req: Request, res: Response): Promise<void> { }
-  async findAll(req: Request, res: Response): Promise<void> { }
-  async findByID(req: Request, res: Response): Promise<void> { }
+  update = async (req: Request, res: Response): Promise<void> => { }
+  findAll = async (req: Request, res: Response): Promise<void> => { }
+  findByID = async (req: Request, res: Response): Promise<void> => { }
 }

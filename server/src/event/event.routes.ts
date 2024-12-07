@@ -9,12 +9,9 @@ const eventController = new EventController(eventService);
 
 const router = Router()
 
-router.post("/", async (req, res, next) => {
-  await eventController.create(req, res, next)
-})
+router.get("/", async (req, res, next) => { })
 
-router.delete("/:id", async (req, res, next) => {
-  await eventController.delete(req, res, next)
-})
+router.post("/", eventController.create)
+router.delete("/:id", eventController.delete)
 
 export default router;
