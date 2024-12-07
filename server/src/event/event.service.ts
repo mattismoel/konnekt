@@ -14,4 +14,8 @@ export class EventService {
 
     return event
   }
+
+  async delete(id: number): Promise<void> {
+    await this.eventRepository.delete(id)
+  }
 }

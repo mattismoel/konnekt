@@ -8,7 +8,6 @@ export class EventController {
   ) { }
 
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
-    console.log(req.body)
     try {
       const event = await this.eventService.create(req.body)
       res.json(event)
@@ -21,7 +20,16 @@ export class EventController {
     }
   }
 
-  async delete(req: Request, res: Response): Promise<void> { }
+  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = parseInt(req.params.id)
+      await this.eventService.delete(id)
+    } catch (e) {
+      console.error(e)
+      next(e)
+    }
+  }
+
   async update(req: Request, res: Response): Promise<void> { }
   async findAll(req: Request, res: Response): Promise<void> { }
   async findByID(req: Request, res: Response): Promise<void> { }

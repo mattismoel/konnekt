@@ -33,6 +33,13 @@ export class SQLiteEventRepository implements EventRepository {
   }
 
   async delete(id: number): Promise<void> {
+    await db.transaction(async (tx) => {
+      const eventAddress = await getEventAddress(tx, id)
+
+      await tx.delete(eventsGenresTable).where(eq(eventsGenresTable.eventID, id))
+      await tx.delete(eventsTable).where(eq(eventsTable.id, id))
+      await tx.delete(addressesTable).where(eq(addressesTable.id, eventAddress.id))
+    })
   }
 }
 
@@ -77,4 +84,29 @@ const relateGenresToEvent = async (tx: TX, eventID: number, genreNames: string[]
   await tx
     .insert(eventsGenresTable)
     .values(genres.map(genre => ({ eventID, genreID: genre.id })))
+}
+
+const getEventAddress = async (tx: TX, id: number): Promise<AddressDTO> => {
+  const result = await tx
+    .select()
+    .from(eventsTable)
+    .where(eq(eventsTable.id, id))
+
+  if (result.length <= 0) {
+    throw new Error(`Could not find event with id ${id}`)
+  }
+
+  const { addressID } = result[0]
+
+  const address = await getAddressByID(tx, addressID)
+  return address
+}
+
+const getAddressByID = async (tx: TX, id: number): Promise<AddressDTO> => {
+  const result = await tx
+    .select()
+    .from(addressesTable)
+    .where(eq(addressesTable.id, id))
+
+  return result[0]
 }
