@@ -15,7 +15,6 @@ router.post("/", async (req, res, next) => {
 
 router.delete("/:id", async (req, res, next) => {
   await eventController.delete(req, res, next)
-  res.sendStatus(200)
 })
 
 export default router;

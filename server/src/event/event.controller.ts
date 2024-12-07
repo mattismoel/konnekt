@@ -28,6 +28,8 @@ export class EventController {
       console.error(e)
       next(e)
     }
+
+    res.sendStatus(200)
   }
 
   async update(req: Request, res: Response): Promise<void> { }
