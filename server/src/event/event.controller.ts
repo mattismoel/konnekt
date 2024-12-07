@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import type { EventService } from "./event.service";
+import { NotFoundError } from "./event.repository";
 
 export class EventController {
   constructor(
@@ -46,6 +47,11 @@ export class EventController {
       const event = await this.eventService.getByID(id)
       res.json(event)
     } catch (e) {
+      if (e instanceof NotFoundError) {
+        res.sendStatus(404)
+        return
+      }
+
       next(e)
     }
   }

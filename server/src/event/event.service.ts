@@ -1,5 +1,5 @@
 import { createEventSchema, type CreateEventDTO, type EventDTO } from "./event.dto";
-import type { EventRepository } from "./event.repository";
+import { NotFoundError, type EventRepository } from "./event.repository";
 
 
 export class EventService {
@@ -24,12 +24,8 @@ export class EventService {
     return events
   }
 
-  getByID = async (id: number): Promise<EventDTO> => {
+  getByID = async (id: number): Promise<EventDTO | null> => {
     const event = await this.eventRepository.getByID(id)
-
-    if (!event) {
-      throw Error(`No event found with id ${id}`)
-    }
 
     return event
   }

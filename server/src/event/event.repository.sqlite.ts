@@ -1,6 +1,6 @@
 import { genresTable } from "@/shared/db/schema/genre";
 import type { CreateEventDTO, EventDTO } from "./event.dto";
-import type { EventRepository } from "./event.repository";
+import { NotFoundError, type EventRepository } from "./event.repository";
 import { db, type TX } from "@/shared/db/db";
 import { eventsGenresTable, eventsTable } from "@/shared/db/schema/event";
 import { addressesTable } from "@/shared/db/schema/address";
@@ -50,7 +50,7 @@ export class SQLiteEventRepository implements EventRepository {
         .where(eq(eventsTable.id, id))
 
       if (result.length <= 0) {
-        return null
+        throw new NotFoundError(`No events found with id ${id}`)
       }
 
       const { addressID, ...baseEvent } = result[0]
