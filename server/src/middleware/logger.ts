@@ -12,7 +12,7 @@ const loggerMiddleware = (logger: Logger): RequestHandler => {
 
     const { method, path } = req
 
-    const reqMsg = `<- ${method} ${path} | ${new Date().toISOString()}`
+    const reqMsg = `<- ${method} ${path}${new Date().toISOString()}`
     logger.log(reqMsg)
 
     res.on("finish", () => {
