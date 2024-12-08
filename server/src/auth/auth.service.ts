@@ -53,6 +53,10 @@ export class AuthService {
 
     const userPasswordHash = await this.userRepository.getPasswordHash(user.id)
 
+    if (!userPasswordHash) {
+      throw new NotFoundError(`Password hash for ${email}`)
+    }
+
     if (!verify(userPasswordHash, password)) {
       throw new Error("Invalid password")
     }
