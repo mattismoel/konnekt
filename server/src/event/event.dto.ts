@@ -7,6 +7,7 @@ export type EventDTO = {
   title: string;
   description: string;
   fromDate: Date;
+  coverImageUrl: string | null;
   toDate: Date;
   address: AddressDTO;
   genres: string[];

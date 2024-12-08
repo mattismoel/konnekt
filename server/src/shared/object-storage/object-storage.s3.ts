@@ -86,6 +86,6 @@ export class S3ObjectStorage implements ObjectStorage {
   }
 
   getObjectUrl = (key: string): string => {
-    return `https://${this.bucket}.s3${this.region}.amazonaws.com/${key}`
+    return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`
   }
 }

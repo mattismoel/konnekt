@@ -42,6 +42,8 @@ export class EventService {
       .toBuffer()
 
     await this.objectStorage.deleteObject(key)
-    await this.objectStorage.uploadObject(key, image)
+    const coverImageUrl = await this.objectStorage.uploadObject(key, image)
+
+    await this.eventRepository.setCoverImageUrl(id, coverImageUrl)
   }
 }
