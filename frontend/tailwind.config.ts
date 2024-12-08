@@ -5,6 +5,9 @@ export default {
   content: ["./app/**/{**,.client,.server}/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      minHeight: {
+        "sub-nav": 'calc(100vh - var(--nav-height))'
+      },
       height: {
         'nav': 'var(--nav-height)',
         'sub-nav': 'calc(100vh - var(--nav-height))'
