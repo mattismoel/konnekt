@@ -1,9 +1,7 @@
-import type { ObjectStorage } from "@/shared/objectStorage/objectStorage";
+import type { ObjectStorage } from "@/shared/object-storage/object-storage";
 import { createEventSchema, type CreateEventDTO, type EventDTO } from "./event.dto";
 import { type EventRepository } from "./event.repository";
-import { Readable, Stream } from "stream";
 import sharp from "sharp";
-import { streamToBuffer } from "@/shared/file";
 
 
 export class EventService {

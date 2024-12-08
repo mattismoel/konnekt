@@ -2,8 +2,8 @@ import { Router } from "express";
 import { EventController } from "./event.controller";
 import { SQLiteEventRepository } from "./event.repository.sqlite";
 import { EventService } from "./event.service";
-import { S3ObjectStorage } from "@/shared/objectStorage/objectStorage.s3";
 import multer from "multer"
+import { S3ObjectStorage } from "@/shared/object-storage/object-storage.s3";
 
 
 const s3ObjectStorage = new S3ObjectStorage({
