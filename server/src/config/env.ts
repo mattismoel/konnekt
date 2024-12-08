@@ -8,7 +8,7 @@ const envSchema = z.object({
   ])
     .default("development"),
   PORT: z.coerce.number(),
-  DSN: z.string()
+  DSN: z.string(),
 })
 
 export const env = envSchema.parse(process.env)
