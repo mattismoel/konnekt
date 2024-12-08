@@ -50,6 +50,26 @@ export class AuthController {
     }
   }
 
+  logOut = async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies[SESSION_COOKIE_NAME] as string || null
+
+    if (!token) {
+      res.sendStatus(200)
+      return
+    }
+
+    const { session } = await this.authService.validateSessionToken(token)
+
+    if (!session) {
+      res.sendStatus(200)
+      return
+    }
+
+    await this.authService.invalidateSession(session.id)
+    this.deleteSessionTokenCookie(res, SESSION_COOKIE_NAME)
+    res.sendStatus(200)
+  }
+
   setSessionTokenCookie = (res: Response, name: string, token: string, expiresAt: Date) => {
     res.cookie(name, token, {
       httpOnly: true,
