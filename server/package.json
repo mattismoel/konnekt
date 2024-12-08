@@ -20,6 +20,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.705.0",
     "@libsql/client": "^0.14.0",
+    "@node-rs/argon2": "^2.0.2",
+    "@oslojs/crypto": "^1.0.1",
+    "@oslojs/encoding": "^1.1.0",
     "@types/multer": "^1.4.12",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
