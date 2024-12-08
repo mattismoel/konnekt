@@ -5,7 +5,7 @@ import { registerSchema } from "~/lib/auth/login-schema";
 
 const LoginPage = () => {
   return (
-    <main className="py-16 flex justify-center">
+    <main className="py-16 h-sub-nav flex justify-center">
       <LoginForm />
     </main>
   )
@@ -25,7 +25,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     })
 
     if (res.ok) {
-      return redirect("")
+      return redirect("/")
     }
 
     return res
