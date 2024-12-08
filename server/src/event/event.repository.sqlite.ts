@@ -67,6 +67,13 @@ export class SQLiteEventRepository implements EventRepository {
     })
   }
 
+  setCoverImageUrl = async (eventID: number, coverImageUrl: string): Promise<void> => {
+    await db
+      .update(eventsTable)
+      .set({ coverImageUrl })
+      .where(eq(eventsTable.id, eventID))
+  }
+
   getAll = async (): Promise<EventDTO[]> => {
     return await db.transaction(async (tx) => {
       const baseEvents = await tx

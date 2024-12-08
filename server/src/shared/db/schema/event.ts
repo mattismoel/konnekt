@@ -6,6 +6,7 @@ export const eventsTable = sqliteTable("event", {
   id: integer().primaryKey({ autoIncrement: true }),
   title: text().notNull(),
   description: text().notNull(),
+  coverImageUrl: text(),
   fromDate: integer({ mode: "timestamp" }).notNull(),
   toDate: integer({ mode: "timestamp" }).notNull(),
   addressID: integer().notNull().references(() => addressesTable.id)
