@@ -1,13 +1,12 @@
-import { sha256 } from "@oslojs/crypto/sha2";
 import { loginSchema, registerSchema, type LoginDTO, type RegisterDTO } from "./auth.dto";
 import type { Session, SessionValidationResult } from "./session.dto";
 import type { SessionRepository } from "./session.repository";
 import type { UserRepository } from "./user.repository";
-import { encodeBase32NoPadding, encodeHexLowerCase } from "@oslojs/encoding"
 import { addDays, isAfter, subDays } from "date-fns";
 import { SESSION_LIFETIME_DAYS, SESSION_REFRESH_DAYS } from "./constant";
 import { hash, verify } from "@node-rs/argon2";
 import { AlreadyExistsError, NotFoundError } from "@/shared/repo-error";
+import { createSession, generateSessionToken, sessionIDFromToken } from "./auth.util";
 
 export class AuthService {
   constructor(
@@ -37,12 +36,18 @@ export class AuthService {
 
     const user = await this.userRepository.insert({ ...userData, passwordHash })
 
-    const token = this.generateSessionToken()
-    const session = await this.createSession(token, user.id)
+    const token = generateSessionToken()
+    const session = await createSession(token, user.id)
+
+    await this.sessionRepository.insert(session)
 
     return { session, token }
   }
 
+  /**
+  * @description Attempts to log out the user. 
+  * If successful, the created session and token is returned.
+  */
   login = async (data: LoginDTO): Promise<{ session: Session, token: string }> => {
     const { email, password } = loginSchema.parse(data)
 
@@ -61,34 +66,23 @@ export class AuthService {
       throw new Error("Invalid password")
     }
 
-    const token = this.generateSessionToken()
-    const session = await this.createSession(token, user.id)
+    const token = generateSessionToken()
+    const session = await createSession(token, user.id)
+
+    await this.sessionRepository.insert(session)
 
     return { session, token }
   }
 
-  generateSessionToken = (): string => {
-    const bytes = new Uint8Array(20);
-    crypto.getRandomValues(bytes);
-    const token = encodeBase32NoPadding(bytes)
-    return token
-  }
-
-  createSession = async (token: string, userID: number): Promise<Session> => {
-    const sessionID = this.sessionIDFromToken(token)
-
-    const session: Session = {
-      id: sessionID,
-      userID,
-      expiresAt: addDays(new Date(), SESSION_LIFETIME_DAYS)
-    }
-
-    await this.sessionRepository.insert(session)
-    return session
-  }
-
+  /**
+  * @description Validates an input session token. 
+  *
+  * - If the session is non-existent a null-like response is returned.
+  * - If the session is to be refreshed, the the refreshed session is returned.
+  * - If the session has expired, the session is invalidated and a null-like response is returned.
+  */
   validateSessionToken = async (token: string): Promise<SessionValidationResult> => {
-    const sessionID = this.sessionIDFromToken(token)
+    const sessionID = sessionIDFromToken(token)
     const session = await this.sessionRepository.getByID(sessionID)
 
     if (!session) {
@@ -117,12 +111,10 @@ export class AuthService {
     return { session, user }
   }
 
+  /**
+  * @description Invalidates the session, deleting it from the session repository
+  */
   invalidateSession = async (sessionID: string) => {
     await this.sessionRepository.delete(sessionID)
-  }
-
-  sessionIDFromToken = (token: string) => {
-    const sessionID = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
-    return sessionID
   }
 }
