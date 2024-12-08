@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import type { AuthService } from "./auth.service";
-import { AlreadyExistsError } from "@/shared/repo-error";
+import { AlreadyExistsError, NotFoundError } from "@/shared/repo-error";
 import { SESSION_COOKIE_NAME } from "./constant";
 
 export class AuthController {
@@ -23,6 +23,31 @@ export class AuthController {
     }
 
     res.sendStatus(201)
+  }
+
+  login = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const prevToken = req.cookies[SESSION_COOKIE_NAME] as string;
+
+      const { session: prevSession } = await this.authService.validateSessionToken(prevToken)
+
+      if (prevSession) {
+        this.setSessionTokenCookie(res, SESSION_COOKIE_NAME, prevToken, prevSession.expiresAt)
+        res.sendStatus(200)
+        return
+      }
+
+      const { session, token } = await this.authService.login(req.body)
+      this.setSessionTokenCookie(res, SESSION_COOKIE_NAME, token, session.expiresAt)
+      res.sendStatus(200)
+    } catch (e) {
+      if (e instanceof NotFoundError) {
+        res.status(401).json({ error: "User not found" })
+        return
+      }
+
+      next(e)
+    }
   }
 
   setSessionTokenCookie = (res: Response, name: string, token: string, expiresAt: Date) => {

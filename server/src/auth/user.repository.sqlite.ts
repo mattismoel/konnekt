@@ -39,4 +39,19 @@ export class SQLiteUserRepository implements UserRepository {
 
     return result[0]
   }
+
+  getPasswordHash = async (userID: number): Promise<string | null> => {
+    const results = await db
+      .select({
+        passwordHash: usersTable.passwordHash,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, userID))
+
+    if (results.length <= 0) {
+      return null
+    }
+
+    return results[0].passwordHash
+  }
 }
