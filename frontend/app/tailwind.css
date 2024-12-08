@@ -72,4 +72,8 @@
 
     @apply bg-background text-foreground;
   }
+
+  .px-auto {
+    @apply px-8 sm:px-16 md:px-32 lg:px-72;
+  }
 }
