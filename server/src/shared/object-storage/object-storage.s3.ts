@@ -1,6 +1,5 @@
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import type { ObjectStorage } from "./objectStorage";
-import type { Readable } from "stream";
+import type { ObjectStorage } from "./object-storage";
 
 const REGIONS = [
   "us-east-2",

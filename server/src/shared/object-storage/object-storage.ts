@@ -1,5 +1,3 @@
-import type { Readable } from "stream"
-
 export interface ObjectStorage {
   /**
   * @description  Uploads an object to the storage, returning the path to where the object
