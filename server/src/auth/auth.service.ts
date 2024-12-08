@@ -5,8 +5,7 @@ import type { SessionRepository } from "./session.repository";
 import type { UserRepository } from "./user.repository";
 import { encodeBase32NoPadding, encodeHexLowerCase } from "@oslojs/encoding"
 import { addDays, isAfter, subDays } from "date-fns";
-import { SESSION_COOKIE_NAME, SESSION_LIFETIME_DAYS, SESSION_REFRESH_DAYS } from "./constant";
-import type { Response } from "express";
+import { SESSION_LIFETIME_DAYS, SESSION_REFRESH_DAYS } from "./constant";
 import { hash } from "@node-rs/argon2";
 import { AlreadyExistsError } from "@/shared/repo-error";
 
@@ -16,7 +15,12 @@ export class AuthService {
     private readonly userRepository: UserRepository,
   ) { }
 
-  register = async (res: Response, data: RegisterDTO) => {
+  /**
+  * @description Attempts to register a user, returning the users newly created session and token.
+  */
+  register = async (data: RegisterDTO): Promise<
+    { session: Session, token: string }
+  > => {
     const { password, passwordConfirm, ...userData } = registerSchema.parse(data)
 
     const existingUser = await this.userRepository.getByEmail(userData.email)
@@ -36,7 +40,7 @@ export class AuthService {
     const token = this.generateSessionToken()
     const session = await this.createSession(token, user.id)
 
-    this.setSessionTokenCookie(res, token, session.expiresAt)
+    return { session, token }
   }
 
   generateSessionToken = (): string => {
@@ -96,23 +100,5 @@ export class AuthService {
   sessionIDFromToken = (token: string) => {
     const sessionID = encodeHexLowerCase(sha256(new TextEncoder().encode(token)))
     return sessionID
-  }
-
-  setSessionTokenCookie = (res: Response, token: string, expiresAt: Date) => {
-    res.cookie(SESSION_COOKIE_NAME, token, {
-      httpOnly: true,
-      sameSite: "lax",
-      expires: expiresAt,
-      path: "/"
-    })
-  }
-
-  deleteSessionTokenCookie = (res: Response) => {
-    res.cookie(SESSION_COOKIE_NAME, "", {
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 0,
-      path: "/"
-    })
   }
 }
