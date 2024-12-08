@@ -1,12 +1,13 @@
 import { genresTable } from "@/shared/db/schema/genre";
 import type { CreateEventDTO, EventDTO } from "./event.dto";
-import { NotFoundError, type EventRepository } from "./event.repository";
+import { type EventRepository } from "./event.repository";
 import { db, type TX } from "@/shared/db/db";
 import { eventsGenresTable, eventsTable } from "@/shared/db/schema/event";
 import { addressesTable } from "@/shared/db/schema/address";
 import { eq, inArray } from "drizzle-orm";
 import type { GenreDTO } from "@/event/genre.dto";
 import type { AddressDTO, CreateAddressDTO } from "./address.dto";
+import { NotFoundError } from "@/shared/repo-error";
 
 export class SQLiteEventRepository implements EventRepository {
   async insert(data: CreateEventDTO): Promise<EventDTO> {
@@ -50,7 +51,7 @@ export class SQLiteEventRepository implements EventRepository {
         .where(eq(eventsTable.id, id))
 
       if (result.length <= 0) {
-        throw new NotFoundError(`No events found with id ${id}`)
+        throw new NotFoundError(`Event with id ${id}`)
       }
 
       const { addressID, ...baseEvent } = result[0]

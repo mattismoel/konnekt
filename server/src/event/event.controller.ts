@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import type { EventService } from "./event.service";
-import { NotFoundError } from "./event.repository";
+import { NotFoundError } from "@/shared/repo-error";
 
 export class EventController {
   constructor(
