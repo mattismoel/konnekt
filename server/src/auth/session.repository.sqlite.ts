@@ -25,7 +25,9 @@ export class SQLiteSessionRepository implements SessionRepository {
   }
 
   delete = async (sessionID: string): Promise<void> => {
-    await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionID))
+    await db
+      .delete(sessionsTable)
+      .where(eq(sessionsTable.id, sessionID))
   }
 
   setExpiry = async (sessionID: string, newExpiry: Date): Promise<void> => {
