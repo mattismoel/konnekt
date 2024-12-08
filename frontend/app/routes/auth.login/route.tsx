@@ -17,8 +17,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const data = registerSchema.parse(Object.fromEntries(formData))
 
-    console.log(data)
-
     const res = await fetch(`${env.BACKEND_URL}/auth/login`, {
       method: "post",
       body: JSON.stringify(data),
