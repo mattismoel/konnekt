@@ -1,5 +1,5 @@
 import { useLoaderData } from "@remix-run/react"
-import { EventCard } from "~/components/events/event-card"
+import { EventGrid } from "~/components/events/event-grid"
 import env from "~/config/env"
 import { eventSchema } from "~/lib/event/event.dto"
 
@@ -26,8 +26,9 @@ const EventsPage = () => {
   const events = useLoaderData<typeof loader>();
 
   return (
-    <main>
-      {events.map(event => (<EventCard key={event.id} event={event} />))}
+    <main className="px-auto py-20 h-sub-nav">
+      <h1 className="text-2xl font-bold mb-4">Kommende events.</h1>
+      <EventGrid events={events} />
     </main>
   )
 }
