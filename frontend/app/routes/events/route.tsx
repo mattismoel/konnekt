@@ -1,4 +1,5 @@
 import { useLoaderData } from "@remix-run/react"
+import { EventCard } from "~/components/events/event-card"
 import env from "~/config/env"
 import { eventSchema } from "~/lib/event/event.dto"
 
@@ -26,7 +27,7 @@ const EventsPage = () => {
 
   return (
     <main>
-      {events.map(event => (<p key={event.id}>{event.title}</p>))}
+      {events.map(event => (<EventCard key={event.id} event={event} />))}
     </main>
   )
 }
