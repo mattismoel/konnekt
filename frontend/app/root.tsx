@@ -31,7 +31,7 @@ export const loader = () => {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { env } = useLoaderData<typeof loader>()
+  const { env } = useLoaderData<typeof loader>() || {}
   return (
     <html lang="en" className="dark">
       <head>
