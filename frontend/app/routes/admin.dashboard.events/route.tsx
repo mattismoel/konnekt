@@ -1,8 +1,9 @@
-import env from "~/config/env";
 import { useLoaderData } from "@remix-run/react";
 import { Card, CardContent, CardHeader } from "~/components/ui/card"
 import { eventSchema } from "~/lib/event/event.dto";
 import { EventEntry } from "./event-entry";
+import { useToast } from "~/lib/toast/toast";
+import env from "~/config/env";
 
 export const loader = async () => {
   const res = await fetch(`${env.BACKEND_URL}/events`)
@@ -21,10 +22,26 @@ export const loader = async () => {
 }
 
 const EventsPage = () => {
+  const { addToast } = useToast()
   const { events } = useLoaderData<typeof loader>()
 
-  const deleteEvent = (id: number) => {
-    confirm(`Delete event with id ${id}?`)
+  const deleteEvent = async (id: number) => {
+    console.log("H")
+    if (!confirm(`Delete event with id ${id}?`)) {
+      return
+    }
+
+    console.log(window.ENV.BACKEND_URL)
+    const res = await fetch(`${window.ENV.BACKEND_URL}/events/${id}`, {
+      method: "DELETE",
+      credentials: "include"
+    })
+
+    if (res.ok) {
+      addToast("Event slettet.", "success")
+    } else {
+      addToast("Kunne ikke slette event.", "error")
+    }
   }
 
   return (
@@ -36,7 +53,7 @@ const EventsPage = () => {
         <h2 className="font-bold text-xl mb-4">Kommende events.</h2>
         <div className="relative overflow-y-scroll">
           {events.map(event => (
-            <EventEntry event={event} onDelete={deleteEvent} />
+            <EventEntry key={event.id} event={event} onDelete={() => deleteEvent(event.id)} />
           ))}
         </div>
         {/*

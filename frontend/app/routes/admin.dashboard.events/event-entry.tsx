@@ -5,7 +5,7 @@ import { formatDateString } from "~/lib/time/format";
 
 type Props = {
   event: EventDTO;
-  onDelete: (id: number) => void;
+  onDelete: () => void;
 }
 
 export const EventEntry = ({ event, onDelete }: Props) => {
@@ -18,7 +18,7 @@ export const EventEntry = ({ event, onDelete }: Props) => {
         <span className="flex-1">{title}</span>
         <span className="flex-1">{formattedDate}</span>
       </a>
-      <button className="text-lg hover:text-red-500" onClick={() => onDelete(id)}><BiTrash /></button>
+      <button className="text-lg hover:text-red-500" onClick={onDelete}><BiTrash /></button>
     </div>
   )
 }
