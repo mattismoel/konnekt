@@ -4,12 +4,14 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
 
 import "./tailwind.css";
 import { Navbar } from "./navbar";
 import { Footer } from "./footer";
+import env from "./config/env";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -24,7 +26,12 @@ export const links: LinksFunction = () => [
   },
 ];
 
+export const loader = () => {
+  return { env }
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { env } = useLoaderData<typeof loader>()
   return (
     <html lang="en" className="dark">
       <head>
@@ -34,6 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: `window.ENV = ${JSON.stringify(env)}` }} />
         <Navbar />
         {children}
         <Footer />

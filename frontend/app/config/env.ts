@@ -1,4 +1,10 @@
-import { z } from "zod";
+import { z } from "zod"
+
+declare global {
+  interface Window {
+    ENV: z.infer<typeof envSchema>
+  }
+}
 
 const envSchema = z.object({
   ENV: z
