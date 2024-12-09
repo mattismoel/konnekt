@@ -69,7 +69,6 @@
     @media (prefers-color-scheme: dark) {
       color-scheme: dark;
     }
-
     @apply bg-background text-foreground;
   }
 
