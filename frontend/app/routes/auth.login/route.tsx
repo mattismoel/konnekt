@@ -25,10 +25,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     })
 
     if (res.ok) {
-      return redirect("/")
+      return res
     }
 
-    return res
   } catch (e) {
     console.error(e)
     return null
