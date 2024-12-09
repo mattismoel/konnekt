@@ -9,6 +9,7 @@ const envSchema = z.object({
     .default("development"),
   PORT: z.coerce.number(),
   DSN: z.string(),
+  FRONTEND_URL: z.string().url()
 })
 
 export const env = envSchema.parse(process.env)
