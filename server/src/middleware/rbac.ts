@@ -23,17 +23,13 @@ export const checkPermissions = (
       return
     }
 
-    console.log("Before")
     const roles = await roleService.getUserRoles(user.id)
-    console.log("After")
-
 
     const rolesPermissions = await Promise.all(
       roles.map((role) => roleService.getRolePermissions(role.id))
     )
 
     const userPermissions = rolesPermissions.flat().map(p => p.name)
-    console.log(`${user.email}\nroles: ${roles}\npermissions: ${userPermissions}`)
 
     if (!permissionsMatch(permissions, userPermissions)) {
       res.sendStatus(401)
