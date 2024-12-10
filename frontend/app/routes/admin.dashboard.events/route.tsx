@@ -4,6 +4,7 @@ import { eventSchema } from "~/lib/event/event.dto";
 import { EventEntry } from "./event-entry";
 import { useToast } from "~/lib/toast/toast";
 import env from "~/config/env";
+import { BiPlus } from "react-icons/bi";
 
 export const loader = async () => {
   const res = await fetch(`${env.BACKEND_URL}/events`)
@@ -47,10 +48,12 @@ const EventsPage = () => {
   return (
     <Card>
       <CardHeader>
-        <h1>Events.</h1>
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold text-xl">Kommende events.</h2>
+          <a href="/admin/events/create"><BiPlus className="text-xl" /></a>
+        </div>
       </CardHeader>
       <CardContent>
-        <h2 className="font-bold text-xl mb-4">Kommende events.</h2>
         <div className="relative overflow-y-scroll">
           {events.map(event => (
             <EventEntry key={event.id} event={event} onDelete={() => deleteEvent(event.id)} />
