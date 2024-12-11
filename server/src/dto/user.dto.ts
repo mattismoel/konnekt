@@ -1,10 +1,12 @@
 import { z } from "zod";
+import type { RoleDTO } from "./role.dto";
 
 export type UserDTO = {
   id: number;
   firstName: string;
   lastName: string;
   email: string;
+  roles: RoleDTO[];
 }
 
 export const createUserSchema = z.object({
@@ -22,7 +24,12 @@ export const createUserSchema = z.object({
     .email(),
   passwordHash: z
     .string()
+    .min(1),
+  roles: z
+    .string()
+    .array()
     .min(1)
+    .default(["user"])
 })
 
 export type CreateUserDTO = z.infer<typeof createUserSchema>

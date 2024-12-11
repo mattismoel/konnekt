@@ -1,14 +1,17 @@
 import type { CreateUserDTO, UserDTO } from "@/dto/user.dto"
 import type { TX } from "./db"
 import { usersTable } from "./schema/user"
-import { eq } from "drizzle-orm"
+import { eq, getTableColumns } from "drizzle-orm"
+import { getUserRolesTx, setUserRolesTx } from "./role"
 
 /**
  * @description Gets a user by its email address. If not found, null is returned.
  */
 export const getUserByEmailTx = async (tx: TX, email: string): Promise<UserDTO | null> => {
+  const { passwordHash, ...rest } = getTableColumns(usersTable)
+
   const results = await tx
-    .select()
+    .select({ ...rest })
     .from(usersTable)
     .where(eq(usersTable.email, email))
 
@@ -16,15 +19,19 @@ export const getUserByEmailTx = async (tx: TX, email: string): Promise<UserDTO |
     return null
   }
 
-  return results[0]
+  const roles = await getUserRolesTx(tx, results[0].id)
+
+  return { ...results[0], roles }
 }
 
 /**
  * @description Gets a user by its ID. If not found, null is returned.
  */
 export const getUserByIDTx = async (tx: TX, id: number): Promise<UserDTO | null> => {
+  const { passwordHash, ...rest } = getTableColumns(usersTable)
+
   const results = await tx
-    .select()
+    .select({ ...rest })
     .from(usersTable)
     .where(eq(usersTable.id, id))
 
@@ -32,19 +39,30 @@ export const getUserByIDTx = async (tx: TX, id: number): Promise<UserDTO | null>
     return null
   }
 
-  return results[0]
+  const roles = await getUserRolesTx(tx, results[0].id)
+
+  return {
+    ...results[0],
+    roles
+  }
 }
 
 /**
  * @description Insert a user into the database, returning the inserted user.
  */
-export const insertUserTx = async (tx: TX, user: CreateUserDTO): Promise<UserDTO> => {
+export const insertUserTx = async (tx: TX, data: CreateUserDTO): Promise<UserDTO> => {
   const result = await tx
     .insert(usersTable)
-    .values(user)
+    .values(data)
     .returning()
 
-  return result[0]
+  const user = result[0]
+
+  await setUserRolesTx(tx, user.id, data.roles)
+
+  const roles = await getUserRolesTx(tx, user.id)
+
+  return { ...user, roles }
 }
 
 /**

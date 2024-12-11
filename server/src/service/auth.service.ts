@@ -7,6 +7,7 @@ import { hash, verify } from "@node-rs/argon2";
 import { AlreadyExistsError, NotFoundError } from "@/shared/repo-error";
 import { SESSION_LIFETIME_DAYS, SESSION_REFRESH_DAYS } from "@/shared/auth/constant";
 import { createSession, generateSessionToken, sessionIDFromToken } from "@/shared/auth/util";
+import type { UserDTO } from "@/dto/user.dto";
 
 export class AuthService {
   constructor(
@@ -18,7 +19,7 @@ export class AuthService {
   * @description Attempts to register a user, returning the users newly created session and token.
   */
   register = async (data: RegisterDTO): Promise<
-    { session: Session, token: string }
+    { session: Session, token: string, user: UserDTO }
   > => {
     const { password, passwordConfirm, ...userData } = registerSchema.parse(data)
 
@@ -34,21 +35,21 @@ export class AuthService {
       parallelism: 1
     })
 
-    const user = await this.userRepository.insert({ ...userData, passwordHash })
+    const user = await this.userRepository.insert({ ...userData, passwordHash, roles: ["user"] })
 
     const token = generateSessionToken()
     const session = await createSession(token, user.id)
 
     await this.sessionRepository.insert(session)
 
-    return { session, token }
+    return { session, token, user }
   }
 
   /**
   * @description Attempts to log out the user. 
   * If successful, the created session and token is returned.
   */
-  login = async (data: LoginDTO): Promise<{ session: Session, token: string }> => {
+  login = async (data: LoginDTO): Promise<{ session: Session, token: string, user: UserDTO }> => {
     const { email, password } = loginSchema.parse(data)
 
     const user = await this.userRepository.getByEmail(email)
@@ -71,7 +72,7 @@ export class AuthService {
 
     await this.sessionRepository.insert(session)
 
-    return { session, token }
+    return { session, token, user }
   }
 
   /**
