@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { eventSchema } from "@/lib/dto/event.dto";
 import { useToast } from "@/lib/context/toast.provider";
@@ -25,14 +25,13 @@ export const loader = async () => {
 const EventsPage = () => {
   const { addToast } = useToast()
   const { events } = useLoaderData<typeof loader>()
+  const { revalidate } = useRevalidator()
 
   const deleteEvent = async (id: number) => {
-    console.log("H")
     if (!confirm(`Delete event with id ${id}?`)) {
       return
     }
 
-    console.log(window.ENV.BACKEND_URL)
     const res = await fetch(`${window.ENV.BACKEND_URL}/events/${id}`, {
       method: "DELETE",
       credentials: "include"
@@ -43,6 +42,8 @@ const EventsPage = () => {
     } else {
       addToast("Kunne ikke slette event.", "error")
     }
+
+    revalidate()
   }
 
   return (
