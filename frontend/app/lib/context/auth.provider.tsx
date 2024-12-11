@@ -1,4 +1,4 @@
-import { redirect, useNavigate } from "@remix-run/react";
+import { useNavigate } from "@remix-run/react";
 import { createContext, useContext, useState } from "react";
 import { LoginLoad, loginSchema } from "../dto/login-schema";
 import { User, userSchema } from "../dto/user.dto";
