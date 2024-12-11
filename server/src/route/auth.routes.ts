@@ -1,0 +1,19 @@
+import { Router } from "express";
+import { AuthController } from "@/controller/auth.controller";
+import { AuthService } from "@/service/auth.service";
+import { SQLiteSessionRepository } from "@/repository/session.repository.sqlite";
+import { SQLiteUserRepository } from "@/repository/user.repository.sqlite";
+
+const sessionRepository = new SQLiteSessionRepository()
+const userRepository = new SQLiteUserRepository()
+
+const authService = new AuthService(sessionRepository, userRepository)
+const authController = new AuthController(authService)
+
+const router = Router()
+
+router.post("/register", authController.register)
+router.post("/login", authController.login)
+router.post("/log-out", authController.logOut)
+
+export default router;

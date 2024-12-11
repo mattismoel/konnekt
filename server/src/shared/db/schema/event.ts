@@ -1,20 +1,20 @@
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { addressesTable } from "./address";
 import { genresTable } from "./genre";
+import { venuesTable } from "./venue";
 
 export const eventsTable = sqliteTable("event", {
-  id: integer().primaryKey({ autoIncrement: true }),
-  title: text().notNull(),
-  description: text().notNull(),
-  coverImageUrl: text(),
-  fromDate: integer({ mode: "timestamp" }).notNull(),
-  toDate: integer({ mode: "timestamp" }).notNull(),
-  addressID: integer().notNull().references(() => addressesTable.id)
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  coverImageUrl: text("cover_image_url").notNull(),
+  fromDate: integer("from_date", { mode: "timestamp" }).notNull(),
+  toDate: integer("to_date", { mode: "timestamp" }).notNull(),
+  venueID: integer("venue_id").notNull().references(() => venuesTable.id)
 })
 
 export const eventsGenresTable = sqliteTable("events_genres", {
-  eventID: integer().notNull().references(() => eventsTable.id),
-  genreID: integer().notNull().references(() => genresTable.id)
+  eventID: integer("event_id").notNull().references(() => eventsTable.id),
+  genreID: integer("genre_id").notNull().references(() => genresTable.id)
 }, (table) => ({
   pk: primaryKey({ columns: [table.eventID, table.genreID] })
 }))

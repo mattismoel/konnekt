@@ -1,6 +1,6 @@
-import type { AuthService } from "@/auth/auth.service";
-import { SESSION_COOKIE_NAME } from "@/auth/constant";
-import type { RoleService } from "@/auth/role.service";
+import type { AuthService } from "@/service/auth.service";
+import type { RoleService } from "@/service/role.service";
+import { SESSION_COOKIE_NAME } from "@/shared/auth/constant";
 import type { RequestHandler } from "express";
 
 export const checkPermissions = (
