@@ -3,9 +3,9 @@ import { LoaderFunctionArgs } from "@remix-run/node"
 import { useLoaderData } from "@remix-run/react"
 import { EventDTO, eventSchema } from "@/lib/dto/event.dto"
 
-import { EventCaroussel } from "./event-caroussel";
-import { EventDetails } from "./event-details";
 import { EventCalendar } from "@/components/events/event-calendar/event-calendar";
+import { EventDetails } from "./event-details";
+import { EventCaroussel } from "@/components/events/event-caroussel";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const id = parseInt(params.id || "")

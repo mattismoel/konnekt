@@ -1,10 +1,10 @@
 import { useLoaderData } from "@remix-run/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { eventSchema } from "@/lib/dto/event.dto";
-import { EventEntry } from "./event-entry";
 import { useToast } from "@/lib/context/toast.provider";
 import env from "@/config/env";
 import { BiPlus } from "react-icons/bi";
+import { EventEntry } from "@/routes/admin.dashboard.events/event-entry";
 
 export const loader = async () => {
   const res = await fetch(`${env.BACKEND_URL}/events`)

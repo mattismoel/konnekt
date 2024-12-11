@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { EditEventForm } from "@/components/events/edit-event-form/edit-event-form";
+import { EditEventForm } from "@/routes/admin.events.edit/edit-event-form";
 import { fetchEventByID } from "@/lib/event";
 import { CreateEditEventDTO } from "@/lib/dto/event.dto";
 import { fetchAllGenres } from "@/lib/genre";

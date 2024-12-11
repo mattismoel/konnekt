@@ -6,11 +6,6 @@ type Props = {
   event: EventDTO
 }
 
-/* 
- * TODO: Add 'venue' property to event (both server and client).
- * Alternatively add 'customName' to address model.
- */
-
 export const EventDetails = ({ event }: Props) => {
   const { venue, fromDate } = event
 
