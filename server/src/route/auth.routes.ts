@@ -3,14 +3,12 @@ import { AuthController } from "@/controller/auth.controller";
 import { AuthService } from "@/service/auth.service";
 import { SQLiteSessionRepository } from "@/repository/session.repository.sqlite";
 import { SQLiteUserRepository } from "@/repository/user.repository.sqlite";
-import { UserService } from "@/service/user.service";
 
 const sessionRepository = new SQLiteSessionRepository()
 const userRepository = new SQLiteUserRepository()
 
-const userService = new UserService(userRepository)
 const authService = new AuthService(sessionRepository, userRepository)
-const authController = new AuthController(authService, userService)
+const authController = new AuthController(authService)
 
 const router = Router()
 

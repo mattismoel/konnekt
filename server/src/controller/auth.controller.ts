@@ -3,12 +3,10 @@ import type { AuthService } from "@/service/auth.service";
 import { AlreadyExistsError, NotFoundError } from "@/shared/repo-error";
 import { SESSION_COOKIE_NAME } from "@/shared/auth/constant";
 import { deleteSessionTokenCookie, setSessionTokenCookie } from "@/shared/auth/util";
-import type { UserService } from "@/service/user.service";
 
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
   ) { }
 
   register = async (req: Request, res: Response, next: NextFunction) => {
