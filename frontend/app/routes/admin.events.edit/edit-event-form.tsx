@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ImageSelectorModal } from "./image-selector-modal"
 import { CountryPicker } from "@/components/ui/country-picker"
+import { FieldErrorList } from "@/components/ui/field-error-list"
 
 type Props = {
   event: EventDTO | null
@@ -30,12 +31,13 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
   const [description, setDescription] = useState(event?.description)
   const [selectedGenres, setSelectedGenres] = useState(event?.genres || [])
 
-  const { register, handleSubmit } = useForm<CreateEditEventDTO>({ resolver: zodResolver(createEditEventSchema) })
+  const { register, handleSubmit, formState: { errors } } = useForm<CreateEditEventDTO>({ resolver: zodResolver(createEditEventSchema) })
 
   const isEdit = event !== null
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={cn("", className)}>
+    <form onSubmit={handleSubmit(d => console.log(d))} className={cn("", className)}>
+      HELLOOOO
       {/* COVER IMAGE */}
       <div className="relative aspect-video mb-4">
         {coverImageUrl ? (
@@ -68,6 +70,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
         onClose={() => setShowCoverImageModal(false)}
         onUploaded={(url) => setCoverImageUrl(url)}
       />
+      <FieldErrorList errors={[errors.coverImageUrl?.message]} />
 
       {/* GENERAL */}
       <div className="space-y-2 mb-6">
@@ -78,13 +81,14 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
             {...register("title")}
             defaultValue={event?.title}
           />
+          <FieldErrorList errors={[errors.title?.message]} />
         </div>
         <div className="flex gap-2">
           <div>
             <Label>Venue</Label>
             <Input
               {...register("venue")}
-              defaultValue={"Posten"}
+              defaultValue={event?.venue.name || "Posten"}
               className="flex-1"
             />
           </div>
@@ -92,7 +96,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
             <Label>By</Label>
             <Input
               {...register("city")}
-              defaultValue={"Posten"}
+              defaultValue={event?.venue.city}
               className="flex-1"
             />
           </div>
@@ -101,6 +105,11 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
             <CountryPicker defaultValue="DK" />
           </div>
         </div>
+        <FieldErrorList errors={[
+          errors.venue?.message,
+          errors.city?.message,
+          errors.country?.message
+        ]} />
         <div className="space-y-2">
           <div className="flex-1">
             <Label>Fra</Label>
@@ -110,6 +119,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
               className="w-full"
               placeholder="Start dato..."
             />
+            <FieldErrorList errors={[errors.fromDate?.message]} />
           </div>
           <div className="flex-1">
             <Label>Til</Label>
@@ -119,6 +129,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
               className="w-full"
               placeholder="Slut dato..."
             />
+            <FieldErrorList errors={[errors.toDate?.message]} />
           </div>
         </div>
       </div>
@@ -136,12 +147,13 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
             Tilføj
           </button>
         </div>
-        <input type="hidden" value={selectedGenres.join(";")} />
+        <input {...register("genres")} type="hidden" value={selectedGenres.join(";")} />
         <GenreSelector
           genres={genres}
           selected={selectedGenres}
           onChange={(updatedGenres) => setSelectedGenres(updatedGenres)}
         />
+        <FieldErrorList errors={[errors.genres?.message]} />
       </div>
 
       <AddGenreModal
@@ -156,10 +168,12 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
         <h2 className="text-2xl font-bold mb-4">Beskrivelse</h2>
         <input {...register("description")} type="hidden" value={description} />
         <TipTapEditor onChange={(value) => setDescription(value)} />
+        <FieldErrorList errors={[errors.description?.message]} />
       </div>
 
       {/* SUBMIT BUTTON */}
       <Button
+        type="submit"
         className={cn(
           "w-[calc(100vw-2rem)] fixed bottom-4 left-4",
           "sm:static sm:bottom-auto sm:left-auto sm:w-full"

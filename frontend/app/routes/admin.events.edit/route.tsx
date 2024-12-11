@@ -1,10 +1,10 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { EditEventForm } from "@/routes/admin.events.edit/edit-event-form";
 import { fetchEventByID } from "@/lib/event";
 import { CreateEditEventDTO } from "@/lib/dto/event.dto";
 import { fetchAllGenres } from "@/lib/genre";
 import { useToast } from "@/lib/context/toast.provider";
+import { EditEventForm } from "./edit-event-form";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url)
@@ -22,6 +22,7 @@ const EditEventPage = () => {
   const { event, genres } = useLoaderData<typeof loader>()
 
   const handleSubmit = async (data: CreateEditEventDTO) => {
+    console.log("Hello")
     let res = await fetch(`${window.ENV.BACKEND_URL}/events`, {
       method: "post",
       credentials: "include",

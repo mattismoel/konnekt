@@ -51,15 +51,19 @@ const EventsPage = () => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <h2 className="font-bold text-xl">Kommende events.</h2>
-          <a href="/admin/events/create"><BiPlus className="text-xl" /></a>
+          <a href="/admin/events/edit"><BiPlus className="text-xl" /></a>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="relative overflow-y-scroll">
-          {events.map(event => (
-            <EventEntry key={event.id} event={event} onDelete={() => deleteEvent(event.id)} />
-          ))}
-        </div>
+        {events.length > 0 ? (
+          <div className="relative overflow-y-scroll">
+            {events.map(event => (
+              <EventEntry key={event.id} event={event} onDelete={() => deleteEvent(event.id)} />
+            ))}
+          </div>
+        ) : (
+          <p className="italic text-foreground/50">Ingen kommende events...</p>
+        )}
         {/*
           <Fader
             direction="to-top"

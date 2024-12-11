@@ -16,38 +16,38 @@ export type EventDTO = z.infer<typeof eventSchema>
 
 export const createEditEventSchema = z.object({
   title: z
-    .string()
+    .string({ message: "Titel påkrævet" })
     .trim()
-    .min(1),
+    .min(1, { message: "Titel må ikke være tom" }),
   description: z
-    .string()
+    .string({ message: "Beskrivelse påkrævet" })
     .trim()
-    .min(1),
+    .min(1, { message: "Beskrivelse må ikke være tom" }),
   fromDate: z
     .coerce
-    .date(),
+    .date({ message: "Ugyldig fra-dato" }),
   coverImageUrl: z
-    .string()
-    .url(),
+    .string({ message: "Cover-billede ugyldigt" })
+    .min(1, { message: "Coverbillede skal være sat" })
+    .url({ message: "Coverbillede har ugyldigt URL" }),
   toDate: z
     .coerce
-    .date(),
+    .date({ message: "Ugyldig til-dato" }),
   city: z
-    .string()
+    .string({ message: "By er påkrævet" })
     .trim()
-    .min(1),
+    .min(1, { message: "By må ikke være tom" }),
   venue: z
-    .string()
+    .string({ message: "Venue er påkrævet" })
     .trim()
-    .min(1),
+    .min(1, { message: "Venue må ikke være tom" }),
   country: z
-    .string()
+    .string({ message: "Land er påkrævet" })
     .trim()
-    .min(1),
+    .min(1, { message: "Land må ikke være tomt" }),
   genres: z
-    .string()
-    .array()
-    .min(1, { message: "At least one genre must be set" })
+    .string({ message: "Genre er ugyldigt format" })
+    .refine(str => str.split(";").length > 0, { message: "Mindst én genre påkrævet" })
 })
 
 export type CreateEditEventDTO = z.infer<typeof createEditEventSchema>
