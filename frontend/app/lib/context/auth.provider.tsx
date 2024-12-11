@@ -1,4 +1,4 @@
-import { useNavigate } from "@remix-run/react";
+import { redirect, useNavigate } from "@remix-run/react";
 import { createContext, useContext, useState } from "react";
 import { LoginLoad, loginSchema } from "../dto/login-schema";
 import { User, userSchema } from "../dto/user.dto";
@@ -44,7 +44,16 @@ export const AuthProvider = ({ children }: Props) => {
   }
 
   const logOut = async () => {
+    const res = await fetch(`${window.ENV.BACKEND_URL}/auth/log-out`, {
+      method: "post",
+      credentials: "include"
+    })
 
+    if (!res.ok) {
+      throw new Error("Could not log out")
+    }
+
+    navigate("/")
   }
 
   return (
