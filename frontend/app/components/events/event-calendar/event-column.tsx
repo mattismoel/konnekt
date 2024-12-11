@@ -1,5 +1,5 @@
 import { addHours, differenceInMilliseconds } from "date-fns";
-import { EventDTO } from "~/lib/event/event.dto";
+import { EventDTO } from "@/lib/dto/event.dto";
 import { EventEntry } from "./event-entry";
 
 type Props = {

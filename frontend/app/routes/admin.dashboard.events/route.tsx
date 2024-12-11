@@ -1,9 +1,9 @@
 import { useLoaderData } from "@remix-run/react";
-import { Card, CardContent, CardHeader } from "~/components/ui/card"
-import { eventSchema } from "~/lib/event/event.dto";
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { eventSchema } from "@/lib/dto/event.dto";
 import { EventEntry } from "./event-entry";
-import { useToast } from "~/lib/toast/toast";
-import env from "~/config/env";
+import { useToast } from "@/lib/context/toast.provider";
+import env from "@/config/env";
 import { BiPlus } from "react-icons/bi";
 
 export const loader = async () => {

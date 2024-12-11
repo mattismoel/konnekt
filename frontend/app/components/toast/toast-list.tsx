@@ -1,4 +1,4 @@
-import { useToast } from "~/lib/toast/toast"
+import { useToast } from "@/lib/context/toast.provider"
 import { ToastEntry } from "./toast";
 
 export const ToastList = () => {

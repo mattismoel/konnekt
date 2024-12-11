@@ -1,6 +1,6 @@
 import { BiCalendar, BiMap, BiMusic } from "react-icons/bi"
-import { EventDTO } from "~/lib/event/event.dto"
-import { formatDateString } from "~/lib/time/format"
+import { EventDTO } from "@/lib/dto/event.dto"
+import { formatDateString } from "@/lib/time"
 
 type Props = {
   event: EventDTO
@@ -12,13 +12,13 @@ type Props = {
  */
 
 export const EventDetails = ({ event }: Props) => {
-  const { /*venue,*/ address, fromDate } = event
+  const { venue, fromDate } = event
 
   return (
     <div className="space-y-2">
       <div className="flex gap-2 items-center">
         <BiMap />
-        <span>{`Posten`}, {address.city}</span>
+        <span>{`Posten`}, {venue.city}</span>
       </div>
       <div className="flex gap-2 items-center">
         <BiCalendar />

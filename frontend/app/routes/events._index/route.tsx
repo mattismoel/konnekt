@@ -1,7 +1,7 @@
 import { useLoaderData } from "@remix-run/react"
-import { EventGrid } from "~/components/events/event-grid"
-import env from "~/config/env"
-import { eventSchema } from "~/lib/event/event.dto"
+import { EventGrid } from "@/components/events/event-grid"
+import env from "@/config/env"
+import { eventSchema } from "@/lib/dto/event.dto"
 
 export const loader = async () => {
   try {

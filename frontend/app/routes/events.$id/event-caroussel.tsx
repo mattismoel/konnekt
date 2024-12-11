@@ -1,5 +1,5 @@
-import { EventCard } from "~/components/events/event-card"
-import { EventDTO } from "~/lib/event/event.dto"
+import { EventCard } from "@/components/events/event-card"
+import { EventDTO } from "@/lib/dto/event.dto"
 
 type Props = {
   events: EventDTO[]

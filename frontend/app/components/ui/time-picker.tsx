@@ -1,6 +1,6 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent } from "react";
 import { Input } from "./input";
-import { cn } from "~/lib/utils";
+import { cn } from "@/lib/utils";
 
 type Time = {
   hours: number;

@@ -1,5 +1,5 @@
 import { addHours, differenceInHours, differenceInMilliseconds, format, set, setMinutes } from "date-fns";
-import { capitalise } from "../string";
+import { capitalise } from "./string";
 
 export const formatDateString = (date: Date): string => {
   let weekday = date.toLocaleDateString("da", { weekday: "long" });

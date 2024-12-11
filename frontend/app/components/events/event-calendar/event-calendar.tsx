@@ -1,8 +1,8 @@
 import { addDays, differenceInDays, set } from "date-fns";
-import { EventDTO } from "~/lib/event/event.dto";
-import { getEarliestEvent, getLatestEvent } from "~/lib/event/util";
-import { formatDateString, formatHoursAsTimestamp, getFullHoursSurroudningDates } from "~/lib/time/format";
-import { cn } from "~/lib/utils";
+import { EventDTO } from "@/lib/dto/event.dto";
+import { getEarliestEvent, getLatestEvent } from "@/lib/event";
+import { formatDateString, formatHoursAsTimestamp, getFullHoursSurroudningDates } from "@/lib/time";
+import { cn } from "@/lib/utils";
 import { EventColumn } from "./event-column";
 
 type Props = {

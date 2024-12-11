@@ -1,8 +1,10 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { EditEventForm } from "~/components/events/edit-event-form/edit-event-form";
-import { fetchEventByID } from "~/lib/event/event";
-import { fetchAllGenres } from "~/lib/genre/genre";
+import { EditEventForm } from "@/components/events/edit-event-form/edit-event-form";
+import { fetchEventByID } from "@/lib/event";
+import { CreateEditEventDTO } from "@/lib/dto/event.dto";
+import { fetchAllGenres } from "@/lib/genre";
+import { useToast } from "@/lib/context/toast.provider";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url)
@@ -16,12 +18,32 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 }
 
 const EditEventPage = () => {
+  const { addToast } = useToast()
   const { event, genres } = useLoaderData<typeof loader>()
-  console.log(genres)
+
+  const handleSubmit = async (data: CreateEditEventDTO) => {
+    let res = await fetch(`${window.ENV.BACKEND_URL}/events`, {
+      method: "post",
+      credentials: "include",
+      body: JSON.stringify(data)
+    })
+
+    if (!res.ok) {
+      addToast("Kunne ikke uploade event", "error")
+      throw new Error(`Could not upload base event: ${res.statusText}`)
+    }
+
+    addToast("Event uploadet", "success")
+  }
 
   return (
     <main className="min-h-sub-nav px-auto py-16">
-      <EditEventForm event={event} genres={genres} className="max-w-xl" />
+      <EditEventForm
+        event={event}
+        genres={genres}
+        className="max-w-xl"
+        onSubmit={handleSubmit}
+      />
     </main>
   )
 }

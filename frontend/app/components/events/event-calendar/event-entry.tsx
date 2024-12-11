@@ -1,6 +1,6 @@
-import { EventDTO } from "~/lib/event/event.dto";
-import { getEventDuration } from "~/lib/event/util";
-import { distanceBetweenTimesOfDay } from "~/lib/time/format";
+import { EventDTO } from "@/lib/dto/event.dto";
+import { getEventDuration } from "@/lib/event";
+import { distanceBetweenTimesOfDay } from "@/lib/time";
 
 type Props = {
   active: boolean;

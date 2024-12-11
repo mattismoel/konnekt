@@ -1,4 +1,4 @@
-import { Severity, Toast, useToast } from "~/lib/toast/toast"
+import { Severity, Toast, useToast } from "@/lib/context/toast.provider"
 import { BiInfoCircle, BiCheckCircle, BiError, BiErrorCircle, BiX } from "react-icons/bi";
 
 type Props = {

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import env from "~/config/env"
+import env from "@/config/env"
 
 /**
  * @description Gets all genres and returns them as a string array.

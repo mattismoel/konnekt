@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { addressSchema } from "./address.dto";
+import { venueSchema } from "./address.dto";
 
 export const eventSchema = z.object({
   id: z.number(),
@@ -8,7 +8,7 @@ export const eventSchema = z.object({
   coverImageUrl: z.string(),
   fromDate: z.coerce.date(),
   toDate: z.coerce.date(),
-  address: addressSchema,
+  venue: venueSchema,
   genres: z.string().array()
 })
 
@@ -23,15 +23,31 @@ export const createEditEventSchema = z.object({
     .string()
     .trim()
     .min(1),
-  file: z
-    .instanceof(File),
-  fromDate: z.coerce.date(),
-  toDate: z.coerce.date(),
-  city: z.string().trim().min(1),
-  venue: z.string().trim().min(1),
+  fromDate: z
+    .coerce
+    .date(),
+  coverImageUrl: z
+    .string()
+    .url(),
+  toDate: z
+    .coerce
+    .date(),
+  city: z
+    .string()
+    .trim()
+    .min(1),
+  venue: z
+    .string()
+    .trim()
+    .min(1),
+  country: z
+    .string()
+    .trim()
+    .min(1),
   genres: z
     .string()
-    .refine(str => str.split(";").length > 0, { message: "At least one genre must be set" })
+    .array()
+    .min(1, { message: "At least one genre must be set" })
 })
 
 export type CreateEditEventDTO = z.infer<typeof createEditEventSchema>

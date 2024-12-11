@@ -1,6 +1,6 @@
-import { EventDTO } from "~/lib/event/event.dto"
+import { EventDTO } from "@/lib/dto/event.dto"
 import { EventCard } from "./event-card"
-import { cn } from "~/lib/utils";
+import { cn } from "@/lib/utils";
 
 type Props = {
   events: EventDTO[]

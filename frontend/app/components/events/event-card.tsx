@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { EventDTO } from "~/lib/event/event.dto";
-import { formatDateString } from "~/lib/time/format";
+import { EventDTO } from "@/lib/dto/event.dto";
+import { formatDateString } from "@/lib/time";
 
 type Props = {
   event: EventDTO;

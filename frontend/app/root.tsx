@@ -9,9 +9,12 @@ import {
 import type { LinksFunction } from "@remix-run/node";
 
 import "./tailwind.css";
-import { Navbar } from "./navbar";
-import { Footer } from "./footer";
+import { Navbar } from "@/components/ui/navbar";
+import { Footer } from "@/components/ui/footer";
 import env from "./config/env";
+import { AuthProvider } from "@/lib/context/auth.provider";
+import { UserProvider } from "./lib/context/user.provider";
+//import { UserProvider } from "@/lib/context/user.provider";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -42,9 +45,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <script dangerouslySetInnerHTML={{ __html: `window.ENV = ${JSON.stringify(env)}` }} />
-        <Navbar />
-        {children}
-        <Footer />
+        <AuthProvider>
+          <UserProvider>
+            <Navbar />
+            {children}
+            <Footer />
+          </UserProvider>
+        </AuthProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

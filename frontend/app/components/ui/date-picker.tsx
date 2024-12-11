@@ -1,10 +1,10 @@
 import { format, setHours, setMinutes } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 
-import { cn } from "~/lib/utils"
-import { Button } from "~/components/ui/button"
-import { Calendar } from "~/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useState } from "react"
 import { TimePicker } from "./time-picker"
 
@@ -16,12 +16,11 @@ type Props = {
 
 type Time = { hours: number, minutes: number }
 
-export function DateTimePicker({ initialDate, className, placeholder = "Pick a date" }: Props) {
+export function DateTimePicker({ initialDate, placeholder = "Pick a date", className }: Props) {
   const [date, setDate] = useState(initialDate)
-
   const [time, setTime] = useState<Time>({
-    hours: initialDate?.getHours() || new Date().getHours(),
-    minutes: initialDate?.getMinutes() || new Date().getMinutes()
+    hours: date?.getHours() || new Date().getHours(),
+    minutes: date?.getMinutes() || new Date().getMinutes()
   })
 
   const changeTime = (newTime: Time) => {

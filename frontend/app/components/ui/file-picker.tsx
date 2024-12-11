@@ -1,25 +1,19 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, forwardRef } from "react";
 import { cn } from "~/lib/utils";
 
 type Props = {
   name: string;
-  title: string;
   multiple?: boolean;
   accept?: string;
   className?: string;
-  onChange: (file: File | FileList) => void;
+  onChange: (file: FileList) => void;
 }
 
-export const FilePicker = ({ name, title, multiple, accept, onChange, className }: Props) => {
+export const FilePicker = forwardRef<HTMLInputElement, Props>(({ name, multiple, accept, onChange, className }: Props, ref) => {
   const changeFile = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.currentTarget.files
 
     if (!files) return
-
-    if (files.length === 1) {
-      onChange(files[0])
-      return
-    }
 
     onChange(files)
   }
@@ -27,6 +21,7 @@ export const FilePicker = ({ name, title, multiple, accept, onChange, className 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       <input
+        ref={ref}
         name={name}
         type="file"
         multiple={multiple}
@@ -37,4 +32,4 @@ export const FilePicker = ({ name, title, multiple, accept, onChange, className 
       />
     </div>
   )
-}
+})
