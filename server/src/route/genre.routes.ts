@@ -1,13 +1,14 @@
-import { checkPermissions } from "@/middleware/rbac";
 import { Router } from "express";
 import { GenreController } from "@/controller/genre.controller";
-import { AuthService } from "@/service/auth.service";
-import { RoleService } from "@/service/role.service";
+import type { PermissionCheckerMiddleware } from "@/middleware/rbac";
 
-const genreRouter = (controller: GenreController, authService: AuthService, roleService: RoleService): Router => {
+const genreRouter = (
+  controller: GenreController,
+  permissionChecker: PermissionCheckerMiddleware,
+): Router => {
 
   const router = Router()
-  router.get("/", checkPermissions(authService, roleService, ["genre-list"]), controller.getAll)
+  router.get("/", permissionChecker(["genre-list"]), controller.getAll)
 
   return router
 }

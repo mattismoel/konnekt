@@ -18,6 +18,7 @@ import { GenreController } from "./controller/genre.controller";
 import { GenreService } from "./service/genre.service";
 import { SQLiteGenreRepository } from "./repository/genre.repository.sqlite";
 import { SQLiteRoleRepository } from "./repository/role.repository.sqlite";
+import { createPermissionChecker } from "./middleware/rbac";
 
 const s3ObjectStorage = new S3ObjectStorage({
   bucket: "konnekt-bucket",
@@ -42,6 +43,7 @@ const roleRepo = new SQLiteRoleRepository()
 const roleService = new RoleService(roleRepo)
 
 const logger = new ConsoleLogger()
+const permissionChecker = createPermissionChecker(authService, roleService)
 
 const app = express()
 
@@ -50,7 +52,15 @@ app.use(loggerMiddleware(logger))
 app.use(cookieParser())
 app.use(express.json())
 
-app.use(routes(eventController, authController, genreController, authService, roleService));
+app.use(
+  routes(
+    eventController,
+    authController,
+    genreController,
+    permissionChecker,
+  )
+);
+
 app.use(error)
 
 app.listen(env.PORT)
