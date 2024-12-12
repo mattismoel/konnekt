@@ -32,14 +32,14 @@ const EventsPage = () => {
   const [events, setEvents] = useState<EventDTO[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const handleFetchEvents = async () => {
-      setLoading(true)
-      const { events, totalSize } = await fetchEvents()
-      setEvents(events)
-      setLoading(false)
-    }
+  const handleFetchEvents = async () => {
+    setLoading(true)
+    const { events, totalSize } = await fetchEvents()
+    setEvents(events)
+    setLoading(false)
+  }
 
+  useEffect(() => {
     handleFetchEvents()
   }, [])
 
@@ -59,7 +59,8 @@ const EventsPage = () => {
       addToast("Kunne ikke slette event.", "error")
     }
 
-    revalidate()
+    handleFetchEvents()
+    //revalidate()
   }
 
   return (
