@@ -1,20 +1,15 @@
 import { Router } from "express";
 import { AuthController } from "@/controller/auth.controller";
-import { AuthService } from "@/service/auth.service";
-import { SQLiteSessionRepository } from "@/repository/session.repository.sqlite";
-import { SQLiteUserRepository } from "@/repository/user.repository.sqlite";
 
-const sessionRepository = new SQLiteSessionRepository()
-const userRepository = new SQLiteUserRepository()
+const authRouter = (authController: AuthController): Router => {
+  const router = Router()
 
-const authService = new AuthService(sessionRepository, userRepository)
-const authController = new AuthController(authService)
+  router.post("/register", authController.register)
+  router.post("/login", authController.login)
+  router.post("/log-out", authController.logOut)
+  router.get("/validate-session", authController.validateSession)
 
-const router = Router()
+  return router
+}
 
-router.post("/register", authController.register)
-router.post("/login", authController.login)
-router.post("/log-out", authController.logOut)
-router.get("/validate-session", authController.validateSession)
-
-export default router;
+export default authRouter;
