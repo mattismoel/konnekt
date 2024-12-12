@@ -13,7 +13,7 @@ export const EventDetails = ({ event }: Props) => {
     <div className="space-y-2">
       <div className="flex gap-2 items-center">
         <BiMap />
-        <span>{`Posten`}, {venue.city}</span>
+        <span>{venue.name}, {venue.city}</span>
       </div>
       <div className="flex gap-2 items-center">
         <BiCalendar />
