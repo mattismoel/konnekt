@@ -2,7 +2,7 @@ import type { CreateEventDTO, EventDTO } from "@/dto/event.dto";
 import { type EventRepository } from "./event.repository";
 import { db } from "@/shared/db/db";
 import { deleteEventTx, getEventByIDTx, insertEventTx, listEventsTx, setEventCoverImageUrlTx } from "@/shared/db/event";
-import type { EventQueryOpts } from "@/shared/event/event";
+import type { EventListResult, EventQueryOpts } from "@/shared/event/event";
 
 export const createSQLiteEventRepository = (): EventRepository => {
   const insertEvent = async (data: CreateEventDTO): Promise<EventDTO> => {
@@ -29,7 +29,7 @@ export const createSQLiteEventRepository = (): EventRepository => {
     })
   }
 
-  const listEvents = async (opts: EventQueryOpts): Promise<EventDTO[]> => {
+  const listEvents = async (opts: EventQueryOpts): Promise<EventListResult> => {
     return await db.transaction(async (tx) => {
       return await listEventsTx(tx, opts)
     })
