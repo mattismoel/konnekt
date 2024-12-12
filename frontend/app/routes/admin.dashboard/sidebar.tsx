@@ -2,12 +2,17 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { SidebarEntry } from "./sidebar-entry"
 import { useAuth } from "@/lib/context/auth.provider"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
-export const Sidebar = () => {
+type Props = {
+  className?: string;
+}
+
+export const Sidebar = ({ className }: Props) => {
   const { logOut } = useAuth()
 
   return (
-    <Card>
+    <Card className={cn("", className)}>
       <CardHeader>
         <h3 className="font-black text-xl">KONNEKT &reg;</h3>
       </CardHeader>

@@ -16,7 +16,7 @@ export const EventEntry = ({ event, onDelete }: Props) => {
     <div className="px-4 py-2 flex justify-between hover:bg-neutral-900">
       <a href={`/admin/event/rediger/${id}`} className="w-full flex">
         <span className="flex-1">{title}</span>
-        <span className="flex-1">{formattedDate}</span>
+        <span className="hidden sm:block flex-1">{formattedDate}</span>
       </a>
       <button className="text-lg hover:text-red-500" onClick={onDelete}><BiTrash /></button>
     </div>

@@ -47,7 +47,7 @@ const EventsPage = () => {
   }
 
   return (
-    <Card>
+    <Card className="min-w-xl">
       <CardHeader>
         <div className="flex items-center justify-between">
           <h2 className="font-bold text-xl">Kommende events.</h2>
