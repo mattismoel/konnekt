@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { TimePicker } from "./time-picker"
 import { FieldErrorList } from "./field-error-list"
 
@@ -14,16 +14,22 @@ type Props = {
   className?: string;
   placeholder?: string;
   errors?: (string | undefined)[]
+  onChange: (newDate: Date) => void
 }
 
 type Time = { hours: number, minutes: number }
 
-export function DateTimePicker({ initialDate, placeholder = "Pick a date", errors, className }: Props) {
+export function DateTimePicker({ initialDate, placeholder = "Pick a date", onChange, errors, className }: Props) {
   const [date, setDate] = useState(initialDate)
   const [time, setTime] = useState<Time>({
     hours: date?.getHours() || new Date().getHours(),
     minutes: date?.getMinutes() || new Date().getMinutes()
   })
+
+  useEffect(() => {
+    if (!date) return
+    onChange(date)
+  }, [date])
 
   const changeTime = (newTime: Time) => {
     const withMinutes = setMinutes(date || new Date(), newTime.minutes)
@@ -31,6 +37,7 @@ export function DateTimePicker({ initialDate, placeholder = "Pick a date", error
 
     setTime(newTime)
     setDate(withHours)
+    //onChange(withHours)
   }
 
   const changeDate = (newDate: Date | undefined) => {
@@ -38,6 +45,8 @@ export function DateTimePicker({ initialDate, placeholder = "Pick a date", error
     const withHours = setHours(withMinutes, time.hours)
 
     setDate(withHours)
+
+    //onChange(withHours)
   }
 
   return (
