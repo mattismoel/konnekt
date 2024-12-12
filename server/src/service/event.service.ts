@@ -2,11 +2,12 @@ import type { ObjectStorage } from "@/shared/object-storage/object-storage";
 import { createEventSchema, type CreateEventDTO, type EventDTO } from "@/dto/event.dto";
 import { type EventRepository } from "@/repository/event.repository";
 import sharp from "sharp";
+import type { EventQueryOpts } from "@/shared/event/event";
 
 export type EventService = {
   createEvent(eventData: CreateEventDTO): Promise<EventDTO>
   deleteEvent(id: number): Promise<void>
-  listEvents(): Promise<EventDTO[]>
+  listEvents(opts: EventQueryOpts): Promise<EventDTO[]>
   getEventByID(id: number): Promise<EventDTO | null>
   uploadCoverImage(buffer: Buffer): Promise<string>
 }
@@ -27,8 +28,8 @@ export const createEventService = (
     await eventRepo.deleteEvent(id)
   }
 
-  const listEvents = async (): Promise<EventDTO[]> => {
-    const events = await eventRepo.listEvents()
+  const listEvents = async (opts: EventQueryOpts): Promise<EventDTO[]> => {
+    const events = await eventRepo.listEvents(opts)
     return events
   }
 

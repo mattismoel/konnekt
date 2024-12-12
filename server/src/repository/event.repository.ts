@@ -1,9 +1,10 @@
 import type { CreateEventDTO, EventDTO } from "@/dto/event.dto";
+import type { EventQueryOpts } from "@/shared/event/event";
 
 export interface EventRepository {
-  insert(event: CreateEventDTO): Promise<EventDTO>;
-  delete(id: number): Promise<void>;
-  getByID(id: number): Promise<EventDTO | null>
-  getAll(): Promise<EventDTO[]>
+  insertEvent(event: CreateEventDTO): Promise<EventDTO>;
+  deleteEvent(id: number): Promise<void>;
+  getEventByID(id: number): Promise<EventDTO | null>
+  listEvents(opts: EventQueryOpts): Promise<EventDTO[]>
   setCoverImageUrl(eventID: number, url: string): Promise<void>
 }

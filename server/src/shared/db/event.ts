@@ -2,8 +2,10 @@ import type { CreateEventDTO, EventDTO } from "@/dto/event.dto"
 import type { TX } from "./db"
 import { eventsGenresTable, eventsTable } from "./schema/event"
 import { getEventGenresTx, insertGenresTx, relateGenresToEventTx } from "./genre"
-import { eq } from "drizzle-orm"
+import { asc, eq, like } from "drizzle-orm"
 import { getVenueByIDTx, insertVenueTx } from "./venue"
+import type { EventQueryOpts } from "../event/event"
+import { DEFAULT_PAGE_SIZE } from "../event/constant"
 
 export const insertEventTx = async (tx: TX, data: CreateEventDTO): Promise<EventDTO> => {
   return await tx.transaction(async (tx) => {
@@ -78,11 +80,15 @@ export const setEventCoverImageUrlTx = async (tx: TX, eventID: number, coverImag
     .where(eq(eventsTable.id, eventID))
 }
 
-export const getAllEventsTx = async (tx: TX): Promise<EventDTO[]> => {
+export const listEventsTx = async (tx: TX, opts: EventQueryOpts): Promise<EventDTO[]> => {
   return await tx.transaction(async (tx) => {
     const baseEvents = await tx
       .select()
       .from(eventsTable)
+      .where((opts.search) ? like(eventsTable.title, `%${opts.search}%`) : undefined)
+      .orderBy(asc(eventsTable.fromDate), asc(eventsTable.title))
+      .limit(opts.limit || opts.pageSize || DEFAULT_PAGE_SIZE)
+      .offset(((opts.page || DEFAULT_PAGE_SIZE) - 1) * (opts.pageSize || DEFAULT_PAGE_SIZE))
 
     const events = await Promise.all(
       baseEvents.map(async (baseEvent): Promise<EventDTO> => {

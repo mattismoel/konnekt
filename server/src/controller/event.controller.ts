@@ -2,6 +2,8 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { ZodError } from "zod";
 import type { EventService } from "@/service/event.service";
 import { NotFoundError } from "@/shared/repo-error";
+import { DEFAULT_PAGE_SIZE } from "@/shared/event/constant";
+
 
 export type EventController = {
   createEvent: RequestHandler;
@@ -39,13 +41,19 @@ export const createEventController = (eventService: EventService): EventControll
     res.sendStatus(200)
   }
 
-  const listEvents: RequestHandler = async (req, res, next): Promise<void> => {
-    try {
-      const events = await eventService.listEvents()
-      res.json(events)
-    } catch (e) {
-      next(e)
-    }
+  const listEvents: RequestHandler = async (req, res): Promise<void> => {
+    const { page, limit, pageSize, search } = req.query
+
+    //TODO: Implement maximum page size - fallback to DEFAULT_PAGE_SIZE.
+
+    const events = await eventService.listEvents({
+      page: page ? parseInt(page as string, 10) : 1,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      pageSize: pageSize ? parseInt(pageSize as string, 10) : DEFAULT_PAGE_SIZE,
+      search: search as string || undefined
+    })
+
+    res.json(events)
   }
 
   const getOneEvent: RequestHandler = async (req, res, next): Promise<void> => {
