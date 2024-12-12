@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { EventDTO } from "@/lib/dto/event.dto";
 import { formatDateString } from "@/lib/time";
+import { cn } from "@/lib/utils";
 
 type Props = {
-  event: EventDTO;
+  event: EventDTO | undefined;
+  loading: boolean;
 }
 
-export const EventCard = ({ event }: Props) => {
+export const EventCard = ({ event, loading }: Props) => {
   const [mousePosX, setMousePosX] = useState(0);
   const [mousePosY, setMousePosY] = useState(0);
 
@@ -23,22 +25,23 @@ export const EventCard = ({ event }: Props) => {
 
   return (
     <a
-      className={`group ${isFocused ? "focused" : ""}`}
-      href={`/events/${event.id}`}
+      className={cn("group")}
+      href={`/events/${event?.id}`}
       onMouseEnter={toggleFocus}
       onMouseLeave={toggleFocus}
     >
+      <div className={cn("bg-zinc-900 h-64 w-full animate-pulse", { "hidden": !loading })}></div>
       <div
         role="none"
-        className={`relative w-full h-64 overflow-hidden`}
+        className={cn("relative w-full h-64 overflow-hidden", { "hidden": loading })}
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           setMousePos(e.clientX - rect.left, e.clientY - rect.top);
         }}
       >
         <img
-          src={event.coverImageUrl}
-          alt={event.title}
+          src={event?.coverImageUrl}
+          alt={event?.title}
           className="w-full h-full object-cover scale-110 md:brightness-90 group-hover:brightness-100 group-hover:scale-100 transition-all duration-200"
         />
         <div
@@ -50,8 +53,8 @@ export const EventCard = ({ event }: Props) => {
         <div
           className="flex flex-col px-5 pb-5 absolute bottom-0 left-0 text-white md:translate-y-full md:group-hover:translate-y-0 transition-all duration-100"
         >
-          <h3 className="font-bold text-3xl mb-2">{event.title}</h3>
-          <span>{formatDateString(event.fromDate)}</span>
+          <h3 className="font-bold text-3xl mb-2">{event?.title}</h3>
+          <span>{formatDateString(event?.fromDate || new Date())}</span>
         </div>
         <div
           className={`absolute h-72 w-72 -translate-x-1/2  -translate-y-1/2 blur-3xl bg-white/50 mix-blend-overlay scale-0  pointer-events-none transition-transform duration-400 group-[.focused]:scale-100`}

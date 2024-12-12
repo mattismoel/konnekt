@@ -1,12 +1,21 @@
 import { differenceInMilliseconds } from "date-fns";
-import env from "@/config/env"
-import { EventDTO, eventSchema } from "./dto/event.dto";
+import { EventDTO, EventListResult, eventListSchema, eventSchema } from "./dto/event.dto";
+
+type EventQueryOpts = {
+  limit?: number;
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}
 
 /**
  * @description Gets a single event by its id. If not found, null is returned.
  */
-export const fetchEventByID = async (id: number, opts: RequestInit): Promise<EventDTO | null> => {
-  const res = await fetch(`${env.BACKEND_URL}/events/${id}`, opts)
+export const fetchEventByID = async (id: number): Promise<EventDTO | null> => {
+  const res = await fetch(`${window.ENV.BACKEND_URL}/events/${id}`, {
+    credentials: "include"
+  })
+
   if (!res.ok) {
     console.error(`Could not get event with id ${id}: ${res.statusText}`)
     return null
@@ -20,16 +29,24 @@ export const fetchEventByID = async (id: number, opts: RequestInit): Promise<Eve
 /**
  * @description Gets all events.
  */
-export const fetchAllEvents = async (opts: RequestInit): Promise<EventDTO[]> => {
-  const res = await fetch(`${env.BACKEND_URL}/events`, opts)
+export const fetchEvents = async (opts?: EventQueryOpts): Promise<EventListResult> => {
+  const { page, limit, pageSize, search } = opts || {}
+  const url = new URL(`${window.ENV.BACKEND_URL}/events`)
+
+  if (page) url.searchParams.set("page", page.toString())
+  if (limit) url.searchParams.set("limit", limit.toString())
+  if (pageSize) url.searchParams.set("pageSize", pageSize.toString())
+  if (search) url.searchParams.set("search", search)
+
+  const res = await fetch(url)
   if (!res.ok) {
     console.error(`Could not list events: ${res.statusText}`)
-    return []
+    return { events: [], totalSize: 0 }
   }
 
-  const events = eventSchema.array().parse(await res.json())
+  const result = eventListSchema.parse(await res.json())
 
-  return events
+  return result
 }
 
 

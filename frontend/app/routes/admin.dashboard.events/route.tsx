@@ -1,10 +1,12 @@
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { eventSchema } from "@/lib/dto/event.dto";
+import { EventDTO, eventListSchema, eventSchema } from "@/lib/dto/event.dto";
 import { useToast } from "@/lib/context/toast.provider";
 import env from "@/config/env";
 import { BiPlus } from "react-icons/bi";
 import { EventEntry } from "@/routes/admin.dashboard.events/event-entry";
+import { useEffect, useState } from "react";
+import { fetchEvents } from "@/lib/event";
 
 export const loader = async () => {
   const res = await fetch(`${env.BACKEND_URL}/events`)
@@ -15,17 +17,31 @@ export const loader = async () => {
 
   const data = await res.json()
 
-  const events = eventSchema.array().parse(data)
+  const { events, totalSize } = eventListSchema.parse(data)
 
   return {
-    events
+    events,
+    totalSize
   }
 }
 
 const EventsPage = () => {
   const { addToast } = useToast()
-  const { events } = useLoaderData<typeof loader>()
   const { revalidate } = useRevalidator()
+
+  const [events, setEvents] = useState<EventDTO[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const handleFetchEvents = async () => {
+      setLoading(true)
+      const { events, totalSize } = await fetchEvents()
+      setEvents(events)
+      setLoading(false)
+    }
+
+    handleFetchEvents()
+  }, [])
 
   const deleteEvent = async (id: number) => {
     if (!confirm(`Delete event with id ${id}?`)) {
@@ -55,22 +71,16 @@ const EventsPage = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {events.length > 0 ? (
-          <div className="relative overflow-y-scroll">
-            {events.map(event => (
-              <EventEntry key={event.id} event={event} onDelete={() => deleteEvent(event.id)} />
-            ))}
-          </div>
-        ) : (
-          <p className="italic text-foreground/50">Ingen kommende events...</p>
-        )}
-        {/*
-          <Fader
-            direction="to-top"
-            color="neutral-950"
-            className="h-20 absolute bottom-0 left-0"
-          />
-        */}
+        {loading ? (<p className="italic text-foreground/50">Loading...</p>) : (
+          events.length > 0 ? (
+            <div className="relative overflow-y-scroll">
+              {events.map(event => (
+                <EventEntry key={event.id} event={event} onDelete={() => deleteEvent(event.id)} />
+              ))}
+            </div>
+          ) : (
+            <p className="italic text-foreground/50">Ingen kommende events...</p>
+          ))}
       </CardContent>
     </Card>
   )

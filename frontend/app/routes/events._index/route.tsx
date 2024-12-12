@@ -1,34 +1,35 @@
-import { useLoaderData } from "@remix-run/react"
 import { EventGrid } from "@/components/events/event-grid"
-import env from "@/config/env"
-import { eventSchema } from "@/lib/dto/event.dto"
+import { EventDTO } from "@/lib/dto/event.dto"
+import { useEffect, useState } from "react"
+import { fetchEvents } from "@/lib/event"
 
-export const loader = async () => {
-  try {
-    const res = await fetch(`${env.BACKEND_URL}/events`)
-
-    if (!res.ok) {
-      throw new Error(`Error fetching backend: ${res.status}, ${res.statusText}`)
-    }
-
-    const data = await res.json()
-
-    const events = eventSchema.array().parse(data)
-
-    return events
-  } catch (e) {
-    console.error(e)
-    return []
-  }
-}
+const PAGE_SIZE = 12
 
 const EventsPage = () => {
-  const events = useLoaderData<typeof loader>();
+  const [events, setEvents] = useState<EventDTO[]>([])
+  const [pageCount, setPageCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const handleFetchEvents = async () => {
+      setLoading(true)
+      const { events, totalSize } = await fetchEvents()
+
+      setTimeout(() => {
+        setEvents(events)
+        setPageCount(totalSize % PAGE_SIZE)
+        setLoading(false)
+      }, 2000)
+    }
+
+    handleFetchEvents()
+  }, [])
 
   return (
     <main className="px-auto py-20 h-sub-nav">
       <h1 className="text-2xl font-bold mb-4">Kommende events.</h1>
-      <EventGrid events={events} />
+      <EventGrid events={events} loading={loading} />
+      {pageCount}
     </main>
   )
 }

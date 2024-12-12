@@ -14,6 +14,13 @@ export const eventSchema = z.object({
 
 export type EventDTO = z.infer<typeof eventSchema>
 
+export const eventListSchema = z.object({
+  totalSize: z.number(),
+  events: eventSchema.array()
+})
+
+export type EventListResult = z.infer<typeof eventListSchema>
+
 export const createEditEventSchema = z.object({
   title: z
     .string({ message: "Titel påkrævet" })
