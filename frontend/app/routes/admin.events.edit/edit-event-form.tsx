@@ -28,8 +28,6 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
 
   const [coverImageUrl, setCoverImageUrl] = useState<string | undefined>(event?.coverImageUrl)
 
-  const [selectedGenres, setSelectedGenres] = useState(event?.genres || [])
-
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<CreateEditEventDTO>({
     resolver: zodResolver(createEditEventSchema), defaultValues: {
       ...event,
@@ -38,9 +36,9 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
     }
   })
 
-  useEffect(() => {
-    setValue("genres", selectedGenres)
-  }, [selectedGenres, setValue])
+  //useEffect(() => {
+  //  setValue("genres", selectedGenres)
+  //}, [selectedGenres, setValue])
 
   const isEdit = event !== null
 
@@ -162,8 +160,8 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
         <input {...register("genres")} type="hidden" />
         <GenreSelector
           genres={genres}
-          selected={selectedGenres}
-          onChange={(updatedGenres) => setSelectedGenres(updatedGenres)}
+          defaultSelected={event?.genres || []}
+          onChange={(updatedGenres) => setValue("genres", updatedGenres)}
         />
         <FieldErrorList errors={[errors.genres?.message]} />
       </div>

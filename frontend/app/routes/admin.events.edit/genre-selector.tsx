@@ -1,17 +1,19 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { GenreSelectorEntry } from "./genre-selector-entry";
 
 type Props = {
   genres: string[];
-  selected: string[];
+  defaultSelected: string[];
   onChange: (newGenres: string[]) => void
 }
 
-export const GenreSelector = ({ genres, selected, onChange }: Props) => {
+export const GenreSelector = ({ genres, defaultSelected, onChange }: Props) => {
+  const [selected, setSelected] = useState<string[]>(defaultSelected)
+
   const toggleSelected = (genre: string, isSelected: boolean) => {
     const updatedSelected = isSelected ? selected.filter(g => g !== genre) : [...selected, genre]
 
-    console.log(updatedSelected)
+    setSelected(updatedSelected)
     onChange(updatedSelected)
   }
 
