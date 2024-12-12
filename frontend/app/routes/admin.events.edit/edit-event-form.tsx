@@ -28,9 +28,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
 
   const [coverImageUrl, setCoverImageUrl] = useState<string | undefined>(event?.coverImageUrl)
 
-  const [description, setDescription] = useState(event?.description)
   const [selectedGenres, setSelectedGenres] = useState(event?.genres || [])
-
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<CreateEditEventDTO>({
     resolver: zodResolver(createEditEventSchema), defaultValues: {
@@ -180,8 +178,8 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
       {/* DESCRIPTION EDITOR */}
       <div className="mb-4">
         <h2 className="text-2xl font-bold mb-4">Beskrivelse</h2>
-        <input {...register("description")} type="hidden" value={description} />
-        <TipTapEditor onChange={(value) => setDescription(value)} />
+        <input {...register("description")} type="hidden" />
+        <TipTapEditor onChange={(value) => setValue("description", value)} />
         <FieldErrorList errors={[errors.description?.message]} />
       </div>
 
