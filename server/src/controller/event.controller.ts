@@ -46,14 +46,14 @@ export const createEventController = (eventService: EventService): EventControll
 
     //TODO: Implement maximum page size - fallback to DEFAULT_PAGE_SIZE.
 
-    const events = await eventService.listEvents({
+    const result = await eventService.listEvents({
       page: page ? parseInt(page as string, 10) : 1,
       limit: limit ? parseInt(limit as string, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize as string, 10) : DEFAULT_PAGE_SIZE,
       search: search as string || undefined
     })
 
-    res.json(events)
+    res.json(result)
   }
 
   const getOneEvent: RequestHandler = async (req, res, next): Promise<void> => {
