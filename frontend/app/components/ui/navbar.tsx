@@ -9,7 +9,7 @@ export const Navbar = () => {
     <>
       <nav className="bg-background h-nav flex items-center px-8 border-b border-gray-950 justify-between">
         <a href="/" className="font-black">KONNEKT&reg;</a>
-        <ul className="gap-4 hidden sm:flex">
+        <ul className="gap-4 hidden sm:flex font-medium">
           <li><a href="/events">Events</a></li>
           <li><a href="/om-os">Om os</a></li>
           <li><a href="/sponsorer">Sponsorer</a></li>
