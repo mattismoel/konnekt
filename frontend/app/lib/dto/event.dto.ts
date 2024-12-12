@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { venueSchema } from "./address.dto";
+import { createVenueSchema, venueSchema } from "./address.dto";
 
 export const eventSchema = z.object({
   id: z.number(),
@@ -33,22 +33,11 @@ export const createEditEventSchema = z.object({
   toDate: z
     .coerce
     .date({ message: "Ugyldig til-dato" }),
-  city: z
-    .string({ message: "By er påkrævet" })
-    .trim()
-    .min(1, { message: "By må ikke være tom" }),
-  venue: z
-    .string({ message: "Venue er påkrævet" })
-    .trim()
-    .min(1, { message: "Venue må ikke være tom" }),
-  country: z
-    .string({ message: "Land er påkrævet" })
-    .trim()
-    .min(1, { message: "Land må ikke være tomt" }),
+  venue: createVenueSchema,
   genres: z
     .string({ message: "Genre er ugyldigt format" })
-    .transform(str => str.split(","))
-    .refine(genres => genres.length > 0 && genres[0] !== "", { message: "Mindst én genre påkrævet" })
+    .array()
+    .min(1, { message: "Minimum én genre" })
 })
 
 export type CreateEditEventDTO = z.infer<typeof createEditEventSchema>
