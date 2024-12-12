@@ -47,7 +47,8 @@ export const createEditEventSchema = z.object({
     .min(1, { message: "Land må ikke være tomt" }),
   genres: z
     .string({ message: "Genre er ugyldigt format" })
-    .refine(str => str.split(";").length > 0, { message: "Mindst én genre påkrævet" })
+    .transform(str => str.split(";"))
+    .refine(genres => genres.length > 0 && genres[0] !== "", { message: "Mindst én genre påkrævet" })
 })
 
 export type CreateEditEventDTO = z.infer<typeof createEditEventSchema>

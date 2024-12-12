@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CreateEditEventDTO, createEditEventSchema, EventDTO } from "@/lib/dto/event.dto"
 import { GenreSelector } from "./genre-selector"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { DateTimePicker } from "@/components/ui/date-picker"
@@ -31,13 +31,23 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
   const [description, setDescription] = useState(event?.description)
   const [selectedGenres, setSelectedGenres] = useState(event?.genres || [])
 
-  const { register, handleSubmit, formState: { errors } } = useForm<CreateEditEventDTO>({ resolver: zodResolver(createEditEventSchema) })
+
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<CreateEditEventDTO>({
+    resolver: zodResolver(createEditEventSchema), defaultValues: {
+      ...event,
+      venue: event?.venue.name,
+      genres: event?.genres.join(";")
+    }
+  })
+
+  useEffect(() => {
+    setValue("genres", selectedGenres.join(";"))
+  }, [selectedGenres, setValue])
 
   const isEdit = event !== null
 
   return (
     <form onSubmit={handleSubmit(d => console.log(d))} className={cn("", className)}>
-      HELLOOOO
       {/* COVER IMAGE */}
       <div className="relative aspect-video mb-4">
         {coverImageUrl ? (
@@ -63,13 +73,16 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
         </Button>
       </div>
 
+      {/* HIDDEN INPUT CONTAINING THE AUTOMATICALLY SET COVER IMAGE URL */}
       <input {...register("coverImageUrl")} type="hidden" value={coverImageUrl} />
+
       <ImageSelectorModal
         show={showCoverImageModal}
         name="coverImage"
         onClose={() => setShowCoverImageModal(false)}
         onUploaded={(url) => setCoverImageUrl(url)}
       />
+
       <FieldErrorList errors={[errors.coverImageUrl?.message]} />
 
       {/* GENERAL */}
@@ -80,8 +93,9 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
           <Input
             {...register("title")}
             defaultValue={event?.title}
+            aria-invalid={errors.title ? true : false}
+            errors={[errors.title?.message]}
           />
-          <FieldErrorList errors={[errors.title?.message]} />
         </div>
         <div className="flex gap-2">
           <div>
@@ -118,8 +132,8 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
               initialDate={event?.fromDate}
               className="w-full"
               placeholder="Start dato..."
+              errors={[errors.fromDate?.message]}
             />
-            <FieldErrorList errors={[errors.fromDate?.message]} />
           </div>
           <div className="flex-1">
             <Label>Til</Label>
@@ -128,8 +142,8 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
               initialDate={event?.toDate}
               className="w-full"
               placeholder="Slut dato..."
+              errors={[errors.toDate?.message]}
             />
-            <FieldErrorList errors={[errors.toDate?.message]} />
           </div>
         </div>
       </div>
@@ -147,7 +161,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
             Tilføj
           </button>
         </div>
-        <input {...register("genres")} type="hidden" value={selectedGenres.join(";")} />
+        <input {...register("genres")} type="hidden" />
         <GenreSelector
           genres={genres}
           selected={selectedGenres}
