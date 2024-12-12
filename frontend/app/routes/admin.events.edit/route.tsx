@@ -22,11 +22,11 @@ const EditEventPage = () => {
   const { event, genres } = useLoaderData<typeof loader>()
 
   const handleSubmit = async (data: CreateEditEventDTO) => {
-    console.log("Hello")
     let res = await fetch(`${window.ENV.BACKEND_URL}/events`, {
-      method: "post",
+      method: "POST",
       credentials: "include",
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" }
     })
 
     if (!res.ok) {

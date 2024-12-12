@@ -77,13 +77,13 @@ export const ImageSelectorModal = ({ show, name, onClose, onUploaded }: Props) =
       </div>
 
       {/* CONTENT */}
-      <div className="bg-red-900 min-h-72 flex items-center justify-center">
+      <div className="bg-zinc-900 min-h-72 flex items-center justify-center">
         {previewURL ? (
           <img src={previewURL} alt="Cover preview" className="h-full w-full object-cover" />
         ) : (
           <button
             type="button"
-            className="bg-blue-900 h-full w-full"
+            className="h-full w-full"
             onClick={() => inputRef.current?.click()}
           >
             Upload billede...

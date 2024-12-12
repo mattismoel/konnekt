@@ -1,9 +1,9 @@
 import { BiPlus } from "react-icons/bi"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CreateEditEventDTO, createEditEventSchema, EventDTO } from "@/lib/dto/event.dto"
+import { CreateEditEventDTO, EventDTO } from "@/lib/dto/event.dto"
 import { GenreSelector } from "./genre-selector"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { DateTimePicker } from "@/components/ui/date-picker"
@@ -14,6 +14,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { ImageSelectorModal } from "./image-selector-modal"
 import { CountryPicker } from "@/components/ui/country-picker"
 import { FieldErrorList } from "@/components/ui/field-error-list"
+import { z } from "zod"
+import { parseISO } from "date-fns"
 
 type Props = {
   event: EventDTO | null
@@ -22,28 +24,81 @@ type Props = {
   className?: string;
 }
 
+const formSchema = z.object({
+  title: z
+    .string({ message: "Titel påkrævet" })
+    .trim()
+    .min(1, { message: "Titel må ikke være tom" }),
+  description: z
+    .string({ message: "Beskrivelse påkrævet" })
+    .trim()
+    .min(1, { message: "Beskrivelse må ikke være tom" }),
+  fromDate: z
+    .string()
+    .datetime("Ugylidig fra-dato"),
+  toDate: z
+    .string()
+    .datetime("Ugyldig til-dato"),
+  coverImageUrl: z
+    .string({ message: "Cover-billede ugyldigt" })
+    .min(1, { message: "Coverbillede skal være sat" })
+    .url({ message: "Coverbillede har ugyldigt URL" }),
+  venue: z.object({
+    name: z.string({ message: "Venue er påkrævet" })
+      .trim()
+      .min(1, { message: "Venue må ikke være tom" }),
+    country: z
+      .string({ message: "Land er påkrævet" })
+      .trim()
+      .min(1, { message: "Land må ikke være tomt" }),
+    city: z
+      .string({ message: "By er påkrævet" })
+      .trim()
+      .min(1, { message: "By må ikke være tom" }),
+  }),
+  genres: z
+    .string({ message: "Genre er ugyldigt format" })
+    .refine(str => { const genres = str.split(";"); return genres.length > 0 && genres[0] !== "" }, { message: "Mindst én genre skal defineres" })
+})
+
+type FormSchema = z.infer<typeof formSchema>
+
 export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => {
   const [showCoverImageModal, setShowCoverImageModal] = useState(false)
   const [showGenreModal, setShowGenreModal] = useState(false)
 
   const [coverImageUrl, setCoverImageUrl] = useState<string | undefined>(event?.coverImageUrl)
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<CreateEditEventDTO>({
-    resolver: zodResolver(createEditEventSchema), defaultValues: {
+  const changeCoverImageUrl = (url: string) => {
+    setValue("coverImageUrl", url)
+    setCoverImageUrl(url)
+  }
+
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormSchema>({
+    resolver: zodResolver(formSchema), defaultValues: {
       ...event,
-      venue: event?.venue.name,
-      genres: event?.genres,
+      fromDate: event?.fromDate.toISOString(),
+      toDate: event?.toDate.toISOString(),
+      venue: event?.venue,
+      genres: event?.genres.join(";"),
     }
   })
 
-  //useEffect(() => {
-  //  setValue("genres", selectedGenres)
-  //}, [selectedGenres, setValue])
+  const submit = (formData: FormSchema) => {
+    const eventData: CreateEditEventDTO = {
+      ...formData,
+      fromDate: parseISO(formData.fromDate),
+      toDate: parseISO(formData.toDate),
+      genres: formData.genres.split(";"),
+    }
+
+    onSubmit(eventData)
+  }
 
   const isEdit = event !== null
 
   return (
-    <form onSubmit={handleSubmit(d => console.log(d))} className={cn("", className)}>
+    <form onSubmit={handleSubmit(submit)} className={cn("", className)}>
       {/* COVER IMAGE */}
       <div className="relative aspect-video mb-4">
         {coverImageUrl ? (
@@ -76,7 +131,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
         show={showCoverImageModal}
         name="coverImage"
         onClose={() => setShowCoverImageModal(false)}
-        onUploaded={(url) => setCoverImageUrl(url)}
+        onUploaded={(url) => changeCoverImageUrl(url)}
       />
 
       <FieldErrorList errors={[errors.coverImageUrl?.message]} />
@@ -97,7 +152,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
           <div>
             <Label>Venue</Label>
             <Input
-              {...register("venue")}
+              {...register("venue.name")}
               defaultValue={event?.venue.name || "Posten"}
               className="flex-1"
             />
@@ -105,37 +160,40 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
           <div>
             <Label>By</Label>
             <Input
-              {...register("city")}
+              {...register("venue.city")}
               defaultValue={event?.venue.city}
               className="flex-1"
             />
           </div>
           <div>
             <Label>Land</Label>
-            <CountryPicker defaultValue="DK" />
+            <CountryPicker {...register("venue.country")} defaultValue="Denmark" />
           </div>
         </div>
         <FieldErrorList errors={[
-          errors.venue?.message,
-          errors.city?.message,
-          errors.country?.message
+          errors.venue?.name?.message,
+          errors.venue?.city?.message,
+          errors.venue?.country?.message
         ]} />
         <div className="space-y-2">
           <div className="flex-1">
+            <input {...register("fromDate")} type="hidden" />
             <Label>Fra</Label>
             <DateTimePicker
-              {...register("fromDate")}
               initialDate={event?.fromDate}
+              onChange={(date) => setValue("fromDate", date.toISOString())}
               className="w-full"
               placeholder="Start dato..."
               errors={[errors.fromDate?.message]}
             />
           </div>
           <div className="flex-1">
+            <input {...register("toDate")} type="hidden" />
             <Label>Til</Label>
             <DateTimePicker
               {...register("toDate")}
               initialDate={event?.toDate}
+              onChange={(date) => setValue("toDate", date.toISOString())}
               className="w-full"
               placeholder="Slut dato..."
               errors={[errors.toDate?.message]}
@@ -161,7 +219,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
         <GenreSelector
           genres={genres}
           defaultSelected={event?.genres || []}
-          onChange={(updatedGenres) => setValue("genres", updatedGenres)}
+          onChange={(updatedGenres) => setValue("genres", updatedGenres.join(";"))}
         />
         <FieldErrorList errors={[errors.genres?.message]} />
       </div>
