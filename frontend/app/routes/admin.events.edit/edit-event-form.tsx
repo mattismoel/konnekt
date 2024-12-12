@@ -161,7 +161,7 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
             <Label>By</Label>
             <Input
               {...register("venue.city")}
-              defaultValue={event?.venue.city}
+              defaultValue={event?.venue.city || "Odense"}
               className="flex-1"
             />
           </div>
