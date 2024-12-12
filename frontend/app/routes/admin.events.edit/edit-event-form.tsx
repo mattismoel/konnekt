@@ -36,12 +36,12 @@ export const EditEventForm = ({ event, genres, onSubmit, className }: Props) => 
     resolver: zodResolver(createEditEventSchema), defaultValues: {
       ...event,
       venue: event?.venue.name,
-      genres: event?.genres.join(";")
+      genres: event?.genres,
     }
   })
 
   useEffect(() => {
-    setValue("genres", selectedGenres.join(";"))
+    setValue("genres", selectedGenres)
   }, [selectedGenres, setValue])
 
   const isEdit = event !== null
