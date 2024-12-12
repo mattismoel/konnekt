@@ -17,7 +17,7 @@ const loggerMiddleware = (logger: Logger): RequestHandler => {
 
     res.on("finish", () => {
       const durationMs = differenceInMilliseconds(new Date(), startTime)
-      const resMsg = `-> ${method} ${path} ${res.statusCode} ${res.statusMessage} ${durationMs} ms`
+      const resMsg = `-> ${method} ${path} ${res.statusCode} ${durationMs} ms`
       logger.log(resMsg)
     })
 
