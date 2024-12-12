@@ -7,16 +7,18 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useState } from "react"
 import { TimePicker } from "./time-picker"
+import { FieldErrorList } from "./field-error-list"
 
 type Props = {
   initialDate?: Date;
   className?: string;
   placeholder?: string;
+  errors?: (string | undefined)[]
 }
 
 type Time = { hours: number, minutes: number }
 
-export function DateTimePicker({ initialDate, placeholder = "Pick a date", className }: Props) {
+export function DateTimePicker({ initialDate, placeholder = "Pick a date", errors, className }: Props) {
   const [date, setDate] = useState(initialDate)
   const [time, setTime] = useState<Time>({
     hours: date?.getHours() || new Date().getHours(),
@@ -39,33 +41,36 @@ export function DateTimePicker({ initialDate, placeholder = "Pick a date", class
   }
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant={"outline"}
-          className={cn(
-            "w-[280px] justify-start text-left font-normal",
-            className,
-            !date && "text-muted-foreground"
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP, HH:mm") : <span>{placeholder}</span>}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 divide-y">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={changeDate}
-          initialFocus
-        />
-        <TimePicker
-          className="w-full p-3"
-          time={time}
-          onChange={changeTime}
-        />
-      </PopoverContent>
-    </Popover>
+    <>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant={"outline"}
+            className={cn(
+              "w-[280px] justify-start text-left font-normal",
+              className,
+              !date && "text-muted-foreground"
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? format(date, "PPP, HH:mm") : <span>{placeholder}</span>}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0 divide-y">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={changeDate}
+            initialFocus
+          />
+          <TimePicker
+            className="w-full p-3"
+            time={time}
+            onChange={changeTime}
+          />
+        </PopoverContent>
+      </Popover>
+      <FieldErrorList errors={errors} />
+    </>
   )
 }

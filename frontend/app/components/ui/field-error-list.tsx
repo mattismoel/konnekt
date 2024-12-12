@@ -1,10 +1,12 @@
 import { cn } from "@/lib/utils"
 
 type Props = {
-  errors: (string | undefined)[]
+  errors?: (string | undefined)[]
 }
 
 export const FieldErrorList = ({ errors }: Props) => {
+  if (!errors) return
+
   if (errors.length <= 0) return
 
   return (
