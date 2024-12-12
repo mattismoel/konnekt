@@ -1,8 +1,8 @@
 import type { GenreDTO } from "@/dto/genre.dto"
 
 export interface GenreRepository {
-  getAll(): Promise<GenreDTO[]>
-  insert(genre: string): Promise<GenreDTO>
-  delete(genre: string): Promise<void>
-  eventGenres(genreID: number): Promise<GenreDTO[]>
+  listGenres(): Promise<GenreDTO[]>
+  insertGenre(genre: string): Promise<GenreDTO>
+  deleteGenre(genre: string): Promise<void>
+  getEventGenres(genreID: number): Promise<GenreDTO[]>
 }

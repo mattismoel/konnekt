@@ -1,12 +1,12 @@
 import { Router } from "express";
 
-import eventRoutes from "./event.routes"
-import authRoutes from "./auth.routes"
-import genreRoutes from "./genre.routes"
 import type { GenreController } from "@/controller/genre.controller";
 import type { EventController } from "@/controller/event.controller";
 import type { AuthController } from "@/controller/auth.controller";
 import type { PermissionCheckerMiddleware } from "@/middleware/rbac";
+import { createEventRouter } from "./event.routes";
+import { createAuthRouter } from "./auth.routes";
+import { createGenreRouter } from "./genre.routes";
 
 const router = (
   eventController: EventController,
@@ -15,9 +15,9 @@ const router = (
   permissionChecker: PermissionCheckerMiddleware,
 ): Router => {
   const router = Router()
-    .use("/events", eventRoutes(eventController, permissionChecker))
-    .use("/auth", authRoutes(authController))
-    .use("/genres", genreRoutes(genreController, permissionChecker))
+    .use("/events", createEventRouter(eventController, permissionChecker))
+    .use("/auth", createAuthRouter(authController))
+    .use("/genres", createGenreRouter(genreController, permissionChecker))
 
   return router
 }

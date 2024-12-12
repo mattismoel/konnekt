@@ -1,10 +1,16 @@
 import type { GenreRepository } from "@/repository/genre.repository";
 
-export class GenreService {
-  constructor(private readonly genreRepository: GenreRepository) { }
+export type GenreService = {
+  listGenres(): Promise<string[]>
+}
 
-  getAll = async (): Promise<string[]> => {
-    const genres = await this.genreRepository.getAll()
+export const createGenreService = (genreRepo: GenreRepository): GenreService => {
+  const listGenres = async (): Promise<string[]> => {
+    const genres = await genreRepo.listGenres()
     return genres.map(genre => genre.name)
+  }
+
+  return {
+    listGenres,
   }
 }

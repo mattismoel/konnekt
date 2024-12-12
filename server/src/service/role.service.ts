@@ -1,18 +1,24 @@
 import type { PermissionDTO, RoleDTO } from "@/dto/role.dto";
 import type { RoleRepository } from "@/repository/role.repository";
 
-export class RoleService {
-  constructor(
-    private readonly roleRepository: RoleRepository,
-  ) { }
+export type RoleService = {
+  getUserRoles(userID: number): Promise<RoleDTO[]>
+  getRolePermissions(roleID: number): Promise<PermissionDTO[]>
+}
 
-  getUserRoles = async (userID: number): Promise<RoleDTO[]> => {
-    const roles = await this.roleRepository.getUserRoles(userID)
+export const createRoleService = (roleRepo: RoleRepository): RoleService => {
+  const getUserRoles = async (userID: number): Promise<RoleDTO[]> => {
+    const roles = await roleRepo.getUserRoles(userID)
     return roles
   }
 
-  getRolePermissions = async (roleID: number): Promise<PermissionDTO[]> => {
-    const permissions = await this.roleRepository.getRolePermissions(roleID)
+  const getRolePermissions = async (roleID: number): Promise<PermissionDTO[]> => {
+    const permissions = await roleRepo.getRolePermissions(roleID)
     return permissions
+  }
+
+  return {
+    getUserRoles,
+    getRolePermissions,
   }
 }

@@ -1,8 +1,8 @@
 import type { CreateSessionDTO, Session } from "@/dto/session.dto"
 
 export interface SessionRepository {
-  getByID(sessionID: string): Promise<Session | null>
-  insert(session: CreateSessionDTO): Promise<void>
-  delete(sessionID: string): Promise<void>
-  setExpiry(sessionID: string, newExpiry: Date): Promise<void>
+  getSessionByID(sessionID: string): Promise<Session | null>
+  insertSession(session: CreateSessionDTO): Promise<void>
+  deleteSession(sessionID: string): Promise<void>
+  setSessionExpiry(sessionID: string, newExpiry: Date): Promise<void>
 }

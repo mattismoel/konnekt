@@ -1,16 +1,14 @@
 import { Router } from "express";
-import { GenreController } from "@/controller/genre.controller";
+import { type GenreController } from "@/controller/genre.controller";
 import type { PermissionCheckerMiddleware } from "@/middleware/rbac";
 
-const genreRouter = (
+export const createGenreRouter = (
   controller: GenreController,
   permissionChecker: PermissionCheckerMiddleware,
 ): Router => {
 
   const router = Router()
-  router.get("/", permissionChecker(["genre-list"]), controller.getAll)
+  router.get("/", permissionChecker(["genre-list"]), controller.listGenres)
 
   return router
 }
-
-export default genreRouter;

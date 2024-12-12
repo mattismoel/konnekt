@@ -1,17 +1,20 @@
-import type { NextFunction, Request, RequestHandler, Response } from "express";
+import type { RequestHandler } from "express";
 import type { AuthService } from "@/service/auth.service";
 import { AlreadyExistsError, NotFoundError } from "@/shared/repo-error";
 import { SESSION_COOKIE_NAME } from "@/shared/auth/constant";
 import { deleteSessionTokenCookie, setSessionTokenCookie } from "@/shared/auth/util";
 
-export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-  ) { }
+export type AuthController = {
+  register: RequestHandler
+  logIn: RequestHandler
+  logOut: RequestHandler
+  validateSession: RequestHandler
+}
 
-  register = async (req: Request, res: Response, next: NextFunction) => {
+export const createAuthController = (authService: AuthService): AuthController => {
+  const register: RequestHandler = async (req, res, next) => {
     try {
-      const { session, token, user } = await this.authService.register(req.body)
+      const { session, token, user } = await authService.register(req.body)
       setSessionTokenCookie(res, SESSION_COOKIE_NAME, token, session.expiresAt)
       res.send(user)
     } catch (e) {
@@ -23,16 +26,16 @@ export class AuthController {
     }
   }
 
-  login = async (req: Request, res: Response, next: NextFunction) => {
+  const logIn: RequestHandler = async (req, res, next) => {
     try {
       const prevToken = req.cookies[SESSION_COOKIE_NAME] as string;
 
-      const { session: prevSession } = await this.authService.validateSessionToken(prevToken)
+      const { session: prevSession } = await authService.validateSessionToken(prevToken)
       if (prevSession) {
-        await this.authService.invalidateSession(prevSession.id)
+        await authService.invalidateSession(prevSession.id)
       }
 
-      const { session, token, user } = await this.authService.login(req.body)
+      const { session, token, user } = await authService.login(req.body)
       setSessionTokenCookie(res, SESSION_COOKIE_NAME, token, session.expiresAt)
       res.send({ ...user, roles: user.roles.map(role => role.name) })
     } catch (e) {
@@ -45,7 +48,7 @@ export class AuthController {
     }
   }
 
-  logOut = async (req: Request, res: Response) => {
+  const logOut: RequestHandler = async (req, res) => {
     const token = req.cookies[SESSION_COOKIE_NAME] as string || null
 
     if (!token) {
@@ -53,26 +56,26 @@ export class AuthController {
       return
     }
 
-    const { session } = await this.authService.validateSessionToken(token)
+    const { session } = await authService.validateSessionToken(token)
 
     if (!session) {
       res.sendStatus(200)
       return
     }
 
-    await this.authService.invalidateSession(session.id)
+    await authService.invalidateSession(session.id)
     deleteSessionTokenCookie(res, SESSION_COOKIE_NAME)
     res.sendStatus(200)
   }
 
-  validateSession: RequestHandler = async (req, res) => {
+  const validateSession: RequestHandler = async (req, res) => {
     const token = req.cookies[SESSION_COOKIE_NAME] as string || null
     if (!token) {
       res.sendStatus(401)
       return
     }
 
-    const { session, user } = await this.authService.validateSessionToken(token)
+    const { session, user } = await authService.validateSessionToken(token)
 
     if (!session) {
       res.sendStatus(401)
@@ -80,5 +83,12 @@ export class AuthController {
     }
 
     res.send({ ...user, roles: user.roles.map(role => role.name) })
+  }
+
+  return {
+    logIn,
+    logOut,
+    register,
+    validateSession,
   }
 }

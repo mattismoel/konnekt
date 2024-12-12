@@ -1,19 +1,19 @@
 import { Router } from "express";
-import { EventController } from "@/controller/event.controller";
+import { type EventController } from "@/controller/event.controller";
 import multer from "multer"
 import type { PermissionCheckerMiddleware } from "@/middleware/rbac";
 
 const upload = multer()
 
-const eventRouter = (
+export const createEventRouter = (
   eventController: EventController,
   permissionChecker: PermissionCheckerMiddleware,
 ): Router => {
   const router = Router()
 
-  router.get("/:id", eventController.getByID)
-  router.get("/", eventController.getAll)
-  router.post("/", permissionChecker(["event-create"]), eventController.create)
+  router.get("/:id", eventController.getOneEvent)
+  router.get("/", eventController.listEvents)
+  router.post("/", permissionChecker(["event-create"]), eventController.createEvent)
 
   router.post("/coverImage",
     permissionChecker(["event-create", "event-update"]),
@@ -21,9 +21,7 @@ const eventRouter = (
     eventController.uploadCoverImage,
   )
 
-  router.delete("/:id", permissionChecker(["event-delete"]), eventController.delete)
+  router.delete("/:id", permissionChecker(["event-delete"]), eventController.deleteEvent)
 
   return router
 }
-
-export default eventRouter;

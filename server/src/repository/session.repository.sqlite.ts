@@ -3,28 +3,35 @@ import type { CreateSessionDTO, Session } from "@/dto/session.dto";
 import type { SessionRepository } from "./session.repository";
 import { deleteSessionTx, getSessionByIDTx, insertSessionTx, setSessionExpiryTx } from "@/shared/db/session";
 
-export class SQLiteSessionRepository implements SessionRepository {
-  getByID = async (sessionID: string): Promise<Session | null> => {
+export const createSQLiteSessionRepository = (): SessionRepository => {
+  const getSessionByID = async (sessionID: string): Promise<Session | null> => {
     return await db.transaction(async (tx) => {
       return await getSessionByIDTx(tx, sessionID)
     })
   }
 
-  insert = async (session: CreateSessionDTO): Promise<void> => {
+  const insertSession = async (session: CreateSessionDTO): Promise<void> => {
     return await db.transaction(async (tx) => {
       return await insertSessionTx(tx, session)
     })
   }
 
-  delete = async (sessionID: string): Promise<void> => {
+  const deleteSession = async (sessionID: string): Promise<void> => {
     return await db.transaction(async (tx) => {
       return await deleteSessionTx(tx, sessionID)
     })
   }
 
-  setExpiry = async (sessionID: string, newExpiry: Date): Promise<void> => {
+  const setSessionExpiry = async (sessionID: string, newExpiry: Date): Promise<void> => {
     return await db.transaction(async (tx) => {
       return await setSessionExpiryTx(tx, sessionID, newExpiry)
     })
+  }
+
+  return {
+    insertSession,
+    getSessionByID,
+    deleteSession,
+    setSessionExpiry
   }
 }

@@ -1,15 +1,13 @@
+import type { AuthController } from "@/controller/auth.controller";
 import { Router } from "express";
-import { AuthController } from "@/controller/auth.controller";
 
-const authRouter = (authController: AuthController): Router => {
+export const createAuthRouter = (authController: AuthController): Router => {
   const router = Router()
 
   router.post("/register", authController.register)
-  router.post("/login", authController.login)
+  router.post("/login", authController.logIn)
   router.post("/log-out", authController.logOut)
   router.get("/validate-session", authController.validateSession)
 
   return router
 }
-
-export default authRouter;

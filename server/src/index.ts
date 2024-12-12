@@ -6,41 +6,41 @@ import loggerMiddleware, { ConsoleLogger } from "./middleware/logger";
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import { S3ObjectStorage } from "./shared/object-storage/object-storage.s3";
-import { EventController } from "./controller/event.controller";
-import { AuthController } from "./controller/auth.controller";
-import { EventService } from "./service/event.service";
-import { SQLiteEventRepository } from "./repository/event.repository.sqlite";
-import { AuthService } from "./service/auth.service";
-import { SQLiteSessionRepository } from "./repository/session.repository.sqlite";
-import { SQLiteUserRepository } from "./repository/user.repository.sqlite";
-import { RoleService } from "./service/role.service";
-import { GenreController } from "./controller/genre.controller";
-import { GenreService } from "./service/genre.service";
-import { SQLiteGenreRepository } from "./repository/genre.repository.sqlite";
-import { SQLiteRoleRepository } from "./repository/role.repository.sqlite";
 import { createPermissionChecker } from "./middleware/rbac";
+import { createEventController } from "./controller/event.controller";
+import { createAuthController } from "./controller/auth.controller";
+import { createGenreController } from "./controller/genre.controller";
+import { createEventService } from "./service/event.service";
+import { createAuthService } from "./service/auth.service";
+import { createGenreService } from "./service/genre.service";
+import { createRoleService } from "./service/role.service";
+import { createSQLiteEventRepository } from "./repository/event.repository.sqlite";
+import { createSQLiteSessionRepository } from "./repository/session.repository.sqlite";
+import { createSQLiteUserRepository } from "./repository/user.repository.sqlite";
+import { createSQLiteGenreRepository } from "./repository/genre.repository.sqlite";
+import { createSQLiteRoleRepository } from "./repository/role.repository.sqlite";
 
 const s3ObjectStorage = new S3ObjectStorage({
   bucket: "konnekt-bucket",
   region: "eu-north-1",
 })
 
-const eventRepo = new SQLiteEventRepository()
-const eventService = new EventService(eventRepo, s3ObjectStorage)
-const eventController = new EventController(eventService)
+const eventRepo = createSQLiteEventRepository()
+const eventService = createEventService(eventRepo, s3ObjectStorage)
+const eventController = createEventController(eventService)
 
-const sessionRepo = new SQLiteSessionRepository()
-const userRepo = new SQLiteUserRepository()
-const authService = new AuthService(sessionRepo, userRepo)
+const sessionRepo = createSQLiteSessionRepository()
+const userRepo = createSQLiteUserRepository()
+const authService = createAuthService(sessionRepo, userRepo)
 
-const authController = new AuthController(authService)
+const authController = createAuthController(authService)
 
-const genreRepo = new SQLiteGenreRepository()
-const genreService = new GenreService(genreRepo)
-const genreController = new GenreController(genreService)
+const genreRepo = createSQLiteGenreRepository()
+const genreService = createGenreService(genreRepo)
+const genreController = createGenreController(genreService)
 
-const roleRepo = new SQLiteRoleRepository()
-const roleService = new RoleService(roleRepo)
+const roleRepo = createSQLiteRoleRepository()
+const roleService = createRoleService(roleRepo)
 
 const logger = new ConsoleLogger()
 const permissionChecker = createPermissionChecker(authService, roleService)

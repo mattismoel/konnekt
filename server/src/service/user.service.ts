@@ -1,12 +1,16 @@
 import type { UserDTO } from "@/dto/user.dto";
 import type { UserRepository } from "@/repository/user.repository";
 
-export class UserService {
-  constructor(
-    private readonly userRepo: UserRepository,
-  ) { }
+export type UserService = {
+  getUserByID(id: number): Promise<UserDTO | null>
+}
 
-  getByID = async (id: number): Promise<UserDTO | null> => {
-    return await this.userRepo.getByID(id)
+export const createUserService = (userRepo: UserRepository): UserService => {
+  const getUserByID = async (id: number): Promise<UserDTO | null> => {
+    return await userRepo.getUserByID(id)
+  }
+
+  return {
+    getUserByID,
   }
 }
