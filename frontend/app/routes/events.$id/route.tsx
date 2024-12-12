@@ -32,7 +32,7 @@ const EventPage = () => {
 
   return (
     <main className="min-h-sub-nav pb-16 bg-black text-white">
-      <div className="relative bg-blue-200 h-[calc((100vh/4)*3)] overflow-hidden">
+      <div className="relative h-[calc((100vh/4)*3)] overflow-hidden">
         <img
           src={coverImageUrl}
           alt={title}
