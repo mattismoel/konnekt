@@ -11,7 +11,7 @@ export class SQLiteEventRepository implements EventRepository {
   }
 
   async delete(id: number): Promise<void> {
-    await db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       return await deleteEventTx(tx, id)
     })
   }

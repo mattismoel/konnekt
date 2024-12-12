@@ -23,7 +23,7 @@ export class SQLiteSessionRepository implements SessionRepository {
   }
 
   setExpiry = async (sessionID: string, newExpiry: Date): Promise<void> => {
-    return db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       return await setSessionExpiryTx(tx, sessionID, newExpiry)
     })
   }

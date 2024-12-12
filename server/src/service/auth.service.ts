@@ -105,7 +105,7 @@ export class AuthService {
 
     if (isAfter(now, subDays(session.expiresAt, SESSION_REFRESH_DAYS))) {
       session.expiresAt = addDays(now, SESSION_LIFETIME_DAYS)
-      this.sessionRepository.setExpiry(session.id, session.expiresAt)
+      await this.sessionRepository.setExpiry(session.id, session.expiresAt)
       return { session, user }
     }
 

@@ -29,7 +29,7 @@ export class AuthController {
 
       const { session: prevSession } = await this.authService.validateSessionToken(prevToken)
       if (prevSession) {
-        this.authService.invalidateSession(prevSession.id)
+        await this.authService.invalidateSession(prevSession.id)
       }
 
       const { session, token, user } = await this.authService.login(req.body)
