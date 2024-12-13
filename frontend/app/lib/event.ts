@@ -22,7 +22,7 @@ export const fetchEventByID = async (id: number): Promise<EventDTO | null> => {
     return null
   }
 
-  const event = eventSchema.parse(await res.json())
+  const event = eventSchema.nullable().parse(await res.json())
 
   // INFO: ARTIFICIAL DELAY
   //await sleep(1000)
@@ -49,7 +49,7 @@ export const fetchEvents = async (opts?: EventQueryOpts): Promise<EventListResul
   }
 
   // INFO: Artificial delay
-  await sleep(3000)
+  //await sleep(3000)
 
   const result = eventListSchema.parse(await res.json())
 
