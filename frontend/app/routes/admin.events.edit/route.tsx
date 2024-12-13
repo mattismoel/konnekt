@@ -6,11 +6,9 @@ import { fetchEventByID } from "@/lib/event";
 import { useSearchParams } from "@remix-run/react";
 import { fetchAllGenres } from "@/lib/genre";
 import { LoadingScreen } from "@/components/ui/loading-screen";
-import { sleep } from "@/lib/time";
 
 const EditEventPage = () => {
   const { addToast } = useToast()
-  //const { event, genres } = useLoaderData<typeof loader>()
 
   const [searchParams] = useSearchParams()
 
@@ -35,6 +33,8 @@ const EditEventPage = () => {
     const event = await fetchEventByID(parseInt(id))
 
     if (!event) {
+      addToast("Kunne ikke finde event...", "warning")
+      setLoading(false)
       throw new Error("No event found")
     }
 
