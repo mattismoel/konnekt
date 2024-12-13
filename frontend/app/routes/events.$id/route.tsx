@@ -1,32 +1,12 @@
-import env from "@/config/env"
-import { LoaderFunctionArgs } from "@remix-run/node"
 import { useParams } from "@remix-run/react"
-import { EventDTO, eventSchema } from "@/lib/dto/event.dto"
+import { EventDTO } from "@/lib/dto/event.dto"
 
 import { EventCalendar } from "@/components/events/event-calendar/event-calendar";
 import { EventDetails } from "./event-details";
 import { EventCaroussel } from "@/components/events/event-caroussel";
 import { useEffect, useState } from "react";
-import { fetchEventByID } from "@/lib/event";
-
-export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const id = parseInt(params.id || "")
-
-  const res = await fetch(`${env.BACKEND_URL}/events/${id}`)
-
-  if (!res.ok) {
-    throw new Error(`Could not fetch for event with id ${id}: ${res.status}`)
-  }
-
-  const data = await res.json()
-
-  const event = eventSchema.parse(data)
-  return {
-    event,
-    weeklyEvents: [] as EventDTO[],
-    recommendedEvents: [] as EventDTO[],
-  }
-}
+import { fetchEventByID, fetchEvents } from "@/lib/event";
+import { endOfWeek, startOfDay, startOfWeek } from "date-fns";
 
 const EventPage = () => {
   const { id } = useParams()
@@ -38,13 +18,30 @@ const EventPage = () => {
 
   const handleFetchEvent = async () => {
     setLoading(true)
+
     const event = await fetchEventByID(parseInt(id || "1"))
 
     if (!event) {
       throw new Error("Could not load event")
     }
 
+    const { events: weeklyEvents } = await fetchEvents({
+      fromDate: startOfWeek(event.fromDate),
+      toDate: endOfWeek(event.fromDate)
+    })
+
+    setWeeklyEvents(weeklyEvents)
+
+    const { events: recommendedEvents } = await fetchEvents({
+      limit: 5,
+      fromDate: startOfDay(new Date()),
+    })
+
+    // Filter out the actual event from the recommended.
+    setRecommendedEvents(recommendedEvents.filter(e => e.id !== event.id))
+
     setEvent(event)
+
     setLoading(false)
   }
 
@@ -61,7 +58,7 @@ const EventPage = () => {
         <h2 className="font-bold text-2xl">Billetten gælder også til.</h2>
         <EventCalendar activeID={event?.id} events={weeklyEvents} className="h-64" />
         <h1 className="font-bold text-4xl mb-12">Se også.</h1>
-        <EventCaroussel events={[]} />
+        <EventCaroussel events={recommendedEvents} />
       </div>
     </main>
   )
