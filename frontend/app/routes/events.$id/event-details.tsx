@@ -23,7 +23,7 @@ export const EventDetails = ({ event, isLoading }: Props) => {
       />
       {/* FADER */}
       <Fader direction="to-bottom" />
-      <div className="absolute bottom-0 left-0 pb-12 px-12 space-y-2 z-50">
+      <div className="absolute bottom-0 left-0 pb-12 px-12 space-y-2">
         <h1 className={cn(
           "w-full text-5xl md:text-8xl font-bold mb-2",
         )}>{event?.title}</h1>
