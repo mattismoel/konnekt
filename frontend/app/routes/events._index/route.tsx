@@ -36,7 +36,7 @@ const EventsPage = () => {
   return (
     <main className="px-auto py-20 min-h-sub-nav">
       <h1 className="text-2xl font-bold mb-4">Kommende events.</h1>
-      <EventGrid className="mb-4" events={events} loading={loading} />
+      <EventGrid className="mb-4" events={events} isLoading={loading} />
       <Paginator
         totalPages={totalPageCount}
         currentPage={page}

@@ -1,5 +1,6 @@
 import { differenceInMilliseconds } from "date-fns";
 import { EventDTO, EventListResult, eventListSchema, eventSchema } from "./dto/event.dto";
+import { sleep } from "./time";
 
 type EventQueryOpts = {
   limit?: number;
@@ -23,6 +24,9 @@ export const fetchEventByID = async (id: number): Promise<EventDTO | null> => {
 
   const event = eventSchema.parse(await res.json())
 
+  // INFO: ARTIFICIAL DELAY
+  //await sleep(1000)
+
   return event
 }
 
@@ -43,6 +47,9 @@ export const fetchEvents = async (opts?: EventQueryOpts): Promise<EventListResul
     console.error(`Could not list events: ${res.statusText}`)
     return { events: [], totalSize: 0 }
   }
+
+  // INFO: Artificial delay
+  await sleep(3000)
 
   const result = eventListSchema.parse(await res.json())
 

@@ -45,3 +45,7 @@ export const distanceBetweenTimesOfDay = (d1: Date, d2: Date): number => {
 
   return diff
 }
+
+export const sleep = async (ms: number = 1000): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
