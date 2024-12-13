@@ -42,7 +42,7 @@ export const createEventController = (eventService: EventService): EventControll
   }
 
   const listEvents: RequestHandler = async (req, res): Promise<void> => {
-    const { page, limit, pageSize, search } = req.query
+    const { page, limit, pageSize, search, fromDate, toDate } = req.query
 
     //TODO: Implement maximum page size - fallback to DEFAULT_PAGE_SIZE.
 
@@ -50,7 +50,9 @@ export const createEventController = (eventService: EventService): EventControll
       page: page ? parseInt(page as string, 10) : 1,
       limit: limit ? parseInt(limit as string, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize as string, 10) : DEFAULT_PAGE_SIZE,
-      search: search as string || undefined
+      search: search as string || undefined,
+      fromDate: fromDate ? new Date(fromDate as string) : undefined,
+      toDate: toDate ? new Date(toDate as string) : undefined,
     })
 
     res.json(result)

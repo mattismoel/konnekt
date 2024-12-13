@@ -5,6 +5,8 @@ export type EventQueryOpts = {
   limit: number | undefined,
   pageSize: number | undefined,
   search: string | undefined,
+  fromDate: Date | undefined,
+  toDate: Date | undefined,
 }
 
 export type EventListResult = {
