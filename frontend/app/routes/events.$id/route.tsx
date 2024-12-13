@@ -8,6 +8,7 @@ import { EventDetails } from "./event-details";
 import { EventCaroussel } from "@/components/events/event-caroussel";
 import { useEffect, useState } from "react";
 import { fetchEventByID } from "@/lib/event";
+import { Spinner } from "@/components/ui/spinner";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const id = parseInt(params.id || "")
@@ -54,6 +55,7 @@ const EventPage = () => {
 
   if (loading) return (
     <main className="h-dvh w-screen flex flex-col gap-2 items-center justify-center">
+      <Spinner />
       <p>Loader event...</p>
     </main>
   )
