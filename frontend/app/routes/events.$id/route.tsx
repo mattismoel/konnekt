@@ -1,6 +1,6 @@
 import env from "@/config/env"
 import { LoaderFunctionArgs } from "@remix-run/node"
-import { useLoaderData, useParams } from "@remix-run/react"
+import { useParams } from "@remix-run/react"
 import { EventDTO, eventSchema } from "@/lib/dto/event.dto"
 
 import { EventCalendar } from "@/components/events/event-calendar/event-calendar";
