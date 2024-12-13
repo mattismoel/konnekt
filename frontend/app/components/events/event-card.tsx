@@ -73,11 +73,11 @@ const Skeleton = () => {
       className="relative w-full h-64 overflow-hidden bg-zinc-900 rounded-md animate-pulse"
     >
       <div
-        className="flex flex-col px-5 pb-5 absolute bottom-0 left-0 text-white md:translate-y-full md:group-hover:translate-y-0 transition-all duration-100"
+        className="w-full flex flex-col px-5 pb-5 absolute bottom-0 left-0"
       >
         <div
           className="h-8 mb-6 bg-zinc-800 rounded-md"
-          style={{ width: `calc(200px + 200px * ${Math.random()})` }}
+          style={{ width: `calc(100% * ${Math.random()})` }}
         ></div>
         <div className="h-4 w-24 bg-zinc-800 rounded-full"></div>
       </div>
