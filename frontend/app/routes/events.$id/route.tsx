@@ -8,7 +8,6 @@ import { EventDetails } from "./event-details";
 import { EventCaroussel } from "@/components/events/event-caroussel";
 import { useEffect, useState } from "react";
 import { fetchEventByID } from "@/lib/event";
-import { Spinner } from "@/components/ui/spinner";
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const id = parseInt(params.id || "")
@@ -53,29 +52,9 @@ const EventPage = () => {
     handleFetchEvent()
   }, [])
 
-  if (loading) return (
-    <main className="h-dvh w-screen flex flex-col gap-2 items-center justify-center">
-      <Spinner />
-      <p>Loader event...</p>
-    </main>
-  )
   return (
     <main className="min-h-sub-nav pb-16 bg-black text-white">
-      <div className="relative h-[calc((100vh/4)*3)] overflow-hidden">
-        <img
-          src={event?.coverImageUrl}
-          alt={event?.title}
-          className="h-full w-full object-cover"
-        />
-        <div
-          className="absolute bottom-0 left-0 h-2/3 w-full bg-gradient-to-t from-black"
-        ></div>
-        <div className="absolute w-full bottom-0 left-0 p-8 flex flex-col">
-          <h1 className="w-full text-5xl md:text-8xl font-bold mb-2">{event?.title}</h1>
-          <EventDetails event={event || {} as EventDTO} />
-        </div>
-      </div>
-
+      <EventDetails event={event} isLoading={loading} />
       <article dangerouslySetInnerHTML={{ __html: event?.description || "" }} className="px-auto pt-20 pb-16 text-gray-400 prose prose-invert max-w-none">
       </article>
       <div className="px-auto">
