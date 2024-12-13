@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 
 type Props = {
   event: EventDTO | undefined;
-  loading: boolean;
+  isLoading: boolean;
 }
 
-export const EventCard = ({ event, loading }: Props) => {
+export const EventCard = ({ event, isLoading }: Props) => {
   const [mousePosX, setMousePosX] = useState(0);
   const [mousePosY, setMousePosY] = useState(0);
 
@@ -23,6 +23,8 @@ export const EventCard = ({ event, loading }: Props) => {
     setIsFocused(!isFocused)
   }
 
+  if (isLoading) return <Skeleton />
+
   return (
     <a
       className={cn("group")}
@@ -30,10 +32,9 @@ export const EventCard = ({ event, loading }: Props) => {
       onMouseEnter={toggleFocus}
       onMouseLeave={toggleFocus}
     >
-      <div className={cn("bg-zinc-900 h-64 w-full animate-pulse", { "hidden": !loading })}></div>
       <div
         role="none"
-        className={cn("relative w-full h-64 overflow-hidden", { "hidden": loading })}
+        className={"relative w-full h-64 overflow-hidden"}
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           setMousePos(e.clientX - rect.left, e.clientY - rect.top);
@@ -65,3 +66,21 @@ export const EventCard = ({ event, loading }: Props) => {
   )
 }
 
+
+const Skeleton = () => {
+  return (
+    <div
+      className="relative w-full h-64 overflow-hidden bg-zinc-900 rounded-md animate-pulse"
+    >
+      <div
+        className="flex flex-col px-5 pb-5 absolute bottom-0 left-0 text-white md:translate-y-full md:group-hover:translate-y-0 transition-all duration-100"
+      >
+        <div
+          className="h-8 mb-6 bg-zinc-800 rounded-md"
+          style={{ width: `calc(200px + 200px * ${Math.random()})` }}
+        ></div>
+        <div className="h-4 w-24 bg-zinc-800 rounded-full"></div>
+      </div>
+    </div>
+  )
+}
