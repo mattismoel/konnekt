@@ -11,7 +11,7 @@ export const EventCaroussel = ({ events }: Props) => {
       {events.map(event => {
         return (
           <div key={event.id} className="scroll-pl-2 h-full sm:w-72 md:w-96 flex-shrink-0 snap-center">
-            <EventCard event={event} />
+            <EventCard event={event} isLoading={false} />
           </div>
         )
       })}
