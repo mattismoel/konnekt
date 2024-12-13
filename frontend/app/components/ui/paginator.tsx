@@ -8,12 +8,12 @@ type Props = {
 
 export const Paginator = ({ totalPages, currentPage, onSelect }: Props) => {
   return (
-    <div className="w-full flex justify-center gap-4">
+    <div className="w-full flex justify-center">
       {[...Array(totalPages)].map((_, i) => {
         const page = i + 1
         return (
           <button
-            className={cn({ "font-bold": page === currentPage })}
+            className={cn("px-4 py-1", { "font-bold bg-zinc-900 rounded-md": page === currentPage })}
             onClick={() => onSelect(page)}
           >
             {page}
