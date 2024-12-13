@@ -69,12 +69,9 @@ export const EventCard = ({ event, isLoading }: Props) => {
 
 const Skeleton = () => {
   return (
-    <div
-      className="relative w-full h-64 overflow-hidden bg-zinc-900 rounded-md animate-pulse"
-    >
-      <div
-        className="w-full flex flex-col px-5 pb-5 absolute bottom-0 left-0"
-      >
+    <div className="relative w-full h-64 overflow-hidden bg-zinc-900 rounded-md 
+      animate-pulse">
+      <div className="w-full flex flex-col px-5 pb-5 absolute bottom-0 left-0">
         <div
           className="h-8 mb-6 bg-zinc-800 rounded-md"
           style={{ width: `calc(100% * ${Math.random()})` }}
