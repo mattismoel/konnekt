@@ -1,47 +1,18 @@
-import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { EventDTO, eventListSchema, eventSchema } from "@/lib/dto/event.dto";
 import { useToast } from "@/lib/context/toast.provider";
-import env from "@/config/env";
 import { BiPlus } from "react-icons/bi";
 import { EventEntry } from "@/routes/admin.dashboard.events/event-entry";
-import { useEffect, useState } from "react";
 import { fetchEvents } from "@/lib/event";
-
-export const loader = async () => {
-  const res = await fetch(`${env.BACKEND_URL}/events`)
-
-  if (!res.ok) {
-    throw new Error(`Could not fetch events: ${res.status}`)
-  }
-
-  const data = await res.json()
-
-  const { events, totalSize } = eventListSchema.parse(data)
-
-  return {
-    events,
-    totalSize
-  }
-}
+import { useQuery } from "@tanstack/react-query";
+import { startOfToday } from "date-fns";
 
 const EventsPage = () => {
   const { addToast } = useToast()
-  const { revalidate } = useRevalidator()
 
-  const [events, setEvents] = useState<EventDTO[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const handleFetchEvents = async () => {
-    setLoading(true)
-    const { events, totalSize } = await fetchEvents()
-    setEvents(events)
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    handleFetchEvents()
-  }, [])
+  const { isPending, error, data: eventsResult, refetch } = useQuery({
+    queryKey: ["events"],
+    queryFn: () => fetchEvents({ limit: 8, fromDate: startOfToday() })
+  })
 
   const deleteEvent = async (id: number) => {
     if (!confirm(`Delete event with id ${id}?`)) {
@@ -59,9 +30,10 @@ const EventsPage = () => {
       addToast("Kunne ikke slette event.", "error")
     }
 
-    handleFetchEvents()
-    //revalidate()
+    refetch()
   }
+
+  if (error) return "Error"
 
   return (
     <Card className="min-w-xl">
@@ -72,10 +44,10 @@ const EventsPage = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {loading ? (<p className="italic text-foreground/50">Loading...</p>) : (
-          events.length > 0 ? (
+        {isPending ? (<p className="italic text-foreground/50">Loader events...</p>) : (
+          eventsResult.events.length > 0 ? (
             <div className="relative overflow-y-scroll">
-              {events.map(event => (
+              {eventsResult.events.map(event => (
                 <EventEntry key={event.id} event={event} onDelete={() => deleteEvent(event.id)} />
               ))}
             </div>
