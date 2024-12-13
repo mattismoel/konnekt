@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/lib/context/toast.provider";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 
 type Props = {
   show: boolean;
@@ -17,12 +18,14 @@ export const ImageSelectorModal = ({ show, name, onClose, onUploaded }: Props) =
   const { addToast } = useToast()
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [previewURL, setPreviewURL] = useState("")
+  const [uploading, setUploading] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   const handleSubmit = async () => {
     if (!imageFile) return
+    setUploading(true)
 
     const formData = new FormData()
 
@@ -44,6 +47,7 @@ export const ImageSelectorModal = ({ show, name, onClose, onUploaded }: Props) =
     console.log(url)
 
     onUploaded(url)
+    setUploading(false)
     dialogRef.current?.close()
   }
 
@@ -98,7 +102,7 @@ export const ImageSelectorModal = ({ show, name, onClose, onUploaded }: Props) =
           disabled={previewURL === ""}
           onClick={handleSubmit}
         >
-          Upload
+          {uploading ? <Spinner /> : "Upload"}
         </Button>
       </div>
 
