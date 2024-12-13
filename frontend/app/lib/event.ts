@@ -7,6 +7,8 @@ type EventQueryOpts = {
   page?: number;
   pageSize?: number;
   search?: string;
+  fromDate?: Date;
+  toDate?: Date;
 }
 
 /**
@@ -34,13 +36,16 @@ export const fetchEventByID = async (id: number): Promise<EventDTO | null> => {
  * @description Gets all events.
  */
 export const fetchEvents = async (opts?: EventQueryOpts): Promise<EventListResult> => {
-  const { page, limit, pageSize, search } = opts || {}
+  const { page, limit, pageSize, search, fromDate, toDate } = opts || {}
   const url = new URL(`${window.ENV.BACKEND_URL}/events`)
 
   if (page) url.searchParams.set("page", page.toString())
   if (limit) url.searchParams.set("limit", limit.toString())
   if (pageSize) url.searchParams.set("pageSize", pageSize.toString())
   if (search) url.searchParams.set("search", search)
+
+  if (fromDate) url.searchParams.set("fromDate", fromDate.toISOString())
+  if (toDate) url.searchParams.set("toDate", toDate.toISOString())
 
   const res = await fetch(url)
   if (!res.ok) {
