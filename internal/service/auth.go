@@ -31,39 +31,33 @@ func NewAuthService(userRepo user.Repository, authRepo auth.Repository) (*AuthSe
 	}, nil
 }
 
-func (srv AuthService) Register(ctx context.Context, email string, password []byte, passwordConfirm []byte, firstName, lastName string) (auth.Session, auth.SessionToken, error) {
+func (srv AuthService) Register(ctx context.Context, email string, password []byte, passwordConfirm []byte, firstName, lastName string) (auth.SessionToken, time.Time, error) {
 	// Return if user already exists.
 	_, err := srv.userRepo.ByEmail(ctx, email)
 	if err != nil {
-		return auth.Session{}, "", user.ErrAlreadyExists
+		return "", time.Time{}, user.ErrAlreadyExists
 	}
 
 	if err := auth.DoPasswordsMatch(password, passwordConfirm); err != nil {
-		return auth.Session{}, "", err
+		return "", time.Time{}, err
 	}
 
 	hash, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 	if err != nil {
-		return auth.Session{}, "", err
+		return "", time.Time{}, err
 	}
 
 	userID, err := srv.userRepo.Insert(ctx, email, firstName, lastName, hash)
 	if err != nil {
-		return auth.Session{}, "", err
+		return "", time.Time{}, err
 	}
 
-	sessionToken, err := auth.NewSessionToken()
+	token, expiry, err := srv.createSession(ctx, userID)
 	if err != nil {
-		return auth.Session{}, "", err
+		return "", time.Time{}, err
 	}
 
-	session := auth.NewSession(sessionToken, userID, SESSION_LIFETIME)
-
-	if err := srv.authRepo.InsertSession(ctx, session); err != nil {
-		return auth.Session{}, "", err
-	}
-
-	return session, sessionToken, nil
+	return token, expiry, nil
 }
 
 func (srv AuthService) validateUser(ctx context.Context, email string, password []byte) (user.User, error) {
@@ -94,20 +88,20 @@ func (srv AuthService) clearUserSession(ctx context.Context, userID int64) error
 	return nil
 }
 
-func (srv AuthService) createSession(ctx context.Context, userID int64) (auth.SessionToken, error) {
+func (srv AuthService) createSession(ctx context.Context, userID int64) (auth.SessionToken, time.Time, error) {
 	token, err := auth.NewSessionToken()
 	if err != nil {
-		return "", err
+		return "", time.Time{}, err
 	}
 
 	session := auth.NewSession(token, userID, SESSION_LIFETIME)
 
 	err = srv.authRepo.InsertSession(ctx, session)
 	if err != nil {
-		return "", err
+		return "", time.Time{}, err
 	}
 
-	return token, nil
+	return token, session.ExpiresAt, nil
 }
 
 func (srv AuthService) Login(ctx context.Context, email string, password []byte) (auth.SessionToken, time.Time, error) {
@@ -121,10 +115,10 @@ func (srv AuthService) Login(ctx context.Context, email string, password []byte)
 		return "", time.Time{}, err
 	}
 
-	token, err := srv.createSession(ctx, usr.ID)
+	token, expiry, err := srv.createSession(ctx, usr.ID)
 	if err != nil {
 		return "", time.Time{}, err
 	}
 
-	return token, time.Time{}, nil
+	return token, expiry, nil
 }
