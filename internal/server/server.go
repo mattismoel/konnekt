@@ -5,11 +5,14 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
 type Server struct {
 	mux  *chi.Mux
 	addr string
+
+	authService *service.AuthService
 }
 
 type CfgFunc func(s *Server) error
@@ -28,6 +31,13 @@ func New(cfgs ...CfgFunc) (*Server, error) {
 	s.setupRoutes()
 
 	return s, nil
+}
+
+func WithAuthService(authService *service.AuthService) CfgFunc {
+	return func(s *Server) error {
+		s.authService = authService
+		return nil
+	}
 }
 
 func WithAddress(addr string) CfgFunc {
