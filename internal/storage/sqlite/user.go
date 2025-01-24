@@ -36,6 +36,10 @@ func (repo UserRepository) Insert(ctx context.Context, email string, firstName s
 
 	userID, err := insertUser(ctx, tx, email, firstName, lastName, passwordHash)
 	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserAlreadyExists):
+			return 0, user.ErrAlreadyExists
+		}
 		return 0, err
 	}
 
@@ -96,7 +100,7 @@ func (repo UserRepository) PasswordHash(ctx context.Context, userID int64) (user
 
 func insertUser(ctx context.Context, tx *sql.Tx, email string, firstName string, lastName string, passwordHash []byte) (int64, error) {
 	query := `
-	INSERT INTO user (email, first_name, last_name, password_hash) 
+	INSERT OR IGNORE INTO user (email, first_name, last_name, password_hash) 
 	VALUES (@email, @first_name, @last_name, @password_hash)`
 
 	res, err := tx.ExecContext(ctx, query,
@@ -108,6 +112,15 @@ func insertUser(ctx context.Context, tx *sql.Tx, email string, firstName string,
 
 	if err != nil {
 		return 0, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	if rowsAffected <= 0 {
+		return 0, ErrUserAlreadyExists
 	}
 
 	userID, err := res.LastInsertId()
@@ -158,7 +171,6 @@ func userPasswordHash(ctx context.Context, tx *sql.Tx, userID int64) ([]byte, er
 }
 
 func (u User) ToInternal() user.User {
-
 	return user.User{
 		ID:           u.ID,
 		FirstName:    u.FirstName,
