@@ -60,6 +60,41 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 	return token, expiry, nil
 }
 
+func (srv AuthService) Login(ctx context.Context, email string, password []byte) (auth.SessionToken, time.Time, error) {
+	usr, err := srv.validateUser(ctx, email, password)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	err = srv.clearUserSession(ctx, usr.ID)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	token, expiry, err := srv.createSession(ctx, usr.ID)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	return token, expiry, nil
+}
+
+func (srv AuthService) LogOut(ctx context.Context, token auth.SessionToken) error {
+	sessionID := token.SessionID()
+
+	session, err := srv.authRepo.Session(ctx, sessionID)
+	if err != nil {
+		return err
+	}
+
+	err = srv.authRepo.DeleteUserSession(ctx, session.UserID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (srv AuthService) validateUser(ctx context.Context, email string, password []byte) (user.User, error) {
 	// Return early if user does not exist.
 	usr, err := srv.userRepo.ByEmail(ctx, email)
@@ -102,39 +137,4 @@ func (srv AuthService) createSession(ctx context.Context, userID int64) (auth.Se
 	}
 
 	return token, session.ExpiresAt, nil
-}
-
-func (srv AuthService) Login(ctx context.Context, email string, password []byte) (auth.SessionToken, time.Time, error) {
-	usr, err := srv.validateUser(ctx, email, password)
-	if err != nil {
-		return "", time.Time{}, err
-	}
-
-	err = srv.clearUserSession(ctx, usr.ID)
-	if err != nil {
-		return "", time.Time{}, err
-	}
-
-	token, expiry, err := srv.createSession(ctx, usr.ID)
-	if err != nil {
-		return "", time.Time{}, err
-	}
-
-	return token, expiry, nil
-}
-
-func (srv AuthService) LogOut(ctx context.Context, token auth.SessionToken) error {
-	sessionID := token.SessionID()
-
-	session, err := srv.authRepo.Session(ctx, sessionID)
-	if err != nil {
-		return err
-	}
-
-	err = srv.authRepo.DeleteUserSession(ctx, session.UserID)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
