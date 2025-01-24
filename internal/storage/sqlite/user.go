@@ -1,0 +1,169 @@
+package sqlite
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	"github.com/mattismoel/konnekt/internal/domain/user"
+)
+
+type User struct {
+	ID           int64
+	Email        string
+	FirstName    string
+	LastName     string
+	PasswordHash []byte
+}
+
+type UserRepository struct {
+	db *sql.DB
+}
+
+func NewUserRepository(db *sql.DB) (*UserRepository, error) {
+	return &UserRepository{
+		db: db,
+	}, nil
+}
+
+func (repo UserRepository) Insert(ctx context.Context, email string, firstName string, lastName string, passwordHash []byte) (int64, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	defer tx.Rollback()
+
+	userID, err := insertUser(ctx, tx, email, firstName, lastName, passwordHash)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return userID, nil
+}
+
+func (repo UserRepository) ByEmail(ctx context.Context, email string) (user.User, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return user.User{}, err
+	}
+
+	defer tx.Rollback()
+
+	usr, err := userByEmail(ctx, tx, email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return user.User{}, user.ErrNotFound
+		}
+
+		return user.User{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return user.User{}, err
+	}
+
+	return usr.ToInternal(), nil
+}
+
+func (repo UserRepository) PasswordHash(ctx context.Context, userID int64) (user.PasswordHash, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback()
+
+	ph, err := userPasswordHash(ctx, tx, userID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrNotFound
+		}
+
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return ph, nil
+}
+
+func insertUser(ctx context.Context, tx *sql.Tx, email string, firstName string, lastName string, passwordHash []byte) (int64, error) {
+	query := `
+	INSERT INTO user (email, first_name, last_name, password_hash) 
+	VALUES (@email, @first_name, @last_name, @password_hash)`
+
+	res, err := tx.ExecContext(ctx, query,
+		sql.Named("email", email),
+		sql.Named("first_name", firstName),
+		sql.Named("last_name", lastName),
+		sql.Named("password_hash", passwordHash),
+	)
+
+	if err != nil {
+		return 0, err
+	}
+
+	userID, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return userID, nil
+}
+
+func userByEmail(ctx context.Context, tx *sql.Tx, email string) (User, error) {
+	query := `
+  SELECT id, first_name, last_name, password_hash FROM user
+  WHERE email = @email`
+
+	var id int64
+	var firstName, lastName string
+	var passwordHash []byte
+
+	err := tx.QueryRowContext(ctx, query, sql.Named("email", email)).Scan(
+		&id, &firstName, &lastName, &passwordHash,
+	)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	return User{
+		ID:           id,
+		Email:        email,
+		FirstName:    firstName,
+		LastName:     lastName,
+		PasswordHash: passwordHash,
+	}, nil
+}
+
+func userPasswordHash(ctx context.Context, tx *sql.Tx, userID int64) ([]byte, error) {
+	query := `SELECT password_hash FROM user WHERE id = @id`
+
+	var passwordHash []byte
+
+	err := tx.QueryRowContext(ctx, query, sql.Named("id", userID)).Scan(&passwordHash)
+	if err != nil {
+		return nil, err
+	}
+
+	return passwordHash, nil
+}
+
+func (u User) ToInternal() user.User {
+
+	return user.User{
+		ID:           u.ID,
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Email:        u.LastName,
+		PasswordHash: u.PasswordHash,
+	}
+}
