@@ -17,6 +17,7 @@ const (
 var (
 	ErrPasswordsNoMatch   = APIError{Message: "Passwords do not match", Status: http.StatusBadRequest}
 	ErrUserAlreadyExists  = APIError{Message: "User already exists", Status: http.StatusConflict}
+	ErrInvalidCredentials = APIError{Message: "User credentials are invalid", Status: http.StatusBadRequest}
 )
 
 func (s Server) handleRegister() http.HandlerFunc {
@@ -59,8 +60,38 @@ func (s Server) handleRegister() http.HandlerFunc {
 		writeSessionCookie(w, token, session.ExpiresAt)
 	}
 }
+
 func (s Server) handleLogin() http.HandlerFunc {
+	type LoginLoad struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
+		var load LoginLoad
+
+		err := json.NewDecoder(r.Body).Decode(&load)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		ctx := r.Context()
+
+		token, expiry, err := s.authService.Login(ctx, load.Email, []byte(load.Password))
+		if err != nil {
+			switch {
+			case errors.Is(err, user.ErrNotFound):
+				writeError(w, ErrInvalidCredentials)
+			case errors.Is(err, auth.ErrPasswordsNoMatch):
+				writeError(w, ErrInvalidCredentials)
+			default:
+				writeError(w, err)
+			}
+			return
+		}
+
+		writeSessionCookie(w, token, expiry)
 	}
 }
 
