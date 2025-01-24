@@ -122,3 +122,19 @@ func (srv AuthService) Login(ctx context.Context, email string, password []byte)
 
 	return token, expiry, nil
 }
+
+func (srv AuthService) LogOut(ctx context.Context, token auth.SessionToken) error {
+	sessionID := token.SessionID()
+
+	session, err := srv.authRepo.Session(ctx, sessionID)
+	if err != nil {
+		return err
+	}
+
+	err = srv.authRepo.DeleteUserSession(ctx, session.UserID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

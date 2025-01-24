@@ -95,6 +95,36 @@ func (s Server) handleLogin() http.HandlerFunc {
 	}
 }
 
+func (s Server) handleLogOut() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sessionCookie, err := r.Cookie(SESSION_COOKIE_NAME)
+		if err != nil {
+			switch {
+			case errors.Is(err, http.ErrNoCookie):
+				break
+			default:
+				writeError(w, err)
+				return
+			}
+		}
+
+		token := sessionCookie.Value
+
+		err = s.authService.LogOut(r.Context(), auth.SessionToken(token))
+		if err != nil {
+			switch {
+			case errors.Is(err, auth.ErrNoSession):
+				break
+			default:
+				writeError(w, err)
+				return
+			}
+		}
+
+		clearSessionCookie(w)
+	}
+}
+
 func writeSessionCookie(w http.ResponseWriter, token auth.SessionToken, expiresAt time.Time) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     SESSION_COOKIE_NAME,
@@ -104,5 +134,17 @@ func writeSessionCookie(w http.ResponseWriter, token auth.SessionToken, expiresA
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 		Expires:  expiresAt,
+	})
+}
+
+func clearSessionCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     SESSION_COOKIE_NAME,
+		Value:    "",
+		MaxAge:   0,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
 	})
 }
