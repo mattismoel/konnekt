@@ -8,6 +8,8 @@ import (
 	"github.com/mattismoel/konnekt/internal/domain/user"
 )
 
+var _ user.Repository = (*UserRepository)(nil)
+
 type User struct {
 	ID           int64
 	Email        string
@@ -48,6 +50,27 @@ func (repo UserRepository) Insert(ctx context.Context, email string, firstName s
 	}
 
 	return userID, nil
+}
+
+func (repo UserRepository) ByID(ctx context.Context, userID int64) (user.User, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return user.User{}, err
+	}
+
+	defer tx.Rollback()
+
+	usr, err := userByID(ctx, tx, userID)
+	if err != nil {
+		return user.User{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return user.User{}, err
+	}
+
+	return usr.ToInternal(), nil
+
 }
 
 func (repo UserRepository) ByEmail(ctx context.Context, email string) (user.User, error) {
@@ -150,6 +173,31 @@ func userByEmail(ctx context.Context, tx *sql.Tx, email string) (User, error) {
 
 	return User{
 		ID:           id,
+		Email:        email,
+		FirstName:    firstName,
+		LastName:     lastName,
+		PasswordHash: passwordHash,
+	}, nil
+}
+
+func userByID(ctx context.Context, tx *sql.Tx, userID int64) (User, error) {
+	query := `
+  SELECT email, first_name, last_name, password_hash FROM user
+  WHERE id = @user_id`
+
+	var email, firstName, lastName string
+	var passwordHash []byte
+
+	err := tx.QueryRowContext(ctx, query, sql.Named("user_id", userID)).Scan(
+		&email, &firstName, &lastName, &passwordHash,
+	)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	return User{
+		ID:           userID,
 		Email:        email,
 		FirstName:    firstName,
 		LastName:     lastName,

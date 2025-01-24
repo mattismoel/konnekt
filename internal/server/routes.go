@@ -10,4 +10,8 @@ func (s *Server) setupRoutes() {
 		r.Post("/register", s.handleRegister())
 		r.Post("/log-out", s.handleLogOut())
 	})
+
+	s.mux.Route("/events", func(r chi.Router) {
+		r.Post("/", s.withPermissions(s.handleCreateEvent(), "event-create"))
+	})
 }

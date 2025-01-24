@@ -18,6 +18,7 @@ var (
 	ErrPasswordsNoMatch   = APIError{Message: "Passwords do not match", Status: http.StatusBadRequest}
 	ErrUserAlreadyExists  = APIError{Message: "User already exists", Status: http.StatusConflict}
 	ErrInvalidCredentials = APIError{Message: "User credentials are invalid", Status: http.StatusBadRequest}
+	ErrUnauthorized       = APIError{Message: "User unauthorized", Status: http.StatusUnauthorized}
 )
 
 func (s Server) handleRegister() http.HandlerFunc {

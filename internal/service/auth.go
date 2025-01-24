@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
@@ -13,10 +12,6 @@ import (
 const (
 	SESSION_LIFETIME       = 30 * 24 * time.Hour // 30 day expiry.
 	SESSION_REFRESH_BUFFER = 15 * 24 * time.Hour // 15 day refresh buffer.
-)
-
-var (
-	ErrNoSession = errors.New("No such session")
 )
 
 type AuthService struct {
@@ -93,6 +88,57 @@ func (srv AuthService) LogOut(ctx context.Context, token auth.SessionToken) erro
 	}
 
 	return nil
+}
+
+func (srv AuthService) Session(ctx context.Context, id auth.SessionID) (auth.Session, error) {
+	session, err := srv.authRepo.Session(ctx, id)
+	if err != nil {
+		return auth.Session{}, err
+	}
+
+	return session, nil
+}
+
+// Checks whether or not a user has all required permissions.
+func (srv AuthService) HasPermission(ctx context.Context, userID int64, permNames ...string) error {
+	userPermissions, err := srv.userPermissions(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	err = userPermissions.ContainsAll(permNames...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (srv AuthService) userPermissions(ctx context.Context, userID int64) (auth.PermissionCollection, error) {
+	usr, err := srv.userRepo.ByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	userRoles, err := srv.authRepo.UserRoles(ctx, usr.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	userPerms := auth.PermissionCollection(make([]auth.Permission, 0))
+
+	for _, role := range userRoles {
+		rolePerms, err := srv.authRepo.RolePermissions(ctx, role.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		// Add the role perms to the users permissions.
+		userPerms = append(userPerms, rolePerms...)
+	}
+
+	return userPerms, nil
+
 }
 
 func (srv AuthService) validateUser(ctx context.Context, email string, password []byte) (user.User, error) {

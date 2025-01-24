@@ -15,6 +15,18 @@ type Session struct {
 	ExpiresAt time.Time
 }
 
+type Role struct {
+	ID          int64
+	Name        string
+	Description string
+}
+
+type Permission struct {
+	ID          int64
+	Name        string
+	Description string
+}
+
 var _ auth.Repository = (*AuthRepository)(nil)
 
 type AuthRepository struct {
@@ -110,6 +122,136 @@ func (repo AuthRepository) DeleteUserSession(ctx context.Context, userID int64) 
 
 }
 
+func (repo AuthRepository) UserRoles(ctx context.Context, userID int64) ([]auth.Role, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback()
+
+	dbRoles, err := userRoles(ctx, tx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	roles := make([]auth.Role, 0)
+
+	for _, dbRole := range dbRoles {
+		roles = append(roles, dbRole.ToInternal())
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return roles, nil
+
+}
+
+func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (auth.PermissionCollection, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback()
+
+	dbPermissions, err := rolePermissions(ctx, tx, roleID)
+	if err != nil {
+		return nil, err
+	}
+
+	collection := make(auth.PermissionCollection, 0)
+
+	for _, dbPerm := range dbPermissions {
+		perm := dbPerm.ToInternal()
+		collection = append(collection, perm)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return collection, nil
+}
+
+func userRoles(ctx context.Context, tx *sql.Tx, userID int64) ([]Role, error) {
+	query := `
+	SELECT r.id, r.name, r.description
+	FROM role r
+	JOIN users_roles ur ON ur.role_id = r.id
+	WHERE ur.user_id = @user_id`
+
+	rows, err := tx.QueryContext(ctx, query, sql.Named("user_id", userID))
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	roles := make([]Role, 0)
+
+	for rows.Next() {
+		var id int64
+		var name, description string
+
+		if err := rows.Scan(&id, &name, &description); err != nil {
+			return nil, err
+		}
+
+		roles = append(roles, Role{
+			ID:          id,
+			Name:        name,
+			Description: description,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return roles, nil
+}
+
+func rolePermissions(ctx context.Context, tx *sql.Tx, roleID int64) ([]Permission, error) {
+	query := `
+	SELECT p.id, p.name, p.description
+	FROM permission p
+	JOIN roles_permissions rp on rp.permission_id = p.id
+	WHERE rp.role_id = @role_id`
+
+	rows, err := tx.QueryContext(ctx, query, sql.Named("role_id", roleID))
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	permissions := make([]Permission, 0)
+
+	for rows.Next() {
+		var id int64
+		var name, description string
+
+		if err := rows.Scan(&id, &name, &description); err != nil {
+			return nil, err
+		}
+
+		permissions = append(permissions, Permission{
+			ID:          id,
+			Name:        name,
+			Description: description,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return permissions, nil
+}
+
 func deleteUserSession(ctx context.Context, tx *sql.Tx, userID int64) error {
 	query := `DELETE FROM session WHERE user_id = @user_id`
 	_, err := tx.ExecContext(ctx, query, sql.Named("user_id", userID))
@@ -184,5 +326,21 @@ func (s Session) ToInternal() auth.Session {
 		ID:        auth.SessionID(s.ID),
 		UserID:    s.UserID,
 		ExpiresAt: s.ExpiresAt,
+	}
+}
+
+func (p Permission) ToInternal() auth.Permission {
+	return auth.Permission{
+		ID:          p.ID,
+		Name:        p.Name,
+		Description: p.Description,
+	}
+}
+
+func (r Role) ToInternal() auth.Role {
+	return auth.Role{
+		ID:          r.ID,
+		Name:        r.Name,
+		Description: r.Description,
 	}
 }
