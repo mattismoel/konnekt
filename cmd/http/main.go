@@ -48,14 +48,32 @@ func main() {
 		log.Fatal(err)
 	}
 
+	eventRepo, err := sqlite.NewEventRepository(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	artistRepo, err := sqlite.NewArtistRepository(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	venueRepo, err := sqlite.NewVenueRepository(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	authService, err := service.NewAuthService(userRepo, authRepo)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	eventService, err := service.NewEventService(eventRepo, artistRepo, venueRepo)
+
 	srv, err := server.New(
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithAuthService(authService),
+		server.WithEventService(eventService),
 	)
 
 	if err := srv.Start(); err != nil {
