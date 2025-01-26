@@ -12,8 +12,9 @@ type Server struct {
 	mux  *chi.Mux
 	addr string
 
-	authService  *service.AuthService
-	eventService *service.EventService
+	authService   *service.AuthService
+	eventService  *service.EventService
+	artistService *service.ArtistService
 }
 
 type CfgFunc func(s *Server) error
@@ -44,6 +45,13 @@ func WithAuthService(authService *service.AuthService) CfgFunc {
 func WithEventService(eventService *service.EventService) CfgFunc {
 	return func(s *Server) error {
 		s.eventService = eventService
+		return nil
+	}
+}
+
+func WithArtistService(artistService *service.ArtistService) CfgFunc {
+	return func(s *Server) error {
+		s.artistService = artistService
 		return nil
 	}
 }

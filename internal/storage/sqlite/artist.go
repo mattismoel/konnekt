@@ -42,20 +42,6 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 		return 0, err
 	}
 
-	for _, genre := range a.Genres {
-		_, err := insertGenre(ctx, tx, string(genre))
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	for _, social := range a.Socials {
-		_, err := insertSocial(ctx, tx, string(social))
-		if err != nil {
-			return 0, err
-		}
-	}
-
 	artistID, err := insertArtist(ctx, tx, Artist{
 		Name:        a.Name,
 		Description: a.Description,
@@ -64,6 +50,30 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 
 	if err != nil {
 		return 0, err
+	}
+
+	for _, genre := range a.Genres {
+		genreID, err := insertGenre(ctx, tx, string(genre))
+		if err != nil {
+			return 0, err
+		}
+
+		err = associateArtistWithGenre(ctx, tx, artistID, genreID)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	for _, social := range a.Socials {
+		socialID, err := insertSocial(ctx, tx, string(social))
+		if err != nil {
+			return 0, err
+		}
+
+		err = associateArtistWithSocial(ctx, tx, artistID, socialID)
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	defer tx.Rollback()
@@ -105,6 +115,26 @@ func (repo ArtistRepository) ByID(ctx context.Context, artistID int64) (artist.A
 	return dbArtist.ToInternal(genres, socials), nil
 }
 
+func (repo ArtistRepository) GenreByID(ctx context.Context, genreID int64) (artist.Genre, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return "", err
+	}
+
+	defer tx.Rollback()
+
+	dbGenre, err := genreByID(ctx, tx, genreID)
+	if err != nil {
+		return "", err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return "", err
+	}
+
+	return artist.Genre(dbGenre.Name), nil
+}
+
 func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 	query := `
 	INSERT INTO artist (name, description, image_url)
@@ -129,7 +159,7 @@ func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 }
 
 func insertGenre(ctx context.Context, tx *sql.Tx, name string) (int64, error) {
-	query := `INSERT INTO genre (name) VALUES (@name)`
+	query := `INSERT OR IGNORE INTO genre (name) VALUES (@name)`
 
 	res, err := tx.ExecContext(ctx, query, sql.Named("name", name))
 	if err != nil {
@@ -142,6 +172,40 @@ func insertGenre(ctx context.Context, tx *sql.Tx, name string) (int64, error) {
 	}
 
 	return genreID, nil
+}
+
+func associateArtistWithSocial(ctx context.Context, tx *sql.Tx, artistID int64, socialID int64) error {
+	query := `
+	INSERT INTO artists_socials (artist_id, social_id) 
+	VALUES (@artist_id, @social_id)`
+
+	_, err := tx.ExecContext(ctx, query,
+		sql.Named("artist_id", artistID),
+		sql.Named("social_id", socialID),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func associateArtistWithGenre(ctx context.Context, tx *sql.Tx, artistID int64, genreID int64) error {
+	query := `
+	INSERT INTO artists_genres (artist_id, genre_id) 
+	VALUES (@artist_id, @genre_id)`
+
+	_, err := tx.ExecContext(ctx, query,
+		sql.Named("artist_id", artistID),
+		sql.Named("genre_id", genreID),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func insertSocial(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
@@ -246,6 +310,24 @@ func artistSocials(ctx context.Context, tx *sql.Tx, artistID int64) ([]Social, e
 	}
 
 	return socials, nil
+}
+
+func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
+	query := `SELECT name FROM genre WHERE id = @genre_id`
+
+	var name string
+	err := tx.QueryRowContext(ctx, query,
+		sql.Named("genre_id", genreID),
+	).Scan(&name)
+
+	if err != nil {
+		return Genre{}, err
+	}
+
+	return Genre{
+		ID:   genreID,
+		Name: name,
+	}, nil
 }
 
 func (a Artist) ToInternal(genres []Genre, socials []Social) artist.Artist {

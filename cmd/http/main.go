@@ -69,11 +69,20 @@ func main() {
 	}
 
 	eventService, err := service.NewEventService(eventRepo, artistRepo, venueRepo)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	artistService, err := service.NewArtistService(artistRepo)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	srv, err := server.New(
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithAuthService(authService),
 		server.WithEventService(eventService),
+		server.WithArtistService(artistService),
 	)
 
 	if err := srv.Start(); err != nil {
