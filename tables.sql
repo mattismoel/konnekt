@@ -35,3 +35,50 @@ CREATE TABLE roles_permissions (
   permission_id INTEGER NOT NULL,
   PRIMARY KEY (role_id, permission_id)
 );
+
+CREATE TABLE event (
+  id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  cover_image_url TEXT NOT NULL,
+  venue_id INTEGER NOT NULL,
+
+  FOREIGN KEY (venue_id) REFERENCES venue (id)
+);
+
+CREATE TABLE venue (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  country_code TEXT NOT NULL,
+  city TEXT NOT NULL
+);
+
+CREATE TABLE artist (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  image_url TEXT NOT NULL,
+  description TEXT NOT NULL
+);
+
+CREATE TABLE social (
+  id INTEGER PRIMARY KEY,
+  url TEXT NOT NULL
+);
+
+CREATE TABLE genre (
+  id INTEGER PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE artists_socials (
+  artist_id INTEGER NOT NULL,
+  social_id INTEGER NOT NULL,
+  PRIMARY KEY (artist_id, social_id)
+);
+
+CREATE TABLE artists_genres (
+  artist_id INTEGER NOT NULL,
+  genre_id INTEGER NOT NULL,
+
+  PRIMARY KEY (artist_id, genre_id)
+);
