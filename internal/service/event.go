@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -68,8 +67,6 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 	}
 
 	e.WithConcerts(concerts...)
-
-	fmt.Printf("%+v\n", e)
 
 	eventID, err := s.eventRepo.Insert(ctx, e)
 	if err != nil {
