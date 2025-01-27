@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -25,6 +24,7 @@ type Concert struct {
 	From     time.Time
 	To       time.Time
 	ArtistID int64
+	EventID  int64
 }
 
 var _ event.Repository = (*EventRepository)(nil)
@@ -56,6 +56,24 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 
 	if err != nil {
 		return 0, err
+	}
+
+	for _, c := range e.Concerts {
+		dbArtist, err := artistByID(ctx, tx, c.Artist.ID)
+		if err != nil {
+			return 0, err
+		}
+
+		_, err = insertConcert(ctx, tx, Concert{
+			ArtistID: dbArtist.ID,
+			EventID:  eventID,
+			From:     c.From,
+			To:       c.To,
+		})
+
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -135,6 +153,30 @@ func (repo EventRepository) List(ctx context.Context) ([]event.Event, error) {
 	}
 
 	return events, nil
+}
+
+func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
+	query := `
+	INSERT into concert (event_id, artist_id, from_date, to_date)
+	VALUES (@event_id, @artist_id, @from_date, @to_date)`
+
+	res, err := tx.ExecContext(ctx, query,
+		sql.Named("event_id", c.EventID),
+		sql.Named("artist_id", c.ArtistID),
+		sql.Named("from_date", c.From),
+		sql.Named("to_date", c.To),
+	)
+
+	if err != nil {
+		return 0, err
+	}
+
+	concertID, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return concertID, nil
 }
 
 func listEvents(ctx context.Context, tx *sql.Tx) ([]Event, error) {
