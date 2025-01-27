@@ -8,6 +8,24 @@ import (
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
+func (s Server) handleListEvents() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		events, err := s.eventService.List(ctx)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = writeJSON(w, http.StatusOK, events)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+	}
+}
+
 func (s Server) handleCreateEvent() http.HandlerFunc {
 	type createConcertLoad struct {
 		ArtistID int64     `json:"artistID"`

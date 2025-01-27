@@ -78,3 +78,12 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 
 	return eventID, nil
 }
+
+func (s EventService) List(ctx context.Context) ([]event.Event, error) {
+	events, err := s.eventRepo.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}

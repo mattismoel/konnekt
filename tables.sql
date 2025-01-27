@@ -46,6 +46,17 @@ CREATE TABLE event (
   FOREIGN KEY (venue_id) REFERENCES venue (id)
 );
 
+CREATE TABLE concert (
+  id INTEGER PRIMARY KEY,
+  from_date TIMESTAMP NOT NULL,
+  to_date TIMESTAMP NOT NULL,
+  event_id INTEGER NOT NULL,
+  artist_id INTEGER NOT NULL,
+
+  FOREIGN KEY (event_id) REFERENCES event (id),
+  FOREIGN KEY (artist_id) REFERENCES artist (id)
+);
+
 CREATE TABLE venue (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,

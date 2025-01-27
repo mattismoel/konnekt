@@ -98,18 +98,28 @@ func (repo ArtistRepository) ByID(ctx context.Context, artistID int64) (artist.A
 		return artist.Artist{}, err
 	}
 
-	genres, err := artistGenres(ctx, tx, artistID)
+	dbGenres, err := artistGenres(ctx, tx, artistID)
 	if err != nil {
 		return artist.Artist{}, err
 	}
 
-	socials, err := artistSocials(ctx, tx, artistID)
+	dbSocials, err := artistSocials(ctx, tx, artistID)
 	if err != nil {
 		return artist.Artist{}, err
 	}
 
 	if err := tx.Commit(); err != nil {
 		return artist.Artist{}, err
+	}
+
+	genres := make([]artist.Genre, 0)
+	for _, g := range dbGenres {
+		genres = append(genres, artist.Genre(g.Name))
+	}
+
+	socials := make([]artist.Social, 0)
+	for _, s := range dbSocials {
+		socials = append(socials, artist.Social(s.URL))
 	}
 
 	return dbArtist.ToInternal(genres, socials), nil
@@ -330,24 +340,13 @@ func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
 	}, nil
 }
 
-func (a Artist) ToInternal(genres []Genre, socials []Social) artist.Artist {
-	internalGenres := make([]artist.Genre, 0)
-	internalSocials := make([]artist.Social, 0)
-
-	for _, genre := range genres {
-		internalGenres = append(internalGenres, artist.Genre(genre.Name))
-	}
-
-	for _, social := range socials {
-		internalSocials = append(internalSocials, artist.Social(social.URL))
-	}
-
+func (a Artist) ToInternal(genres []artist.Genre, socials []artist.Social) artist.Artist {
 	return artist.Artist{
 		ID:          a.ID,
 		Name:        a.Name,
 		Description: a.Description,
 		ImageURL:    a.ImageURL,
-		Genres:      internalGenres,
-		Socials:     internalSocials,
+		Genres:      genres,
+		Socials:     socials,
 	}
 }
