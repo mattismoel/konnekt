@@ -1,12 +1,12 @@
 package artist
 
 type Artist struct {
-	ID          int64
-	Name        string
-	Description string
-	ImageURL    string
-	Genres      []Genre
-	Socials     []Social
+	ID          int64    `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	ImageURL    string   `json:"imageUrl"`
+	Genres      []Genre  `json:"genres"`
+	Socials     []Social `json:"socials"`
 }
 
 func NewArtist(name, description, imageURL string, socials []Social, genres []Genre) (Artist, error) {

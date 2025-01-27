@@ -247,12 +247,10 @@ func (e Event) ToInternal(venue venue.Venue, concerts []concert.Concert) event.E
 }
 
 func (c Concert) ToInternal(a artist.Artist) concert.Concert {
-	fmt.Println("ID", c.ID)
 	return concert.Concert{
 		ID:     c.ID,
 		Artist: a,
 		From:   c.From,
 		To:     c.To,
 	}
-
 }
