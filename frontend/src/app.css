@@ -1,1 +1,6 @@
 @import 'tailwindcss';
+
+@theme {
+  --color-background: rgb(0, 0, 0);
+  --color-text: var(--color-gray-100);
+}
