@@ -4,4 +4,5 @@
   --spacing-nav: 3rem;
   --color-background: rgb(0, 0, 0);
   --color-text: var(--color-gray-100);
+  --font-sans: "Poppins", "sans-serif";
 }
