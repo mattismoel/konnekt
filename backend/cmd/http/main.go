@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"log"
+	"log/slog"
 	"net"
 	"strconv"
 	"time"
@@ -93,6 +94,7 @@ func main() {
 		server.WithArtistService(artistService),
 	)
 
+	slog.Info("Started server", "host", *host, "port", *port)
 	if err := srv.Start(); err != nil {
 		log.Fatal(err)
 	}
