@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -33,6 +34,17 @@ func New(cfgs ...CfgFunc) (*Server, error) {
 	s.setupRoutes()
 
 	return s, nil
+}
+
+func WithCORSOrigins(allowedOrigins ...string) CfgFunc {
+	return func(s *Server) error {
+		s.mux.Use(cors.Handler(cors.Options{
+			AllowedOrigins:   allowedOrigins,
+			AllowCredentials: true,
+		}))
+
+		return nil
+	}
 }
 
 func WithAuthService(authService *service.AuthService) CfgFunc {

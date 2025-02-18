@@ -26,6 +26,7 @@ func main() {
 	flag.Parse()
 
 	dbConnStr := flag.String("dbConnStr", "file:./local.db", "The database connection string")
+	frontendURL := flag.String("frontendURL", "http://localhost:5173", "The URL of the frontend")
 	host := flag.String("host", "localhost", "The host of the web server")
 	port := flag.Int("port", 3000, "The port of the web server")
 
@@ -81,6 +82,7 @@ func main() {
 	srv, err := server.New(
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithAuthService(authService),
+		server.WithCORSOrigins(*frontendURL),
 		server.WithEventService(eventService),
 		server.WithArtistService(artistService),
 	)
