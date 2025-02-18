@@ -1,8 +1,14 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
-  --spacing-nav: 3rem;
-  --color-background: rgb(0, 0, 0);
-  --color-text: var(--color-gray-100);
+  --spacing-nav: 3.5rem;
+  --color-background: var(--color-black);
+  --color-text: var(--color-gray-200);
+  --spacing-sub-nav: calc(100svh - var(--spacing-nav));
   --font-sans: "Poppins", "sans-serif";
+}
+
+.px-auto {
+  @apply px-6 sm:px-8 md:px-16 lg:px-64 xl:px-96;
 }
