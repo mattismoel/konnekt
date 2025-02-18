@@ -52,20 +52,23 @@ func (s Server) handleListEvents() http.HandlerFunc {
 	}
 }
 
+func (s Server) handleEventByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		events, err := s.eventService.List(ctx)
+
+		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		err = writeJSON(w, http.StatusOK, events)
+		event, err := s.eventService.ByID(ctx, int64(eventID))
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
+		writeJSON(w, http.StatusOK, event)
 	}
 }
 

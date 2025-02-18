@@ -39,6 +39,14 @@ type CreateConcert struct {
 	To       time.Time
 }
 
+func (s EventService) ByID(ctx context.Context, eventID int64) (event.Event, error) {
+	e, err := s.eventRepo.ByID(ctx, eventID)
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	return e, nil
+}
 
 func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, error) {
 	e, err := event.NewEvent(load.Title, load.Description, load.CoverImageURL)

@@ -39,6 +39,71 @@ func NewEventRepository(db *sql.DB) (*EventRepository, error) {
 	}, nil
 }
 
+func (repo EventRepository) ByID(ctx context.Context, eventID int64) (event.Event, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	defer tx.Rollback()
+
+	dbEvent, err := eventByID(ctx, tx, eventID)
+	if err != nil {
+		return event.Event{}, nil
+	}
+
+	dbConcerts, err := eventConcerts(ctx, tx, eventID)
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	concerts := make([]concert.Concert, 0)
+
+	for _, dbConcert := range dbConcerts {
+		dbArtist, err := artistByID(ctx, tx, dbConcert.ArtistID)
+		if err != nil {
+			return event.Event{}, err
+		}
+
+		dbGenres, err := artistGenres(ctx, tx, dbArtist.ID)
+		if err != nil {
+			return event.Event{}, err
+		}
+
+		genres := make([]artist.Genre, 0)
+		for _, dbGenre := range dbGenres {
+			genres = append(genres, artist.Genre(dbGenre.Name))
+		}
+
+		dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
+		if err != nil {
+			return event.Event{}, err
+		}
+
+		socials := make([]artist.Social, 0)
+		for _, dbSocial := range dbSocials {
+			socials = append(socials, artist.Social(dbSocial.URL))
+		}
+
+		artist := dbArtist.ToInternal(genres, socials)
+
+		concerts = append(concerts, dbConcert.ToInternal(artist))
+	}
+
+	dbVenue, err := venueByID(ctx, tx, dbEvent.VenueID)
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	venue := dbVenue.ToInternal()
+
+	if err := tx.Commit(); err != nil {
+		return event.Event{}, err
+	}
+
+	return dbEvent.ToInternal(venue, concerts), nil
+}
+
 func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -160,6 +225,30 @@ func (repo EventRepository) List(ctx context.Context, limit int, offset int) ([]
 	return events, totalCount, nil
 }
 
+func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
+	query := `
+	SELECT title, description, cover_image_url, venue_id FROM event
+	WHERE id = @event_id`
+
+	var title, description, coverImageUrl string
+	var venueID int64
+
+	err := tx.QueryRowContext(ctx, query, sql.Named("event_id", eventID)).Scan(
+		&title, &description, &coverImageUrl, &venueID,
+	)
+
+	if err != nil {
+		return Event{}, err
+	}
+
+	return Event{
+		ID:            eventID,
+		Title:         title,
+		Description:   description,
+		CoverImageURL: coverImageUrl,
+		VenueID:       venueID,
+	}, nil
+}
 
 func eventCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	var count int
