@@ -1,7 +1,7 @@
 package auth
 
 type Role struct {
-	ID          int64
-	Name        string
-	Description string
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }

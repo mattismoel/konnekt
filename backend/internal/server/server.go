@@ -9,6 +9,14 @@ import (
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
+type ListReponse struct {
+	Page       int `json:"page"`
+	PerPage    int `json:"perPage"`
+	PageCount  int `json:"pageCount"`
+	TotalCount int `json:"totalCount"`
+	Records    any `json:"records"`
+}
+
 type Server struct {
 	mux  *chi.Mux
 	addr string

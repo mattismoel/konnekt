@@ -83,17 +83,22 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 	return eventID, nil
 }
 
-func (repo EventRepository) List(ctx context.Context) ([]event.Event, error) {
+func (repo EventRepository) List(ctx context.Context, limit int, offset int) ([]event.Event, int, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer tx.Rollback()
 
-	dbEvents, err := listEvents(ctx, tx)
+	dbEvents, err := listEvents(ctx, tx, limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	totalCount, err := eventCount(ctx, tx)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	events := make([]event.Event, 0)
@@ -101,26 +106,26 @@ func (repo EventRepository) List(ctx context.Context) ([]event.Event, error) {
 	for _, dbEvent := range dbEvents {
 		dbVenue, err := venueByID(ctx, tx, dbEvent.VenueID)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		venue := dbVenue.ToInternal()
 
 		dbConcerts, err := eventConcerts(ctx, tx, dbEvent.ID)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		concerts := make([]concert.Concert, 0)
 		for _, dbConcert := range dbConcerts {
 			dbArtist, err := artistByID(ctx, tx, dbConcert.ArtistID)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 
 			dbGenres, err := artistGenres(ctx, tx, dbArtist.ID)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 
 			genres := make([]artist.Genre, 0)
@@ -130,7 +135,7 @@ func (repo EventRepository) List(ctx context.Context) ([]event.Event, error) {
 
 			dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 
 			socials := make([]artist.Social, 0)
@@ -149,10 +154,22 @@ func (repo EventRepository) List(ctx context.Context) ([]event.Event, error) {
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return events, nil
+	return events, totalCount, nil
+}
+
+
+func eventCount(ctx context.Context, tx *sql.Tx) (int, error) {
+	var count int
+
+	err := tx.QueryRowContext(ctx, "select count(*) from event").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
@@ -179,11 +196,16 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 	return concertID, nil
 }
 
-func listEvents(ctx context.Context, tx *sql.Tx) ([]Event, error) {
+func listEvents(ctx context.Context, tx *sql.Tx, limit int, offset int) ([]Event, error) {
 	query := `
-	SELECT id, title, description, cover_image_url, venue_id FROM event`
+	SELECT id, title, description, cover_image_url, venue_id FROM event
+	LIMIT @limit OFFSET @offset`
 
-	rows, err := tx.QueryContext(ctx, query)
+	rows, err := tx.QueryContext(ctx, query,
+		sql.Named("limit", limit),
+		sql.Named("offset", offset),
+	)
+
 	if err != nil {
 		return nil, err
 	}

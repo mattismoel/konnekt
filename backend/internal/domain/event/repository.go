@@ -6,5 +6,5 @@ import (
 
 type Repository interface {
 	Insert(ctx context.Context, e Event) (int64, error)
-	List(ctx context.Context) ([]Event, error)
+	List(ctx context.Context, limit int, offset int) ([]Event, int, error)
 }

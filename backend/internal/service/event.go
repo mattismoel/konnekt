@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -37,6 +38,7 @@ type CreateConcert struct {
 	From     time.Time
 	To       time.Time
 }
+
 
 func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, error) {
 	e, err := event.NewEvent(load.Title, load.Description, load.CoverImageURL)
@@ -76,11 +78,31 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 	return eventID, nil
 }
 
-func (s EventService) List(ctx context.Context) ([]event.Event, error) {
-	events, err := s.eventRepo.List(ctx)
+type EventListResult struct {
+	Page       int
+	PerPage    int
+	PageCount  int
+	TotalCount int
+	Events     []event.Event
+}
+
+func (s EventService) List(ctx context.Context, page, perPage int) (EventListResult, error) {
+	offset := (page - 1) * perPage
+
+	events, totalCount, err := s.eventRepo.List(ctx, perPage, offset)
 	if err != nil {
-		return nil, err
+		return EventListResult{}, err
 	}
 
-	return events, nil
+	fmt.Printf("Total: %d, Page: %d, PerPage: %d\n", totalCount, page, perPage)
+
+	pageCount := (totalCount + perPage - 1) / perPage
+
+	return EventListResult{
+		Page:       page,
+		PerPage:    perPage,
+		TotalCount: totalCount,
+		PageCount:  pageCount,
+		Events:     events,
+	}, nil
 }
