@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -123,6 +124,49 @@ func (s Server) handleLogOut() http.HandlerFunc {
 		}
 
 		clearSessionCookie(w)
+	}
+}
+
+func (s Server) handleGetSession() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		sessionCookie, err := r.Cookie(SESSION_COOKIE_NAME)
+		if err != nil {
+			switch {
+			case errors.Is(err, http.ErrNoCookie):
+				writeError(w, ErrUnauthorized)
+			default:
+				writeError(w, err)
+			}
+			return
+		}
+
+		token := auth.SessionToken(sessionCookie.Value)
+
+		newExpiry, err := s.authService.ValidateSession(ctx, token)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		session, err := s.authService.Session(ctx, token.SessionID())
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		user, err := s.userService.ByID(ctx, session.UserID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		fmt.Printf("%+v\n", user)
+
+		writeSessionCookie(w, token, newExpiry)
+
+		writeJSON(w, http.StatusOK, user)
 	}
 }
 

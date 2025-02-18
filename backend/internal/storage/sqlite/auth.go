@@ -82,24 +82,24 @@ func (repo AuthRepository) Session(ctx context.Context, sessionID auth.SessionID
 	return dbSession.ToInternal(), nil
 }
 
-func (repo AuthRepository) SetSessionExpiry(ctx context.Context, sessionID auth.SessionID, newExpiry time.Time) (auth.Session, error) {
+func (repo AuthRepository) SetSessionExpiry(ctx context.Context, sessionID auth.SessionID, newExpiry time.Time) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return auth.Session{}, err
+		return err
 	}
 
 	defer tx.Rollback()
 
-	dbSession, err := setSessionExpiry(ctx, tx, string(sessionID), newExpiry)
+	err = setSessionExpiry(ctx, tx, string(sessionID), newExpiry)
 	if err != nil {
-		return auth.Session{}, err
+		return err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return auth.Session{}, err
+		return err
 	}
 
-	return dbSession.ToInternal(), nil
+	return nil
 }
 
 func (repo AuthRepository) DeleteUserSession(ctx context.Context, userID int64) error {
@@ -303,22 +303,22 @@ func sessionByID(ctx context.Context, tx *sql.Tx, sessionID string) (Session, er
 	}, nil
 }
 
-func setSessionExpiry(ctx context.Context, tx *sql.Tx, sessionID string, newExpiry time.Time) (Session, error) {
+func setSessionExpiry(ctx context.Context, tx *sql.Tx, sessionID string, newExpiry time.Time) error {
 	query := `
 	UPDATE session
 	SET expires_at = @expires_at`
 
 	_, err := tx.ExecContext(ctx, query, sql.Named("expires_at", newExpiry))
 	if err != nil {
-		return Session{}, err
+		return err
 	}
 
-	session, err := sessionByID(ctx, tx, sessionID)
+	_, err = sessionByID(ctx, tx, sessionID)
 	if err != nil {
-		return Session{}, nil
+		return nil
 	}
 
-	return session, nil
+	return nil
 }
 
 func (s Session) ToInternal() auth.Session {

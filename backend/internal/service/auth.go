@@ -90,6 +90,30 @@ func (srv AuthService) LogOut(ctx context.Context, token auth.SessionToken) erro
 	return nil
 }
 
+func (srv AuthService) ValidateSession(ctx context.Context, token auth.SessionToken) (time.Time, error) {
+	sessionID := token.SessionID()
+
+	session, err := srv.authRepo.Session(ctx, sessionID)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	if session.IsExpired() {
+		return time.Time{}, auth.ErrInvalidSession
+	}
+
+	if session.IsRefreshable(SESSION_REFRESH_BUFFER) {
+		newExpiry := time.Now().Add(SESSION_LIFETIME)
+		err := srv.authRepo.SetSessionExpiry(ctx, sessionID, newExpiry)
+		if err != nil {
+			return time.Time{}, err
+		}
+
+		return newExpiry, nil
+	}
+
+	return session.ExpiresAt, nil
+}
 func (srv AuthService) Session(ctx context.Context, id auth.SessionID) (auth.Session, error) {
 	session, err := srv.authRepo.Session(ctx, id)
 	if err != nil {
