@@ -19,4 +19,8 @@ func (s *Server) setupRoutes() {
 	s.mux.Route("/artists", func(r chi.Router) {
 		r.Post("/", s.withPermissions(s.handleCreateArtist(), "artist-create"))
 	})
+
+	s.mux.Route("/users", func(r chi.Router) {
+		r.Get("/roles/{userID}", s.withPermissions(s.handleListUserRoles(), "role-list"))
+	})
 }
