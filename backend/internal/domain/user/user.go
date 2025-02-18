@@ -1,9 +1,9 @@
 package user
 
 type User struct {
-	ID           int64
-	FirstName    string
-	LastName     string
-	Email        string
-	PasswordHash PasswordHash
+	ID           int64        `json:"id"`
+	FirstName    string       `json:"firstName"`
+	LastName     string       `json:"lastName"`
+	Email        string       `json:"email"`
+	PasswordHash PasswordHash `json:"-"`
 }

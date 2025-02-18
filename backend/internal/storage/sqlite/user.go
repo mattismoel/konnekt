@@ -223,7 +223,7 @@ func (u User) ToInternal() user.User {
 		ID:           u.ID,
 		FirstName:    u.FirstName,
 		LastName:     u.LastName,
-		Email:        u.LastName,
+		Email:        u.Email,
 		PasswordHash: u.PasswordHash,
 	}
 }

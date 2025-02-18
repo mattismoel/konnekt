@@ -69,6 +69,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	userService, err := service.NewUserService(userRepo)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	eventService, err := service.NewEventService(eventRepo, artistRepo, venueRepo)
 	if err != nil {
 		log.Fatal(err)
@@ -83,6 +88,7 @@ func main() {
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithAuthService(authService),
 		server.WithCORSOrigins(*frontendURL),
+		server.WithUserService(userService),
 		server.WithEventService(eventService),
 		server.WithArtistService(artistService),
 	)
