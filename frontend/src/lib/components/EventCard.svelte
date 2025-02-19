@@ -1,84 +1,71 @@
 <script lang="ts">
 	import type { Event } from '$lib/event';
 	import { formatDateStr } from '$lib/time';
-	//import { formatDateString } from '@/lib/time';
-	//import { cn } from '@/lib/utils';
+	import QRCode from 'qrcode';
 
 	type Props = {
 		event: Event;
-		//isLoading: boolean;
 	};
 
 	const { event }: Props = $props();
 	const earliestConcert = $derived(event.concerts[0]);
 
-	type Pos = {
-		x: number;
-		y: number;
-	};
+	let ticketCode = Math.floor(10e9 * Math.random());
 
-	let mousePos = $state<Pos>({ x: 0, y: 0 });
-	let isFocused = $state(false);
+	let qrCodeCanvas: HTMLCanvasElement;
 
-	$inspect(mousePos);
-
-	//const [mousePosX, setMousePosX] = useState(0);
-	//const [mousePosY, setMousePosY] = useState(0);
-	//if (isLoading) return <Skeleton />
+	$effect(() => {
+		QRCode.toCanvas(qrCodeCanvas, 'http://google.com', {
+			margin: 1,
+			width: 64
+		});
+	});
 </script>
 
 <a
-	class="group"
-	href={`/events/${event?.id}`}
-	onmouseenter={() => (isFocused = !isFocused)}
-	onmouseleave={() => (isFocused = !isFocused)}
+	href={`/events/${event.id}`}
+	class="group relative overflow-hidden rounded-md bg-red-500 bg-gradient-to-tr from-zinc-950 to-zinc-900 p-[1px] transition-colors duration-700 hover:to-zinc-700"
 >
 	<div
-		role="none"
-		class={'relative h-64 w-full overflow-hidden'}
-		onmousemove={(e) => {
-			const rect = e.currentTarget.getBoundingClientRect();
-			mousePos.x = e.clientX - rect.left;
-			mousePos.y = e.clientY - rect.top;
-			//setMousePos(e.clientX - rect.left, e.clientY - rect.top);
-		}}
+		class="absolute top-0 right-32 h-12 w-12 -translate-y-1/2 translate-x-1/2 rounded-full border border-zinc-900 bg-black"
+	></div>
+	<div
+		class="absolute right-32 bottom-0 h-12 w-12 translate-x-1/2 translate-y-1/2 rounded-full border border-zinc-900 bg-black"
+	></div>
+	<div
+		class="group flex h-40 overflow-hidden rounded-md bg-gradient-to-t from-zinc-950 via-zinc-900 via-80% to-zinc-950 transition-colors group-hover:via-zinc-800"
 	>
-		<img
-			src={event?.coverImageUrl}
-			alt={event?.title}
-			class="h-full w-full scale-110 object-cover transition-all duration-200 group-hover:scale-100 group-hover:brightness-100 md:brightness-90"
-		/>
+		<!-- Image -->
+		<img src={event.coverImageUrl} alt={`Cover for ${event.title}`} class="w-40 object-cover" />
+		<!-- Information -->
 		<div
-			class="absolute bottom-0 left-0 h-1/2 w-full bg-gradient-to-t from-black/80 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+			class="absolute z-50 h-full w-full bg-black opacity-25 transition-opacity duration-500 group-hover:opacity-0"
 		></div>
-		<div
-			class="absolute bottom-0 left-0 h-full w-full border border-white/0 mix-blend-overlay transition-all group-hover:border-white/50"
-		></div>
-		<div
-			class="absolute bottom-0 left-0 flex flex-col px-5 pb-5 text-white transition-all duration-100 md:translate-y-full md:group-hover:translate-y-0"
-		>
-			<h3 class="mb-2 text-3xl font-bold">{event?.title}</h3>
-			<span>{formatDateStr(earliestConcert.from || new Date())}</span>
+		<div class="flex w-56 flex-col justify-between border-r-2 border-dashed border-zinc-700 p-4">
+			<span class="text-xl font-bold text-zinc-200">{event.title}</span>
+			<div class="text-sm text-zinc-300">
+				<div class="flex gap-2">
+					<span>D</span>
+					<span>{formatDateStr(earliestConcert.from)}</span>
+				</div>
+				<div class="flex gap-2">
+					<span>V</span>
+					<span>{event.venue.name}, {event.venue.city}</span>
+				</div>
+			</div>
+			<div class="flex flex-col">
+				<span class="text-xs text-zinc-500"><b>Billetnr.:</b> {ticketCode}</span>
+				<span class="font-black text-zinc-400">KONNEKT</span>
+			</div>
 		</div>
-		<div
-			class={`pointer-events-none absolute h-72 w-72 -translate-x-1/2 -translate-y-1/2 scale-0 bg-white/50 mix-blend-overlay  blur-3xl transition-transform duration-400 group-hover:scale-100`}
-			style:left={`${mousePos.x}px`}
-			style:top={`${mousePos.y}px`}
-		></div>
+		<!-- QR -->
+		<div class="*: flex w-32 flex-col items-center justify-center gap-2 px-8 py-2">
+			<span class="text-sm font-bold text-zinc-300">SCAN</span>
+			<canvas bind:this={qrCodeCanvas}></canvas>
+			<div class="flex flex-col items-center text-xs text-zinc-600">
+				<span class="font-bold">Billetnr.:</span>
+				<span>{ticketCode}</span>
+			</div>
+		</div>
 	</div>
 </a>
-
-{#snippet skeleton()}
-	<div
-		class="relative h-64 w-full animate-pulse overflow-hidden rounded-md
-bg-zinc-900"
-	>
-		<div class="absolute bottom-0 left-0 flex w-full flex-col px-5 pb-5">
-			<div
-				class="mb-6 h-8 rounded-md bg-zinc-800"
-				style:width="{`calc(100% * ${Math.random()})`}}"
-			></div>
-			<div class="h-4 w-24 rounded-full bg-zinc-800"></div>
-		</div>
-	</div>
-{/snippet}
