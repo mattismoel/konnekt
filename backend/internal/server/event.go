@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -16,6 +17,20 @@ const MAX_PER_PAGE = 100
 
 func (s Server) handleListEvents() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		fromStr, toStr := r.URL.Query().Get("from_date"), r.URL.Query().Get("to_date")
+
+		from, err := time.Parse(time.RFC3339, fromStr)
+		if err != nil && fromStr != "" {
+			writeError(w, err)
+			return
+		}
+
+		to, err := time.Parse(time.RFC3339, toStr)
+		if err != nil && toStr != "" {
+			writeError(w, err)
+			return
+		}
+
 		page, err := strconv.Atoi(r.URL.Query().Get("page"))
 		if err != nil || page <= 0 {
 			page = DEFAULT_PAGE
@@ -31,7 +46,13 @@ func (s Server) handleListEvents() http.HandlerFunc {
 		}
 
 		ctx := r.Context()
-		result, err := s.eventService.List(ctx, page, perPage)
+		result, err := s.eventService.List(ctx, event.Query{
+			Page:    page,
+			PerPage: perPage,
+			From:    from,
+			To:      to,
+		})
+
 		if err != nil {
 			writeError(w, err)
 			return

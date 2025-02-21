@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -94,21 +93,17 @@ type EventListResult struct {
 	Events     []event.Event
 }
 
-func (s EventService) List(ctx context.Context, page, perPage int) (EventListResult, error) {
-	offset := (page - 1) * perPage
-
-	events, totalCount, err := s.eventRepo.List(ctx, perPage, offset)
+func (s EventService) List(ctx context.Context, query event.Query) (EventListResult, error) {
+	events, totalCount, err := s.eventRepo.List(ctx, query)
 	if err != nil {
 		return EventListResult{}, err
 	}
 
-	fmt.Printf("Total: %d, Page: %d, PerPage: %d\n", totalCount, page, perPage)
-
-	pageCount := (totalCount + perPage - 1) / perPage
+	pageCount := (totalCount + query.PerPage - 1) / query.PerPage
 
 	return EventListResult{
-		Page:       page,
-		PerPage:    perPage,
+		Page:       query.Page,
+		PerPage:    query.PerPage,
 		TotalCount: totalCount,
 		PageCount:  pageCount,
 		Events:     events,

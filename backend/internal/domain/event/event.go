@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
@@ -22,6 +23,19 @@ type Event struct {
 	CoverImageURL string            `json:"coverImageUrl"`
 	Venue         venue.Venue       `json:"venue"`
 	Concerts      []concert.Concert `json:"concerts"`
+}
+
+type Query struct {
+	Limit   int
+	Page    int
+	PerPage int
+
+	From time.Time
+	To   time.Time
+}
+
+func (q Query) Offset() int {
+	return (q.Page - 1) * q.PerPage
 }
 
 func NewEvent(title string, description string, coverImageURL string) (Event, error) {

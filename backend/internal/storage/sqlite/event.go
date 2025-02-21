@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -148,7 +149,14 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 	return eventID, nil
 }
 
-func (repo EventRepository) List(ctx context.Context, limit int, offset int) ([]event.Event, int, error) {
+type EventQuery struct {
+	Offset int
+	Limit  int
+	From   time.Time
+	To     time.Time
+}
+
+func (repo EventRepository) List(ctx context.Context, query event.Query) ([]event.Event, int, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, 0, err
@@ -156,7 +164,13 @@ func (repo EventRepository) List(ctx context.Context, limit int, offset int) ([]
 
 	defer tx.Rollback()
 
-	dbEvents, err := listEvents(ctx, tx, limit, offset)
+	dbEvents, err := listEvents(ctx, tx, EventQuery{
+		Limit:  query.Limit,
+		From:   query.From,
+		To:     query.To,
+		Offset: query.Offset(),
+	})
+
 	if err != nil {
 		return nil, 0, err
 	}
@@ -285,16 +299,38 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 	return concertID, nil
 }
 
-func listEvents(ctx context.Context, tx *sql.Tx, limit int, offset int) ([]Event, error) {
-	query := `
-	SELECT id, title, description, cover_image_url, venue_id FROM event
-	LIMIT @limit OFFSET @offset`
+func listEvents(ctx context.Context, tx *sql.Tx, query EventQuery) ([]Event, error) {
+	queryStr := `
+	SELECT 
+		e.id, 
+		e.title, 
+		e.description, 
+		e.cover_image_url, 
+		e.venue_id
+	FROM event e
+		JOIN concert c ON c.event_id = e.id
+	WHERE 1=1
+	`
 
-	rows, err := tx.QueryContext(ctx, query,
-		sql.Named("limit", limit),
-		sql.Named("offset", offset),
-	)
+	args := make([]any, 0)
 
+	if !query.From.IsZero() {
+		queryStr += fmt.Sprintf("AND c.from_date >= @from_date\n")
+		args = append(args, sql.Named("from_date", query.From))
+	}
+
+	if !query.To.IsZero() {
+		queryStr += fmt.Sprintf("AND c.to_date <= @to_date\n")
+		args = append(args, sql.Named("to_date", query.To))
+	}
+
+	if query.Offset >= 0 && query.Limit > 0 {
+		queryStr += "LIMIT @limit OFFSET @offset"
+		args = append(args, sql.Named("limit", query.Limit))
+		args = append(args, sql.Named("offset", query.Offset))
+	}
+
+	rows, err := tx.QueryContext(ctx, queryStr, args...)
 	if err != nil {
 		return nil, err
 	}
