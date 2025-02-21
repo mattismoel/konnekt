@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Event } from '$lib/event';
 	import { formatDateStr } from '$lib/time';
+	import CalendarIcon from '~icons/mdi/calendar';
+	import VenueIcon from '~icons/mdi/map-marker';
 	import QRCode from 'qrcode';
 
 	type Props = {
@@ -39,17 +41,17 @@
 		<img src={event.coverImageUrl} alt={`Cover for ${event.title}`} class="w-40 object-cover" />
 		<!-- Information -->
 		<div
-			class="absolute z-50 h-full w-full bg-black opacity-25 transition-opacity duration-500 group-hover:opacity-0"
+			class="absolute z-50 h-full w-full bg-black opacity-30 transition-opacity duration-500 group-hover:opacity-0"
 		></div>
 		<div class="flex w-56 flex-col justify-between border-r-2 border-dashed border-zinc-700 p-4">
 			<span class="text-xl font-bold text-zinc-200">{event.title}</span>
-			<div class="text-sm text-zinc-300">
+			<div class="space-y-1 text-sm text-zinc-300">
 				<div class="flex gap-2">
-					<span>D</span>
+					<span><CalendarIcon /></span>
 					<span>{formatDateStr(earliestConcert.from)}</span>
 				</div>
 				<div class="flex gap-2">
-					<span>V</span>
+					<span><VenueIcon /></span>
 					<span>{event.venue.name}, {event.venue.city}</span>
 				</div>
 			</div>
