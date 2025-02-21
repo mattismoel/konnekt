@@ -139,7 +139,7 @@ func (srv AuthService) HasPermission(ctx context.Context, userID int64, permName
 }
 
 func (srv AuthService) UserRoles(ctx context.Context, userID int64) ([]auth.Role, error) {
-	roles, err := srv.UserRoles(ctx, userID)
+	roles, err := srv.authRepo.UserRoles(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
