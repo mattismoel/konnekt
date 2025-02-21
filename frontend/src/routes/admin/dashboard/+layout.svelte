@@ -8,7 +8,7 @@
 	let { user, roles } = $derived(data);
 </script>
 
-<main class="h-sub-nav px-auto grid w-screen grid-cols-[290px_1fr] gap-4 py-20">
+<main class="h-sub-nav px-auto grid w-screen grid-cols-[290px_1fr] gap-4 bg-zinc-950 py-20">
 	{@render sidebar()}
 	{@render children()}
 </main>
