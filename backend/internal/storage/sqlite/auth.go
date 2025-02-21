@@ -18,6 +18,7 @@ type Session struct {
 type Role struct {
 	ID          int64
 	Name        string
+	DisplayName string
 	Description string
 }
 
@@ -146,7 +147,6 @@ func (repo AuthRepository) UserRoles(ctx context.Context, userID int64) ([]auth.
 	}
 
 	return roles, nil
-
 }
 
 func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (auth.PermissionCollection, error) {
@@ -178,7 +178,7 @@ func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (a
 
 func userRoles(ctx context.Context, tx *sql.Tx, userID int64) ([]Role, error) {
 	query := `
-	SELECT r.id, r.name, r.description
+	SELECT r.id, r.name, r.display_name, r.description
 	FROM role r
 	JOIN users_roles ur ON ur.role_id = r.id
 	WHERE ur.user_id = @user_id`
@@ -194,15 +194,17 @@ func userRoles(ctx context.Context, tx *sql.Tx, userID int64) ([]Role, error) {
 
 	for rows.Next() {
 		var id int64
-		var name, description string
+		var name, displayName, description string
 
-		if err := rows.Scan(&id, &name, &description); err != nil {
+		err := rows.Scan(&id, &name, &displayName, &description)
+		if err != nil {
 			return nil, err
 		}
 
 		roles = append(roles, Role{
 			ID:          id,
 			Name:        name,
+			DisplayName: displayName,
 			Description: description,
 		})
 	}
@@ -341,6 +343,7 @@ func (r Role) ToInternal() auth.Role {
 	return auth.Role{
 		ID:          r.ID,
 		Name:        r.Name,
+		DisplayName: r.DisplayName,
 		Description: r.Description,
 	}
 }
