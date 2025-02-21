@@ -39,7 +39,7 @@
 
 {#snippet userInformation(user: User)}
 	<div
-		class="group flex items-center gap-4 rounded-md border border-transparent p-4 transition-colors hover:border-zinc-700 hover:bg-zinc-800"
+		class="group flex items-center gap-4 rounded-md border border-transparent p-2 transition-colors hover:border-zinc-700 hover:bg-zinc-800"
 	>
 		<img
 			src="https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
