@@ -17,7 +17,7 @@
 	let qrCodeCanvas: HTMLCanvasElement;
 
 	$effect(() => {
-		QRCode.toCanvas(qrCodeCanvas, 'http://google.com', {
+		QRCode.toCanvas(qrCodeCanvas, `https://konnekt.dk/events/${event.id}`, {
 			margin: 1,
 			width: 64
 		});
