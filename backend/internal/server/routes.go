@@ -2,9 +2,12 @@ package server
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func (s *Server) setupRoutes() {
+	s.mux.Use(middleware.Logger)
+
 	s.mux.Route("/auth", func(r chi.Router) {
 		r.Post("/login", s.handleLogin())
 		r.Post("/register", s.handleRegister())
