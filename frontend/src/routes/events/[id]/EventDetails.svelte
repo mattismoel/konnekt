@@ -6,6 +6,7 @@
 	import { formatDateStr } from '$lib/time';
 	import type { Event } from '$lib/event';
 	import Button from '$lib/components/Button.svelte';
+	import { earliestConcert } from '$lib/concert';
 
 	type Props = {
 		event: Event;
@@ -13,7 +14,7 @@
 	};
 
 	let { event, active }: Props = $props();
-	let earliestEvent = $derived(event.concerts[0]);
+	let fromDate = $derived(earliestConcert(event.concerts)?.from);
 
 	let artistNames = $derived(event.concerts.map((concert) => concert.artist.name));
 </script>
@@ -32,7 +33,7 @@
 			<div class="w-full space-y-1 text-zinc-300">
 				<div class="flex items-center gap-2">
 					<CalendarIcon />
-					<span>{formatDateStr(earliestEvent.from)}</span>
+					<span>{formatDateStr(fromDate || new Date())}</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<GroupIcon />
