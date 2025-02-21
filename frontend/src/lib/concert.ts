@@ -9,3 +9,27 @@ export const concertSchema = z.object({
 })
 
 export type Concert = z.infer<typeof concertSchema>
+
+/***
+ * @description Returns the earliest concert within an input concerts array.
+ * If the input concerts array is empty, null is returned.
+ */
+export const earliestConcert = (concerts: Concert[]): Concert | null => {
+	if (concerts.length <= 0) return null
+
+	return concerts.reduce((prev, curr) =>
+		curr.from.getDate() < prev.from.getDate() ? curr : prev
+	)
+}
+
+/***
+ * @description Returns the latest concert within an input concerts array.
+ * If the input concerts array is empty, null is returned.
+ */
+export const latestConcert = (concerts: Concert[]): Concert | null => {
+	if (concerts.length <= 0) return null
+
+	return concerts.reduce((prev, curr) =>
+		curr.from.getDate() > prev.from.getDate() ? curr : prev
+	)
+}
