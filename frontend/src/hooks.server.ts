@@ -3,7 +3,6 @@ import { userSchema } from "$lib/user";
 import type { Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-	console.log(`${PUBLIC_BACKEND_URL}`)
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/session`, {
 		credentials: "include",
 		headers: event.request.headers
