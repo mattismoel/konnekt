@@ -5,6 +5,6 @@
 	const { event } = $derived(data);
 </script>
 
-<main class="min-h-sub-nav">
+<main class="min-h-sub-nav px-auto">
 	<EditEventForm {event} />
 </main>
