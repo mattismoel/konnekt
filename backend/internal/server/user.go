@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -23,8 +22,6 @@ func (s Server) handleListUserRoles() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
-
-		fmt.Printf("%+v\n", roles)
 
 		writeJSON(w, http.StatusOK, roles)
 	}
