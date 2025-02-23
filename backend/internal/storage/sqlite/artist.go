@@ -36,7 +36,7 @@ func NewArtistRepository(db *sql.DB) (*ArtistRepository, error) {
 	}, nil
 }
 
-func (repo ArtistRepository) List(ctx context.Context) ([]artist.Artist, int, error) {
+func (repo ArtistRepository) List(ctx context.Context, offset, limit int) ([]artist.Artist, int, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, 0, err

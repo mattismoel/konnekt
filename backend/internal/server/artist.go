@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/mattismoel/konnekt/internal/service"
 )
@@ -12,23 +11,10 @@ func (s Server) handleListArtists() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		page, err := strconv.Atoi(r.URL.Query().Get("page"))
-		if err != nil || page <= 0 {
-			page = DEFAULT_PAGE
-		}
+		q := NewListQueryFromRequest(r)
 
-		perPage, err := strconv.Atoi(r.URL.Query().Get("perPage"))
-		if err != nil || perPage <= 0 {
-			perPage = DEFAULT_PER_PAGE
-		}
-
-		if perPage > MAX_PER_PAGE {
-			perPage = MAX_PER_PAGE
-		}
-
-		result, err := s.artistService.List(ctx, service.ArtistQuery{
-			Page:    page,
-			PerPage: perPage,
+		result, err := s.artistService.List(ctx, service.ArtistListQuery{
+			ListQuery: q,
 		})
 
 		if err != nil {
@@ -36,13 +22,7 @@ func (s Server) handleListArtists() http.HandlerFunc {
 			return
 		}
 
-		writeJSON(w, http.StatusOK, ListReponse{
-			Page:       result.Page,
-			PerPage:    result.PerPage,
-			TotalCount: result.Page,
-			PageCount:  result.PageCount,
-			Records:    result.Artists,
-		})
+		writeJSON(w, http.StatusOK, result)
 	}
 }
 

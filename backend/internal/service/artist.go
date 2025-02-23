@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
+	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type ArtistService struct {
@@ -24,33 +25,22 @@ type CreateArtist struct {
 	Socials     []string
 }
 
-type ArtistQuery struct {
-	Page    int
-	PerPage int
+type ArtistListQuery struct {
+	query.ListQuery
 }
 
-type ArtistListResult struct {
-	Page       int
-	PerPage    int
-	PageCount  int
-	TotalCount int
-	Artists    []artist.Artist
-}
-
-func (s ArtistService) List(ctx context.Context, query ArtistQuery) (ArtistListResult, error) {
-	artists, totalCount, err := s.artistRepo.List(ctx)
+func (s ArtistService) List(ctx context.Context, q ArtistListQuery) (query.ListResult[artist.Artist], error) {
+	artists, totalCount, err := s.artistRepo.List(ctx, q.Offset(), q.Limit)
 	if err != nil {
-		return ArtistListResult{}, err
+		return query.ListResult[artist.Artist]{}, err
 	}
 
-	pageCount := (totalCount + query.PerPage - 1) / query.PerPage
-
-	return ArtistListResult{
-		Artists:    artists,
+	return query.ListResult[artist.Artist]{
+		Records:    artists,
 		TotalCount: totalCount,
-		Page:       query.Page,
-		PerPage:    query.PerPage,
-		PageCount:  pageCount,
+		Page:       q.Page,
+		PerPage:    q.PerPage,
+		PageCount:  q.PageCount(totalCount),
 	}, nil
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
+	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type EventService struct {
@@ -85,27 +86,35 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 	return eventID, nil
 }
 
-type EventListResult struct {
-	Page       int
-	PerPage    int
-	PageCount  int
-	TotalCount int
-	Events     []event.Event
+type EventListQuery struct {
+	query.ListQuery
+	From time.Time
+	To   time.Time
 }
 
-func (s EventService) List(ctx context.Context, query event.Query) (EventListResult, error) {
-	events, totalCount, err := s.eventRepo.List(ctx, query)
-	if err != nil {
-		return EventListResult{}, err
+func NewEventListQuery(page, perPage, limit int, from, to time.Time) EventListQuery {
+	if to.Before(from) {
+		to = from
 	}
 
-	pageCount := (totalCount + query.PerPage - 1) / query.PerPage
+	return EventListQuery{
+		ListQuery: query.NewListQuery(page, perPage, limit),
+		From:      from,
+		To:        to,
+	}
+}
 
-	return EventListResult{
-		Page:       query.Page,
-		PerPage:    query.PerPage,
+func (s EventService) List(ctx context.Context, q EventListQuery) (query.ListResult[event.Event], error) {
+	events, totalCount, err := s.eventRepo.List(ctx, q.From, q.To, q.Offset(), q.Limit)
+	if err != nil {
+		return query.ListResult[event.Event]{}, err
+	}
+
+	return query.ListResult[event.Event]{
+		Page:       q.Page,
+		PerPage:    q.PerPage,
 		TotalCount: totalCount,
-		PageCount:  pageCount,
-		Events:     events,
+		PageCount:  q.PageCount(totalCount),
+		Records:    events,
 	}, nil
 }

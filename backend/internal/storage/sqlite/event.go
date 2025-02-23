@@ -149,14 +149,18 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 	return eventID, nil
 }
 
-type EventQuery struct {
+type Query struct {
 	Offset int
 	Limit  int
-	From   time.Time
-	To     time.Time
 }
 
-func (repo EventRepository) List(ctx context.Context, query event.Query) ([]event.Event, int, error) {
+type EventQuery struct {
+	Query
+	From time.Time
+	To   time.Time
+}
+
+func (repo EventRepository) List(ctx context.Context, from, to time.Time, offset, limit int) ([]event.Event, int, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, 0, err
@@ -165,11 +169,14 @@ func (repo EventRepository) List(ctx context.Context, query event.Query) ([]even
 	defer tx.Rollback()
 
 	dbEvents, err := listEvents(ctx, tx, EventQuery{
-		Limit:  query.Limit,
-		From:   query.From,
-		To:     query.To,
-		Offset: query.Offset(),
-	})
+		Query: Query{
+			Offset: offset,
+			Limit:  limit,
+		},
+		From: from,
+		To:   to,
+	},
+	)
 
 	if err != nil {
 		return nil, 0, err

@@ -7,69 +7,29 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
-const DEFAULT_PAGE = 1
-const DEFAULT_PER_PAGE = 8
-const MAX_PER_PAGE = 100
-
 func (s Server) handleListEvents() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := NewListQueryFromRequest(r)
+
 		fromStr, toStr := r.URL.Query().Get("from_date"), r.URL.Query().Get("to_date")
-
-		from, err := time.Parse(time.RFC3339, fromStr)
-		if err != nil && fromStr != "" {
-			writeError(w, err)
-			return
-		}
-
-		to, err := time.Parse(time.RFC3339, toStr)
-		if err != nil && toStr != "" {
-			writeError(w, err)
-			return
-		}
-
-		page, err := strconv.Atoi(r.URL.Query().Get("page"))
-		if err != nil || page <= 0 {
-			page = DEFAULT_PAGE
-		}
-
-		perPage, err := strconv.Atoi(r.URL.Query().Get("perPage"))
-		if err != nil || page <= 0 {
-			perPage = DEFAULT_PER_PAGE
-		}
-
-		if perPage > MAX_PER_PAGE {
-			perPage = MAX_PER_PAGE
-		}
+		from, _ := time.Parse(time.RFC3339, fromStr)
+		to, _ := time.Parse(time.RFC3339, toStr)
 
 		ctx := r.Context()
-		result, err := s.eventService.List(ctx, event.Query{
-			Page:    page,
-			PerPage: perPage,
-			From:    from,
-			To:      to,
-		})
+
+		result, err := s.eventService.List(ctx,
+			service.NewEventListQuery(q.Page, q.PerPage, q.Limit, from, to),
+		)
 
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		err = writeJSON(w, http.StatusOK, ListReponse{
-			Page:       result.Page,
-			PerPage:    result.PerPage,
-			PageCount:  result.PageCount,
-			TotalCount: result.TotalCount,
-			Records:    result.Events,
-		})
-
-		if err != nil {
-			writeError(w, err)
-			return
-		}
+		writeJSON(w, http.StatusOK, result)
 	}
 }
 
