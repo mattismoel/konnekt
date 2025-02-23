@@ -22,6 +22,7 @@ func (s *Server) setupRoutes() {
 	})
 
 	s.mux.Route("/artists", func(r chi.Router) {
+		r.Get("/", s.withPermissions(s.handleListArtists(), "artist-list"))
 		r.Post("/", s.withPermissions(s.handleCreateArtist(), "artist-create"))
 	})
 

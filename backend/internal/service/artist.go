@@ -24,6 +24,36 @@ type CreateArtist struct {
 	Socials     []string
 }
 
+type ArtistQuery struct {
+	Page    int
+	PerPage int
+}
+
+type ArtistListResult struct {
+	Page       int
+	PerPage    int
+	PageCount  int
+	TotalCount int
+	Artists    []artist.Artist
+}
+
+func (s ArtistService) List(ctx context.Context, query ArtistQuery) (ArtistListResult, error) {
+	artists, totalCount, err := s.artistRepo.List(ctx)
+	if err != nil {
+		return ArtistListResult{}, err
+	}
+
+	pageCount := (totalCount + query.PerPage - 1) / query.PerPage
+
+	return ArtistListResult{
+		Artists:    artists,
+		TotalCount: totalCount,
+		Page:       query.Page,
+		PerPage:    query.PerPage,
+		PageCount:  pageCount,
+	}, nil
+}
+
 func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, error) {
 	socials := make([]artist.Social, 0)
 	for _, social := range load.Socials {

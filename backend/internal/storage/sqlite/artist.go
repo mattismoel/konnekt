@@ -36,6 +36,57 @@ func NewArtistRepository(db *sql.DB) (*ArtistRepository, error) {
 	}, nil
 }
 
+func (repo ArtistRepository) List(ctx context.Context) ([]artist.Artist, int, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	defer tx.Rollback()
+
+	artists := make([]artist.Artist, 0)
+
+	dbArtists, err := listArtists(ctx, tx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for _, dbArtist := range dbArtists {
+		dbGenres, err := artistGenres(ctx, tx, dbArtist.ID)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		genres := make([]artist.Genre, 0)
+		for _, dbGenre := range dbGenres {
+			genres = append(genres, artist.Genre(dbGenre.Name))
+		}
+
+		dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		socials := make([]artist.Social, 0)
+		for _, dbSocial := range dbSocials {
+			socials = append(socials, artist.Social(dbSocial.URL))
+		}
+
+		artists = append(artists, dbArtist.ToInternal(genres, socials))
+	}
+
+	totalCount, err := artistCount(ctx, tx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, 0, err
+	}
+
+	return artists, totalCount, nil
+}
+
 func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -84,7 +135,6 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 
 	return artistID, nil
 }
-
 func (repo ArtistRepository) ByID(ctx context.Context, artistID int64) (artist.Artist, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -143,6 +193,49 @@ func (repo ArtistRepository) GenreByID(ctx context.Context, genreID int64) (arti
 	}
 
 	return artist.Genre(dbGenre.Name), nil
+}
+
+func listArtists(ctx context.Context, tx *sql.Tx) ([]Artist, error) {
+	query := `SELECT id, name, description, image_url FROM artist a`
+
+	rows, err := tx.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	artists := make([]Artist, 0)
+
+	for rows.Next() {
+		var id int64
+		var name, description, imageURL string
+
+		if err := rows.Scan(&id, &name, &description, &imageURL); err != nil {
+			return nil, err
+		}
+
+		artists = append(artists, Artist{
+			ID:          id,
+			Name:        name,
+			Description: description,
+			ImageURL:    imageURL,
+		})
+	}
+
+	return artists, nil
+}
+
+func artistCount(ctx context.Context, tx *sql.Tx) (int, error) {
+	var count int
+
+	err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM artist").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+
 }
 
 func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
