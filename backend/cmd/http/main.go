@@ -85,6 +85,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	venueService := service.NewVenueService(venueRepo)
+
 	srv, err := server.New(
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithAuthService(authService),
@@ -92,6 +94,7 @@ func main() {
 		server.WithUserService(userService),
 		server.WithEventService(eventService),
 		server.WithArtistService(artistService),
+		server.WithVenueService(venueService),
 	)
 
 	slog.Info("Started server", "host", *host, "port", *port)
