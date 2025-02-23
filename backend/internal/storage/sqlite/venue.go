@@ -26,6 +26,46 @@ func NewVenueRepository(db *sql.DB) (*VenueRepository, error) {
 	}, nil
 }
 
+type VenueQuery struct {
+	Query
+}
+
+func (repo VenueRepository) List(ctx context.Context, offset, limit int) ([]venue.Venue, int, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	defer tx.Rollback()
+
+	dbVenues, err := listVenues(ctx, tx, VenueQuery{
+		Query: Query{
+			Offset: offset,
+			Limit:  limit,
+		},
+	})
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalCount, err := venueCount(ctx, tx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, 0, err
+	}
+
+	venues := make([]venue.Venue, 0)
+	for _, dbVenue := range dbVenues {
+		venues = append(venues, dbVenue.ToInternal())
+	}
+
+	return venues, totalCount, nil
+}
+
 func (repo VenueRepository) ByID(ctx context.Context, venueID int64) (venue.Venue, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -65,6 +105,60 @@ func (repo VenueRepository) Insert(ctx context.Context, v venue.Venue) (int64, e
 	}
 
 	return venueID, nil
+}
+
+func listVenues(ctx context.Context, tx *sql.Tx, query VenueQuery) ([]Venue, error) {
+	queryStr := `
+	SELECT 
+	id, name, country_code, city 
+	FROM venue
+	WHERE 1=1
+	`
+
+	args := make([]any, 0)
+
+	if query.Offset >= 0 && query.Limit > 0 {
+		queryStr += "LIMIT @limit OFFSET @offset"
+		args = append(args, sql.Named("limit", query.Limit))
+		args = append(args, sql.Named("offset", query.Offset))
+	}
+
+	rows, err := tx.QueryContext(ctx, queryStr)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	venues := make([]Venue, 0)
+	for rows.Next() {
+		var id int64
+		var name, countryCode, city string
+
+		if err := rows.Scan(&id, &name, &countryCode, &city); err != nil {
+			return nil, err
+		}
+
+		venues = append(venues, Venue{
+			ID:          id,
+			Name:        name,
+			CountryCode: countryCode,
+			City:        city,
+		})
+	}
+
+	return venues, nil
+}
+
+func venueCount(ctx context.Context, tx *sql.Tx) (int, error) {
+	var count int
+
+	err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM venue").Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func insertVenue(ctx context.Context, tx *sql.Tx, v Venue) (int64, error) {
