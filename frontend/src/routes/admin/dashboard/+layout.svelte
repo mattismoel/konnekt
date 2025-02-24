@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { cn } from '$lib/clsx';
+	import Card from '$lib/components/Card.svelte';
 	import type { User } from '$lib/user';
 	import SettingsIcon from '~icons/mdi/settings-outline';
 
@@ -14,17 +15,17 @@
 </main>
 
 {#snippet sidebar()}
-	<div class="flex flex-col rounded-sm border border-zinc-800 bg-zinc-900 p-2">
+	<Card class="flex flex-col p-4">
 		<div class="flex flex-1 flex-col p-4">
 			<span class="mb-4 text-xl font-black">KONNEKT&reg;</span>
-			<ul class="flex-1 space-y-1">
+			<ul class="flex-1 space-y-2">
 				{@render sidebarEntry('Events.', '/admin/dashboard/events')}
 				{@render sidebarEntry('Kunstenre.', '/admin/dashboard/artists')}
 				{@render sidebarEntry('Generelt.', '/admin/dashboard/general')}
 			</ul>
 		</div>
 		{@render userInformation(user)}
-	</div>
+	</Card>
 {/snippet}
 
 {#snippet sidebarEntry(title: string, url: string)}
@@ -39,7 +40,7 @@
 
 {#snippet userInformation(user: User)}
 	<div
-		class="group flex items-center gap-4 rounded-md border border-transparent p-2 transition-colors hover:border-zinc-700 hover:bg-zinc-800"
+		class="group flex items-center gap-4 rounded-md border border-transparent p-2 transition-colors hover:border-zinc-800 hover:bg-zinc-900"
 	>
 		<img
 			src="https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"

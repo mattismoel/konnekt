@@ -1,13 +1,14 @@
 <script lang="ts">
 	import PlusIcon from '~icons/mdi/plus';
 	import EventEntry from './EventEntry.svelte';
+	import Card from '$lib/components/Card.svelte';
 
 	let { data } = $props();
 
 	let { upcomingEvents } = $derived(data);
 </script>
 
-<div class="rounded-sm border border-zinc-800 bg-zinc-900 p-8">
+<Card>
 	<div class="flex justify-between">
 		<h1 class="mb-4 text-2xl font-bold">Kommende events.</h1>
 		<a href="/admin/events/edit" class="flex gap-2">
@@ -20,4 +21,4 @@
 			<EventEntry {event} />
 		{/each}
 	</div>
-</div>
+</Card>
