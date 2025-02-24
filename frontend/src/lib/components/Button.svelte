@@ -1,32 +1,41 @@
 <script lang="ts">
 	import { cn } from '$lib/clsx';
-	import type { Snippet } from 'svelte';
+	import type { HTMLButtonAttributes } from 'svelte/elements';
 
-	type Props = {
-		children: Snippet<[]>;
+	type Props = HTMLButtonAttributes & {
 		expandX?: boolean;
 		expandY?: boolean;
-		extraClass?: string;
-		type?: 'primary' | 'secondary' | 'dangerous';
+		variant?: 'primary' | 'secondary' | 'dangerous' | 'ghost';
 	};
 
-	let { children, expandX, expandY, extraClass, type = 'primary' }: Props = $props();
+	let {
+		children,
+		class: className,
+		expandX,
+		expandY,
+		variant = 'primary',
+		...rest
+	}: Props = $props();
 </script>
 
 <button
 	type="button"
 	class={cn(
-		`max-w-64 rounded-sm px-4 py-2 font-semibold text-zinc-950`,
+		`flex max-w-64 items-center justify-center gap-1 rounded-sm px-4 py-2 font-medium text-zinc-950`,
 		{
 			'w-full max-w-none': expandX,
 			'h-full': expandY,
-			'bg-zinc-100 text-zinc-950 hover:bg-zinc-300': type === 'primary',
+			'bg-zinc-100 text-zinc-950 hover:bg-zinc-300': variant === 'primary',
 			'border border-zinc-100 text-zinc-100 transition-colors hover:bg-zinc-300 hover:text-zinc-950':
-				type === 'secondary',
-			'border border-red-700 bg-red-800 text-red-300 hover:text-red-100': type === 'dangerous'
+				variant === 'secondary',
+			'border border-red-700 bg-red-800 text-red-300 hover:text-red-100': variant === 'dangerous',
+			'border border-zinc-900 font-normal text-zinc-500 hover:bg-zinc-900': variant === 'ghost'
 		},
-		extraClass
+		className
 	)}
+	{...rest}
 >
-	{@render children()}
+	{#if children}
+		{@render children()}
+	{/if}
 </button>
