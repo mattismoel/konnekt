@@ -16,7 +16,7 @@
 </script>
 
 <a
-	class="flex items-center gap-4 rounded-md border border-transparent p-2 hover:border-zinc-700 hover:bg-zinc-800"
+	class="flex items-center gap-4 rounded-md border border-transparent p-2 hover:border-zinc-800 hover:bg-zinc-900"
 	href="/admin/events/edit?id={event.id}"
 >
 	<span class="flex-1">{event.title}</span>
