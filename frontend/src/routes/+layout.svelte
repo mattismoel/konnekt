@@ -22,7 +22,7 @@
 {/snippet}
 
 {#snippet footer()}
-	<footer class="px-auto border-t border-t-neutral-900 bg-neutral-950 pt-8 pb-6">
+	<footer class="px-auto border-t border-t-zinc-900 bg-zinc-950 pt-8 pb-6">
 		<div class="mb-8 grid w-full grid-cols-1 sm:grid-cols-2">
 			<!-- NAVIGATION -->
 			<div class="flex-1">
