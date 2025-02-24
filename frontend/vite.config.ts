@@ -1,12 +1,8 @@
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
-import tailwindcss from '@tailwindcss/vite';
-import Icons from "unplugin-icons/vite"
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
+// https://vite.dev/config/
 export default defineConfig({
-	plugins: [
-		sveltekit(),
-		tailwindcss(),
-		Icons({ compiler: "svelte" })
-	]
-});
+  plugins: [react(), tailwindcss()],
+})

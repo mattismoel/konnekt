@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --spacing-nav: 3.5rem;
+  --color-background: var(--color-zinc-950);
+  --color-text: var(--color-zinc-100);
+  --spacing-sub-nav: calc(100svh - var(--spacing-nav));
+  --font-sans: "Poppins", "sans-serif";
+}
+
+.px-auto {
+  @apply px-6 sm:px-8 md:px-16 lg:px-48;
+}
