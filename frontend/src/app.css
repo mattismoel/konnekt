@@ -4,8 +4,8 @@
 
 @theme {
   --spacing-nav: 3.5rem;
-  --color-background: var(--color-black);
-  --color-text: var(--color-gray-200);
+  --color-background: var(--color-zinc-950);
+  --color-text: var(--color-zinc-100);
   --spacing-sub-nav: calc(100svh - var(--spacing-nav));
   --font-sans: "Poppins", "sans-serif";
 }
