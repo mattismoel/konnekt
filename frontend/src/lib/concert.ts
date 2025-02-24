@@ -8,7 +8,14 @@ export const concertSchema = z.object({
 	artist: artistSchema,
 })
 
+export const updateConcertSchema = z.object({
+	artistID: z.number().int().positive(),
+	from: z.coerce.date(),
+	to: z.coerce.date()
+})
+
 export type Concert = z.infer<typeof concertSchema>
+export type UpdateConcert = z.infer<typeof updateConcertSchema>
 
 /***
  * @description Returns the earliest concert within an input concerts array.
