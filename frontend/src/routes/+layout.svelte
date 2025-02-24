@@ -8,9 +8,11 @@
 {@render footer()}
 
 {#snippet navbar()}
-	<nav class="h-nav flex items-center justify-between border-b border-b-neutral-950 px-8">
+	<nav
+		class="h-nav absolute z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/65 px-8"
+	>
 		<a href="/" class="font-black">KONNEKT&reg;</a>
-		<ul class="*:hover:text-text text-text/85 flex gap-6">
+		<ul class="*:hover:text-text flex gap-6 text-zinc-50">
 			<li><a href="/events">Events</a></li>
 			<li><a href="/artists">Kunstnere</a></li>
 			<li><a href="/sponsorer">Sponsorer</a></li>
