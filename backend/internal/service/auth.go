@@ -29,8 +29,8 @@ func NewAuthService(userRepo user.Repository, authRepo auth.Repository) (*AuthSe
 func (srv AuthService) Register(ctx context.Context, email string, password []byte, passwordConfirm []byte, firstName, lastName string) (auth.SessionToken, time.Time, error) {
 	// Return if user already exists.
 	_, err := srv.userRepo.ByEmail(ctx, email)
-	if err != nil {
-		return "", time.Time{}, user.ErrAlreadyExists
+	if err == nil {
+		return "", time.Time{}, err
 	}
 
 	if err := auth.DoPasswordsMatch(password, passwordConfirm); err != nil {
