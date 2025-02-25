@@ -4,10 +4,11 @@
 	import DateTimePicker from '$lib/components/DateTimePicker.svelte';
 	import Selector from '$lib/components/Selector.svelte';
 	import PlusIcon from '~icons/mdi/plus';
+	import RefreshIcon from '~icons/mdi/refresh';
 	import CloseIcon from '~icons/mdi/close';
 	import RightArrowIcon from '~icons/mdi/arrow-right';
 	import type { UpdateConcert } from '$lib/concert';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import Card from '$lib/components/Card.svelte';
 
 	type Props = {
@@ -46,6 +47,9 @@
 					value: a.id.toString()
 				}))}
 			/>
+			<button type="button" onclick={invalidateAll}>
+				<RefreshIcon class="text-zinc-500" />
+			</button>
 			<Button variant="primary" onclick={() => goto('/admin/artists/edit')}>
 				<PlusIcon /> Ny
 			</Button>
