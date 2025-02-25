@@ -38,7 +38,8 @@
 		onclick={onDelete}><CloseIcon /></button
 	>
 	<div class="space-y-8">
-		<div class="flex w-full gap-2">
+		<h3 class="text-xl font-semibold">#{idx}</h3>
+		<div class="flex w-full gap-4">
 			<Selector
 				onchange={(e) => selectArtist(parseInt(e.currentTarget.value))}
 				class="w-full"
@@ -51,7 +52,7 @@
 				<RefreshIcon class="text-zinc-500" />
 			</button>
 			<Button variant="primary" onclick={() => goto('/admin/artists/edit')}>
-				<PlusIcon /> Ny
+				<PlusIcon />Ny
 			</Button>
 		</div>
 		<div class="flex items-center gap-8">
