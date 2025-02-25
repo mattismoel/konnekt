@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { concertSchema } from "./concert";
+import { concertForm, concertSchema } from "./concert";
 import { venueSchema } from "./venue";
 
 export const eventSchema = z.object({
@@ -10,5 +10,13 @@ export const eventSchema = z.object({
 	concerts: concertSchema.array(),
 	venue: venueSchema
 })
+
+export const eventForm = z.object({
+	title: z.string(),
+	description: z.string(),
+	coverImageUrl: z.string().url(),
+	venueId: z.number().positive(),
+	concerts: concertForm.array().min(1)
+});
 
 export type Event = z.infer<typeof eventSchema>

@@ -7,9 +7,10 @@
 	import RefreshIcon from '~icons/mdi/refresh';
 	import CloseIcon from '~icons/mdi/close';
 	import RightArrowIcon from '~icons/mdi/arrow-right';
-	import type { UpdateConcert } from '$lib/concert';
 	import { goto, invalidateAll } from '$app/navigation';
 	import Card from '$lib/components/Card.svelte';
+	import type { z } from 'zod';
+	import type { concertForm } from '$lib/concert';
 
 	type Props = {
 		artists: Artist[];
@@ -17,7 +18,7 @@
 		to?: Date;
 		idx: number;
 
-		concert: UpdateConcert;
+		concert: z.infer<typeof concertForm>;
 
 		onDelete: () => void;
 	};
@@ -28,7 +29,7 @@
 		concert.artistID = artistId;
 	};
 
-	$inspect(artists);
+	$inspect(concert);
 </script>
 
 <Card class="relative flex-1 space-y-4">
