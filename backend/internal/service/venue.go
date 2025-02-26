@@ -33,3 +33,23 @@ func (s VenueService) List(ctx context.Context, q VenueListQuery) (query.ListRes
 		Records:    venues,
 	}, nil
 }
+
+type CreateVenue struct {
+	Name        string
+	City        string
+	CountryCode string
+}
+
+func (s VenueService) Create(ctx context.Context, load CreateVenue) (int64, error) {
+	v, err := venue.NewVenue(load.Name, load.CountryCode, load.City)
+	if err != nil {
+		return 0, err
+	}
+
+	venueID, err := s.venueRepo.Insert(ctx, v)
+	if err != nil {
+		return 0, err
+	}
+
+	return venueID, nil
+}
