@@ -15,6 +15,7 @@ CREATE TABLE session (
 CREATE TABLE role (
   id INTEGER PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
+  display_name TEXT NOT NULL,
   description TEXT
 );
 
