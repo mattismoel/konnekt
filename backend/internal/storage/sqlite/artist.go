@@ -59,7 +59,10 @@ func (repo ArtistRepository) List(ctx context.Context, offset, limit int) ([]art
 
 		genres := make([]artist.Genre, 0)
 		for _, dbGenre := range dbGenres {
-			genres = append(genres, artist.Genre(dbGenre.Name))
+			genres = append(genres, artist.Genre{
+				ID:   dbGenre.ID,
+				Name: dbGenre.Name,
+			})
 		}
 
 		dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
@@ -104,7 +107,7 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 	}
 
 	for _, genre := range a.Genres {
-		genreID, err := insertGenre(ctx, tx, string(genre))
+		genreID, err := insertGenre(ctx, tx, genre.Name)
 		if err != nil {
 			return 0, err
 		}
@@ -164,8 +167,11 @@ func (repo ArtistRepository) ByID(ctx context.Context, artistID int64) (artist.A
 	}
 
 	genres := make([]artist.Genre, 0)
-	for _, g := range dbGenres {
-		genres = append(genres, artist.Genre(g.Name))
+	for _, dbGenre := range dbGenres {
+		genres = append(genres, artist.Genre{
+			ID:   dbGenre.ID,
+			Name: dbGenre.Name,
+		})
 	}
 
 	socials := make([]artist.Social, 0)
@@ -216,21 +222,24 @@ func (repo ArtistRepository) Delete(ctx context.Context, artistID int64) error {
 func (repo ArtistRepository) GenreByID(ctx context.Context, genreID int64) (artist.Genre, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return "", err
+		return artist.Genre{}, err
 	}
 
 	defer tx.Rollback()
 
 	dbGenre, err := genreByID(ctx, tx, genreID)
 	if err != nil {
-		return "", err
+		return artist.Genre{}, err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return "", err
+		return artist.Genre{}, err
 	}
 
-	return artist.Genre(dbGenre.Name), nil
+	return artist.Genre{
+		ID:   dbGenre.ID,
+		Name: dbGenre.Name,
+	}, nil
 }
 
 func listArtists(ctx context.Context, tx *sql.Tx) ([]Artist, error) {

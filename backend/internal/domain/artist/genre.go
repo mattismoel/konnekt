@@ -5,7 +5,10 @@ import (
 	"strings"
 )
 
-type Genre string
+type Genre struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
 
 var (
 	ErrEmptyGenreName = errors.New("Genre name must not be empty")
@@ -13,8 +16,8 @@ var (
 
 func NewGenre(name string) (Genre, error) {
 	if strings.TrimSpace(name) == "" {
-		return "", ErrEmptyGenreName
+		return Genre{}, ErrEmptyGenreName
 	}
 
-	return Genre(name), nil
+	return Genre{Name: name}, nil
 }

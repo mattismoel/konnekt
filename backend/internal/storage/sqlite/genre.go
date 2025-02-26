@@ -31,7 +31,10 @@ func (repo ArtistRepository) ListGenres(ctx context.Context, limit, offset int) 
 
 	genres := make([]artist.Genre, 0)
 	for _, dbGenre := range dbGenres {
-		genres = append(genres, artist.Genre(dbGenre.Name))
+		genres = append(genres, artist.Genre{
+			ID:   dbGenre.ID,
+			Name: dbGenre.Name,
+		})
 	}
 
 	totalCount, err := genreCount(ctx, tx)

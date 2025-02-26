@@ -72,7 +72,10 @@ func (repo EventRepository) ByID(ctx context.Context, eventID int64) (event.Even
 
 		genres := make([]artist.Genre, 0)
 		for _, dbGenre := range dbGenres {
-			genres = append(genres, artist.Genre(dbGenre.Name))
+			genres = append(genres, artist.Genre{
+				ID:   dbGenre.ID,
+				Name: dbGenre.Name,
+			})
 		}
 
 		dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
@@ -209,8 +212,11 @@ func (repo EventRepository) List(ctx context.Context, from, to time.Time, offset
 			}
 
 			genres := make([]artist.Genre, 0)
-			for _, g := range dbGenres {
-				genres = append(genres, artist.Genre(g.Name))
+			for _, dbGenre := range dbGenres {
+				genres = append(genres, artist.Genre{
+					ID:   dbGenre.ID,
+					Name: dbGenre.Name,
+				})
 			}
 
 			dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
