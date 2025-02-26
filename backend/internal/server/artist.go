@@ -31,7 +31,7 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 		Name        string   `json:"name"`
 		Description string   `json:"description"`
 		ImageURL    string   `json:"imageUrl"`
-		GenreIDs    []int64  `json:"genreIDs"`
+		GenreIDs    []int64  `json:"genreIds"`
 		Socials     []string `json:"socials"`
 	}
 
