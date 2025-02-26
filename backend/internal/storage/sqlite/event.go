@@ -149,10 +149,6 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 	return eventID, nil
 }
 
-type Query struct {
-	Offset int
-	Limit  int
-}
 
 type EventQuery struct {
 	Query
