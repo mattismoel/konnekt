@@ -53,3 +53,12 @@ func (s VenueService) Create(ctx context.Context, load CreateVenue) (int64, erro
 
 	return venueID, nil
 }
+
+func (s VenueService) Delete(ctx context.Context, venueID int64) error {
+	err := s.venueRepo.Delete(ctx, venueID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

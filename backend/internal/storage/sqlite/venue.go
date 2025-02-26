@@ -107,6 +107,26 @@ func (repo VenueRepository) Insert(ctx context.Context, v venue.Venue) (int64, e
 	return venueID, nil
 }
 
+func (repo VenueRepository) Delete(ctx context.Context, venueID int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	err = deleteVenue(ctx, tx, venueID)
+	if err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func listVenues(ctx context.Context, tx *sql.Tx, params VenueQueryParams) ([]Venue, error) {
 	query, err := NewQuery(`SELECT id, name, country_code, city FROM venue`)
 	if err != nil {
@@ -204,6 +224,16 @@ func venueByID(ctx context.Context, tx *sql.Tx, venueID int64) (Venue, error) {
 		CountryCode: countryCode,
 		City:        city,
 	}, nil
+}
+
+func deleteVenue(ctx context.Context, tx *sql.Tx, venueID int64) error {
+	query := `DELETE FROM venue WHERE id = @venue_id`
+	_, err := tx.ExecContext(ctx, query, sql.Named("venue_id", venueID))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (v Venue) ToInternal() venue.Venue {

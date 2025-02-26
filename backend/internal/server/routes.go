@@ -30,6 +30,7 @@ func (s *Server) setupRoutes() {
 	s.mux.Route("/venues", func(r chi.Router) {
 		r.Get("/", s.withPermissions(s.handleListVenues(), "venue-list"))
 		r.Post("/", s.withPermissions(s.handleCreateVenue(), "venue-create"))
+		r.Delete("/{venueID}", s.withPermissions(s.handleDeleteVenue(), "venue-delete"))
 	})
 
 	s.mux.Route("/users", func(r chi.Router) {

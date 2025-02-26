@@ -3,7 +3,9 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -47,6 +49,24 @@ func (s Server) handleCreateVenue() http.HandlerFunc {
 			City:        load.City,
 		})
 
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+	}
+}
+
+func (s Server) handleDeleteVenue() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		venueID, err := strconv.Atoi(chi.URLParam(r, "venueID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = s.venueService.Delete(ctx, int64(venueID))
 		if err != nil {
 			writeError(w, err)
 			return
