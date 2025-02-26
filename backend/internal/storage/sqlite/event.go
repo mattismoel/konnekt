@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -149,9 +148,8 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 	return eventID, nil
 }
 
-
-type EventQuery struct {
-	Query
+type EventQueryParams struct {
+	QueryParams
 	From time.Time
 	To   time.Time
 }
@@ -164,8 +162,8 @@ func (repo EventRepository) List(ctx context.Context, from, to time.Time, offset
 
 	defer tx.Rollback()
 
-	dbEvents, err := listEvents(ctx, tx, EventQuery{
-		Query: Query{
+	dbEvents, err := listEvents(ctx, tx, EventQueryParams{
+		QueryParams: QueryParams{
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -302,38 +300,42 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 	return concertID, nil
 }
 
-func listEvents(ctx context.Context, tx *sql.Tx, query EventQuery) ([]Event, error) {
-	queryStr := `
-	SELECT 
-		e.id, 
-		e.title, 
-		e.description, 
-		e.cover_image_url, 
+func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {
+	query, err := NewQuery(`
+    SELECT
+		e.id,
+		e.title,
+		e.description,
+		e.cover_image_url,
 		e.venue_id
 	FROM event e
-		JOIN concert c ON c.event_id = e.id
-	WHERE 1=1
-	`
+		JOIN concert c ON c.event_id = e.id`)
 
-	args := make([]any, 0)
-
-	if !query.From.IsZero() {
-		queryStr += fmt.Sprintf("AND c.from_date >= @from_date\n")
-		args = append(args, sql.Named("from_date", query.From))
+	if err != nil {
+		return nil, err
 	}
 
-	if !query.To.IsZero() {
-		queryStr += fmt.Sprintf("AND c.to_date <= @to_date\n")
-		args = append(args, sql.Named("to_date", query.To))
+	err = query.WithOffset(params.Offset)
+	if err != nil {
+		return nil, err
 	}
 
-	if query.Offset >= 0 && query.Limit > 0 {
-		queryStr += "LIMIT @limit OFFSET @offset"
-		args = append(args, sql.Named("limit", query.Limit))
-		args = append(args, sql.Named("offset", query.Offset))
+	err = query.WithLimit(params.Limit)
+	if err != nil {
+		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, queryStr, args...)
+	if !params.From.IsZero() {
+		err = query.AddFilter("c.from_date >= ?", params.From)
+	}
+
+	if !params.To.IsZero() {
+		query.AddFilter("c.to_date <= ?", params.To)
+	}
+
+	queryString, args := query.Build()
+
+	rows, err := tx.QueryContext(ctx, queryString, args...)
 	if err != nil {
 		return nil, err
 	}
