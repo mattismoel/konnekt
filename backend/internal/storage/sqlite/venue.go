@@ -26,8 +26,8 @@ func NewVenueRepository(db *sql.DB) (*VenueRepository, error) {
 	}, nil
 }
 
-type VenueQuery struct {
-	Query
+type VenueQueryParams struct {
+	QueryParams
 }
 
 func (repo VenueRepository) List(ctx context.Context, offset, limit int) ([]venue.Venue, int, error) {
@@ -38,8 +38,8 @@ func (repo VenueRepository) List(ctx context.Context, offset, limit int) ([]venu
 
 	defer tx.Rollback()
 
-	dbVenues, err := listVenues(ctx, tx, VenueQuery{
-		Query: Query{
+	dbVenues, err := listVenues(ctx, tx, VenueQueryParams{
+		QueryParams: QueryParams{
 			Offset: offset,
 			Limit:  limit,
 		},
@@ -107,23 +107,25 @@ func (repo VenueRepository) Insert(ctx context.Context, v venue.Venue) (int64, e
 	return venueID, nil
 }
 
-func listVenues(ctx context.Context, tx *sql.Tx, query VenueQuery) ([]Venue, error) {
-	queryStr := `
-	SELECT 
-	id, name, country_code, city 
-	FROM venue
-	WHERE 1=1
-	`
-
-	args := make([]any, 0)
-
-	if query.Offset >= 0 && query.Limit > 0 {
-		queryStr += "LIMIT @limit OFFSET @offset"
-		args = append(args, sql.Named("limit", query.Limit))
-		args = append(args, sql.Named("offset", query.Offset))
+func listVenues(ctx context.Context, tx *sql.Tx, params VenueQueryParams) ([]Venue, error) {
+	query, err := NewQuery(`SELECT id, name, country_code, city FROM venue`)
+	if err != nil {
+		return nil, err
 	}
 
-	rows, err := tx.QueryContext(ctx, queryStr)
+	err = query.WithLimit(params.Limit)
+	if err != nil {
+		return nil, err
+	}
+
+	err = query.WithOffset(params.Offset)
+	if err != nil {
+		return nil, err
+	}
+
+	queryString, args := query.Build()
+
+	rows, err := tx.QueryContext(ctx, queryString, args...)
 	if err != nil {
 		return nil, err
 	}
