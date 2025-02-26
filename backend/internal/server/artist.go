@@ -79,3 +79,20 @@ func (s Server) handleDeleteArtist() http.HandlerFunc {
 		}
 	}
 }
+
+func (s Server) handleListGenres() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		result, err := s.artistService.ListGenres(ctx, service.GenreListQuery{
+			ListQuery: NewListQueryFromRequest(r),
+		})
+
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, result)
+	}
+}

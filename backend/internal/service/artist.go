@@ -29,6 +29,10 @@ type ArtistListQuery struct {
 	query.ListQuery
 }
 
+type GenreListQuery struct {
+	query.ListQuery
+}
+
 func (s ArtistService) List(ctx context.Context, q ArtistListQuery) (query.ListResult[artist.Artist], error) {
 	artists, totalCount, err := s.artistRepo.List(ctx, q.Offset(), q.Limit)
 	if err != nil {
@@ -84,4 +88,19 @@ func (s ArtistService) Delete(ctx context.Context, artistID int64) error {
 	}
 
 	return nil
+}
+
+func (s ArtistService) ListGenres(ctx context.Context, q GenreListQuery) (query.ListResult[artist.Genre], error) {
+	genres, totalCount, err := s.artistRepo.ListGenres(ctx, q.Offset(), q.Limit)
+	if err != nil {
+		return query.ListResult[artist.Genre]{}, err
+	}
+
+	return query.ListResult[artist.Genre]{
+		Page:       q.Page,
+		PerPage:    q.PerPage,
+		PageCount:  q.PageCount(totalCount),
+		TotalCount: totalCount,
+		Records:    genres,
+	}, nil
 }

@@ -34,4 +34,8 @@ func (s *Server) setupRoutes() {
 	s.mux.Route("/users", func(r chi.Router) {
 		r.Get("/roles/{userID}", s.withPermissions(s.handleListUserRoles(), "role-list"))
 	})
+
+	s.mux.Route("/genres", func(r chi.Router) {
+		r.Get("/", s.handleListGenres())
+	})
 }
