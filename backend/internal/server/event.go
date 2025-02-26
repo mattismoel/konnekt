@@ -64,7 +64,7 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 		Title         string              `json:"title"`
 		Description   string              `json:"description"`
 		CoverImageURL string              `json:"coverImageUrl"`
-		VenueID       int64               `json:"venueID"`
+		VenueID       int64               `json:"venueId"`
 		Concerts      []createConcertLoad `json:"concerts"`
 	}
 
