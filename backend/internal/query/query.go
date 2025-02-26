@@ -1,9 +1,5 @@
 package query
 
-import (
-	"math"
-)
-
 const (
 	// The default page to query for.
 	DEFAULT_PAGE = 1
@@ -62,7 +58,7 @@ func NewListQuery(page, perPage, limit int) ListQuery {
 
 // Returns the page count based on the total count of records.
 func (q ListQuery) PageCount(totalCount int) int {
-	return int(math.Ceil(float64(totalCount) / float64(q.Limit)))
+	return ((totalCount - 1) / q.PerPage) + 1
 }
 
 // Returns the offset.
