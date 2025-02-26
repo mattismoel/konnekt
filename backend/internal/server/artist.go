@@ -3,7 +3,9 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -53,6 +55,24 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 			GenreIDs:    load.GenreIDs,
 		})
 
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+	}
+}
+
+func (s Server) handleDeleteArtist() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		artistID, err := strconv.Atoi(chi.URLParam(r, "artistID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = s.artistService.Delete(ctx, int64(artistID))
 		if err != nil {
 			writeError(w, err)
 			return

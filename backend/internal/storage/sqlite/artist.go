@@ -135,6 +135,7 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 
 	return artistID, nil
 }
+
 func (repo ArtistRepository) ByID(ctx context.Context, artistID int64) (artist.Artist, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -173,6 +174,43 @@ func (repo ArtistRepository) ByID(ctx context.Context, artistID int64) (artist.A
 	}
 
 	return dbArtist.ToInternal(genres, socials), nil
+}
+
+func (repo ArtistRepository) Delete(ctx context.Context, artistID int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	artist, err := artistByID(ctx, tx, artistID)
+	if err != nil {
+		return err
+	}
+
+	socials, err := artistSocials(ctx, tx, artist.ID)
+	if err != nil {
+		return err
+	}
+
+	for _, social := range socials {
+		err := deleteSocial(ctx, tx, social.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = deleteArtist(ctx, tx, artist.ID)
+	if err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (repo ArtistRepository) GenreByID(ctx context.Context, genreID int64) (artist.Genre, error) {
@@ -441,6 +479,39 @@ func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
 	}, nil
 }
 
+func deleteArtist(ctx context.Context, tx *sql.Tx, artistID int64) error {
+	query := `DELETE FROM artist WHERE id = @artist_id`
+
+	_, err := tx.ExecContext(ctx, query, sql.Named("artist_id", artistID))
+	if err != nil {
+		return err
+	}
+
+	query = `DELETE FROM artists_socials WHERE artist_id = @artist_id`
+	_, err = tx.ExecContext(ctx, query, sql.Named("artist_id", artistID))
+	if err != nil {
+		return err
+	}
+
+	query = `DELETE FROM artists_genres WHERE artist_id = @artist_id`
+	_, err = tx.ExecContext(ctx, query, sql.Named("artist_id", artistID))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func deleteSocial(ctx context.Context, tx *sql.Tx, socialID int64) error {
+	query := `DELETE FROM social WHERE id = @id`
+
+	_, err := tx.ExecContext(ctx, query, sql.Named("id", socialID))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 func (a Artist) ToInternal(genres []artist.Genre, socials []artist.Social) artist.Artist {
 	return artist.Artist{
 		ID:          a.ID,

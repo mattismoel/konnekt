@@ -76,3 +76,12 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 
 	return artistID, nil
 }
+
+func (s ArtistService) Delete(ctx context.Context, artistID int64) error {
+	err := s.artistRepo.Delete(ctx, artistID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
