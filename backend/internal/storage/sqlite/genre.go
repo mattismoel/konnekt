@@ -11,6 +11,26 @@ type GenreQueryParams struct {
 	QueryParams
 }
 
+func (repo ArtistRepository) InsertGenre(ctx context.Context, name string) (int64, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	defer tx.Rollback()
+
+	genreID, err := insertGenre(ctx, tx, name)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return genreID, nil
+}
+
 func (repo ArtistRepository) ListGenres(ctx context.Context, limit, offset int) ([]artist.Genre, int, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {

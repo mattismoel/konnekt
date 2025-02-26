@@ -104,3 +104,12 @@ func (s ArtistService) ListGenres(ctx context.Context, q GenreListQuery) (query.
 		Records:    genres,
 	}, nil
 }
+
+func (s ArtistService) CreateGenre(ctx context.Context, name string) (int64, error) {
+	genreID, err := s.artistRepo.InsertGenre(ctx, name)
+	if err != nil {
+		return 0, err
+	}
+
+	return genreID, nil
+}

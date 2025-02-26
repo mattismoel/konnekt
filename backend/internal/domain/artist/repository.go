@@ -11,4 +11,5 @@ type Repository interface {
 	Delete(ctx context.Context, artistID int64) error
 	GenreByID(ctx context.Context, genreID int64) (Genre, error)
 	ListGenres(ctx context.Context, offset, limit int) ([]Genre, int, error)
+	InsertGenre(ctx context.Context, name string) (int64, error)
 }

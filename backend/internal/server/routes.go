@@ -38,6 +38,7 @@ func (s *Server) setupRoutes() {
 	})
 
 	s.mux.Route("/genres", func(r chi.Router) {
+		r.Post("/", s.withPermissions(s.handleCreateGenre(), "genre-create"))
 		r.Get("/", s.handleListGenres())
 	})
 }
