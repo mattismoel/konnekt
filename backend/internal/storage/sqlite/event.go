@@ -407,7 +407,7 @@ func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) ([]Concert, e
 
 func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
 	query := `
-	INSERT INTO event (title, description, cover_image_url, venue_id) 
+	INSERT INTO event (title, description, cover_image_url, venue_id)
 	VALUES (@title, @description, @cover_image_url, @venue_id)`
 
 	res, err := tx.ExecContext(ctx, query,

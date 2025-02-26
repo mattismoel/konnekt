@@ -185,7 +185,7 @@ func venueCount(ctx context.Context, tx *sql.Tx) (int, error) {
 
 func insertVenue(ctx context.Context, tx *sql.Tx, v Venue) (int64, error) {
 	query := `
-	INSERT INTO venue (name, country_code, city) 
+	INSERT INTO venue (name, country_code, city)
 	VALUES (@name, @country_code, @city)`
 
 	res, err := tx.ExecContext(ctx, query,

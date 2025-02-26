@@ -325,7 +325,7 @@ func insertGenre(ctx context.Context, tx *sql.Tx, name string) (int64, error) {
 
 func associateArtistWithSocial(ctx context.Context, tx *sql.Tx, artistID int64, socialID int64) error {
 	query := `
-	INSERT INTO artists_socials (artist_id, social_id) 
+	INSERT INTO artists_socials (artist_id, social_id)
 	VALUES (@artist_id, @social_id)`
 
 	_, err := tx.ExecContext(ctx, query,
@@ -342,7 +342,7 @@ func associateArtistWithSocial(ctx context.Context, tx *sql.Tx, artistID int64, 
 
 func associateArtistWithGenre(ctx context.Context, tx *sql.Tx, artistID int64, genreID int64) error {
 	query := `
-	INSERT INTO artists_genres (artist_id, genre_id) 
+	INSERT INTO artists_genres (artist_id, genre_id)
 	VALUES (@artist_id, @genre_id)`
 
 	_, err := tx.ExecContext(ctx, query,
@@ -375,7 +375,7 @@ func insertSocial(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
 
 func artistByID(ctx context.Context, tx *sql.Tx, artistID int64) (Artist, error) {
 	query := `
-	SELECT name, description, image_url 
+	SELECT name, description, image_url
 	FROM artist where id = @id`
 
 	var name, description, imageURL string
