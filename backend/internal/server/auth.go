@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -161,8 +160,6 @@ func (s Server) handleGetSession() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
-
-		fmt.Printf("%+v\n", user)
 
 		writeSessionCookie(w, token, newExpiry)
 
