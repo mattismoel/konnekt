@@ -262,8 +262,16 @@ func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 }
 
 func insertGenre(ctx context.Context, tx *sql.Tx, name string) (int64, error) {
-	query := `INSERT OR IGNORE INTO genre (name) VALUES (@name)`
+	// Return exising genre, if exists.
+	var id int64
+	query := `SELECT id FROM genre WHERE name = @name`
 
+	err := tx.QueryRowContext(ctx, query, sql.Named("name", name)).Scan(&id)
+	if err == nil {
+		return id, nil
+	}
+
+	query = `INSERT INTO genre (name) VALUES (@name) RETURNING id`
 	res, err := tx.ExecContext(ctx, query, sql.Named("name", name))
 	if err != nil {
 		return 0, err
