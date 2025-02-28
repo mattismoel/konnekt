@@ -13,10 +13,11 @@
 
 	type Props = {
 		url: string;
+		onChange: (newValue: string) => void;
 		onDelete: () => void;
 	};
 
-	let { url = $bindable(), onDelete }: Props = $props();
+	let { url, onChange, onDelete }: Props = $props();
 
 	const SocialIcon = $derived.by(() => {
 		const { hostname } = new URL(url);
@@ -30,7 +31,8 @@
 	<div class="relative w-full">
 		<input
 			type="text"
-			bind:value={url}
+			value={url}
+			onchange={(e) => onChange(e.currentTarget.value)}
 			class="w-full rounded-md border-b border-transparent bg-transparent hover:border-zinc-900"
 		/>
 		<div

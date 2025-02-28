@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Artist, ArtistForm } from '$lib/artist';
+	import { artistFormSchema, type Artist, type ArtistForm } from '$lib/artist';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Pill from '$lib/components/ui/Pill.svelte';
 	import PlusIcon from '~icons/mdi/add';
@@ -7,25 +7,29 @@
 	import GenreSelectorModal from '$lib/components/ui/GenreSelectorModal.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SocialEntry from './SocialEntry.svelte';
+	import type { ZodError } from 'zod';
+	import FieldError from '$lib/components/ui/FieldError.svelte';
 
 	type Props = {
 		artist: Artist | null;
 		genres: Genre[];
+		onSubmit: (form: ArtistForm) => void;
 	};
 
-	let { artist = $bindable(), genres }: Props = $props();
+	let { artist, genres, onSubmit }: Props = $props();
 
 	let form: ArtistForm = $state({
 		name: artist?.name || '',
 		description: artist?.description || '',
 		genreIds: artist?.genres.map((genre) => genre.id) || [],
-		imageUrl: artist?.imageUrl || '',
+		imageUrl: artist?.imageUrl || 'https://placehold.co/600x400',
 		socials: artist?.socials || []
 	});
 
 	let socialUrl = $state('');
 	let selectedGenres = $derived(genres.filter((genre) => form.genreIds.includes(genre.id)));
 	let showGenreModal = $state(false);
+	let formError = $state<ZodError | null>(null);
 
 	const addSocial = () => {
 		// Return if already exists.
@@ -33,21 +37,41 @@
 
 		form.socials = [...form.socials, socialUrl];
 	};
+
+	const submit = (e: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) => {
+		e.preventDefault();
+
+		const { data, success, error } = artistFormSchema.safeParse(form);
+		if (!success) {
+			formError = error;
+			console.log(formError.flatten());
+			return;
+		}
+
+		onSubmit(data);
+	};
 </script>
 
-<form class="space-y-16">
+<form class="w-full max-w-xl space-y-16" onsubmit={submit}>
 	<div>
 		<h1 class="mb-8 text-2xl font-bold">Generelt.</h1>
 		<div class="space-y-8">
-			<Input label="Kunstnernavn" bind:value={form.name} />
-			<Input label="Beskrivelse" bind:value={form.description} />
+			<div class="space-y-1">
+				<Input label="Kunstnernavn" bind:value={form.name} />
+				<FieldError errors={formError?.flatten().fieldErrors['name']} />
+			</div>
+			<div class="space-y-1">
+				<Input label="Beskrivelse" bind:value={form.description} />
+				<FieldError errors={formError?.flatten().fieldErrors['name']} />
+			</div>
 		</div>
 	</div>
 
 	<div>
 		<h1 class="mb-4 text-2xl font-bold">Genrer.</h1>
-		<div class="flex gap-2">
+		<div class="mb-2 flex flex-wrap gap-2">
 			<button
+				type="button"
 				onclick={() => (showGenreModal = true)}
 				class="flex items-center gap-2 rounded-full border border-zinc-900 px-4 py-2 hover:border-zinc-800 hover:bg-zinc-900"
 			>
@@ -57,6 +81,7 @@
 				<Pill>{genre.name}</Pill>
 			{/each}
 		</div>
+		<FieldError errors={formError?.flatten().fieldErrors['genreIds']} />
 	</div>
 	<GenreSelectorModal
 		{genres}
@@ -75,10 +100,13 @@
 			{#each form.socials as url (url)}
 				<SocialEntry
 					{url}
+					onChange={(newUrl) =>
+						(form.socials = form.socials.map((social) => (social === url ? newUrl : social)))}
 					onDelete={() => (form.socials = form.socials.filter((social) => social !== url))}
 				/>
 			{/each}
 		</div>
+		<FieldError errors={formError?.flatten().fieldErrors['socials']} />
 	</div>
-	<Button expandX>Offentligør</Button>
+	<Button type="submit" expandX>Offentligør</Button>
 </form>
