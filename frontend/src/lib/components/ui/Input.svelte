@@ -17,7 +17,7 @@
 	<label
 		for={rest.name}
 		class={cn('text-normal absolute top-1/2 left-4 -translate-y-1/2  transition-all duration-100', {
-			'-top-3 left-0 text-xs': focused || value !== '' || nonEmpty,
+			'-top-3 left-0 text-xs text-zinc-300': focused || value !== '' || nonEmpty,
 			'text-zinc-500': value === '' && !focused
 		})}>{label}</label
 	>
