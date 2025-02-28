@@ -13,11 +13,11 @@ export const artistSchema = z.object({
 export type Artist = z.infer<typeof artistSchema>
 
 export const artistFormSchema = z.object({
-	name: z.string(),
-	description: z.string(),
-	imageUrl: z.string().url(),
+	name: z.string().nonempty(),
+	description: z.string().nonempty(),
+	imageUrl: z.string().nonempty().url(),
 	genreIds: z.number().positive().array(),
-	socials: z.string().url().array(),
+	socials: z.string().nonempty().url().array(),
 })
 
 export type ArtistForm = z.infer<typeof artistFormSchema>
