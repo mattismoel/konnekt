@@ -73,6 +73,7 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 			Description: load.Description,
 			ImageURL:    load.ImageURL,
 			GenreIDs:    load.GenreIDs,
+			Socials:     load.Socials,
 		})
 
 		if err != nil {

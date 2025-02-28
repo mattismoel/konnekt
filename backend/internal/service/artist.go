@@ -64,6 +64,7 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 		if err != nil {
 			return 0, err
 		}
+
 		socials = append(socials, s)
 	}
 
