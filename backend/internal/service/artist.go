@@ -33,6 +33,15 @@ type GenreListQuery struct {
 	query.ListQuery
 }
 
+func (s ArtistService) ByID(ctx context.Context, artistID int64) (artist.Artist, error) {
+	a, err := s.artistRepo.ByID(ctx, artistID)
+	if err != nil {
+		return artist.Artist{}, err
+	}
+
+	return a, nil
+}
+
 func (s ArtistService) List(ctx context.Context, q ArtistListQuery) (query.ListResult[artist.Artist], error) {
 	artists, totalCount, err := s.artistRepo.List(ctx, q.Offset(), q.Limit)
 	if err != nil {

@@ -28,6 +28,26 @@ func (s Server) handleListArtists() http.HandlerFunc {
 	}
 }
 
+func (s Server) handleGetArtistByID() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		artistID, err := strconv.Atoi(chi.URLParam(r, "artistID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		artist, err := s.artistService.ByID(ctx, int64(artistID))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, artist)
+	}
+}
+
 func (s Server) handleCreateArtist() http.HandlerFunc {
 	type createArtistLoad struct {
 		Name        string   `json:"name"`
