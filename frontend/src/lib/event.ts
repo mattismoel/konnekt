@@ -23,6 +23,7 @@ export const eventForm = z.object({
 
 export type Event = z.infer<typeof eventSchema>
 
+
 export const listEvents = async (params: URLSearchParams): Promise<ListResult<Event>> => {
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/events?` + params.toString())
 	if (!res.ok) {
@@ -32,4 +33,14 @@ export const listEvents = async (params: URLSearchParams): Promise<ListResult<Ev
 	const result = createListResult(eventSchema).parse(await res.json())
 
 	return result
+}
+
+export const eventById = async (id: number): Promise<Event> => {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${id}`)
+
+	if (!res.ok) throw new Error(`Could not get event with id ${id}`)
+
+	const event = eventSchema.parse(await res.json())
+
+	return event
 }

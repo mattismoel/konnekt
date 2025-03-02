@@ -1,28 +1,13 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { eventSchema } from "$lib/event";
+import { eventById } from "$lib/event";
 import { artistSchema } from "$lib/artist";
 import { createListResult } from "$lib/list-result";
 import { venueSchema } from "$lib/venue";
 
 export const load: PageServerLoad = async ({ url, request }) => {
-  const id = url.searchParams.get("id")
-
-  if (!id) {
-    return {
-      event: null
-    }
-  }
-
-  let res = await fetch(`${PUBLIC_BACKEND_URL}/events/${id}`)
-  if (!res.ok) {
-    return error(400, "Could not find event")
-  }
-
-  const event = eventSchema.parse(await res.json())
-
-  res = await fetch(`${PUBLIC_BACKEND_URL}/artists`, {
+  let res = await fetch(`${PUBLIC_BACKEND_URL}/artists`, {
     credentials: "include",
     headers: request.headers,
   })
@@ -43,6 +28,13 @@ export const load: PageServerLoad = async ({ url, request }) => {
   }
 
   const venues = createListResult(venueSchema).parse(await res.json()).records
+
+  const id = url.searchParams.get("id")
+  if (!id) {
+    return { event: null, venues, artists }
+  }
+
+  const event = await eventById(parseInt(id))
 
   return {
     event,
