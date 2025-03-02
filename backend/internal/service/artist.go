@@ -81,12 +81,18 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 		genres = append(genres, genre)
 	}
 
-	a, err := artist.NewArtist(load.Name, load.Description, load.ImageURL, socials, genres)
+	a, err := artist.NewArtist(
+		artist.WithName(load.Name),
+		artist.WithDescription(load.Description),
+		artist.WithGenres(genres...),
+		artist.WithSocials(socials...),
+	)
+
 	if err != nil {
 		return 0, err
 	}
 
-	artistID, err := s.artistRepo.Insert(ctx, a)
+	artistID, err := s.artistRepo.Insert(ctx, *a)
 	if err != nil {
 		return 0, err
 	}
