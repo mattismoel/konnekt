@@ -34,11 +34,10 @@ func NewEventService(
 }
 
 type CreateEvent struct {
-	Title         string
-	Description   string
-	CoverImageURL string
-	VenueID       int64
-	Concerts      []CreateConcert
+	Title       string
+	Description string
+	VenueID     int64
+	Concerts    []CreateConcert
 }
 
 type CreateConcert struct {

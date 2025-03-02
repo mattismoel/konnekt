@@ -87,11 +87,10 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 		}
 
 		_, err := s.eventService.Create(r.Context(), service.CreateEvent{
-			Title:         load.Title,
-			Description:   load.Description,
-			CoverImageURL: load.CoverImageURL,
-			VenueID:       load.VenueID,
-			Concerts:      concerts,
+			Title:       load.Title,
+			Description: load.Description,
+			VenueID:     load.VenueID,
+			Concerts:    concerts,
 		})
 
 		if err != nil {
