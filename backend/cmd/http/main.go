@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/mattismoel/konnekt/internal/object/s3"
 	"github.com/mattismoel/konnekt/internal/server"
 	"github.com/mattismoel/konnekt/internal/service"
 	"github.com/mattismoel/konnekt/internal/storage/sqlite"
@@ -30,6 +31,8 @@ func main() {
 	frontendURL := flag.String("frontendURL", "http://localhost:5173", "The URL of the frontend")
 	host := flag.String("host", "localhost", "The host of the web server")
 	port := flag.Int("port", 3000, "The port of the web server")
+	s3Region := flag.String("s3Region", "eu-north-1", "The region of the S3 bucket")
+	s3Bucket := flag.String("s3Bucket", "konnekt-bucket", "The bucket name of the S3 bucket")
 
 	db, err := sql.Open("sqlite3", *dbConnStr)
 	if err != nil {
@@ -80,7 +83,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	artistService, err := service.NewArtistService(artistRepo)
+	s3Store, err := s3.NewS3ObjectStore(*s3Region, *s3Bucket)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	artistService, err := service.NewArtistService(artistRepo, s3Store)
 	if err != nil {
 		log.Fatal(err)
 	}

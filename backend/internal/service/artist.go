@@ -4,16 +4,19 @@ import (
 	"context"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
+	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type ArtistService struct {
-	artistRepo artist.Repository
+	artistRepo  artist.Repository
+	objectStore object.Store
 }
 
-func NewArtistService(artistRepo artist.Repository) (*ArtistService, error) {
+func NewArtistService(artistRepo artist.Repository, objectStore object.Store) (*ArtistService, error) {
 	return &ArtistService{
-		artistRepo: artistRepo,
+		artistRepo:  artistRepo,
+		objectStore: objectStore,
 	}, nil
 }
 
