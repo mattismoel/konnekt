@@ -78,12 +78,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	eventService, err := service.NewEventService(eventRepo, artistRepo, venueRepo)
+	s3Store, err := s3.NewS3ObjectStore(*s3Region, *s3Bucket)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	s3Store, err := s3.NewS3ObjectStore(*s3Region, *s3Bucket)
+	eventService, err := service.NewEventService(eventRepo, artistRepo, venueRepo, s3Store)
 	if err != nil {
 		log.Fatal(err)
 	}

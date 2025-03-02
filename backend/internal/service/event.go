@@ -8,20 +8,28 @@ import (
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
+	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type EventService struct {
-	eventRepo  event.Repository
-	artistRepo artist.Repository
-	venueRepo  venue.Repository
+	eventRepo   event.Repository
+	artistRepo  artist.Repository
+	venueRepo   venue.Repository
+	objectStore object.Store
 }
 
-func NewEventService(eventRepo event.Repository, artistRepo artist.Repository, venueRepo venue.Repository) (*EventService, error) {
+func NewEventService(
+	eventRepo event.Repository,
+	artistRepo artist.Repository,
+	venueRepo venue.Repository,
+	objectStore object.Store,
+) (*EventService, error) {
 	return &EventService{
-		eventRepo:  eventRepo,
-		artistRepo: artistRepo,
-		venueRepo:  venueRepo,
+		eventRepo:   eventRepo,
+		artistRepo:  artistRepo,
+		venueRepo:   venueRepo,
+		objectStore: objectStore,
 	}, nil
 }
 
