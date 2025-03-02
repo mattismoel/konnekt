@@ -8,5 +8,5 @@ export const createListResult = <T extends ZodTypeAny>(schema: T) => z.object({
 	records: schema.array()
 })
 
-export type ListResponse<T> =
+export type ListResult<T> =
 	z.infer<ReturnType<typeof createListResult<z.ZodType<T>>>>;
