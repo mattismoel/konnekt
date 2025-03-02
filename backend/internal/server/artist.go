@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -96,7 +97,6 @@ func (s Server) handleSetArtistImage() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
-
 
 		url, err := s.artistService.SetImage(ctx, int64(artistID), fileHeader.Filename, file)
 		if err != nil {

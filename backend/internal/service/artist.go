@@ -85,8 +85,6 @@ func (s ArtistService) SetImage(ctx context.Context, artistID int64, fileName st
 		return "", err
 	}
 
-	fmt.Printf("%s\n", url)
-
 	err = s.artistRepo.SetImageURL(ctx, artistID, url)
 	if err != nil {
 		return "", err
