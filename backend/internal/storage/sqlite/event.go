@@ -151,6 +151,26 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 	return eventID, nil
 }
 
+func (repo EventRepository) SetCoverImageURL(ctx context.Context, eventID int64, coverImageURL string) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	err = setEventCoverImageURL(ctx, tx, eventID, coverImageURL)
+	if err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type EventQueryParams struct {
 	QueryParams
 	From time.Time
@@ -453,4 +473,19 @@ func (c Concert) ToInternal(a artist.Artist) concert.Concert {
 		From:   c.From,
 		To:     c.To,
 	}
+}
+
+func setEventCoverImageURL(ctx context.Context, tx *sql.Tx, eventID int64, url string) error {
+	query := `UPDATE event SET cover_image_url = @url WHERE id = @id`
+
+	_, err := tx.ExecContext(ctx, query,
+		sql.Named("url", url),
+		sql.Named("id", eventID),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

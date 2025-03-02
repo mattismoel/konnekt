@@ -2,8 +2,13 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"path"
+	"slices"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
@@ -79,7 +84,6 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 	e, err := event.NewEvent(
 		event.WithTitle(load.Title),
 		event.WithDescription(load.Description),
-		event.WithCoverImageURL(load.CoverImageURL),
 		event.WithVenue(venue),
 		event.WithConcerts(concerts...),
 	)
@@ -127,4 +131,25 @@ func (s EventService) List(ctx context.Context, q EventListQuery) (query.ListRes
 		PageCount:  q.PageCount(totalCount),
 		Records:    events,
 	}, nil
+}
+
+func (s EventService) SetCoverImage(ctx context.Context, eventID int64, fileName string, body io.ReadCloser) (string, error) {
+	fileExtension := path.Ext(fileName)
+	if !slices.Contains(AllowedImageFiletypes, fileExtension) {
+		return "", ErrInvalidImageFiletype
+	}
+
+	fileKey := fmt.Sprintf("%s%s", uuid.NewString(), fileExtension)
+
+	url, err := s.objectStore.Upload(ctx, fileKey, body)
+	if err != nil {
+		return "", err
+	}
+
+	err = s.eventRepo.SetCoverImageURL(ctx, eventID, url)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
 }
