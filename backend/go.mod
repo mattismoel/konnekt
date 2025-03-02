@@ -8,4 +8,7 @@ require (
 	golang.org/x/crypto v0.32.0
 )
 
-require github.com/go-chi/cors v1.2.1
+require (
+	github.com/aws/aws-sdk-go v1.55.6
+	github.com/go-chi/cors v1.2.1
+)
