@@ -8,13 +8,24 @@
 	};
 
 	type Props = HTMLSelectAttributes & {
+		selected: string;
 		entries: Entry[];
 	};
 
-	let { entries, children, ...rest }: Props = $props();
+	let { entries, selected, ...rest }: Props = $props();
+
+	let selectElement: HTMLSelectElement;
+
+	$effect(() => {
+		selectElement.value = selected;
+	});
 </script>
 
-<select {...rest} class={cn('rounded-sm border border-zinc-900 bg-zinc-950', rest.class)}>
+<select
+	bind:this={selectElement}
+	{...rest}
+	class={cn('rounded-sm border border-zinc-900 bg-zinc-950', rest.class)}
+>
 	{#each entries as entry (entry.value)}
 		<option value={entry.value}>{entry.name}</option>
 	{/each}
