@@ -2,10 +2,22 @@ package service
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"io"
+	"path"
+	"slices"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
+)
+
+var (
+	AllowedImageFiletypes   = []string{".png", ".jpeg", ".jpg"}
+	ErrInvalidImageFiletype = errors.New(fmt.Sprintf("Image file must be of format %s", strings.Join(AllowedImageFiletypes, ", ")))
 )
 
 type ArtistService struct {
@@ -57,6 +69,30 @@ func (s ArtistService) List(ctx context.Context, q ArtistListQuery) (query.ListR
 		PerPage:    q.PerPage,
 		PageCount:  q.PageCount(totalCount),
 	}, nil
+}
+
+func (s ArtistService) SetImage(ctx context.Context, artistID int64, fileName string, file io.ReadCloser) (string, error) {
+	fileExtension := path.Ext(fileName)
+
+	if !slices.Contains(AllowedImageFiletypes, fileExtension) {
+		return "", ErrInvalidImageFiletype
+	}
+
+	fileKey := fmt.Sprintf("artists/images/%s%s", uuid.NewString(), fileExtension)
+
+	url, err := s.objectStore.Upload(ctx, fileKey, file)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Printf("%s\n", url)
+
+	err = s.artistRepo.SetImageURL(ctx, artistID, url)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
 }
 
 func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, error) {

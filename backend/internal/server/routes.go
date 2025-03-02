@@ -26,6 +26,7 @@ func (s *Server) setupRoutes() {
 		r.Get("/", s.withPermissions(s.handleListArtists(), "artist-list"))
 		r.Post("/", s.withPermissions(s.handleCreateArtist(), "artist-create"))
 		r.Delete("/{artistID}", s.withPermissions(s.handleDeleteArtist(), "artist-delete"))
+		r.Put("/image/{artistID}", s.withPermissions(s.handleSetArtistImage(), "artist-edit"))
 	})
 
 	s.mux.Route("/venues", func(r chi.Router) {

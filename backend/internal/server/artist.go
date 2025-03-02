@@ -81,6 +81,36 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 	}
 }
 
+func (s Server) handleSetArtistImage() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		artistID, err := strconv.Atoi(chi.URLParam(r, "artistID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		ctx := r.Context()
+
+		file, fileHeader, err := r.FormFile("image")
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+
+		url, err := s.artistService.SetImage(ctx, int64(artistID), fileHeader.Filename, file)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(url))
+
+	}
+}
+
 func (s Server) handleDeleteArtist() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

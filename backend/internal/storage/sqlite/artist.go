@@ -139,6 +139,26 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 	return artistID, nil
 }
 
+func (repo ArtistRepository) SetImageURL(ctx context.Context, artistID int64, url string) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	err = setArtistImageURL(ctx, tx, artistID, url)
+	if err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo ArtistRepository) ByID(ctx context.Context, artistID int64) (artist.Artist, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -530,4 +550,19 @@ func (a Artist) ToInternal(genres []artist.Genre, socials []artist.Social) artis
 		Genres:      genres,
 		Socials:     socials,
 	}
+}
+
+func setArtistImageURL(ctx context.Context, tx *sql.Tx, artistID int64, url string) error {
+	query := `UPDATE artist SET image_url = @image_url WHERE id = @artist_id`
+
+	_, err := tx.ExecContext(ctx, query,
+		sql.Named("image_url", url),
+		sql.Named("artist_id", artistID),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
