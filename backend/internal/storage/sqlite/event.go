@@ -328,7 +328,7 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 
 func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {
 	query, err := NewQuery(`
-    SELECT
+    SELECT DISTINCT
 		e.id,
 		e.title,
 		e.description,
