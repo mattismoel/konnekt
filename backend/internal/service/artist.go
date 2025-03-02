@@ -23,7 +23,6 @@ func NewArtistService(artistRepo artist.Repository, objectStore object.Store) (*
 type CreateArtist struct {
 	Name        string
 	Description string
-	ImageURL    string
 	GenreIDs    []int64
 	Socials     []string
 }
