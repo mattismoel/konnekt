@@ -3,6 +3,7 @@ package event
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -10,9 +11,10 @@ import (
 )
 
 var (
-	ErrEmptyTitle           = errors.New("Event title must not be empty")
-	ErrEmptyDescription     = errors.New("Event description must not be empty")
-	ErrInvalidCoverImageURL = errors.New("Event cover image URL must be valid")
+	ErrEmptyTitle                = errors.New("Event title must not be empty")
+	ErrEmptyDescription          = errors.New("Event description must not be empty")
+	ErrInvalidCoverImageURL      = errors.New("Event cover image URL must be valid")
+	ErrCoverImageURLInaccessible = errors.New("Cover image URL must be accessible")
 )
 
 type Event struct {
@@ -24,29 +26,82 @@ type Event struct {
 	Concerts      []concert.Concert `json:"concerts"`
 }
 
-func NewEvent(title string, description string, coverImageURL string) (Event, error) {
-	resp, err := http.Get(coverImageURL)
-	if err != nil {
-		return Event{}, ErrInvalidCoverImageURL
+type CfgFunc func(e *Event) error
+
+func NewEvent(cfgs ...CfgFunc) (*Event, error) {
+	e := &Event{
+		Concerts: make([]concert.Concert, 0),
 	}
 
-	// Check whether page is accessible to the end user.
-	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
-		return Event{}, ErrInvalidCoverImageURL
+	for _, cfg := range cfgs {
+		if err := cfg(e); err != nil {
+			return &Event{}, err
+		}
 	}
 
-	return Event{
-		Title:         strings.TrimSpace(title),
-		Description:   strings.TrimSpace(description),
-		CoverImageURL: strings.TrimSpace(coverImageURL),
-		Concerts:      make([]concert.Concert, 0),
-	}, nil
+	return e, nil
 }
 
-func (e *Event) WithConcerts(concerts ...concert.Concert) {
-	e.Concerts = append(e.Concerts, concerts...)
+func WithTitle(title string) CfgFunc {
+	return func(e *Event) error {
+		title = strings.TrimSpace(title)
+
+		if title == "" {
+			return ErrEmptyTitle
+		}
+
+		e.Title = title
+		return nil
+	}
 }
 
-func (e *Event) WithVenue(v venue.Venue) {
-	e.Venue = v
+func WithDescription(description string) CfgFunc {
+	return func(e *Event) error {
+		description = strings.TrimSpace(description)
+
+		if description == "" {
+			return ErrEmptyDescription
+		}
+
+		e.Description = description
+
+		return nil
+	}
+}
+
+func WithCoverImageURL(coverImageURL string) CfgFunc {
+	return func(e *Event) error {
+		url, err := url.ParseRequestURI(coverImageURL)
+		if err != nil {
+			return ErrInvalidCoverImageURL
+		}
+
+		resp, err := http.Get(url.String())
+		if err != nil {
+			return ErrCoverImageURLInaccessible
+		}
+
+		// Check whether page is accessible to the end user.
+		if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+			return ErrCoverImageURLInaccessible
+		}
+
+		e.CoverImageURL = url.String()
+
+		return nil
+	}
+}
+
+func WithConcerts(concerts ...concert.Concert) CfgFunc {
+	return func(e *Event) error {
+		e.Concerts = append(e.Concerts, concerts...)
+		return nil
+	}
+}
+
+func WithVenue(v venue.Venue) CfgFunc {
+	return func(e *Event) error {
+		e.Venue = v
+		return nil
+	}
 }

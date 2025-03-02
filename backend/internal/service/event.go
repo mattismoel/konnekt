@@ -49,17 +49,10 @@ func (s EventService) ByID(ctx context.Context, eventID int64) (event.Event, err
 }
 
 func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, error) {
-	e, err := event.NewEvent(load.Title, load.Description, load.CoverImageURL)
-	if err != nil {
-		return 0, err
-	}
-
 	venue, err := s.venueRepo.ByID(ctx, load.VenueID)
 	if err != nil {
 		return 0, err
 	}
-
-	e.WithVenue(venue)
 
 	concerts := make([]concert.Concert, 0)
 	for _, loadConcert := range load.Concerts {
@@ -76,9 +69,19 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 		concerts = append(concerts, c)
 	}
 
-	e.WithConcerts(concerts...)
+	e, err := event.NewEvent(
+		event.WithTitle(load.Title),
+		event.WithDescription(load.Description),
+		event.WithCoverImageURL(load.CoverImageURL),
+		event.WithVenue(venue),
+		event.WithConcerts(concerts...),
+	)
 
-	eventID, err := s.eventRepo.Insert(ctx, e)
+	if err != nil {
+		return 0, err
+	}
+
+	eventID, err := s.eventRepo.Insert(ctx, *e)
 	if err != nil {
 		return 0, err
 	}
