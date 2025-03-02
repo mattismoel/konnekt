@@ -21,7 +21,9 @@ export const load: PageServerLoad = async ({ params }) => {
   }
 
 
-  const recommendedEventsResult = createListResult(eventSchema).parse(await res.json())
+  const recommendedEventsResult = await listEvents(new URLSearchParams({
+    from: startOfToday().toISOString()
+  }))
 
   return {
     event,
