@@ -139,7 +139,7 @@ func (s EventService) SetCoverImage(ctx context.Context, eventID int64, fileName
 		return "", ErrInvalidImageFiletype
 	}
 
-	fileKey := fmt.Sprintf("%s%s", uuid.NewString(), fileExtension)
+	fileKey := fmt.Sprintf("events/images/%s%s", uuid.NewString(), fileExtension)
 
 	url, err := s.objectStore.Upload(ctx, fileKey, body)
 	if err != nil {
