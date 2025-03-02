@@ -1,25 +1,29 @@
 import type { PageServerLoad } from "./$types";
 import { eventById } from "$lib/event";
-import { createListResult } from "$lib/list-result";
-import { venueSchema } from "$lib/venue";
 import { listArtists } from "$lib/artist";
+import { listVenues } from "$lib/venue";
 
 export const load: PageServerLoad = async ({ url, request }) => {
   const artistsResult = await listArtists()
+  const venuesResult = await listVenues({
     credentials: "include",
     headers: request.headers,
   })
 
   const id = url.searchParams.get("id")
   if (!id) {
-    return { event: null, venues, artists }
+    return {
+      event: null,
+      venues: venuesResult.records,
+      artists: artistsResult.records,
+    }
   }
 
   const event = await eventById(parseInt(id))
 
   return {
     event,
-    artists,
-    venues
+    venues: venuesResult.records,
+    artists: artistsResult.records,
   }
 }
