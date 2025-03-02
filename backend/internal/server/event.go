@@ -94,10 +94,34 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 		})
 
 		if err != nil {
-			switch {
-			default:
-				writeError(w, err)
-			}
+			writeError(w, err)
+			return
 		}
+	}
+}
+
+func (s Server) handleSetEventCoverImage() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		ctx := r.Context()
+
+		file, fileHeader, err := r.FormFile("image")
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		url, err := s.eventService.SetCoverImage(ctx, int64(eventID), fileHeader.Filename, file)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeText(w, http.StatusOK, url)
 	}
 }
