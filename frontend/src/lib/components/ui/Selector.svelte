@@ -8,7 +8,7 @@
 	};
 
 	type Props = HTMLSelectAttributes & {
-		selected: string;
+		selected?: string;
 		entries: Entry[];
 	};
 
@@ -17,7 +17,7 @@
 	let selectElement: HTMLSelectElement;
 
 	$effect(() => {
-		selectElement.value = selected;
+		selectElement.value = selected || entries[0].value;
 	});
 </script>
 
