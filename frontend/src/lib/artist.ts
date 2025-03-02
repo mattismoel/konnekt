@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { genreSchema } from "./genre";
+import { PUBLIC_BACKEND_URL } from "$env/static/public";
+import { createListResult, type ListResult } from "./list-result";
 
 export const artistSchema = z.object({
 	id: z.number().positive(),
@@ -35,3 +37,16 @@ export const artistFormSchema = z.object({
 })
 
 export type ArtistForm = z.infer<typeof artistFormSchema>
+/**
+/**
+ * @description Lists artists as a {ListResult} object.
+ */
+export const listArtists = async (params?: URLSearchParams): Promise<ListResult<Artist>> => {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists?` + (params || ""))
+
+	if (!res.ok) throw new Error("Could not list artists")
+
+	const result = createListResult(artistSchema).parse(await res.json())
+
+	return result
+}
