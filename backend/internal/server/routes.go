@@ -16,7 +16,7 @@ func (s *Server) setupRoutes() {
 	})
 
 	s.mux.Route("/events", func(r chi.Router) {
-		r.Post("/", s.withPermissions(s.handleCreateEvent(), "event-create"))
+		r.Post("/", s.withPermissions(s.handleCreateEvent(), "event-edit"))
 		r.Get("/", s.handleListEvents())
 		r.Get("/{eventID}", s.handleEventByID())
 	})
@@ -24,14 +24,14 @@ func (s *Server) setupRoutes() {
 	s.mux.Route("/artists", func(r chi.Router) {
 		r.Get("/{artistID}", s.handleGetArtistByID())
 		r.Get("/", s.withPermissions(s.handleListArtists(), "artist-list"))
-		r.Post("/", s.withPermissions(s.handleCreateArtist(), "artist-create"))
+		r.Post("/", s.withPermissions(s.handleCreateArtist(), "artist-edit"))
 		r.Delete("/{artistID}", s.withPermissions(s.handleDeleteArtist(), "artist-delete"))
 		r.Put("/image/{artistID}", s.withPermissions(s.handleSetArtistImage(), "artist-edit"))
 	})
 
 	s.mux.Route("/venues", func(r chi.Router) {
 		r.Get("/", s.withPermissions(s.handleListVenues(), "venue-list"))
-		r.Post("/", s.withPermissions(s.handleCreateVenue(), "venue-create"))
+		r.Post("/", s.withPermissions(s.handleCreateVenue(), "venue-edit"))
 		r.Delete("/{venueID}", s.withPermissions(s.handleDeleteVenue(), "venue-delete"))
 	})
 
@@ -40,7 +40,7 @@ func (s *Server) setupRoutes() {
 	})
 
 	s.mux.Route("/genres", func(r chi.Router) {
-		r.Post("/", s.withPermissions(s.handleCreateGenre(), "genre-create"))
+		r.Post("/", s.withPermissions(s.handleCreateGenre(), "genre-edit"))
 		r.Get("/", s.handleListGenres())
 	})
 }
