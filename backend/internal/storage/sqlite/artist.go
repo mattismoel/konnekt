@@ -139,6 +139,47 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 	return artistID, nil
 }
 
+func (repo ArtistRepository) Update(ctx context.Context, artistID int64, a artist.Artist) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	err = updateArtist(ctx, tx, artistID, Artist{
+		Name:        a.Name,
+		Description: a.Description,
+		ImageURL:    a.ImageURL,
+	})
+
+	socials := make([]Social, 0)
+	for _, social := range a.Socials {
+		socials = append(socials, Social{URL: string(social)})
+	}
+
+	err = setArtistSocials(ctx, tx, artistID, socials...)
+	if err != nil {
+		return err
+	}
+
+	genres := make([]Genre, 0)
+	for _, genre := range a.Genres {
+		genres = append(genres, Genre{ID: genre.ID, Name: genre.Name})
+	}
+
+	err = setArtistGenres(ctx, tx, artistID, genres...)
+	if err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo ArtistRepository) SetImageURL(ctx context.Context, artistID int64, url string) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -328,6 +369,10 @@ func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 	return artistID, nil
 }
 
+// Inserts the genre with the given name.
+//
+// If the attemptedly inserted genre already exists, the previous genre is
+// returned.
 func insertGenre(ctx context.Context, tx *sql.Tx, name string) (int64, error) {
 	// Return exising genre, if exists.
 	var id int64
@@ -350,6 +395,103 @@ func insertGenre(ctx context.Context, tx *sql.Tx, name string) (int64, error) {
 	}
 
 	return genreID, nil
+}
+
+// Clears any previous artist socials and sets them to the input socials.
+func setArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64, socials ...Social) error {
+	err := deleteArtistSocials(ctx, tx, artistID)
+	if err != nil {
+		return err
+	}
+
+	for _, social := range socials {
+		socialID, err := insertSocial(ctx, tx, social.URL)
+		if err != nil {
+			return err
+		}
+
+		err = associateArtistWithSocial(ctx, tx, artistID, socialID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func setArtistGenres(ctx context.Context, tx *sql.Tx, artistID int64, genres ...Genre) error {
+	err := deleteArtistGenres(ctx, tx, artistID)
+	if err != nil {
+		return err
+	}
+
+	for _, genre := range genres {
+		genreID, err := insertGenre(ctx, tx, genre.Name)
+		if err != nil {
+			return err
+		}
+
+		err = associateArtistWithGenre(ctx, tx, artistID, genreID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Deletes all artist's socials.
+func deleteArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64) error {
+	socials, err := artistSocials(ctx, tx, artistID)
+	if err != nil {
+		return err
+	}
+
+	query, err := NewQuery("DELETE FROM artists_socials")
+	if err != nil {
+		return err
+	}
+
+	err = query.AddFilter("artist_id = ?", artistID)
+	if err != nil {
+		return err
+	}
+
+	queryStr, args := query.Build()
+
+	_, err = tx.ExecContext(ctx, queryStr, args...)
+	if err != nil {
+		return err
+	}
+
+	for _, social := range socials {
+		err = deleteSocial(ctx, tx, social.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Deletes all artist-to-genre relationships, clearing all associated genres for
+// the given artist.
+//
+// This does not delete the genre entity itself.
+func deleteArtistGenres(ctx context.Context, tx *sql.Tx, artistID int64) error {
+	genres, err := artistGenres(ctx, tx, artistID)
+	if err != nil {
+		return err
+	}
+
+	for _, genre := range genres {
+		err = dissasociateArtistFromGenre(ctx, tx, artistID, genre.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func associateArtistWithSocial(ctx context.Context, tx *sql.Tx, artistID int64, socialID int64) error {
@@ -379,6 +521,31 @@ func associateArtistWithGenre(ctx context.Context, tx *sql.Tx, artistID int64, g
 		sql.Named("genre_id", genreID),
 	)
 
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func dissasociateArtistFromGenre(ctx context.Context, tx *sql.Tx, artistID int64, genreID int64) error {
+	query, err := NewQuery("DELETE FROM artists_genres")
+	if err != nil {
+		return err
+	}
+
+	err = query.WithFilters(map[string]any{
+		"artist_id = ?": artistID,
+		"genre_id = ?":  genreID,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	queryStr, args := query.Build()
+
+	_, err = tx.ExecContext(ctx, queryStr, args...)
 	if err != nil {
 		return err
 	}
@@ -508,6 +675,29 @@ func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
 	}, nil
 }
 
+func genreByName(ctx context.Context, tx *sql.Tx, name string) (Genre, error) {
+	query, err := NewQuery("SELECT id FROM genre")
+	if err != nil {
+		return Genre{}, err
+	}
+
+	err = query.AddFilter("name = ?", name)
+	if err != nil {
+		return Genre{}, err
+	}
+
+	queryStr, args := query.Build()
+
+	var id int64
+
+	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(&id)
+	if err != nil {
+		return Genre{}, err
+	}
+
+	return Genre{ID: id, Name: name}, nil
+}
+
 func deleteArtist(ctx context.Context, tx *sql.Tx, artistID int64) error {
 	query := `DELETE FROM artist WHERE id = @artist_id`
 
@@ -557,6 +747,37 @@ func setArtistImageURL(ctx context.Context, tx *sql.Tx, artistID int64, url stri
 
 	_, err := tx.ExecContext(ctx, query,
 		sql.Named("image_url", url),
+		sql.Named("artist_id", artistID),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func updateArtist(ctx context.Context, tx *sql.Tx, artistID int64, a Artist) error {
+	query := `
+	UPDATE artist SET 
+		name = CASE 
+			WHEN @name = '' THEN name 
+			ELSE @name,
+		END
+		description = CASE
+			WHEN @description = '' THEN description
+			ELSE @description
+		END
+		image_url = CASE
+			WHEN @image_url = '' THEN image_url
+			ELSE @image_url
+		END
+	WHERE id = @artist_id`
+
+	_, err := tx.ExecContext(ctx, query,
+		sql.Named("name", a.Name),
+		sql.Named("description", a.Description),
+		sql.Named("image_url", a.ImageURL),
 		sql.Named("artist_id", artistID),
 	)
 

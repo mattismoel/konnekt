@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -78,6 +79,53 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+	}
+}
+
+func (s Server) handleUpdateArtist() http.HandlerFunc {
+	type updateArtistLoad struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		GenreIDs    []int64  `json:"genreIds"`
+		Socials     []string `json:"socials"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		var load updateArtistLoad
+
+		err := json.NewDecoder(r.Body).Decode(&load)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		ctx := r.Context()
+
+		artistID, err := strconv.Atoi(chi.URLParam(r, "artistID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		a, err := s.artistService.Update(ctx, int64(artistID), service.UpdateArtist{
+			Name:        load.Name,
+			Description: load.Description,
+			GenreIDs:    load.GenreIDs,
+			Socials:     load.Socials,
+		})
+
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = a.WithCfgs(artist.WithID(int64(artistID)))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, a)
 	}
 }
 

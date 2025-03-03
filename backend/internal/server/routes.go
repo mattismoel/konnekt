@@ -26,6 +26,7 @@ func (s *Server) setupRoutes() {
 		r.Get("/{artistID}", s.handleGetArtistByID())
 		r.Get("/", s.handleListArtists())
 		r.Post("/", s.withPermissions(s.handleCreateArtist(), "artist-edit"))
+		r.Put("/{artistID}", s.withPermissions(s.handleUpdateArtist(), "artist-edit"))
 		r.Delete("/{artistID}", s.withPermissions(s.handleDeleteArtist(), "artist-delete"))
 		r.Put("/image/{artistID}", s.withPermissions(s.handleSetArtistImage(), "artist-edit"))
 	})

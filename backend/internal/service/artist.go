@@ -39,6 +39,13 @@ type CreateArtist struct {
 	Socials     []string
 }
 
+type UpdateArtist struct {
+	Name        string
+	Description string
+	GenreIDs    []int64
+	Socials     []string
+}
+
 type ArtistListQuery struct {
 	query.ListQuery
 }
@@ -131,6 +138,46 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 	}
 
 	return artistID, nil
+}
+
+func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateArtist) (artist.Artist, error) {
+	socials := make([]artist.Social, 0)
+	for _, social := range load.Socials {
+		s, err := artist.NewSocial(social)
+		if err != nil {
+			return artist.Artist{}, err
+		}
+
+		socials = append(socials, s)
+	}
+
+	genres := make([]artist.Genre, 0)
+	for _, genreID := range load.GenreIDs {
+		genre, err := s.artistRepo.GenreByID(ctx, genreID)
+		if err != nil {
+			return artist.Artist{}, err
+		}
+
+		genres = append(genres, genre)
+	}
+
+	a, err := artist.NewArtist(
+		artist.WithName(load.Name),
+		artist.WithDescription(load.Description),
+		artist.WithGenres(genres...),
+		artist.WithSocials(socials...),
+	)
+
+	if err != nil {
+		return artist.Artist{}, err
+	}
+
+	err = s.artistRepo.Update(ctx, artistID, *a)
+	if err != nil {
+		return artist.Artist{}, nil
+	}
+
+	return *a, nil
 }
 
 func (s ArtistService) Delete(ctx context.Context, artistID int64) error {
