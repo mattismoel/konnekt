@@ -29,13 +29,22 @@ type Artist struct {
 func NewArtist(cfgs ...ArtistCfg) (*Artist, error) {
 	a := &Artist{}
 
-	for _, cfg := range cfgs {
-		if err := cfg(a); err != nil {
-			return &Artist{}, err
-		}
+	err := a.WithCfgs(cfgs...)
+	if err != nil {
+		return &Artist{}, err
 	}
 
 	return a, nil
+}
+
+func (a *Artist) WithCfgs(cfgs ...ArtistCfg) error {
+	for _, cfg := range cfgs {
+		if err := cfg(a); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func WithName(name string) ArtistCfg {
