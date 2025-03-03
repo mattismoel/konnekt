@@ -49,7 +49,7 @@ func NewQuery(baseQuery string) (Query, error) {
 	}
 
 	return Query{
-		baseQuery: strings.TrimSpace(baseQuery),
+		baseQuery: strings.TrimSpace(baseQuery + "\n" + "WHERE 1=1"),
 		args:      make([]any, 0),
 		filters:   make(map[string]any),
 	}, nil
@@ -130,7 +130,6 @@ func (q *Query) AddLine(s string) {
 //
 //	db.QueryContext(ctx, queryString, args...)
 func (q Query) Build() (string, []any) {
-	query := q.baseQuery + "\n"
 
 	if len(q.filters) > 0 {
 		for filterString, value := range q.filters {
@@ -149,7 +148,7 @@ func (q Query) Build() (string, []any) {
 		q.args = append(q.args, sql.Named("offset", q.offset))
 	}
 
-	return query, q.args
+	return q.baseQuery, q.args
 }
 
 func isValidFilterString(s string) bool {
