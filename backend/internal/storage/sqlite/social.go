@@ -66,6 +66,7 @@ func deleteArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64) error 
 	return nil
 }
 
+// Associates a social entry with a given artist.
 func associateArtistWithSocial(ctx context.Context, tx *sql.Tx, artistID int64, socialID int64) error {
 	query := `
 	INSERT INTO artists_socials (artist_id, social_id)
@@ -83,6 +84,7 @@ func associateArtistWithSocial(ctx context.Context, tx *sql.Tx, artistID int64, 
 	return nil
 }
 
+// Inserts a social entry into the database.
 func insertSocial(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
 	query := `INSERT INTO social (url) VALUES (@url)`
 
@@ -99,6 +101,7 @@ func insertSocial(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
 	return socialID, nil
 }
 
+// Lists all social entries associated with an artist.
 func artistSocials(ctx context.Context, tx *sql.Tx, artistID int64) ([]Social, error) {
 	query := `
 	SELECT id, url FROM social
@@ -132,6 +135,7 @@ func artistSocials(ctx context.Context, tx *sql.Tx, artistID int64) ([]Social, e
 	return socials, nil
 }
 
+// Deletes a social given its ID.
 func deleteSocial(ctx context.Context, tx *sql.Tx, socialID int64) error {
 	query := `DELETE FROM social WHERE id = @id`
 

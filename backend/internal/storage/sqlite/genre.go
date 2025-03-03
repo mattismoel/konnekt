@@ -97,6 +97,7 @@ func (repo ArtistRepository) GenreByID(ctx context.Context, genreID int64) (arti
 	}, nil
 }
 
+// Lists genres based on the input {GenreQueryParams}.
 func listGenres(ctx context.Context, tx *sql.Tx, params GenreQueryParams) ([]Genre, error) {
 	query, err := NewQuery(`SELECT id, name FROM genre`)
 	if err != nil {
@@ -138,6 +139,7 @@ func listGenres(ctx context.Context, tx *sql.Tx, params GenreQueryParams) ([]Gen
 	return genres, nil
 }
 
+// Returns the total amount of genres in the database.
 func genreCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	query := `SELECT COUNT(*) FROM genre`
 
@@ -179,6 +181,9 @@ func insertGenre(ctx context.Context, tx *sql.Tx, name string) (int64, error) {
 	return genreID, nil
 }
 
+// Sets the genres of an artist to the specified input genres.
+//
+// All previous genres of the artist will be overridden with this function.
 func setArtistGenres(ctx context.Context, tx *sql.Tx, artistID int64, genres ...Genre) error {
 	err := deleteArtistGenres(ctx, tx, artistID)
 	if err != nil {
@@ -220,6 +225,7 @@ func deleteArtistGenres(ctx context.Context, tx *sql.Tx, artistID int64) error {
 	return nil
 }
 
+// Associates the given genre with the given artist.
 func associateArtistWithGenre(ctx context.Context, tx *sql.Tx, artistID int64, genreID int64) error {
 	query := `
 	INSERT INTO artists_genres (artist_id, genre_id)
@@ -237,6 +243,7 @@ func associateArtistWithGenre(ctx context.Context, tx *sql.Tx, artistID int64, g
 	return nil
 }
 
+// Dissasociates the given genre from the given artist.
 func dissasociateArtistFromGenre(ctx context.Context, tx *sql.Tx, artistID int64, genreID int64) error {
 	query, err := NewQuery("DELETE FROM artists_genres")
 	if err != nil {
@@ -262,6 +269,7 @@ func dissasociateArtistFromGenre(ctx context.Context, tx *sql.Tx, artistID int64
 	return nil
 }
 
+// Lists all genres associated with an artist.
 func artistGenres(ctx context.Context, tx *sql.Tx, artistID int64) ([]Genre, error) {
 	query := `
 	SELECT id, name FROM genre g
@@ -295,6 +303,7 @@ func artistGenres(ctx context.Context, tx *sql.Tx, artistID int64) ([]Genre, err
 	return genres, nil
 }
 
+// Gets a genre by its ID.
 func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
 	query := `SELECT name FROM genre WHERE id = @genre_id`
 
@@ -313,6 +322,7 @@ func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
 	}, nil
 }
 
+// Gets a genre by its name.
 func genreByName(ctx context.Context, tx *sql.Tx, name string) (Genre, error) {
 	query, err := NewQuery("SELECT id FROM genre")
 	if err != nil {
