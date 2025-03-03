@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	ErrInvalidID            = errors.New("ID must be a positive integer")
 	ErrEmptyName            = errors.New("Name must not be empty")
 	ErrEmptyDescription     = errors.New("Description must not be empty")
 	ErrInvalidImageURL      = errors.New("Image URL must be valid")
@@ -45,6 +46,17 @@ func (a *Artist) WithCfgs(cfgs ...ArtistCfg) error {
 	}
 
 	return nil
+}
+
+func WithID(id int64) ArtistCfg {
+	return func(a *Artist) error {
+		if id <= 0 {
+			return ErrInvalidID
+		}
+
+		a.ID = id
+		return nil
+	}
 }
 
 func WithName(name string) ArtistCfg {
