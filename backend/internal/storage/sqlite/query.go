@@ -130,7 +130,6 @@ func (q *Query) AddLine(s string) {
 //
 //	db.QueryContext(ctx, queryString, args...)
 func (q Query) Build() (string, []any) {
-
 	if len(q.filters) > 0 {
 		for filterString, value := range q.filters {
 			q.AddLine("AND " + filterString)
@@ -138,12 +137,12 @@ func (q Query) Build() (string, []any) {
 		}
 	}
 
-	if q.limit >= 0 {
+	if q.limit > 0 {
 		q.AddLine("LIMIT @limit")
 		q.args = append(q.args, sql.Named("limit", q.limit))
 	}
 
-	if q.offset >= 0 {
+	if q.offset >= 0 && q.limit > 0 {
 		q.AddLine("OFFSET @offset")
 		q.args = append(q.args, sql.Named("offset", q.offset))
 	}
