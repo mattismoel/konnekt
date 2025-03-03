@@ -51,6 +51,7 @@ func WithCORSOrigins(allowedOrigins ...string) CfgFunc {
 		s.mux.Use(cors.Handler(cors.Options{
 			AllowedOrigins:   allowedOrigins,
 			AllowCredentials: true,
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
 		}))
 
 		return nil
