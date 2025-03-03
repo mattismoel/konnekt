@@ -5,11 +5,16 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
 )
+
+type EventRepository struct {
+	db *sql.DB
+}
+
+var _ event.Repository = (*EventRepository)(nil)
 
 type Event struct {
 	ID            int64
@@ -19,18 +24,15 @@ type Event struct {
 	VenueID       int64
 }
 
-type Concert struct {
-	ID       int64
-	From     time.Time
-	To       time.Time
-	ArtistID int64
-	EventID  int64
-}
-
-var _ event.Repository = (*EventRepository)(nil)
-
-type EventRepository struct {
-	db *sql.DB
+func (e Event) ToInternal(venue venue.Venue, concerts []concert.Concert) event.Event {
+	return event.Event{
+		ID:            e.ID,
+		Title:         e.Title,
+		Description:   e.Description,
+		CoverImageURL: e.CoverImageURL,
+		Venue:         venue,
+		Concerts:      concerts,
+	}
 }
 
 func NewEventRepository(db *sql.DB) (*EventRepository, error) {
@@ -57,40 +59,9 @@ func (repo EventRepository) ByID(ctx context.Context, eventID int64) (event.Even
 		return event.Event{}, err
 	}
 
-	concerts := make([]concert.Concert, 0)
-
-	for _, dbConcert := range dbConcerts {
-		dbArtist, err := artistByID(ctx, tx, dbConcert.ArtistID)
-		if err != nil {
-			return event.Event{}, err
-		}
-
-		dbGenres, err := artistGenres(ctx, tx, dbArtist.ID)
-		if err != nil {
-			return event.Event{}, err
-		}
-
-		genres := make([]artist.Genre, 0)
-		for _, dbGenre := range dbGenres {
-			genres = append(genres, artist.Genre{
-				ID:   dbGenre.ID,
-				Name: dbGenre.Name,
-			})
-		}
-
-		dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
-		if err != nil {
-			return event.Event{}, err
-		}
-
-		socials := make([]artist.Social, 0)
-		for _, dbSocial := range dbSocials {
-			socials = append(socials, artist.Social(dbSocial.URL))
-		}
-
-		artist := dbArtist.ToInternal(genres, socials)
-
-		concerts = append(concerts, dbConcert.ToInternal(artist))
+	concerts, err := dbConcerts.Internalize(ctx, tx)
+	if err != nil {
+		return event.Event{}, err
 	}
 
 	dbVenue, err := venueByID(ctx, tx, dbEvent.VenueID)
@@ -219,40 +190,9 @@ func (repo EventRepository) List(ctx context.Context, from, to time.Time, offset
 			return nil, 0, err
 		}
 
-		concerts := make([]concert.Concert, 0)
-		for _, dbConcert := range dbConcerts {
-			dbArtist, err := artistByID(ctx, tx, dbConcert.ArtistID)
-			if err != nil {
-				return nil, 0, err
-			}
-
-			dbGenres, err := artistGenres(ctx, tx, dbArtist.ID)
-			if err != nil {
-				return nil, 0, err
-			}
-
-			genres := make([]artist.Genre, 0)
-			for _, dbGenre := range dbGenres {
-				genres = append(genres, artist.Genre{
-					ID:   dbGenre.ID,
-					Name: dbGenre.Name,
-				})
-			}
-
-			dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
-			if err != nil {
-				return nil, 0, err
-			}
-
-			socials := make([]artist.Social, 0)
-			for _, s := range dbSocials {
-				socials = append(socials, artist.Social(s.URL))
-			}
-
-			artist := dbArtist.ToInternal(genres, socials)
-
-			concert := dbConcert.ToInternal(artist)
-			concerts = append(concerts, concert)
+		concerts, err := dbConcerts.Internalize(ctx, tx)
+		if err != nil {
+			return nil, 0, err
 		}
 
 		event := dbEvent.ToInternal(venue, concerts)
@@ -300,30 +240,6 @@ func eventCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	}
 
 	return count, nil
-}
-
-func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
-	query := `
-	INSERT into concert (event_id, artist_id, from_date, to_date)
-	VALUES (@event_id, @artist_id, @from_date, @to_date)`
-
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("event_id", c.EventID),
-		sql.Named("artist_id", c.ArtistID),
-		sql.Named("from_date", c.From),
-		sql.Named("to_date", c.To),
-	)
-
-	if err != nil {
-		return 0, err
-	}
-
-	concertID, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return concertID, nil
 }
 
 func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {
@@ -394,43 +310,6 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 	return events, nil
 }
 
-func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) ([]Concert, error) {
-	query := `
-	SELECT id, from_date, to_date, artist_id FROM concert
-	WHERE event_id = @event_id`
-
-	rows, err := tx.QueryContext(ctx, query, sql.Named("event_id", eventID))
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	concerts := make([]Concert, 0)
-	for rows.Next() {
-		var id int64
-		var fromDate, toDate time.Time
-		var artistID int64
-
-		if err := rows.Scan(&id, &fromDate, &toDate, &artistID); err != nil {
-			return nil, err
-		}
-
-		concerts = append(concerts, Concert{
-			ID:       id,
-			From:     fromDate,
-			To:       toDate,
-			ArtistID: artistID,
-		})
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return concerts, nil
-}
-
 func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
 	query := `
 	INSERT INTO event (title, description, cover_image_url, venue_id)
@@ -453,26 +332,6 @@ func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
 	}
 
 	return eventID, nil
-}
-
-func (e Event) ToInternal(venue venue.Venue, concerts []concert.Concert) event.Event {
-	return event.Event{
-		ID:            e.ID,
-		Title:         e.Title,
-		Description:   e.Description,
-		CoverImageURL: e.CoverImageURL,
-		Venue:         venue,
-		Concerts:      concerts,
-	}
-}
-
-func (c Concert) ToInternal(a artist.Artist) concert.Concert {
-	return concert.Concert{
-		ID:     c.ID,
-		Artist: a,
-		From:   c.From,
-		To:     c.To,
-	}
 }
 
 func setEventCoverImageURL(ctx context.Context, tx *sql.Tx, eventID int64, url string) error {
