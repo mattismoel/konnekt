@@ -10,9 +10,10 @@
 	type Props = HTMLSelectAttributes & {
 		selected?: string;
 		entries: Entry[];
+		onChange: (value: string) => void;
 	};
 
-	let { entries, selected, ...rest }: Props = $props();
+	let { entries, selected, onChange, ...rest }: Props = $props();
 
 	let selectElement: HTMLSelectElement;
 
@@ -22,6 +23,7 @@
 </script>
 
 <select
+	onchange={(e) => onChange(e.currentTarget.value)}
 	bind:this={selectElement}
 	{...rest}
 	class={cn('rounded-sm border border-zinc-900 bg-zinc-950', rest.class)}
