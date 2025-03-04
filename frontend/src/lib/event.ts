@@ -7,19 +7,19 @@ import { APIError, apiErrorSchema } from "./error";
 
 export const eventSchema = z.object({
 	id: z.number().positive(),
-	title: z.string(),
-	description: z.string(),
-	coverImageUrl: z.string().url(),
+	title: z.string().nonempty(),
+	description: z.string().nonempty(),
+	coverImageUrl: z.string().url().optional(),
 	concerts: concertSchema.array(),
 	venue: venueSchema
 })
 
 export const eventForm = z.object({
-	title: z.string(),
-	description: z.string(),
+	title: z.string().nonempty({ message: "Eventtitel skal være defineret" }),
+	description: z.string().nonempty({ message: "Eventbeskrivelse skal være defineret" }),
 	coverImage: z.instanceof(File).nullable(),
 	venueId: z.number().positive(),
-	concerts: concertForm.array().min(1)
+	concerts: concertForm.array().min(1, { message: "Et event skal have mindst én koncert" })
 });
 
 export type Event = z.infer<typeof eventSchema>
