@@ -24,6 +24,49 @@ export const eventForm = z.object({
 
 export type Event = z.infer<typeof eventSchema>
 
+export const createEvent = async (form: z.infer<typeof eventForm>): Promise<Event> => {
+	let res = await fetch(`${PUBLIC_BACKEND_URL}/events`, {
+		credentials: "include",
+		body: JSON.stringify(form),
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not create event", err.message)
+	}
+
+	const event = eventSchema.parse(await res.json())
+
+	if (!form.coverImage) return event
+
+	const url = await uploadEventCoverImage(event.id, form.coverImage)
+
+	event.coverImageUrl = url
+
+	return event
+}
+
+export const uploadEventCoverImage = async (eventId: number, file: File, init?: RequestInit): Promise<string> => {
+	const formData = new FormData()
+
+	formData.append("image", file)
+
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/cover-image/${eventId}`, {
+		...init,
+		method: "PUT",
+		credentials: "include",
+		body: formData,
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not upload event cover image", err.message)
+	}
+
+	const url = await res.text()
+
+	return url
+}
 
 export const listEvents = async (params: URLSearchParams): Promise<ListResult<Event>> => {
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/events?` + params.toString())
