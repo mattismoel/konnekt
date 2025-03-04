@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	ErrInvalidID                 = errors.New("Event ID must be a positive integer")
 	ErrEmptyTitle                = errors.New("Event title must not be empty")
 	ErrEmptyDescription          = errors.New("Event description must not be empty")
 	ErrInvalidCoverImageURL      = errors.New("Event cover image URL must be valid")
@@ -48,6 +49,17 @@ func NewEvent(cfgs ...CfgFunc) (*Event, error) {
 	}
 
 	return e, nil
+}
+
+func WithID(id int64) CfgFunc {
+	return func(e *Event) error {
+		if id <= 0 {
+			return ErrInvalidID
+		}
+
+		e.ID = id
+		return nil
+	}
 }
 
 func WithTitle(title string) CfgFunc {
