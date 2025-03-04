@@ -17,7 +17,7 @@ export const eventSchema = z.object({
 export const eventForm = z.object({
 	title: z.string(),
 	description: z.string(),
-	coverImageUrl: z.string().url(),
+	coverImage: z.instanceof(File).nullable(),
 	venueId: z.number().positive(),
 	concerts: concertForm.array().min(1)
 });
