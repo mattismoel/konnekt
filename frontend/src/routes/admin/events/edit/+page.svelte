@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { z } from 'zod';
-	import EditEventForm from './EditEventForm.svelte';
 	import { eventForm } from '$lib/event';
+	import EventForm from './EventForm.svelte';
 	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
 	const { data } = $props();
@@ -16,5 +16,5 @@
 </script>
 
 <main class="min-h-sub-nav px-auto py-20">
-	<EditEventForm onSubmit={submit} {event} artists={artists || []} venues={venues || []} />
+	<EventForm onSubmit={submit} {event} artists={artists || []} venues={venues || []} />
 </main>

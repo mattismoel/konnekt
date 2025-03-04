@@ -3,9 +3,9 @@
 	import CalendarIcon from '~icons/mdi/calendar';
 	import MusicIcon from '~icons/mdi/music';
 	import GroupIcon from '~icons/mdi/account-group';
+	import Button from '$lib/components/ui/Button.svelte';
 	import { formatDateStr } from '$lib/time';
 	import type { Event } from '$lib/event';
-	import Button from '$lib/components/Button.svelte';
 	import { earliestConcert } from '$lib/concert';
 
 	type Props = {

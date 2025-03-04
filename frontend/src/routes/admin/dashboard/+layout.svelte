@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { cn } from '$lib/clsx';
-	import Card from '$lib/components/Card.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
 	import type { User } from '$lib/user';
 	import SettingsIcon from '~icons/mdi/settings-outline';
 

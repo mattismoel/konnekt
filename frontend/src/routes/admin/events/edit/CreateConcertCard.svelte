@@ -1,14 +1,14 @@
 <script lang="ts">
 	import type { Artist } from '$lib/artist';
-	import Button from '$lib/components/Button.svelte';
-	import DateTimePicker from '$lib/components/DateTimePicker.svelte';
-	import Selector from '$lib/components/Selector.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
+	import Selector from '$lib/components/ui/Selector.svelte';
 	import PlusIcon from '~icons/mdi/plus';
 	import RefreshIcon from '~icons/mdi/refresh';
 	import CloseIcon from '~icons/mdi/close';
 	import RightArrowIcon from '~icons/mdi/arrow-right';
 	import { goto, invalidateAll } from '$app/navigation';
-	import Card from '$lib/components/Card.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
 	import type { z } from 'zod';
 	import type { concertForm } from '$lib/concert';
 
