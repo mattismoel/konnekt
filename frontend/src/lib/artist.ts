@@ -39,6 +39,32 @@ export const artistFormSchema = z.object({
 export type ArtistForm = z.infer<typeof artistFormSchema>
 /**
 /**
+ * @description Uploads the artist image for the artist specified by its artistId.
+ * @param {number} artistId  - The ID of the artist.
+ * @param {File} file - The image file to be used as the artist image.
+ * @returns {string} The URL of the artist image.
+ */
+export const uploadArtistImage = async (artistId: number, file: File): Promise<string> => {
+	const formData = new FormData();
+	formData.append('image', file);
+
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/image/${artistId}`, {
+		method: 'PUT',
+		credentials: 'include',
+		body: formData
+	});
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not update artist image", err.message)
+	}
+
+	const url = await res.text()
+
+	return url
+};
+
+/**
  * @description Lists artists as a {ListResult} object.
  */
 export const listArtists = async (params?: URLSearchParams): Promise<ListResult<Artist>> => {
