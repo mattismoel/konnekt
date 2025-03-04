@@ -37,7 +37,68 @@ export const artistFormSchema = z.object({
 })
 
 export type ArtistForm = z.infer<typeof artistFormSchema>
+
+export const createArtist = async (form: z.infer<typeof artistFormSchema>, init?: RequestInit) => {
+	let res = await fetch(`${PUBLIC_BACKEND_URL}/artists`, {
+		...init,
+		method: 'POST',
+		credentials: 'include',
+		body: JSON.stringify(form)
+	});
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not create artist", err.message)
+	}
+
+	const artist = artistSchema.parse(await res.json())
+
+	if (!form.image) return artist
+
+	const imageUrl = await uploadArtistImage(artist.id, form.image)
+
+	artist.imageUrl = imageUrl
+
+	return artist
+};
+
 /**
+ * @description Updates an artist.
+ * @param {number} artistId - The artist to be updated's ID.
+ * @param form - The form data to update the artist with.
+ * @param {RequestInit} init - Must be specified with request headers if called from server.
+ */
+export const updateArtist = async (
+	artistId: number,
+	form: z.infer<typeof artistFormSchema>,
+	init?: RequestInit,
+): Promise<Artist> => {
+	console.log("UPDATE")
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/${artistId}`, {
+		...init,
+		method: 'PUT',
+		credentials: "include",
+		body: JSON.stringify(form)
+	});
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not update artist", err.message)
+	}
+
+	if (!form.image) {
+		const artist = await artistById(artistId)
+		return artist
+	}
+
+	const imageUrl = await uploadArtistImage(artistId, form.image)
+	const artist = artistSchema.parse({ ...await res.json(), imageUrl })
+
+	artist.imageUrl = imageUrl
+
+	return artist
+};
+
 /**
  * @description Uploads the artist image for the artist specified by its artistId.
  * @param {number} artistId  - The ID of the artist.
