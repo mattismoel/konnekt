@@ -140,3 +140,20 @@ export const listArtists = async (params?: URLSearchParams): Promise<ListResult<
 
 	return result
 }
+
+/**
+ * @description Gets an artists by its ID.
+ * @param {number} id - The ID of the artist.
+ */
+export const artistById = async (id: number): Promise<Artist> => {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/${id}`)
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, `Could not get artist with id ${id}`, err.message)
+	}
+
+	const artist = artistSchema.parse(await res.json())
+
+	return artist
+}
