@@ -150,7 +150,7 @@ export const artistById = async (id: number): Promise<Artist> => {
 
 	if (!res.ok) {
 		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, `Could not get artist with id ${id}`, err.message)
+		throw new APIError(res.status, `Could not get artist`, err.message)
 	}
 
 	const artist = artistSchema.parse(await res.json())

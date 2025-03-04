@@ -25,3 +25,20 @@ export const listGenres = async (params?: URLSearchParams, init?: RequestInit): 
 
 	return result
 }
+
+export const createGenre = async (name: string, init?: RequestInit): Promise<Genre> => {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/genres`, {
+		method: "POST",
+		credentials: "include",
+		...init
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not create genre", err.message)
+	}
+
+	const genre = genreSchema.parse(await res.json())
+
+	return genre
+}

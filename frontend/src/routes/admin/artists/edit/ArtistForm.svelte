@@ -9,6 +9,9 @@
 	import SocialEntry from './SocialEntry.svelte';
 	import type { ZodError } from 'zod';
 	import FieldError from '$lib/components/ui/FieldError.svelte';
+	import FilePicker from '$lib/components/ui/FilePicker.svelte';
+	import ImageSelectorModal from '$lib/components/ui/ImageSelectorModal.svelte';
+	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
 
 	type Props = {
 		artist: Artist | null;
@@ -22,14 +25,25 @@
 		name: artist?.name || '',
 		description: artist?.description || '',
 		genreIds: artist?.genres.map((genre) => genre.id) || [],
-		imageUrl: artist?.imageUrl || 'https://placehold.co/600x400',
+		image: null,
 		socials: artist?.socials || []
 	});
 
 	let socialUrl = $state('');
 	let selectedGenres = $derived(genres.filter((genre) => form.genreIds.includes(genre.id)));
+
 	let showGenreModal = $state(false);
 	let formError = $state<ZodError | null>(null);
+
+	let coverImageUrl = $derived(
+		form.image ? URL.createObjectURL(form.image) : artist?.imageUrl || ''
+	);
+
+	const updateImage = (file: File | null) => {
+		if (!file) return;
+
+		form.image = file;
+	};
 
 	const addSocial = () => {
 		// Return if already exists.
@@ -53,8 +67,9 @@
 </script>
 
 <form class="w-full max-w-xl space-y-16" onsubmit={submit}>
-	<div>
+	<div class="space-y-8">
 		<h1 class="mb-8 text-2xl font-bold">Generelt.</h1>
+		<ImagePreview src={coverImageUrl} onChange={updateImage} />
 		<div class="space-y-8">
 			<div class="space-y-1">
 				<Input label="Kunstnernavn" bind:value={form.name} />

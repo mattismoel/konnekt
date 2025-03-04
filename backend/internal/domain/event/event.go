@@ -28,15 +28,23 @@ type Event struct {
 
 type CfgFunc func(e *Event) error
 
+func (e *Event) WithCfgs(cfgs ...CfgFunc) error {
+	for _, cfg := range cfgs {
+		if err := cfg(e); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func NewEvent(cfgs ...CfgFunc) (*Event, error) {
 	e := &Event{
 		Concerts: make([]concert.Concert, 0),
 	}
 
-	for _, cfg := range cfgs {
-		if err := cfg(e); err != nil {
-			return &Event{}, err
-		}
+	if err := e.WithCfgs(cfgs...); err != nil {
+		return &Event{}, err
 	}
 
 	return e, nil
