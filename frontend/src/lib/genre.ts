@@ -11,7 +11,7 @@ export const genreSchema = z.object({
 export type Genre = z.infer<typeof genreSchema>
 
 export const listGenres = async (params?: URLSearchParams, init?: RequestInit): Promise<ListResult<Genre>> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/genres?`, {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/genres?` + params?.toString(), {
 		...init,
 		credentials: "include",
 	})
