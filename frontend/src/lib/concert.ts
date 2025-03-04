@@ -9,7 +9,6 @@ export const concertSchema = z.object({
 })
 
 export const concertForm = z.object({
-	idxId: z.string(),
 	artistID: z.number().positive(),
 	from: z.coerce.date(),
 	to: z.coerce.date()
