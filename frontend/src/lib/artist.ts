@@ -22,10 +22,9 @@ export const artistFormSchema = z.object({
 	description: z
 		.string()
 		.nonempty({ message: "Kunstnerbeskreivelse skal være defineret" }),
-	imageUrl: z
-		.string()
-		.nonempty({ message: "Kuntnerbillede skal være defineret" })
-		.url({ message: "Kunstnerbillede skal være gyldigt" }),
+	image: z
+		.instanceof(File)
+		.nullable(),
 	genreIds: z.number()
 		.positive()
 		.array()
