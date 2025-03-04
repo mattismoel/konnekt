@@ -1,31 +1,25 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { createListResult } from "$lib/list-result";
-import { artistSchema } from "$lib/artist";
-import { genreSchema } from "$lib/genre";
+import { artistById } from "$lib/artist";
+import { listGenres } from "$lib/genre";
+import { APIError } from "$lib/error";
 
 export const load: PageServerLoad = async ({ url }) => {
-  const id = url.searchParams.get("id")
+  try {
+    const id = url.searchParams.get("id")
 
-  let res = await fetch(`${PUBLIC_BACKEND_URL}/genres`)
-  if (!res.ok) {
-    return error(500, "Could not load genres")
-  }
+    const genresResult = await listGenres()
 
-  const genres = createListResult(genreSchema).parse(await res.json()).records
+    if (!id) return { artist: null, genres: genresResult.records }
 
-  if (!id) return { artist: null, genres }
+    const artist = await artistById(parseInt(id))
 
-  res = await fetch(`${PUBLIC_BACKEND_URL}/artists/${id}`)
-  if (!res.ok) {
-    return error(500, "Could not load artist")
-  }
-
-  const artist = artistSchema.parse(await res.json())
-
-  return {
-    genres,
-    artist
+    return {
+      genres: genresResult.records,
+      artist
+    }
+  } catch (e) {
+    if (e instanceof APIError) return error(e.status, e.message)
+    throw e
   }
 }
