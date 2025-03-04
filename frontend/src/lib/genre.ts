@@ -30,6 +30,7 @@ export const createGenre = async (name: string, init?: RequestInit): Promise<voi
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/genres`, {
 		method: "POST",
 		credentials: "include",
+		body: JSON.stringify({ name }),
 		...init
 	})
 
