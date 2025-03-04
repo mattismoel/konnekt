@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createListResult, type ListResult } from "./list-result";
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
+import { APIError, apiErrorSchema } from "./error";
 
 export const venueSchema = z.object({
 	id: z.number().positive(),
@@ -17,7 +18,10 @@ export type Venue = z.infer<typeof venueSchema>
  */
 export const listVenues = async (init?: RequestInit, params?: URLSearchParams): Promise<ListResult<Venue>> => {
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/venues?` + params, init)
-	if (!res.ok) throw new Error("Could not list venues")
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not list venues", err.message)
+	}
 
 	const result = createListResult(venueSchema).parse(await res.json())
 

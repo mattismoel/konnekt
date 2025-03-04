@@ -3,6 +3,7 @@ import { concertForm, concertSchema } from "./concert";
 import { venueSchema } from "./venue";
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { createListResult, type ListResult } from "./list-result";
+import { APIError, apiErrorSchema } from "./error";
 
 export const eventSchema = z.object({
 	id: z.number().positive(),
@@ -27,7 +28,8 @@ export type Event = z.infer<typeof eventSchema>
 export const listEvents = async (params: URLSearchParams): Promise<ListResult<Event>> => {
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/events?` + params.toString())
 	if (!res.ok) {
-		throw new Error("Could not list events")
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not list events", err.message)
 	}
 
 	const result = createListResult(eventSchema).parse(await res.json())
@@ -35,10 +37,13 @@ export const listEvents = async (params: URLSearchParams): Promise<ListResult<Ev
 	return result
 }
 
-export const eventById = async (id: number): Promise<Event> => {
+export const eventById = async (id: number): Promise<Event | APIError> => {
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${id}`)
 
-	if (!res.ok) throw new Error(`Could not get event with id ${id}`)
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, `Could not get event`, err.message)
+	}
 
 	const event = eventSchema.parse(await res.json())
 
