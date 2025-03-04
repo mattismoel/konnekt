@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -51,7 +52,11 @@ func (repo EventRepository) ByID(ctx context.Context, eventID int64) (event.Even
 
 	dbEvent, err := eventByID(ctx, tx, eventID)
 	if err != nil {
-		return event.Event{}, nil
+		if errors.Is(err, sql.ErrNoRows) {
+			return event.Event{}, event.ErrNoExist
+		}
+
+		return event.Event{}, err
 	}
 
 	dbConcerts, err := eventConcerts(ctx, tx, eventID)
