@@ -128,6 +128,7 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 
 	return eventID, nil
 }
+
 func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.Event) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -137,10 +138,9 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 	defer tx.Rollback()
 
 	err = updateEvent(ctx, tx, eventID, Event{
-		Title:         e.Title,
-		Description:   e.Description,
-		CoverImageURL: e.CoverImageURL,
-		VenueID:       e.Venue.ID,
+		Title:       e.Title,
+		Description: e.Description,
+		VenueID:     e.Venue.ID,
 	})
 
 	if err := tx.Commit(); err != nil {
@@ -378,7 +378,7 @@ func setEventCoverImageURL(ctx context.Context, tx *sql.Tx, eventID int64, url s
 }
 
 func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error {
-	query, err := NewQuery(`
+	query := `
 		UPDATE event SET
 		title = CASE
 			WHEN @title = '' THEN title
@@ -388,19 +388,14 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 			WHEN @description = '' THEN description
 			ELSE @description
 		END
-		cover_image_url = CASE
-			WHEN @cover_image_url = '' THEN cover_image_url
-			ELSE @cover_image_url
-		END`)
+		WHERE id = @id`
 
-	err = query.AddFilter("id = ?", eventID)
-	if err != nil {
-		return nil
-	}
+	_, err := tx.ExecContext(ctx, query,
+		sql.Named("title", e.Title),
+		sql.Named("description", e.Description),
+		sql.Named("id", eventID),
+	)
 
-	queryStr, args := query.Build()
-
-	_, err = tx.ExecContext(ctx, queryStr, args...)
 	if err != nil {
 		return err
 	}
