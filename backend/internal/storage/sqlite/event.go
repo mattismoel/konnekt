@@ -80,7 +80,9 @@ func (repo EventRepository) ByID(ctx context.Context, eventID int64) (event.Even
 		return event.Event{}, err
 	}
 
-	return dbEvent.ToInternal(venue, concerts), nil
+	e := dbEvent.ToInternal(venue, concerts)
+
+	return e, nil
 }
 
 func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, error) {
