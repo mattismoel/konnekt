@@ -100,6 +100,25 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 	}
 }
 
+func (s Server) handleUpdateEvent() http.HandlerFunc {
+	type updateConcertLoad struct {
+		ArtistID int64     `json:"artistId"`
+		From     time.Time `json:"from"`
+		To       time.Time `json:"to"`
+	}
+
+	type updateEventLoad struct {
+		Title       string              `json:"title"`
+		Description string              `json:"description"`
+		Concerts    []updateConcertLoad `json:"concerts"`
+		VenueID     int64               `json:"venueId"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}
+
 func (s Server) handleSetEventCoverImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))

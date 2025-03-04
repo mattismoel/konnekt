@@ -121,6 +121,27 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 
 	return eventID, nil
 }
+func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.Event) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	err = updateEvent(ctx, tx, eventID, Event{
+		Title:         e.Title,
+		Description:   e.Description,
+		CoverImageURL: e.CoverImageURL,
+		VenueID:       e.Venue.ID,
+	})
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (repo EventRepository) SetCoverImageURL(ctx context.Context, eventID int64, coverImageURL string) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
@@ -342,6 +363,37 @@ func setEventCoverImageURL(ctx context.Context, tx *sql.Tx, eventID int64, url s
 		sql.Named("id", eventID),
 	)
 
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error {
+	query, err := NewQuery(`
+		UPDATE event SET
+		title = CASE
+			WHEN @title = '' THEN title
+			ELSE @title
+		END
+		description = CASE
+			WHEN @description = '' THEN description
+			ELSE @description
+		END
+		cover_image_url = CASE
+			WHEN @cover_image_url = '' THEN cover_image_url
+			ELSE @cover_image_url
+		END`)
+
+	err = query.AddFilter("id = ?", eventID)
+	if err != nil {
+		return nil
+	}
+
+	queryStr, args := query.Build()
+
+	_, err = tx.ExecContext(ctx, queryStr, args...)
 	if err != nil {
 		return err
 	}

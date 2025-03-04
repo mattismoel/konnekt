@@ -17,6 +17,7 @@ func (s *Server) setupRoutes() {
 
 	s.mux.Route("/events", func(r chi.Router) {
 		r.Post("/", s.withPermissions(s.handleCreateEvent(), "event-edit"))
+		r.Put("/{eventID}", s.withPermissions(s.handleUpdateEvent(), "event-edit"))
 		r.Get("/", s.handleListEvents())
 		r.Get("/{eventID}", s.handleEventByID())
 		r.Put("/image/{eventID}", s.withPermissions(s.handleSetEventCoverImage(), "event-edit"))

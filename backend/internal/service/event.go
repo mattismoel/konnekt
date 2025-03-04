@@ -100,6 +100,67 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 	return eventID, nil
 }
 
+type UpdateConcert struct {
+	ArtistID int64
+	From     time.Time
+	To       time.Time
+}
+
+type UpdateEvent struct {
+	Title         string
+	Description   string
+	CoverImageURL string
+	VenueID       int64
+	Concerts      []UpdateConcert
+}
+
+func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEvent) (event.Event, error) {
+	// Return if event does not exist.
+	_, err := s.eventRepo.ByID(ctx, eventID)
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	venue, err := s.venueRepo.ByID(ctx, load.VenueID)
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	concerts := make([]concert.Concert, 0)
+	for _, c := range load.Concerts {
+		artist, err := s.artistRepo.ByID(ctx, c.ArtistID)
+		if err != nil {
+			return event.Event{}, err
+		}
+
+		concert, err := concert.NewConcert(artist, c.From, c.To)
+		if err != nil {
+			return event.Event{}, err
+		}
+
+		concerts = append(concerts, concert)
+	}
+
+	e, err := event.NewEvent(
+		event.WithTitle(load.Title),
+		event.WithDescription(load.Description),
+		event.WithConcerts(concerts...),
+		event.WithVenue(venue),
+		event.WithCoverImageURL(load.CoverImageURL),
+	)
+
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	err = s.eventRepo.Update(ctx, eventID, *e)
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	return *e, nil
+}
+
 type EventListQuery struct {
 	query.ListQuery
 	From time.Time
