@@ -9,6 +9,7 @@
 	import CreateConcertCard from './CreateConcertCard.svelte';
 	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
 	import { concertForm } from '$lib/concert';
+	import { addMinutes, roundToNearestHours } from 'date-fns';
 
 	type Props = {
 		event: Event | null;
@@ -50,6 +51,8 @@
 	};
 
 	const addConcert = () => {
+		const from = form.concerts.length > 0 ? form.concerts[0]?.to : roundToNearestHours(new Date());
+		const to = addMinutes(from, 30);
 		form.concerts = [
 			...form.concerts,
 			{ id: crypto.randomUUID().toString(), artistID: 1, from, to }
