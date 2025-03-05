@@ -143,6 +143,26 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 		VenueID:     e.Venue.ID,
 	})
 
+	if err != nil {
+		return err
+	}
+
+	concerts := make([]Concert, 0)
+	for _, c := range e.Concerts {
+		concerts = append(concerts, Concert{
+			ID:       c.ID,
+			EventID:  eventID,
+			ArtistID: c.Artist.ID,
+			From:     c.From,
+			To:       c.To,
+		})
+	}
+
+	_, err = setEventConcerts(ctx, tx, eventID, concerts...)
+	if err != nil {
+		return err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return err
 	}
@@ -390,7 +410,7 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 		END
 		WHERE id = @id`
 
-	_, err := tx.ExecContext(ctx, query,
+	res, err := tx.ExecContext(ctx, query,
 		sql.Named("title", e.Title),
 		sql.Named("description", e.Description),
 		sql.Named("id", eventID),
@@ -398,6 +418,11 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 
 	if err != nil {
 		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if rowsAffected <= 0 {
+		return ErrNotFound
 	}
 
 	return nil
