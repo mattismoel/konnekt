@@ -39,11 +39,14 @@ export const artistFormSchema = z.object({
 export type ArtistForm = z.infer<typeof artistFormSchema>
 
 export const createArtist = async (form: z.infer<typeof artistFormSchema>, init?: RequestInit) => {
+	let { image, ...rest } = form
+	if (!image) throw new APIError(400, "Could not upload artist image", "Image file not present")
+
 	let res = await fetch(`${PUBLIC_BACKEND_URL}/artists`, {
 		...init,
 		method: 'POST',
 		credentials: 'include',
-		body: JSON.stringify(form)
+		body: JSON.stringify(rest)
 	});
 
 	if (!res.ok) {
@@ -51,13 +54,11 @@ export const createArtist = async (form: z.infer<typeof artistFormSchema>, init?
 		throw new APIError(res.status, "Could not create artist", err.message)
 	}
 
-	const artist = artistSchema.parse(await res.json())
+	let artist = artistSchema.parse(await res.json())
 
-	if (!form.image) return artist
+	const imageUrl = await uploadArtistImage(artist.id, image)
 
-	const imageUrl = await uploadArtistImage(artist.id, form.image)
-
-	artist.imageUrl = imageUrl
+	artist = artistSchema.parse({ ...artist, imageUrl })
 
 	return artist
 };
