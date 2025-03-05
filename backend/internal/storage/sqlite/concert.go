@@ -153,3 +153,40 @@ func setEventConcerts(ctx context.Context, tx *sql.Tx, eventID int64, concerts .
 
 	return insertedConcerts, nil
 }
+
+func deleteEventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) error {
+	concerts, err := eventConcerts(ctx, tx, eventID)
+	if err != nil {
+		return err
+	}
+
+	for _, c := range concerts {
+		err = deleteConcert(ctx, tx, c.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func deleteConcert(ctx context.Context, tx *sql.Tx, concertID int64) error {
+	query := "DELETE FROM concert WHERE id = @id"
+
+	res, err := tx.ExecContext(ctx, query, sql.Named("id", concertID))
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected <= 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
