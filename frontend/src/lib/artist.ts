@@ -7,7 +7,7 @@ import { APIError, apiErrorSchema } from "./error";
 export const artistSchema = z.object({
 	id: z.number().positive(),
 	name: z.string(),
-	imageUrl: z.string().url(),
+	imageUrl: z.string().url().optional(),
 	description: z.string(),
 	genres: genreSchema.array(),
 	socials: z.string().url().array()
