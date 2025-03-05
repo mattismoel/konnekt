@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { z } from 'zod';
 	import EventForm from './EventForm.svelte';
-	import { createEvent, eventForm } from '$lib/event';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
+	import { createEvent, eventForm, updateEvent } from '$lib/event';
 	import { page } from '$app/state';
 
 	const { data } = $props();
@@ -11,17 +10,7 @@
 	const submit = async (form: z.infer<typeof eventForm>) => {
 		const id = page.url.searchParams.get('id');
 
-		if (!id) {
-			const event = await createEvent(form);
-		} else {
-			// TODO: Implement updateEvent() function.
-			const event = await updateEvent(form);
-		}
-
-		fetch(`${PUBLIC_BACKEND_URL}/events`, {
-			method: 'POST',
-			credentials: 'include'
-		});
+		id ? await updateEvent(form, parseInt(id)) : await createEvent(form);
 	};
 </script>
 
