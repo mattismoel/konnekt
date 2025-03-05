@@ -5,11 +5,12 @@
 	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 	import { error } from '@sveltejs/kit';
 	import { invalidateAll } from '$app/navigation';
-	import { type Genre } from '$lib/genre';
+	import { createGenre, type Genre } from '$lib/genre';
 	import Modal from './modal/Modal.svelte';
 	import ModalHeader from './modal/ModalHeader.svelte';
 	import ModalContent from './modal/ModalContent.svelte';
 	import ModalFooter from './modal/ModalFooter.svelte';
+	import { APIError } from '$lib/error';
 
 	type Props = {
 		genres: Genre[];
@@ -24,17 +25,13 @@
 	let selected = $state<Genre[]>([]);
 
 	const addGenre = async () => {
-		const res = await fetch(`${PUBLIC_BACKEND_URL}/genres`, {
-			method: 'POST',
-			credentials: 'include',
-			body: JSON.stringify({ name: search })
-		});
-
-		if (!res.ok) {
-			return error(500, 'Could not create genre');
+		try {
+			await createGenre(search);
+			await invalidateAll();
+		} catch (e) {
+			if (e instanceof APIError) return error(e.status, e.message);
+			return error(500, 'Could not create genre' + e);
 		}
-
-		await invalidateAll();
 	};
 
 	const select = (genre: Genre) => {
