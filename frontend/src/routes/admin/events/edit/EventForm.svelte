@@ -8,7 +8,7 @@
 	import { z, ZodError } from 'zod';
 	import CreateConcertCard from './CreateConcertCard.svelte';
 	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
-	import type { concertForm } from '$lib/concert';
+	import { concertForm } from '$lib/concert';
 
 	type Props = {
 		event: Event | null;
@@ -20,13 +20,20 @@
 
 	const { event, artists, venues, onSubmit }: Props = $props();
 
-	let form = $state<z.infer<typeof eventForm>>({
+	const concertWithID = concertForm.extend({ id: z.string().uuid() });
+
+	const extendedForm = eventForm.extend({
+		concerts: concertWithID.array()
+	});
+
+	let form = $state<z.infer<typeof extendedForm>>({
 		title: event?.title || '',
 		description: event?.description || '',
 		venueId: event?.venue.id || 1,
 		coverImage: null,
 		concerts:
 			event?.concerts.map((c) => ({
+				id: crypto.randomUUID().toString(),
 				artistID: c.artist.id,
 				from: c.from,
 				to: c.to
@@ -38,21 +45,14 @@
 		form.coverImage ? URL.createObjectURL(form.coverImage) : event?.coverImageUrl || ''
 	);
 
-	const deleteConcert = (c: z.infer<typeof concertForm>) => {
-		const idx = form.concerts.indexOf(c);
-		if (idx < 0) return;
-
-		form.concerts = form.concerts.filter((_, i) => idx !== i);
+	const deleteConcert = (id: string) => {
+		form.concerts = form.concerts.filter((c) => c.id !== id);
 	};
 
 	const addConcert = () => {
 		form.concerts = [
 			...form.concerts,
-			{
-				artistID: 1,
-				from: new Date(),
-				to: new Date()
-			}
+			{ id: crypto.randomUUID().toString(), artistID: 1, from, to }
 		];
 	};
 
@@ -86,12 +86,12 @@
 
 	<h1 class="mb-4 text-2xl font-bold">Koncerter.</h1>
 	<div class="space-y-4">
-		{#each form.concerts || [] as concert, i (concert)}
+		{#each form.concerts || [] as concert, i (concert.id)}
 			<CreateConcertCard
 				bind:concert={form.concerts[i]}
 				{artists}
 				idx={i + 1}
-				onDelete={() => deleteConcert(concert)}
+				onDelete={() => deleteConcert(concert.id)}
 			/>
 		{/each}
 	</div>
