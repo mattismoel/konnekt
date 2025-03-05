@@ -67,13 +67,18 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 	}
 
 	concerts := make([]concert.Concert, 0)
-	for _, loadConcert := range load.Concerts {
-		artist, err := s.artistRepo.ByID(ctx, loadConcert.ArtistID)
+	for _, c := range load.Concerts {
+		artist, err := s.artistRepo.ByID(ctx, c.ArtistID)
 		if err != nil {
 			return 0, err
 		}
 
-		c, err := concert.NewConcert(artist, loadConcert.From, loadConcert.To)
+		c, err := concert.NewConcert(
+			concert.WithArtist(artist),
+			concert.WithFrom(c.From),
+			concert.WithTo(c.To),
+		)
+
 		if err != nil {
 			return 0, err
 		}
@@ -116,7 +121,7 @@ type UpdateEvent struct {
 
 func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEvent) (event.Event, error) {
 	// Return if event does not exist.
-	_, err := s.eventRepo.ByID(ctx, eventID)
+	prevEvent, err := s.eventRepo.ByID(ctx, eventID)
 	if err != nil {
 		return event.Event{}, err
 	}
@@ -133,7 +138,13 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 			return event.Event{}, err
 		}
 
-		concert, err := concert.NewConcert(artist, c.From, c.To)
+		concert, err := concert.NewConcert(
+			concert.WithID(eventID),
+			concert.WithArtist(artist),
+			concert.WithFrom(c.From),
+			concert.WithTo(c.To),
+		)
+
 		if err != nil {
 			return event.Event{}, err
 		}
@@ -142,11 +153,12 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	}
 
 	e, err := event.NewEvent(
+		event.WithID(eventID),
 		event.WithTitle(load.Title),
 		event.WithDescription(load.Description),
 		event.WithConcerts(concerts...),
 		event.WithVenue(venue),
-		event.WithCoverImageURL(load.CoverImageURL),
+		event.WithCoverImageURL(prevEvent.CoverImageURL),
 	)
 
 	if err != nil {
