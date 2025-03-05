@@ -128,3 +128,28 @@ func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) (Concerts, er
 
 	return concerts, nil
 }
+
+func setEventConcerts(ctx context.Context, tx *sql.Tx, eventID int64, concerts ...Concert) (Concerts, error) {
+	err := deleteEventConcerts(ctx, tx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	insertedConcerts := make([]Concert, 0)
+	for _, c := range concerts {
+		concertID, err := insertConcert(ctx, tx, c)
+		if err != nil {
+			return nil, err
+		}
+
+		insertedConcerts = append(insertedConcerts, Concert{
+			ID:       concertID,
+			ArtistID: c.ArtistID,
+			EventID:  c.EventID,
+			From:     c.From,
+			To:       c.To,
+		})
+	}
+
+	return insertedConcerts, nil
+}
