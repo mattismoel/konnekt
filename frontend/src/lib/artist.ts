@@ -95,8 +95,6 @@ export const updateArtist = async (
 	const imageUrl = await uploadArtistImage(artistId, form.image)
 	const artist = artistSchema.parse({ ...await res.json(), imageUrl })
 
-	artist.imageUrl = imageUrl
-
 	return artist
 };
 

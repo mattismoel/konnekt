@@ -24,24 +24,51 @@ export const eventForm = z.object({
 
 export type Event = z.infer<typeof eventSchema>
 
-export const createEvent = async (form: z.infer<typeof eventForm>): Promise<Event> => {
+export const createEvent = async (form: z.infer<typeof eventForm>, init?: RequestInit): Promise<Event> => {
+	const { coverImage, ...rest } = form
+	if (!coverImage) throw new APIError(400, "Could not create event", "Cover image must be set")
+
 	let res = await fetch(`${PUBLIC_BACKEND_URL}/events`, {
+		...init,
+		method: "POST",
+		credentials: "include",
+		body: JSON.stringify(rest),
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not update event", err.message)
+	}
+
+	let event = eventSchema.parse(await res.json())
+
+	const imageUrl = await uploadEventCoverImage(event.id, coverImage)
+
+	event = eventSchema.parse({ ...event, imageUrl })
+
+	return event
+}
+
+export const updateEvent = async (form: z.infer<typeof eventForm>, eventId: number, init?: RequestInit): Promise<Event> => {
+	let res = await fetch(`${PUBLIC_BACKEND_URL}/events/${eventId}`, {
+		...init,
+		method: "PUT",
 		credentials: "include",
 		body: JSON.stringify(form),
 	})
 
 	if (!res.ok) {
 		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not create event", err.message)
+		throw new APIError(res.status, "Could not update event", err.message)
 	}
 
-	const event = eventSchema.parse(await res.json())
+	if (!form.coverImage) return await eventById(eventId)
 
-	if (!form.coverImage) return event
+	let event = eventSchema.parse(await res.json())
 
-	const url = await uploadEventCoverImage(event.id, form.coverImage)
+	const coverImageUrl = await uploadEventCoverImage(event.id, form.coverImage)
 
-	event.coverImageUrl = url
+	event = eventSchema.parse({ ...event, coverImageUrl })
 
 	return event
 }
@@ -80,7 +107,7 @@ export const listEvents = async (params: URLSearchParams): Promise<ListResult<Ev
 	return result
 }
 
-export const eventById = async (id: number): Promise<Event | APIError> => {
+export const eventById = async (id: number): Promise<Event> => {
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${id}`)
 
 	if (!res.ok) {
