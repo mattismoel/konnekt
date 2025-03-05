@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	ErrInvalidID               = errors.New("Concert ID must be a positive integer")
 	ErrInvalidDateRelationship = errors.New("Concert dates must be concecutive")
 	ErrInvalidDate             = errors.New("One or more dates are invalid or empty")
 )
@@ -41,6 +42,16 @@ func NewConcert(cfgs ...CfgFunc) (Concert, error) {
 	return *c, nil
 }
 
+func WithID(id int64) CfgFunc {
+	return func(c *Concert) error {
+		if id <= 0 {
+			return ErrInvalidID
+		}
+
+		c.ID = id
+		return nil
+	}
+}
 
 func WithArtist(a artist.Artist) CfgFunc {
 	return func(c *Concert) error {
