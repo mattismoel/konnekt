@@ -14,8 +14,6 @@
 
 	type Props = {
 		artists: Artist[];
-		from?: Date;
-		to?: Date;
 		idx: number;
 
 		concert: z.infer<typeof concertForm>;
@@ -23,7 +21,7 @@
 		onDelete: () => void;
 	};
 
-	let { artists, concert = $bindable(), from, to, idx, onDelete }: Props = $props();
+	let { artists, concert = $bindable(), idx, onDelete }: Props = $props();
 
 	const selectArtist = (artistId: number) => {
 		concert.artistID = artistId;
