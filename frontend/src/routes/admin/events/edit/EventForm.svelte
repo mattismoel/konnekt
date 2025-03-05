@@ -10,6 +10,7 @@
 	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
 	import { concertForm } from '$lib/concert';
 	import { addMinutes, roundToNearestHours } from 'date-fns';
+	import FieldError from '$lib/components/ui/FieldError.svelte';
 
 	type Props = {
 		event: Event | null;
@@ -53,6 +54,7 @@
 	const addConcert = () => {
 		const from = form.concerts.length > 0 ? form.concerts[0]?.to : roundToNearestHours(new Date());
 		const to = addMinutes(from, 30);
+
 		form.concerts = [
 			...form.concerts,
 			{ id: crypto.randomUUID().toString(), artistID: 1, from, to }
@@ -75,19 +77,28 @@
 <form class="space-y-8" onsubmit={submit}>
 	<h1 class="mb-4 text-2xl font-bold">Lav event.</h1>
 	<ImagePreview src={coverImageUrl || ''} onChange={(file) => (form.coverImage = file)} />
+	<FieldError errors={formError?.flatten().fieldErrors['coverImage']} />
 	<div class="flex gap-4 *:flex-1">
-		<Input expandX label="Titel" type="text" name="title" value={form.title} />
-		<Selector
-			class="w-min"
-			selected={form.venueId}
-			entries={venues.map((v) => ({
-				name: `${v.name}, ${v.city}`,
-				value: v.id.toString()
-			}))}
-		/>
+		<div class="flex flex-col gap-2">
+			<Input expandX label="Titel" type="text" name="title" bind:value={form.title} />
+			<FieldError errors={formError?.flatten().fieldErrors['title']} />
+		</div>
+		<div class="flex flex-col">
+			<Selector
+				onChange={(value) => (form.venueId = parseInt(value))}
+				class="w-full"
+				selected={form.venueId.toString()}
+				entries={venues.map((v) => ({
+					name: `${v.name}, ${v.city}`,
+					value: v.id.toString()
+				}))}
+			/>
+			<FieldError errors={formError?.flatten().fieldErrors['venueId']} />
+		</div>
 	</div>
 
 	<h1 class="mb-4 text-2xl font-bold">Koncerter.</h1>
+	<FieldError errors={formError?.flatten().fieldErrors['concerts']} />
 	<div class="space-y-4">
 		{#each form.concerts || [] as concert, i (concert.id)}
 			<CreateConcertCard
