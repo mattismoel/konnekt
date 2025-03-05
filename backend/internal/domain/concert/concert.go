@@ -12,6 +12,8 @@ var (
 	ErrInvalidDate             = errors.New("One or more dates are invalid or empty")
 )
 
+type CfgFunc func(c *Concert) error
+
 type Concert struct {
 	ID     int64         `json:"id"`
 	From   time.Time     `json:"from"`
@@ -19,18 +21,62 @@ type Concert struct {
 	Artist artist.Artist `json:"artist"`
 }
 
-func NewConcert(a artist.Artist, from time.Time, to time.Time) (Concert, error) {
-	if from.After(to) {
-		return Concert{}, ErrInvalidDateRelationship
+func (c *Concert) WithCfgs(cfgs ...CfgFunc) error {
+	for _, cfg := range cfgs {
+		if err := cfg(c); err != nil {
+			return err
+		}
 	}
 
-	if from.IsZero() || to.IsZero() {
-		return Concert{}, ErrInvalidDate
+	return nil
+}
+
+func NewConcert(cfgs ...CfgFunc) (Concert, error) {
+	c := &Concert{}
+
+	if err := c.WithCfgs(cfgs...); err != nil {
+		return Concert{}, err
 	}
 
-	return Concert{
-		Artist: a,
-		From:   from,
-		To:     to,
-	}, nil
+	return *c, nil
+}
+
+
+func WithArtist(a artist.Artist) CfgFunc {
+	return func(c *Concert) error {
+		c.Artist = a
+		return nil
+	}
+}
+
+func WithFrom(from time.Time) CfgFunc {
+	return func(c *Concert) error {
+		if from.IsZero() {
+			return ErrInvalidDate
+		}
+
+		if from.After(c.To) && !c.To.IsZero() {
+			return ErrInvalidDateRelationship
+		}
+
+		c.From = from
+
+		return nil
+	}
+}
+
+func WithTo(to time.Time) CfgFunc {
+	return func(c *Concert) error {
+		if to.IsZero() {
+			return ErrInvalidDate
+		}
+
+		if to.Before(c.From) && !c.From.IsZero() {
+			return ErrInvalidDateRelationship
+		}
+
+		c.To = to
+
+		return nil
+	}
 }
