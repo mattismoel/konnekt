@@ -74,7 +74,6 @@ export const updateArtist = async (
 	form: z.infer<typeof artistFormSchema>,
 	init?: RequestInit,
 ): Promise<Artist> => {
-	console.log("UPDATE")
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/${artistId}`, {
 		...init,
 		method: 'PUT',

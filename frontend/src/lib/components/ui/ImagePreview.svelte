@@ -16,8 +16,6 @@
 		url = URL.createObjectURL(file);
 		onChange(file);
 	};
-
-	$inspect(url);
 </script>
 
 <div class="relative aspect-video w-full">

@@ -58,7 +58,6 @@
 		const { data, success, error } = artistFormSchema.safeParse(form);
 		if (!success) {
 			formError = error;
-			console.log(formError.flatten());
 			return;
 		}
 

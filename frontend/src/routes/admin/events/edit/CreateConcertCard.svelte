@@ -26,8 +26,6 @@
 	const selectArtist = (artistId: number) => {
 		concert.artistID = artistId;
 	};
-
-	$inspect(concert);
 </script>
 
 <Card class="relative flex-1 space-y-4">

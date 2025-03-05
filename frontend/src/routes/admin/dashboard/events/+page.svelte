@@ -6,8 +6,6 @@
 	let { data } = $props();
 
 	let { upcomingEvents } = $derived(data);
-
-	$inspect(upcomingEvents)
 </script>
 
 <Card>
