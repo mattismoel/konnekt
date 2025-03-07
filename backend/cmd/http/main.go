@@ -99,7 +99,6 @@ func main() {
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithCORSOrigins(*frontendURL),
 		server.WithAuthService(authService),
-		server.WithObjectStore(s3Store),
 		server.WithUserService(userService),
 		server.WithEventService(eventService),
 		server.WithArtistService(artistService),
