@@ -2,12 +2,18 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/service"
+)
+
+var (
+	ErrEventNoExist = APIError{Message: "Event does not exist", Status: http.StatusNotFound}
 )
 
 func (s Server) handleListEvents() http.HandlerFunc {
@@ -43,13 +49,18 @@ func (s Server) handleEventByID() http.HandlerFunc {
 			return
 		}
 
-		event, err := s.eventService.ByID(ctx, int64(eventID))
+		e, err := s.eventService.ByID(ctx, int64(eventID))
 		if err != nil {
-			writeError(w, err)
+			switch {
+			case errors.Is(err, event.ErrNoExist):
+				writeError(w, newAPIError(err.Error(), http.StatusNotFound))
+			default:
+				writeError(w, err)
+			}
 			return
 		}
 
-		writeJSON(w, http.StatusOK, event)
+		writeJSON(w, http.StatusOK, e)
 	}
 }
 
