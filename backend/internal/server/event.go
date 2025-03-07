@@ -3,14 +3,11 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
-	"path"
 	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/service"
 )
@@ -114,7 +111,6 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 		}
 
 		fmt.Printf("%+v\n", e)
-
 		writeJSON(w, http.StatusOK, e)
 	}
 }
@@ -127,10 +123,11 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 	}
 
 	type updateEventLoad struct {
-		Title       string              `json:"title"`
-		Description string              `json:"description"`
-		Concerts    []updateConcertLoad `json:"concerts"`
-		VenueID     int64               `json:"venueId"`
+		Title         string              `json:"title"`
+		Description   string              `json:"description"`
+		CoverImageURL string              `json:"coverImageUrl"`
+		Concerts      []updateConcertLoad `json:"concerts"`
+		VenueID       int64               `json:"venueId"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -147,6 +144,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
 		ctx := r.Context()
 
 		concerts := make([]service.UpdateConcert, 0)
@@ -160,10 +158,11 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 		}
 
 		e, err := s.eventService.Update(ctx, int64(eventID), service.UpdateEvent{
-			Title:       load.Title,
-			Description: load.Description,
-			VenueID:     load.VenueID,
-			Concerts:    concerts,
+			Title:         load.Title,
+			Description:   load.Description,
+			CoverImageURL: load.CoverImageURL,
+			VenueID:       load.VenueID,
+			Concerts:      concerts,
 		})
 
 		if err != nil {
@@ -187,10 +186,7 @@ func (s Server) handleUploadEventCoverImage() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		fileExt := path.Ext(fileHeader.Filename)
-		fileName := fmt.Sprintf("%s%s", uuid.NewString(), fileExt)
-
-		url, err := s.objectStore.Upload(ctx, path.Join("/events/", fileName), file)
+		url, err := s.eventService.UploadCoverImage(ctx, fileHeader.Filename, file)
 		if err != nil {
 			writeError(w, err)
 			return

@@ -2,8 +2,13 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"net/url"
+	"path"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
@@ -13,9 +18,10 @@ import (
 )
 
 type EventService struct {
-	eventRepo  event.Repository
-	artistRepo artist.Repository
-	venueRepo  venue.Repository
+	eventRepo   event.Repository
+	artistRepo  artist.Repository
+	venueRepo   venue.Repository
+	objectStore object.Store
 }
 
 func NewEventService(
@@ -25,9 +31,10 @@ func NewEventService(
 	objectStore object.Store,
 ) (*EventService, error) {
 	return &EventService{
-		eventRepo:  eventRepo,
-		artistRepo: artistRepo,
-		venueRepo:  venueRepo,
+		eventRepo:   eventRepo,
+		artistRepo:  artistRepo,
+		venueRepo:   venueRepo,
+		objectStore: objectStore,
 	}, nil
 }
 
@@ -158,8 +165,15 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 		event.WithDescription(load.Description),
 		event.WithConcerts(concerts...),
 		event.WithVenue(venue),
-		event.WithCoverImageURL(prevEvent.CoverImageURL),
 	)
+
+	// If there is a cover image URL update, set it.
+	if load.CoverImageURL != "" {
+		err := e.WithCfgs(event.WithCoverImageURL(load.CoverImageURL))
+		if err != nil {
+			return event.Event{}, err
+		}
+	}
 
 	if err != nil {
 		return event.Event{}, err
@@ -170,12 +184,38 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 		return event.Event{}, err
 	}
 
+	// Delete previous cover image, if a new one was set.
+	if load.CoverImageURL != "" {
+		url, err := url.Parse(prevEvent.CoverImageURL)
+		if err != nil {
+			return event.Event{}, err
+		}
+
+		err = s.objectStore.Delete(ctx, url.Path)
+		if err != nil {
+			return event.Event{}, err
+		}
+	}
+
 	updatedEvent, err := s.eventRepo.ByID(ctx, eventID)
 	if err != nil {
 		return event.Event{}, err
 	}
 
 	return updatedEvent, nil
+}
+
+func (s EventService) UploadCoverImage(ctx context.Context, fileName string, r io.Reader) (string, error) {
+	ext := path.Ext(fileName)
+
+	fileName = fmt.Sprintf("%s%s", uuid.NewString(), ext)
+
+	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), r)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
 }
 
 type EventListQuery struct {

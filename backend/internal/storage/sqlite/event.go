@@ -138,9 +138,10 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 	defer tx.Rollback()
 
 	err = updateEvent(ctx, tx, eventID, Event{
-		Title:       e.Title,
-		Description: e.Description,
-		VenueID:     e.Venue.ID,
+		Title:         e.Title,
+		Description:   e.Description,
+		CoverImageURL: e.CoverImageURL,
+		VenueID:       e.Venue.ID,
 	})
 
 	if err != nil {
@@ -407,12 +408,17 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 		description = CASE
 			WHEN @description = '' THEN description
 			ELSE @description
+		END,
+		cover_image_url = CASE
+			WHEN @cover_image_url = '' THEN cover_image_url
+			ELSE @cover_image_url
 		END
 		WHERE id = @id`
 
 	res, err := tx.ExecContext(ctx, query,
 		sql.Named("title", e.Title),
 		sql.Named("description", e.Description),
+		sql.Named("cover_image_url", e.CoverImageURL),
 		sql.Named("id", eventID),
 	)
 
