@@ -2,13 +2,8 @@ package service
 
 import (
 	"context"
-	"fmt"
-	"io"
-	"path"
-	"slices"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
@@ -18,10 +13,9 @@ import (
 )
 
 type EventService struct {
-	eventRepo   event.Repository
-	artistRepo  artist.Repository
-	venueRepo   venue.Repository
-	objectStore object.Store
+	eventRepo  event.Repository
+	artistRepo artist.Repository
+	venueRepo  venue.Repository
 }
 
 func NewEventService(
@@ -31,18 +25,18 @@ func NewEventService(
 	objectStore object.Store,
 ) (*EventService, error) {
 	return &EventService{
-		eventRepo:   eventRepo,
-		artistRepo:  artistRepo,
-		venueRepo:   venueRepo,
-		objectStore: objectStore,
+		eventRepo:  eventRepo,
+		artistRepo: artistRepo,
+		venueRepo:  venueRepo,
 	}, nil
 }
 
 type CreateEvent struct {
-	Title       string
-	Description string
-	VenueID     int64
-	Concerts    []CreateConcert
+	Title         string
+	Description   string
+	CoverImageURL string
+	VenueID       int64
+	Concerts      []CreateConcert
 }
 
 type CreateConcert struct {
@@ -60,17 +54,17 @@ func (s EventService) ByID(ctx context.Context, eventID int64) (event.Event, err
 	return e, nil
 }
 
-func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, error) {
+func (s EventService) Create(ctx context.Context, load CreateEvent) (event.Event, error) {
 	venue, err := s.venueRepo.ByID(ctx, load.VenueID)
 	if err != nil {
-		return 0, err
+		return event.Event{}, err
 	}
 
 	concerts := make([]concert.Concert, 0)
 	for _, c := range load.Concerts {
 		artist, err := s.artistRepo.ByID(ctx, c.ArtistID)
 		if err != nil {
-			return 0, err
+			return event.Event{}, err
 		}
 
 		c, err := concert.NewConcert(
@@ -80,7 +74,7 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 		)
 
 		if err != nil {
-			return 0, err
+			return event.Event{}, err
 		}
 
 		concerts = append(concerts, c)
@@ -90,19 +84,25 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (int64, erro
 		event.WithTitle(load.Title),
 		event.WithDescription(load.Description),
 		event.WithVenue(venue),
+		event.WithCoverImageURL(load.CoverImageURL),
 		event.WithConcerts(concerts...),
 	)
 
 	if err != nil {
-		return 0, err
+		return event.Event{}, err
 	}
 
 	eventID, err := s.eventRepo.Insert(ctx, *e)
 	if err != nil {
-		return 0, err
+		return event.Event{}, err
 	}
 
-	return eventID, nil
+	createdEvent, err := s.eventRepo.ByID(ctx, eventID)
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	return createdEvent, nil
 }
 
 type UpdateConcert struct {
@@ -204,25 +204,4 @@ func (s EventService) List(ctx context.Context, q EventListQuery) (query.ListRes
 		PageCount:  q.PageCount(totalCount),
 		Records:    events,
 	}, nil
-}
-
-func (s EventService) SetCoverImage(ctx context.Context, eventID int64, fileName string, body io.ReadCloser) (string, error) {
-	fileExtension := path.Ext(fileName)
-	if !slices.Contains(AllowedImageFiletypes, fileExtension) {
-		return "", ErrInvalidImageFiletype
-	}
-
-	fileKey := fmt.Sprintf("events/images/%s%s", uuid.NewString(), fileExtension)
-
-	url, err := s.objectStore.Upload(ctx, fileKey, body)
-	if err != nil {
-		return "", err
-	}
-
-	err = s.eventRepo.SetCoverImageURL(ctx, eventID, url)
-	if err != nil {
-		return "", err
-	}
-
-	return url, nil
 }

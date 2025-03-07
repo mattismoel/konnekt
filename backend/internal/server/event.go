@@ -3,11 +3,14 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"path"
 	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/service"
 )
@@ -98,10 +101,11 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 		}
 
 		e, err := s.eventService.Create(r.Context(), service.CreateEvent{
-			Title:       load.Title,
-			Description: load.Description,
-			VenueID:     load.VenueID,
-			Concerts:    concerts,
+			Title:         load.Title,
+			Description:   load.Description,
+			CoverImageURL: load.CoverImageURL,
+			VenueID:       load.VenueID,
+			Concerts:      concerts,
 		})
 
 		if err != nil {
@@ -134,7 +138,6 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 	}
 }
 
-func (s Server) handleSetEventCoverImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
 		if err != nil {
@@ -144,13 +147,22 @@ func (s Server) handleSetEventCoverImage() http.HandlerFunc {
 
 		ctx := r.Context()
 
+func (s Server) handleUploadEventCoverImage() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		file, fileHeader, err := r.FormFile("image")
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		url, err := s.eventService.SetCoverImage(ctx, int64(eventID), fileHeader.Filename, file)
+		defer file.Close()
+
+		ctx := r.Context()
+
+		fileExt := path.Ext(fileHeader.Filename)
+		fileName := fmt.Sprintf("%s%s", uuid.NewString(), fileExt)
+
+		url, err := s.objectStore.Upload(ctx, path.Join("/events/", fileName), file)
 		if err != nil {
 			writeError(w, err)
 			return
