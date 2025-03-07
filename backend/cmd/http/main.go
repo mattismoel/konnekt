@@ -97,8 +97,9 @@ func main() {
 
 	srv, err := server.New(
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
-		server.WithAuthService(authService),
 		server.WithCORSOrigins(*frontendURL),
+		server.WithAuthService(authService),
+		server.WithObjectStore(s3Store),
 		server.WithUserService(userService),
 		server.WithEventService(eventService),
 		server.WithArtistService(artistService),

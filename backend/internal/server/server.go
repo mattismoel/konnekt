@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -26,6 +27,8 @@ type Server struct {
 	artistService *service.ArtistService
 	userService   *service.UserService
 	venueService  *service.VenueService
+
+	objectStore object.Store
 }
 
 type CfgFunc func(s *Server) error
@@ -44,6 +47,13 @@ func New(cfgs ...CfgFunc) (*Server, error) {
 	s.setupRoutes()
 
 	return s, nil
+}
+
+func WithObjectStore(store object.Store) CfgFunc {
+	return func(s *Server) error {
+		s.objectStore = store
+		return nil
+	}
 }
 
 func WithCORSOrigins(allowedOrigins ...string) CfgFunc {
