@@ -170,7 +170,12 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 		return event.Event{}, err
 	}
 
-	return *e, nil
+	updatedEvent, err := s.eventRepo.ByID(ctx, eventID)
+	if err != nil {
+		return event.Event{}, err
+	}
+
+	return updatedEvent, nil
 }
 
 type EventListQuery struct {
