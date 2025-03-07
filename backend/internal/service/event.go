@@ -205,6 +205,19 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	return updatedEvent, nil
 }
 
+func (s EventService) UploadCoverImage(ctx context.Context, fileName string, r io.Reader) (string, error) {
+	ext := path.Ext(fileName)
+
+	fileName = fmt.Sprintf("%s%s", uuid.NewString(), ext)
+
+	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), r)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
+}
+
 type EventListQuery struct {
 	query.ListQuery
 	From time.Time
