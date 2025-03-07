@@ -403,7 +403,7 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 		title = CASE
 			WHEN @title = '' THEN title
 			ELSE @title
-		END
+		END,
 		description = CASE
 			WHEN @description = '' THEN description
 			ELSE @description
