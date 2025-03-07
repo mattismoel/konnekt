@@ -134,18 +134,46 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-
-	}
-}
-
-	return func(w http.ResponseWriter, r *http.Request) {
 		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
+		var load updateEventLoad
+
+		err = json.NewDecoder(r.Body).Decode(&load)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
 		ctx := r.Context()
+
+		concerts := make([]service.UpdateConcert, 0)
+
+		for _, c := range load.Concerts {
+			concerts = append(concerts, service.UpdateConcert{
+				ArtistID: c.ArtistID,
+				From:     c.From,
+				To:       c.To,
+			})
+		}
+
+		e, err := s.eventService.Update(ctx, int64(eventID), service.UpdateEvent{
+			Title:       load.Title,
+			Description: load.Description,
+			VenueID:     load.VenueID,
+			Concerts:    concerts,
+		})
+
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, e)
+	}
+}
 
 func (s Server) handleUploadEventCoverImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
