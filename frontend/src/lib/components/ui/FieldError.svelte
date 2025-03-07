@@ -10,7 +10,7 @@
 </script>
 
 <ul
-	class={cn('list-inside text-sm text-red-500', {
+	class={cn('min-h-5 list-inside text-sm text-red-500', {
 		'list-disc': errors && errors.length > 1
 	})}
 >
