@@ -97,7 +97,7 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 			})
 		}
 
-		_, err := s.eventService.Create(r.Context(), service.CreateEvent{
+		e, err := s.eventService.Create(r.Context(), service.CreateEvent{
 			Title:       load.Title,
 			Description: load.Description,
 			VenueID:     load.VenueID,
@@ -108,6 +108,10 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		fmt.Printf("%+v\n", e)
+
+		writeJSON(w, http.StatusOK, e)
 	}
 }
 
