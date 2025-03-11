@@ -225,7 +225,7 @@ type EventListQuery struct {
 }
 
 func NewEventListQuery(page, perPage, limit int, from, to time.Time) EventListQuery {
-	if to.Before(from) {
+	if !to.IsZero() && to.Before(from) {
 		to = from
 	}
 
