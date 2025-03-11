@@ -8,12 +8,14 @@ import (
 )
 
 var (
-	ErrInvalidID            = errors.New("ID must be a positive integer")
-	ErrEmptyName            = errors.New("Name must not be empty")
-	ErrEmptyDescription     = errors.New("Description must not be empty")
-	ErrInvalidImageURL      = errors.New("Image URL must be valid")
-	ErrImageURLInaccessible = errors.New("Image URL must be accessible")
-	ErrNoGenres             = errors.New("Artist must have at least one genre")
+	ErrInvalidID              = errors.New("ID must be a positive integer")
+	ErrEmptyName              = errors.New("Name must not be empty")
+	ErrEmptyDescription       = errors.New("Description must not be empty")
+	ErrInvalidImageURL        = errors.New("Image URL must be valid")
+	ErrImageURLInaccessible   = errors.New("Image URL must be accessible")
+	ErrNoGenres               = errors.New("Artist must have at least one genre")
+	ErrPreviewURLInvalid      = errors.New("Artist preview URL must be a valid URL")
+	ErrPreviewURLInaccessible = errors.New("Artist preview URL must be accessible")
 )
 
 type ArtistCfg func(a *Artist) error
@@ -23,6 +25,7 @@ type Artist struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	ImageURL    string   `json:"imageUrl"`
+	PreviewURL  string   `json:"previewUrl"`
 	Genres      []Genre  `json:"genres"`
 	Socials     []Social `json:"socials"`
 }
@@ -100,6 +103,28 @@ func WithImageURL(u string) ArtistCfg {
 		}
 
 		a.ImageURL = url.String()
+
+		return nil
+	}
+}
+
+func WithPreviewURL(u string) ArtistCfg {
+	return func(a *Artist) error {
+		url, err := url.ParseRequestURI(u)
+		if err != nil {
+			return ErrPreviewURLInvalid
+		}
+
+		resp, err := http.Get(url.String())
+		if err != nil {
+			return ErrPreviewURLInaccessible
+		}
+
+		if !(resp.StatusCode >= 200) || !(resp.StatusCode < 400) {
+			return ErrPreviewURLInvalid
+		}
+
+		a.PreviewURL = url.String()
 
 		return nil
 	}

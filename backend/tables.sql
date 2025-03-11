@@ -69,6 +69,7 @@ CREATE TABLE artist (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   image_url TEXT NOT NULL,
+  preview_url TEXT NOT NULL,
   description TEXT NOT NULL
 );
 

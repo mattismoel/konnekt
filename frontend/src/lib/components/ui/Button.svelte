@@ -12,7 +12,7 @@
 		children,
 		class: className,
 		expandX,
-		expandY,
+		expandY = false,
 		variant = 'primary',
 		...rest
 	}: Props = $props();
@@ -21,7 +21,7 @@
 <button
 	type="button"
 	class={cn(
-		`flex max-w-64 items-center justify-center gap-1 rounded-sm px-4 py-2 font-medium text-zinc-950`,
+		`flex h-min max-w-64 items-center justify-center gap-1 rounded-sm px-4 py-2 font-medium text-zinc-950`,
 		{
 			'w-full max-w-none': expandX,
 			'h-full': expandY,

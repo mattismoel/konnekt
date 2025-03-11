@@ -34,6 +34,6 @@ export const load: PageServerLoad = async ({ url, request }) => {
       return error(e.status, e.message)
     }
 
-    throw e
+    return error(500, "Could not load")
   }
 }
