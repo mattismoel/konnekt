@@ -45,10 +45,6 @@ func NewListQuery(page, perPage, limit int) ListQuery {
 		perPage = MAX_PER_PAGE
 	}
 
-	if limit <= 0 {
-		limit = 1
-	}
-
 	return ListQuery{
 		Page:    page,
 		PerPage: perPage,
