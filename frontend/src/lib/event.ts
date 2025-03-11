@@ -9,7 +9,7 @@ export const eventSchema = z.object({
 	id: z.number().positive(),
 	title: z.string().nonempty(),
 	description: z.string().nonempty(),
-	coverImageUrl: z.string().url().optional(),
+	coverImageUrl: z.string().optional().or(z.string().url().optional()),
 	concerts: concertSchema.array(),
 	venue: venueSchema
 })
@@ -26,13 +26,16 @@ export type Event = z.infer<typeof eventSchema>
 
 export const createEvent = async (form: z.infer<typeof eventForm>, init?: RequestInit): Promise<Event> => {
 	const { coverImage, ...rest } = form
+
 	if (!coverImage) throw new APIError(400, "Could not create event", "Cover image must be set")
+
+	const coverImageUrl = await uploadEventCoverImage(coverImage)
 
 	let res = await fetch(`${PUBLIC_BACKEND_URL}/events`, {
 		...init,
 		method: "POST",
 		credentials: "include",
-		body: JSON.stringify(rest),
+		body: JSON.stringify({ ...rest, coverImageUrl }),
 	})
 
 	if (!res.ok) {
@@ -40,21 +43,23 @@ export const createEvent = async (form: z.infer<typeof eventForm>, init?: Reques
 		throw new APIError(res.status, "Could not update event", err.message)
 	}
 
-	let event = eventSchema.parse(await res.json())
-
-	const imageUrl = await uploadEventCoverImage(event.id, coverImage)
-
-	event = eventSchema.parse({ ...event, imageUrl })
+	const event = eventSchema.parse(await res.json())
 
 	return event
 }
 
 export const updateEvent = async (form: z.infer<typeof eventForm>, eventId: number, init?: RequestInit): Promise<Event> => {
-	let res = await fetch(`${PUBLIC_BACKEND_URL}/events/${eventId}`, {
+	const coverImageUrl = form.coverImage ? await uploadEventCoverImage(form.coverImage) : undefined
+
+	const { coverImage, ...rest } = form;
+
+	const body = JSON.stringify({ ...rest, coverImageUrl })
+
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${eventId}`, {
 		...init,
 		method: "PUT",
 		credentials: "include",
-		body: JSON.stringify(form),
+		body: JSON.stringify({ ...rest, coverImageUrl })
 	})
 
 	if (!res.ok) {
@@ -62,25 +67,18 @@ export const updateEvent = async (form: z.infer<typeof eventForm>, eventId: numb
 		throw new APIError(res.status, "Could not update event", err.message)
 	}
 
-	if (!form.coverImage) return await eventById(eventId)
-
-	let event = eventSchema.parse(await res.json())
-
-	const coverImageUrl = await uploadEventCoverImage(event.id, form.coverImage)
-
-	event = eventSchema.parse({ ...event, coverImageUrl })
-
+	const event = eventSchema.parse(await res.json())
 	return event
 }
 
-export const uploadEventCoverImage = async (eventId: number, file: File, init?: RequestInit): Promise<string> => {
+export const uploadEventCoverImage = async (file: File, init?: RequestInit): Promise<string> => {
 	const formData = new FormData()
 
 	formData.append("image", file)
 
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/cover-image/${eventId}`, {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/image`, {
 		...init,
-		method: "PUT",
+		method: "POST",
 		credentials: "include",
 		body: formData,
 	})
