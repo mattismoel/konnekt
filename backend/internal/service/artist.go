@@ -35,6 +35,7 @@ func NewArtistService(artistRepo artist.Repository, objectStore object.Store) (*
 type CreateArtist struct {
 	Name        string
 	Description string
+	ImageURL    string
 	PreviewURL  string
 	GenreIDs    []int64
 	Socials     []string
@@ -43,6 +44,7 @@ type CreateArtist struct {
 type UpdateArtist struct {
 	Name        string
 	Description string
+	ImageURL    string
 	PreviewURL  string
 	GenreIDs    []int64
 	Socials     []string
@@ -127,6 +129,7 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 		artist.WithName(load.Name),
 		artist.WithDescription(load.Description),
 		artist.WithPreviewURL(load.PreviewURL),
+		artist.WithImageURL(load.ImageURL),
 		artist.WithGenres(genres...),
 		artist.WithSocials(socials...),
 	)
@@ -176,6 +179,13 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 		return artist.Artist{}, err
 	}
 
+	if strings.TrimSpace(load.ImageURL) != "" {
+		err := a.WithCfgs(artist.WithImageURL(load.ImageURL))
+		if err != nil {
+			return artist.Artist{}, err
+		}
+	}
+
 	err = s.artistRepo.Update(ctx, artistID, *a)
 	if err != nil {
 		return artist.Artist{}, nil
@@ -215,4 +225,17 @@ func (s ArtistService) CreateGenre(ctx context.Context, name string) (int64, err
 	}
 
 	return genreID, nil
+}
+
+func (s ArtistService) UploadImage(ctx context.Context, fileName string, r io.Reader) (string, error) {
+	ext := path.Ext(fileName)
+
+	fileName = fmt.Sprintf("%s%s", uuid.NewString(), ext)
+
+	url, err := s.objectStore.Upload(ctx, path.Join("/artists", fileName), r)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
 }

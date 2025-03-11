@@ -9,9 +9,9 @@
 	import SocialEntry from './SocialEntry.svelte';
 	import type { ZodError } from 'zod';
 	import FieldError from '$lib/components/ui/FieldError.svelte';
-	import FilePicker from '$lib/components/ui/FilePicker.svelte';
-	import ImageSelectorModal from '$lib/components/ui/ImageSelectorModal.svelte';
 	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
+	import SpotifyPreview from '$lib/components/SpotifyPreview.svelte';
+	import { trackIdFromUrl } from '$lib/spotify';
 
 	type Props = {
 		artist: Artist | null;
@@ -24,6 +24,7 @@
 	let form: ArtistForm = $state({
 		name: artist?.name || '',
 		description: artist?.description || '',
+		previewUrl: artist?.previewUrl || '',
 		genreIds: artist?.genres.map((genre) => genre.id) || [],
 		image: null,
 		socials: artist?.socials || []
@@ -35,9 +36,13 @@
 	let showGenreModal = $state(false);
 	let formError = $state<ZodError | null>(null);
 
+	$inspect(formError?.flatten());
+
 	let coverImageUrl = $derived(
 		form.image ? URL.createObjectURL(form.image) : artist?.imageUrl || ''
 	);
+
+	let trackId = $derived(artist?.previewUrl ? trackIdFromUrl(form.previewUrl) : '');
 
 	const updateImage = (file: File | null) => {
 		if (!file) return;
@@ -71,12 +76,18 @@
 		<ImagePreview src={coverImageUrl} onChange={updateImage} />
 		<div class="space-y-8">
 			<div class="space-y-1">
-				<Input label="Kunstnernavn" bind:value={form.name} />
-				<FieldError errors={formError?.flatten().fieldErrors['name']} />
+				<Input
+					label="Kunstnernavn"
+					bind:value={form.name}
+					errors={formError?.flatten().fieldErrors['name']}
+				/>
 			</div>
 			<div class="space-y-1">
-				<Input label="Beskrivelse" bind:value={form.description} />
-				<FieldError errors={formError?.flatten().fieldErrors['name']} />
+				<Input
+					label="Beskrivelse"
+					bind:value={form.description}
+					errors={formError?.flatten().fieldErrors['description']}
+				/>
 			</div>
 		</div>
 	</div>
@@ -96,18 +107,27 @@
 			{/each}
 		</div>
 		<FieldError errors={formError?.flatten().fieldErrors['genreIds']} />
+		<GenreSelectorModal
+			{genres}
+			show={showGenreModal}
+			onClose={() => (showGenreModal = false)}
+			onChange={(selected) => (form.genreIds = selected.map((genre) => genre.id))}
+		/>
 	</div>
-	<GenreSelectorModal
-		{genres}
-		show={showGenreModal}
-		onClose={() => (showGenreModal = false)}
-		onChange={(selected) => (form.genreIds = selected.map((genre) => genre.id))}
-	/>
 
-	<div>
+	<div class="flex flex-col gap-4">
+		<h1 class="mb-8 text-2xl font-bold">Spotify Preview.</h1>
+		<div class="space-y-4">
+			<Input label="Preview URL" bind:value={form.previewUrl} />
+			{#if trackId}
+				<SpotifyPreview {trackId} />
+			{/if}
+		</div>
+	</div>
+	<div class="space-y-4">
 		<h1 class="mb-8 text-2xl font-bold">Sociale medier.</h1>
-		<div class="mb-4 flex gap-2">
-			<Input type="text" label="URL" bind:value={socialUrl} />
+		<div class="mb-4 flex w-full gap-2">
+			<Input type="text" label="URL" bind:value={socialUrl} class="flex-1" />
 			<Button type="button" onclick={addSocial}><PlusIcon />Tilføj</Button>
 		</div>
 		<div class="space-y-2">

@@ -29,7 +29,7 @@ func (s *Server) setupRoutes() {
 		r.Post("/", s.withPermissions(s.handleCreateArtist(), "artist-edit"))
 		r.Put("/{artistID}", s.withPermissions(s.handleUpdateArtist(), "artist-edit"))
 		r.Delete("/{artistID}", s.withPermissions(s.handleDeleteArtist(), "artist-delete"))
-		r.Put("/image/{artistID}", s.withPermissions(s.handleSetArtistImage(), "artist-edit"))
+		r.Put("/image", s.withPermissions(s.handleUploadArtistImage(), "artist-edit"))
 	})
 
 	s.mux.Route("/venues", func(r chi.Router) {

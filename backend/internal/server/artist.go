@@ -53,6 +53,7 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 	type createArtistLoad struct {
 		Name        string   `json:"name"`
 		Description string   `json:"description"`
+		ImageURL    string   `json:"imageUrl"`
 		GenreIDs    []int64  `json:"genreIds"`
 		PreviewURL  string   `json:"previewUrl"`
 		Socials     []string `json:"socials"`
@@ -72,6 +73,7 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 		artistID, err := s.artistService.Create(ctx, service.CreateArtist{
 			Name:        load.Name,
 			Description: load.Description,
+			ImageURL:    load.ImageURL,
 			PreviewURL:  load.PreviewURL,
 			GenreIDs:    load.GenreIDs,
 			Socials:     load.Socials,
@@ -81,6 +83,14 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		artist, err := s.artistService.ByID(ctx, artistID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, artist)
 	}
 }
 
@@ -88,6 +98,7 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 	type updateArtistLoad struct {
 		Name        string   `json:"name"`
 		Description string   `json:"description"`
+		ImageURL    string   `json:"imageUrl"`
 		PreviewURL  string   `json:"previewUrl"`
 		GenreIDs    []int64  `json:"genreIds"`
 		Socials     []string `json:"socials"`
@@ -114,6 +125,7 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 			Name:        load.Name,
 			Description: load.Description,
 			PreviewURL:  load.PreviewURL,
+			ImageURL:    load.ImageURL,
 			GenreIDs:    load.GenreIDs,
 			Socials:     load.Socials,
 		})
@@ -133,14 +145,8 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 	}
 }
 
-func (s Server) handleSetArtistImage() http.HandlerFunc {
+func (s Server) handleUploadArtistImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		artistID, err := strconv.Atoi(chi.URLParam(r, "artistID"))
-		if err != nil {
-			writeError(w, err)
-			return
-		}
-
 		ctx := r.Context()
 
 		file, fileHeader, err := r.FormFile("image")
@@ -149,16 +155,15 @@ func (s Server) handleSetArtistImage() http.HandlerFunc {
 			return
 		}
 
-		url, err := s.artistService.SetImage(ctx, int64(artistID), fileHeader.Filename, file)
+		defer file.Close()
+
+		url, err := s.artistService.UploadImage(ctx, fileHeader.Filename, file)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(url))
-
+		writeText(w, http.StatusOK, url)
 	}
 }
 

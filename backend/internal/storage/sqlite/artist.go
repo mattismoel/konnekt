@@ -451,5 +451,14 @@ func updateArtist(ctx context.Context, tx *sql.Tx, artistID int64, a Artist) err
 		return err
 	}
 
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected <= 0 {
+		return ErrNotFound
+	}
+
 	return nil
 }

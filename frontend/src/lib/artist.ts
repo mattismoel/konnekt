@@ -32,7 +32,6 @@ export const artistFormSchema = z.object({
 		.refine(url => {
 			let { hostname } = new URL(url);
 			hostname = hostname.replace(/^www\./, '');
-			console.log(hostname)
 			return hostname === "open.spotify.com"
 		}, { message: "Preview URL skal være fra Spotify" }),
 	genreIds: z.number()
@@ -52,11 +51,13 @@ export const createArtist = async (form: z.infer<typeof artistFormSchema>, init?
 	let { image, ...rest } = form
 	if (!image) throw new APIError(400, "Could not upload artist image", "Image file not present")
 
+	const imageUrl = await uploadArtistImage(image)
+
 	let res = await fetch(`${PUBLIC_BACKEND_URL}/artists`, {
 		...init,
 		method: 'POST',
 		credentials: 'include',
-		body: JSON.stringify(rest)
+		body: JSON.stringify({ ...rest, imageUrl })
 	});
 
 	if (!res.ok) {
@@ -64,11 +65,7 @@ export const createArtist = async (form: z.infer<typeof artistFormSchema>, init?
 		throw new APIError(res.status, "Could not create artist", err.message)
 	}
 
-	let artist = artistSchema.parse(await res.json())
-
-	const imageUrl = await uploadArtistImage(artist.id, image)
-
-	artist = artistSchema.parse({ ...artist, imageUrl })
+	const artist = artistSchema.parse(await res.json())
 
 	return artist
 };
@@ -84,11 +81,15 @@ export const updateArtist = async (
 	form: z.infer<typeof artistFormSchema>,
 	init?: RequestInit,
 ): Promise<Artist> => {
+	const { image, ...rest } = form;
+
+	const imageUrl = image ? await uploadArtistImage(image) : undefined
+
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/${artistId}`, {
 		...init,
 		method: 'PUT',
 		credentials: "include",
-		body: JSON.stringify(form)
+		body: JSON.stringify({ ...rest, imageUrl })
 	});
 
 	if (!res.ok) {
@@ -96,28 +97,22 @@ export const updateArtist = async (
 		throw new APIError(res.status, "Could not update artist", err.message)
 	}
 
-	if (!form.image) {
-		const artist = await artistById(artistId)
-		return artist
-	}
-
-	const imageUrl = await uploadArtistImage(artistId, form.image)
-	const artist = artistSchema.parse({ ...await res.json(), imageUrl })
+	const artist = artistSchema.parse({ ...await res.json() })
 
 	return artist
 };
 
 /**
  * @description Uploads the artist image for the artist specified by its artistId.
- * @param {number} artistId  - The ID of the artist.
  * @param {File} file - The image file to be used as the artist image.
  * @returns {string} The URL of the artist image.
  */
-export const uploadArtistImage = async (artistId: number, file: File): Promise<string> => {
+export const uploadArtistImage = async (file: File, init?: RequestInit): Promise<string> => {
 	const formData = new FormData();
 	formData.append('image', file);
 
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/image/${artistId}`, {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/image`, {
+		...init,
 		method: 'PUT',
 		credentials: 'include',
 		body: formData
@@ -164,4 +159,11 @@ export const artistById = async (id: number): Promise<Artist> => {
 	const artist = artistSchema.parse(await res.json())
 
 	return artist
+}
+
+export const artistPreviewUrl = async (id: number, init?: RequestInit): Promise<string> => {
+	const url = new URL(`https://api.spotify.com/v1/artists/${id}/top-tracks`)
+	const res = await fetch(url, { ...init })
+	if (!res.ok) throw new Error("Could not get artist tracks")
+
 }
