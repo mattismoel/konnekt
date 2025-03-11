@@ -35,6 +35,7 @@ func NewArtistService(artistRepo artist.Repository, objectStore object.Store) (*
 type CreateArtist struct {
 	Name        string
 	Description string
+	PreviewURL  string
 	GenreIDs    []int64
 	Socials     []string
 }
@@ -42,6 +43,7 @@ type CreateArtist struct {
 type UpdateArtist struct {
 	Name        string
 	Description string
+	PreviewURL  string
 	GenreIDs    []int64
 	Socials     []string
 }
@@ -124,6 +126,7 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 	a, err := artist.NewArtist(
 		artist.WithName(load.Name),
 		artist.WithDescription(load.Description),
+		artist.WithPreviewURL(load.PreviewURL),
 		artist.WithGenres(genres...),
 		artist.WithSocials(socials...),
 	)
@@ -164,6 +167,7 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 	a, err := artist.NewArtist(
 		artist.WithName(load.Name),
 		artist.WithDescription(load.Description),
+		artist.WithPreviewURL(load.PreviewURL),
 		artist.WithGenres(genres...),
 		artist.WithSocials(socials...),
 	)

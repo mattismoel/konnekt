@@ -11,6 +11,7 @@ type Artist struct {
 	ID          int64
 	Name        string
 	Description string
+	PreviewURL  string
 	ImageURL    string
 }
 
@@ -19,6 +20,7 @@ func (a Artist) ToInternal(genres []artist.Genre, socials []artist.Social) artis
 		ID:          a.ID,
 		Name:        a.Name,
 		Description: a.Description,
+		PreviewURL:  a.PreviewURL,
 		ImageURL:    a.ImageURL,
 		Genres:      genres,
 		Socials:     socials,
@@ -100,6 +102,7 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 	artistID, err := insertArtist(ctx, tx, Artist{
 		Name:        a.Name,
 		Description: a.Description,
+		PreviewURL:  a.PreviewURL,
 		ImageURL:    a.ImageURL,
 	})
 
@@ -151,8 +154,13 @@ func (repo ArtistRepository) Update(ctx context.Context, artistID int64, a artis
 	err = updateArtist(ctx, tx, artistID, Artist{
 		Name:        a.Name,
 		Description: a.Description,
+		PreviewURL:  a.PreviewURL,
 		ImageURL:    a.ImageURL,
 	})
+
+	if err != nil {
+		return err
+	}
 
 	socials := make([]Social, 0)
 	for _, social := range a.Socials {
@@ -282,7 +290,7 @@ func (repo ArtistRepository) Delete(ctx context.Context, artistID int64) error {
 }
 
 func listArtists(ctx context.Context, tx *sql.Tx) ([]Artist, error) {
-	query := `SELECT id, name, description, image_url FROM artist a`
+	query := `SELECT id, name, description, preview_url, image_url FROM artist a`
 
 	rows, err := tx.QueryContext(ctx, query)
 	if err != nil {
@@ -295,9 +303,9 @@ func listArtists(ctx context.Context, tx *sql.Tx) ([]Artist, error) {
 
 	for rows.Next() {
 		var id int64
-		var name, description, imageURL string
+		var name, description, previewUrl, imageURL string
 
-		if err := rows.Scan(&id, &name, &description, &imageURL); err != nil {
+		if err := rows.Scan(&id, &name, &description, &previewUrl, &imageURL); err != nil {
 			return nil, err
 		}
 
@@ -305,6 +313,7 @@ func listArtists(ctx context.Context, tx *sql.Tx) ([]Artist, error) {
 			ID:          id,
 			Name:        name,
 			Description: description,
+			PreviewURL:  previewUrl,
 			ImageURL:    imageURL,
 		})
 	}
@@ -326,12 +335,13 @@ func artistCount(ctx context.Context, tx *sql.Tx) (int, error) {
 
 func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 	query := `
-	INSERT INTO artist (name, description, image_url)
-	VALUES (@name, @description, @image_url)`
+	INSERT INTO artist (name, description, preview_url, image_url)
+	VALUES (@name, @description, @preview_url, @image_url)`
 
 	res, err := tx.ExecContext(ctx, query,
 		sql.Named("name", a.Name),
 		sql.Named("description", a.Description),
+		sql.Named("preview_url", a.PreviewURL),
 		sql.Named("image_url", a.ImageURL),
 	)
 
@@ -349,12 +359,12 @@ func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 
 func artistByID(ctx context.Context, tx *sql.Tx, artistID int64) (Artist, error) {
 	query := `
-	SELECT name, description, image_url
+	SELECT name, description, preview_url, image_url
 	FROM artist where id = @id`
 
-	var name, description, imageURL string
+	var name, description, previewURL, imageURL string
 	err := tx.QueryRowContext(ctx, query, sql.Named("id", artistID)).Scan(
-		&name, &description, &imageURL,
+		&name, &description, &previewURL, &imageURL,
 	)
 
 	if err != nil {
@@ -365,6 +375,7 @@ func artistByID(ctx context.Context, tx *sql.Tx, artistID int64) (Artist, error)
 		ID:          artistID,
 		Name:        name,
 		Description: description,
+		PreviewURL:  previewURL,
 		ImageURL:    imageURL,
 	}, nil
 }
@@ -411,22 +422,27 @@ func updateArtist(ctx context.Context, tx *sql.Tx, artistID int64, a Artist) err
 	query := `
 	UPDATE artist SET 
 		name = CASE 
-			WHEN @name = '' THEN name 
-			ELSE @name,
-		END
+			WHEN @name = '' THEN name
+			ELSE @name
+		END,
 		description = CASE
 			WHEN @description = '' THEN description
 			ELSE @description
-		END
+		END,
+		preview_url = CASE
+			WHEN @preview_url = '' THEN preview_url
+			ELSE @preview_url
+		END,
 		image_url = CASE
 			WHEN @image_url = '' THEN image_url
 			ELSE @image_url
 		END
 	WHERE id = @artist_id`
 
-	_, err := tx.ExecContext(ctx, query,
+	res, err := tx.ExecContext(ctx, query,
 		sql.Named("name", a.Name),
 		sql.Named("description", a.Description),
+		sql.Named("preview_url", a.PreviewURL),
 		sql.Named("image_url", a.ImageURL),
 		sql.Named("artist_id", artistID),
 	)

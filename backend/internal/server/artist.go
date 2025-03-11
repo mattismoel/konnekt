@@ -54,6 +54,7 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 		Name        string   `json:"name"`
 		Description string   `json:"description"`
 		GenreIDs    []int64  `json:"genreIds"`
+		PreviewURL  string   `json:"previewUrl"`
 		Socials     []string `json:"socials"`
 	}
 
@@ -68,9 +69,10 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		_, err = s.artistService.Create(ctx, service.CreateArtist{
+		artistID, err := s.artistService.Create(ctx, service.CreateArtist{
 			Name:        load.Name,
 			Description: load.Description,
+			PreviewURL:  load.PreviewURL,
 			GenreIDs:    load.GenreIDs,
 			Socials:     load.Socials,
 		})
@@ -86,6 +88,7 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 	type updateArtistLoad struct {
 		Name        string   `json:"name"`
 		Description string   `json:"description"`
+		PreviewURL  string   `json:"previewUrl"`
 		GenreIDs    []int64  `json:"genreIds"`
 		Socials     []string `json:"socials"`
 	}
@@ -110,6 +113,7 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 		a, err := s.artistService.Update(ctx, int64(artistID), service.UpdateArtist{
 			Name:        load.Name,
 			Description: load.Description,
+			PreviewURL:  load.PreviewURL,
 			GenreIDs:    load.GenreIDs,
 			Socials:     load.Socials,
 		})
