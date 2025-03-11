@@ -317,11 +317,11 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 	}
 
 	if !params.From.IsZero() {
-		err = query.AddFilter("c.from_date >= ?", params.From)
+		err = query.AddFilter("c.from_date >= ?", params.From.Format(time.RFC3339))
 	}
 
 	if !params.To.IsZero() {
-		query.AddFilter("c.to_date <= ?", params.To)
+		query.AddFilter("c.to_date <= ?", params.To.Format(time.RFC3339))
 	}
 
 	queryString, args := query.Build()
