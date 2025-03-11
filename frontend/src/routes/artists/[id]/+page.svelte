@@ -17,8 +17,10 @@
 			<Fader direction="left" class="absolute w-64 from-zinc-950" />
 		</div>
 		<article class="prose prose-invert flex flex-col gap-8 px-16 pt-64 pb-16">
-			{artist.description}
+			{@html artist.description}
+			{#if trackId}
 			{@render spotifyPreview(trackId)}
+{/if}
 			{@render socials(artist.socials)}
 		</article>
 	</div>
