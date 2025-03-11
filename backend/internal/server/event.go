@@ -20,7 +20,7 @@ func (s Server) handleListEvents() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := NewListQueryFromRequest(r)
 
-		fromStr, toStr := r.URL.Query().Get("from_date"), r.URL.Query().Get("to_date")
+		fromStr, toStr := r.URL.Query().Get("from"), r.URL.Query().Get("to")
 		from, _ := time.Parse(time.RFC3339, fromStr)
 		to, _ := time.Parse(time.RFC3339, toStr)
 
