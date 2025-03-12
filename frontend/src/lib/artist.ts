@@ -161,9 +161,3 @@ export const artistById = async (id: number): Promise<Artist> => {
 	return artist
 }
 
-export const artistPreviewUrl = async (id: number, init?: RequestInit): Promise<string> => {
-	const url = new URL(`https://api.spotify.com/v1/artists/${id}/top-tracks`)
-	const res = await fetch(url, { ...init })
-	if (!res.ok) throw new Error("Could not get artist tracks")
-
-}
