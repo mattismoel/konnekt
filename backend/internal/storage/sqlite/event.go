@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -193,8 +194,9 @@ func (repo EventRepository) SetImageURL(ctx context.Context, eventID int64, cove
 
 type EventQueryParams struct {
 	QueryParams
-	From time.Time
-	To   time.Time
+	From      time.Time
+	To        time.Time
+	ArtistIDs []int64
 }
 
 func (repo EventRepository) List(ctx context.Context, q event.Query) ([]event.Event, int, error) {
@@ -210,8 +212,9 @@ func (repo EventRepository) List(ctx context.Context, q event.Query) ([]event.Ev
 			Offset: q.Offset(),
 			Limit:  q.Limit,
 		},
-		From: from,
-		To:   to,
+		From:      q.From,
+		To:        q.To,
+		ArtistIDs: q.ArtistIDs,
 	},
 	)
 
@@ -324,7 +327,14 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 		query.AddFilter("c.to_date <= ?", params.To.Format(time.RFC3339))
 	}
 
+	if len(params.ArtistIDs) > 0 {
+		for _, artistID := range params.ArtistIDs {
+			query.AddFilter("c.artist_id = ?", artistID)
+		}
+	}
+
 	queryString, args := query.Build()
+	fmt.Printf("QUERY %q\n", queryString)
 
 	rows, err := tx.QueryContext(ctx, queryString, args...)
 	if err != nil {
