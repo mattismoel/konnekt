@@ -33,7 +33,7 @@
 			<div class="w-full space-y-1 text-zinc-300">
 				<div class="flex items-center gap-2">
 					<CalendarIcon />
-					<span>{formatDateStr(fromDate || new Date())}</span>
+					<time>{formatDateStr(fromDate || new Date())}</time>
 				</div>
 				<div class="flex items-center gap-2">
 					<GroupIcon />
@@ -45,7 +45,7 @@
 				</div>
 				<div class="flex items-center gap-2">
 					<MapIcon />
-					<span>{event.venue.name}, {event.venue.city}</span>
+					<address class="not-italic">{event.venue.name}, {event.venue.city}</address>
 				</div>
 			</div>
 			<div class="w-96 space-y-2">
