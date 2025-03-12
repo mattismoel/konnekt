@@ -43,11 +43,8 @@
 			{/if}
 
 			{#if events.length > 0}
-				<div class="flex gap-2">
-					{#each events as event (event.id)}
-						<EventCard {event} class="" />
-					{/each}
-				</div>
+				<h1 class="text-2xl font-bold">Kommende events.</h1>
+				<EventCaroussel {events} />
 			{/if}
 		</article>
 	</div>
