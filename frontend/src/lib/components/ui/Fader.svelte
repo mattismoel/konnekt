@@ -13,7 +13,7 @@
 
 <div
 	class={cn(
-		'from-black',
+		'pointer-events-none from-black',
 		{
 			'top-0 left-0 h-full min-w-4 bg-gradient-to-r': direction === 'right',
 			'top-0 right-0 h-full min-w-4 bg-gradient-to-l': direction === 'left',
