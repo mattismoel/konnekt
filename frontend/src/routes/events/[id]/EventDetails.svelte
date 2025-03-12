@@ -49,9 +49,9 @@
 				</div>
 			</div>
 			<div class="w-96 space-y-2">
-				<Button expandX expandY extraClass="h-18">Køb billet</Button>
+				<Button expandX expandY class="h-18">Køb billet</Button>
 				{#if !active}
-					<Button type="secondary" expandX expandY extraClass="h-18">Læs mere</Button>
+					<Button variant="secondary" expandX expandY class="h-18">Læs mere</Button>
 				{/if}
 			</div>
 		</div>
