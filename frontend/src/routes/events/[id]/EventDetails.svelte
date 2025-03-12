@@ -21,7 +21,7 @@
 
 <div class="relative h-[calc((100vh/4)*3)] overflow-hidden">
 	<img
-		src={event?.coverImageUrl}
+		src={event?.imageUrl}
 		alt={event?.title}
 		class="absolute top-0 left-0 h-full w-full object-cover"
 	/>
