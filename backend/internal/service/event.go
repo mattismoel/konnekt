@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -219,81 +218,8 @@ func (s EventService) UploadImage(ctx context.Context, fileName string, r io.Rea
 	return url, nil
 }
 
-type EventListQuery struct {
-	query.ListQuery
-	From time.Time
-	To   time.Time
-}
-
-type EventListCfgFunc func(q *EventListQuery) error
-
-func (e *EventListQuery) WithCfgs(cfgs ...EventListCfgFunc) error {
-	for _, cfg := range cfgs {
-		if err := cfg(e); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func NewEventListQuery(cfgs ...EventListCfgFunc) (EventListQuery, error) {
-	e := &EventListQuery{}
-
-	if err := e.WithCfgs(cfgs...); err != nil {
-		return EventListQuery{}, err
-	}
-
-	return *e, nil
-}
-
-func WithPagination(query query.ListQuery) EventListCfgFunc {
-	return func(q *EventListQuery) error {
-		q.ListQuery = query
-		return nil
-	}
-}
-
-func WithFromDate(d time.Time) EventListCfgFunc {
-	return func(q *EventListQuery) error {
-		if d.IsZero() {
-			return errors.New("Invalid from date")
-		}
-
-		q.From = d
-		return nil
-	}
-}
-
-func WithToDate(d time.Time) EventListCfgFunc {
-	return func(q *EventListQuery) error {
-		if d.IsZero() {
-			return errors.New("Invalid to date")
-		}
-
-		if !q.To.IsZero() && d.Before(q.From) {
-			return errors.New("Invalid date relationship")
-		}
-
-		q.To = d
-		return nil
-	}
-}
-
-// func NewEventListQuery(page, perPage, limit int, from, to time.Time) EventListQuery {
-// 	if !to.IsZero() && to.Before(from) {
-// 		to = from
-// 	}
-//
-// 	return EventListQuery{
-// 		ListQuery: query.NewListQuery(page, perPage, limit),
-// 		From:      from,
-// 		To:        to,
-// 	}
-// }
-
-func (s EventService) List(ctx context.Context, q EventListQuery) (query.ListResult[event.Event], error) {
-	events, totalCount, err := s.eventRepo.List(ctx, q.From, q.To, q.Offset(), q.Limit)
+func (s EventService) List(ctx context.Context, q event.Query) (query.ListResult[event.Event], error) {
+	events, totalCount, err := s.eventRepo.List(ctx, q)
 	if err != nil {
 		return query.ListResult[event.Event]{}, err
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/domain/event"
+	"github.com/mattismoel/konnekt/internal/query"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -26,10 +27,32 @@ func (s Server) handleListEvents() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		result, err := s.eventService.List(ctx,
-			service.NewEventListQuery(q.Page, q.PerPage, q.Limit, from, to),
+		query, err := event.NewQuery(
+			event.WithPagination(query.NewListQuery(q.Page, q.PerPage, q.Limit)),
 		)
 
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if !from.IsZero() {
+			err := query.WithCfgs(event.WithFromDate(from))
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+		}
+
+		if !to.IsZero() {
+			err := query.WithCfgs(event.WithToDate(to))
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+		}
+
+		result, err := s.eventService.List(ctx, query)
 		if err != nil {
 			writeError(w, err)
 			return

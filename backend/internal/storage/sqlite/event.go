@@ -197,7 +197,7 @@ type EventQueryParams struct {
 	To   time.Time
 }
 
-func (repo EventRepository) List(ctx context.Context, from, to time.Time, offset, limit int) ([]event.Event, int, error) {
+func (repo EventRepository) List(ctx context.Context, q event.Query) ([]event.Event, int, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, 0, err
@@ -207,8 +207,8 @@ func (repo EventRepository) List(ctx context.Context, from, to time.Time, offset
 
 	dbEvents, err := listEvents(ctx, tx, EventQueryParams{
 		QueryParams: QueryParams{
-			Offset: offset,
-			Limit:  limit,
+			Offset: q.Offset(),
+			Limit:  q.Limit,
 		},
 		From: from,
 		To:   to,

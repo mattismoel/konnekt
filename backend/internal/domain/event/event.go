@@ -2,12 +2,11 @@ package event
 
 import (
 	"errors"
+	"github.com/mattismoel/konnekt/internal/domain/concert"
+	"github.com/mattismoel/konnekt/internal/domain/venue"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/mattismoel/konnekt/internal/domain/concert"
-	"github.com/mattismoel/konnekt/internal/domain/venue"
 )
 
 var (
