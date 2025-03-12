@@ -38,11 +38,13 @@
 			<!-- CONTACT INFORMATION -->
 			<div class="flex flex-1 flex-col items-end">
 				<h3 class="mb-2 font-black">KONNEKT&reg;</h3>
-				<ul class="text-text/50 flex flex-col items-end">
-					<a href="tel:+4512345678">+45 12 34 56 78</a>
-					<a href="mailto:konnekt@mail.dk">konnekt@mail.dk</a>
-					<a href="https://google.maps.com/konnekt">Konnektvej 17B, Konnekticut</a>
-				</ul>
+				<address class="not-italic">
+					<ul class="text-text/50 flex flex-col items-end">
+						<a href="tel:+4512345678">+45 12 34 56 78</a>
+						<a href="mailto:konnekt@mail.dk">konnekt@mail.dk</a>
+						<a href="https://google.maps.com/konnekt">Konnektvej 17B, Konnekticut</a>
+					</ul>
+				</address>
 			</div>
 		</div>
 		<div class="text-text/50 flex justify-center text-xs">
