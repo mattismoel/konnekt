@@ -10,5 +10,5 @@ type Repository interface {
 	Update(ctx context.Context, eventID int64, e Event) error
 	List(ctx context.Context, from, to time.Time, offset, limit int) ([]Event, int, error)
 	ByID(ctx context.Context, eventID int64) (Event, error)
-	SetCoverImageURL(ctx context.Context, eventID int64, imageURL string) error
+	SetImageURL(ctx context.Context, eventID int64, imageURL string) error
 }

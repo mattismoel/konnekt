@@ -39,11 +39,11 @@ func NewEventService(
 }
 
 type CreateEvent struct {
-	Title         string
-	Description   string
-	CoverImageURL string
-	VenueID       int64
-	Concerts      []CreateConcert
+	Title       string
+	Description string
+	ImageURL    string
+	VenueID     int64
+	Concerts    []CreateConcert
 }
 
 type CreateConcert struct {
@@ -91,7 +91,7 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (event.Event
 		event.WithTitle(load.Title),
 		event.WithDescription(load.Description),
 		event.WithVenue(venue),
-		event.WithCoverImageURL(load.CoverImageURL),
+		event.WithImageURL(load.ImageURL),
 		event.WithConcerts(concerts...),
 	)
 
@@ -119,11 +119,11 @@ type UpdateConcert struct {
 }
 
 type UpdateEvent struct {
-	Title         string
-	Description   string
-	CoverImageURL string
-	VenueID       int64
-	Concerts      []UpdateConcert
+	Title       string
+	Description string
+	ImageURL    string
+	VenueID     int64
+	Concerts    []UpdateConcert
 }
 
 func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEvent) (event.Event, error) {
@@ -168,8 +168,8 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	)
 
 	// If there is a cover image URL update, set it.
-	if load.CoverImageURL != "" {
-		err := e.WithCfgs(event.WithCoverImageURL(load.CoverImageURL))
+	if load.ImageURL != "" {
+		err := e.WithCfgs(event.WithImageURL(load.ImageURL))
 		if err != nil {
 			return event.Event{}, err
 		}
@@ -185,8 +185,8 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	}
 
 	// Delete previous cover image, if a new one was set.
-	if load.CoverImageURL != "" {
-		url, err := url.Parse(prevEvent.CoverImageURL)
+	if load.ImageURL != "" {
+		url, err := url.Parse(prevEvent.ImageURL)
 		if err != nil {
 			return event.Event{}, err
 		}
@@ -205,7 +205,7 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	return updatedEvent, nil
 }
 
-func (s EventService) UploadCoverImage(ctx context.Context, fileName string, r io.Reader) (string, error) {
+func (s EventService) UploadImage(ctx context.Context, fileName string, r io.Reader) (string, error) {
 	ext := path.Ext(fileName)
 
 	fileName = fmt.Sprintf("%s%s", uuid.NewString(), ext)

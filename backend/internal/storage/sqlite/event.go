@@ -18,21 +18,21 @@ type EventRepository struct {
 var _ event.Repository = (*EventRepository)(nil)
 
 type Event struct {
-	ID            int64
-	Title         string
-	Description   string
-	CoverImageURL string
-	VenueID       int64
+	ID          int64
+	Title       string
+	Description string
+	ImageURL    string
+	VenueID     int64
 }
 
 func (e Event) ToInternal(venue venue.Venue, concerts []concert.Concert) event.Event {
 	return event.Event{
-		ID:            e.ID,
-		Title:         e.Title,
-		Description:   e.Description,
-		CoverImageURL: e.CoverImageURL,
-		Venue:         venue,
-		Concerts:      concerts,
+		ID:          e.ID,
+		Title:       e.Title,
+		Description: e.Description,
+		ImageURL:    e.ImageURL,
+		Venue:       venue,
+		Concerts:    concerts,
 	}
 }
 
@@ -94,10 +94,10 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 	defer tx.Rollback()
 
 	eventID, err := insertEvent(ctx, tx, Event{
-		Title:         e.Title,
-		Description:   e.Description,
-		CoverImageURL: e.CoverImageURL,
-		VenueID:       e.Venue.ID,
+		Title:       e.Title,
+		Description: e.Description,
+		ImageURL:    e.ImageURL,
+		VenueID:     e.Venue.ID,
 	})
 
 	if err != nil {
@@ -138,10 +138,10 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 	defer tx.Rollback()
 
 	err = updateEvent(ctx, tx, eventID, Event{
-		Title:         e.Title,
-		Description:   e.Description,
-		CoverImageURL: e.CoverImageURL,
-		VenueID:       e.Venue.ID,
+		Title:       e.Title,
+		Description: e.Description,
+		ImageURL:    e.ImageURL,
+		VenueID:     e.Venue.ID,
 	})
 
 	if err != nil {
@@ -171,7 +171,7 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 	return nil
 }
 
-func (repo EventRepository) SetCoverImageURL(ctx context.Context, eventID int64, coverImageURL string) error {
+func (repo EventRepository) SetImageURL(ctx context.Context, eventID int64, coverImageURL string) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -179,7 +179,7 @@ func (repo EventRepository) SetCoverImageURL(ctx context.Context, eventID int64,
 
 	defer tx.Rollback()
 
-	err = setEventCoverImageURL(ctx, tx, eventID, coverImageURL)
+	err = setEventImageURL(ctx, tx, eventID, coverImageURL)
 	if err != nil {
 		return err
 	}
@@ -257,7 +257,7 @@ func (repo EventRepository) List(ctx context.Context, from, to time.Time, offset
 
 func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
 	query := `
-	SELECT title, description, cover_image_url, venue_id FROM event
+	SELECT title, description, image_url, venue_id FROM event
 	WHERE id = @event_id`
 
 	var title, description, coverImageUrl string
@@ -272,11 +272,11 @@ func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
 	}
 
 	return Event{
-		ID:            eventID,
-		Title:         title,
-		Description:   description,
-		CoverImageURL: coverImageUrl,
-		VenueID:       venueID,
+		ID:          eventID,
+		Title:       title,
+		Description: description,
+		ImageURL:    coverImageUrl,
+		VenueID:     venueID,
 	}, nil
 }
 
@@ -297,7 +297,7 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 		e.id,
 		e.title,
 		e.description,
-		e.cover_image_url,
+		e.image_url,
 		e.venue_id
 	FROM event e
 		JOIN concert c ON c.event_id = e.id`)
@@ -344,11 +344,11 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 		}
 
 		events = append(events, Event{
-			ID:            id,
-			Title:         title,
-			Description:   description,
-			CoverImageURL: coverImageURL,
-			VenueID:       venueID,
+			ID:          id,
+			Title:       title,
+			Description: description,
+			ImageURL:    coverImageURL,
+			VenueID:     venueID,
 		})
 	}
 
@@ -361,13 +361,13 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 
 func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
 	query := `
-	INSERT INTO event (title, description, cover_image_url, venue_id)
-	VALUES (@title, @description, @cover_image_url, @venue_id)`
+	INSERT INTO event (title, description, image_url, venue_id)
+	VALUES (@title, @description, @image_url, @venue_id)`
 
 	res, err := tx.ExecContext(ctx, query,
 		sql.Named("title", e.Title),
 		sql.Named("description", e.Description),
-		sql.Named("cover_image_url", e.CoverImageURL),
+		sql.Named("image_url", e.ImageURL),
 		sql.Named("venue_id", e.VenueID),
 	)
 
@@ -383,8 +383,8 @@ func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
 	return eventID, nil
 }
 
-func setEventCoverImageURL(ctx context.Context, tx *sql.Tx, eventID int64, url string) error {
-	query := `UPDATE event SET cover_image_url = @url WHERE id = @id`
+func setEventImageURL(ctx context.Context, tx *sql.Tx, eventID int64, url string) error {
+	query := `UPDATE event SET image_url = @url WHERE id = @id`
 
 	_, err := tx.ExecContext(ctx, query,
 		sql.Named("url", url),
@@ -409,16 +409,16 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 			WHEN @description = '' THEN description
 			ELSE @description
 		END,
-		cover_image_url = CASE
-			WHEN @cover_image_url = '' THEN cover_image_url
-			ELSE @cover_image_url
+		image_url = CASE
+			WHEN @image_url = '' THEN image_url
+			ELSE @image_url
 		END
 		WHERE id = @id`
 
 	res, err := tx.ExecContext(ctx, query,
 		sql.Named("title", e.Title),
 		sql.Named("description", e.Description),
-		sql.Named("cover_image_url", e.CoverImageURL),
+		sql.Named("image_url", e.ImageURL),
 		sql.Named("id", eventID),
 	)
 

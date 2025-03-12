@@ -38,9 +38,7 @@
 
 	$inspect(formError?.flatten());
 
-	let coverImageUrl = $derived(
-		form.image ? URL.createObjectURL(form.image) : artist?.imageUrl || ''
-	);
+	let imageUrl = $derived(form.image ? URL.createObjectURL(form.image) : artist?.imageUrl || '');
 
 	let trackId = $derived(artist?.previewUrl ? trackIdFromUrl(form.previewUrl) : '');
 
@@ -73,7 +71,7 @@
 <form class="w-full max-w-xl space-y-16" onsubmit={submit}>
 	<div class="space-y-8">
 		<h1 class="mb-8 text-2xl font-bold">Generelt.</h1>
-		<ImagePreview src={coverImageUrl} onChange={updateImage} />
+		<ImagePreview src={imageUrl} onChange={updateImage} />
 		<div class="space-y-8">
 			<div class="space-y-1">
 				<Input

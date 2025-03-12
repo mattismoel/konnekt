@@ -11,20 +11,20 @@ import (
 )
 
 var (
-	ErrInvalidID                 = errors.New("Event ID must be a positive integer")
-	ErrEmptyTitle                = errors.New("Event title must not be empty")
-	ErrEmptyDescription          = errors.New("Event description must not be empty")
-	ErrInvalidCoverImageURL      = errors.New("Event cover image URL must be valid")
-	ErrCoverImageURLInaccessible = errors.New("Cover image URL must be accessible")
+	ErrInvalidID            = errors.New("Event ID must be a positive integer")
+	ErrEmptyTitle           = errors.New("Event title must not be empty")
+	ErrEmptyDescription     = errors.New("Event description must not be empty")
+	ErrInvalidImageURL      = errors.New("Event image URL must be valid")
+	ErrImageURLInaccessible = errors.New("Image URL must be accessible")
 )
 
 type Event struct {
-	ID            int64             `json:"id"`
-	Title         string            `json:"title"`
-	Description   string            `json:"description"`
-	CoverImageURL string            `json:"coverImageUrl"`
-	Venue         venue.Venue       `json:"venue"`
-	Concerts      []concert.Concert `json:"concerts"`
+	ID          int64             `json:"id"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	ImageURL    string            `json:"imageUrl"`
+	Venue       venue.Venue       `json:"venue"`
+	Concerts    []concert.Concert `json:"concerts"`
 }
 
 type CfgFunc func(e *Event) error
@@ -89,24 +89,24 @@ func WithDescription(description string) CfgFunc {
 	}
 }
 
-func WithCoverImageURL(coverImageURL string) CfgFunc {
+func WithImageURL(u string) CfgFunc {
 	return func(e *Event) error {
-		url, err := url.ParseRequestURI(coverImageURL)
+		url, err := url.ParseRequestURI(u)
 		if err != nil {
-			return ErrInvalidCoverImageURL
+			return ErrInvalidImageURL
 		}
 
 		resp, err := http.Get(url.String())
 		if err != nil {
-			return ErrCoverImageURLInaccessible
+			return ErrImageURLInaccessible
 		}
 
 		// Check whether page is accessible to the end user.
 		if resp.StatusCode < 200 || resp.StatusCode >= 400 {
-			return ErrCoverImageURLInaccessible
+			return ErrImageURLInaccessible
 		}
 
-		e.CoverImageURL = url.String()
+		e.ImageURL = url.String()
 
 		return nil
 	}

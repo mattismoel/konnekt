@@ -9,7 +9,7 @@ export const eventSchema = z.object({
 	id: z.number().positive(),
 	title: z.string().nonempty(),
 	description: z.string().nonempty(),
-	coverImageUrl: z.string().optional().or(z.string().url().optional()),
+	imageUrl: z.string().optional().or(z.string().url().optional()),
 	concerts: concertSchema.array(),
 	venue: venueSchema
 })
@@ -17,7 +17,7 @@ export const eventSchema = z.object({
 export const eventForm = z.object({
 	title: z.string().nonempty({ message: "Eventtitel skal være defineret" }),
 	description: z.string().nonempty({ message: "Eventbeskrivelse skal være defineret" }),
-	coverImage: z.instanceof(File).nullable(),
+	image: z.instanceof(File).nullable(),
 	venueId: z.number().positive(),
 	concerts: concertForm.array().min(1, { message: "Et event skal have mindst én koncert" })
 });
@@ -25,17 +25,17 @@ export const eventForm = z.object({
 export type Event = z.infer<typeof eventSchema>
 
 export const createEvent = async (form: z.infer<typeof eventForm>, init?: RequestInit): Promise<Event> => {
-	const { coverImage, ...rest } = form
+	const { image, ...rest } = form
 
-	if (!coverImage) throw new APIError(400, "Could not create event", "Cover image must be set")
+	if (!image) throw new APIError(400, "Could not create event", "Cover image must be set")
 
-	const coverImageUrl = await uploadEventCoverImage(coverImage)
+	const imageUrl = await uploadEventCoverImage(image)
 
 	let res = await fetch(`${PUBLIC_BACKEND_URL}/events`, {
 		...init,
 		method: "POST",
 		credentials: "include",
-		body: JSON.stringify({ ...rest, coverImageUrl }),
+		body: JSON.stringify({ ...rest, imageUrl }),
 	})
 
 	if (!res.ok) {
@@ -49,17 +49,15 @@ export const createEvent = async (form: z.infer<typeof eventForm>, init?: Reques
 }
 
 export const updateEvent = async (form: z.infer<typeof eventForm>, eventId: number, init?: RequestInit): Promise<Event> => {
-	const coverImageUrl = form.coverImage ? await uploadEventCoverImage(form.coverImage) : undefined
+	const imageUrl = form.image ? await uploadEventCoverImage(form.image) : undefined
 
-	const { coverImage, ...rest } = form;
-
-	const body = JSON.stringify({ ...rest, coverImageUrl })
+	const { image, ...rest } = form;
 
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${eventId}`, {
 		...init,
 		method: "PUT",
 		credentials: "include",
-		body: JSON.stringify({ ...rest, coverImageUrl })
+		body: JSON.stringify({ ...rest, imageUrl })
 	})
 
 	if (!res.ok) {

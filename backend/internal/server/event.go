@@ -72,11 +72,11 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 	}
 
 	type createEventLoad struct {
-		Title         string              `json:"title"`
-		Description   string              `json:"description"`
-		CoverImageURL string              `json:"coverImageUrl"`
-		VenueID       int64               `json:"venueId"`
-		Concerts      []createConcertLoad `json:"concerts"`
+		Title       string              `json:"title"`
+		Description string              `json:"description"`
+		ImageURL    string              `json:"imageUrl"`
+		VenueID     int64               `json:"venueId"`
+		Concerts    []createConcertLoad `json:"concerts"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -98,11 +98,11 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 		}
 
 		e, err := s.eventService.Create(r.Context(), service.CreateEvent{
-			Title:         load.Title,
-			Description:   load.Description,
-			CoverImageURL: load.CoverImageURL,
-			VenueID:       load.VenueID,
-			Concerts:      concerts,
+			Title:       load.Title,
+			Description: load.Description,
+			ImageURL:    load.ImageURL,
+			VenueID:     load.VenueID,
+			Concerts:    concerts,
 		})
 
 		if err != nil {
@@ -110,7 +110,6 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 			return
 		}
 
-		fmt.Printf("%+v\n", e)
 		writeJSON(w, http.StatusOK, e)
 	}
 }
@@ -123,11 +122,11 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 	}
 
 	type updateEventLoad struct {
-		Title         string              `json:"title"`
-		Description   string              `json:"description"`
-		CoverImageURL string              `json:"coverImageUrl"`
-		Concerts      []updateConcertLoad `json:"concerts"`
-		VenueID       int64               `json:"venueId"`
+		Title       string              `json:"title"`
+		Description string              `json:"description"`
+		ImageURL    string              `json:"imageUrl"`
+		Concerts    []updateConcertLoad `json:"concerts"`
+		VenueID     int64               `json:"venueId"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -158,11 +157,11 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 		}
 
 		e, err := s.eventService.Update(ctx, int64(eventID), service.UpdateEvent{
-			Title:         load.Title,
-			Description:   load.Description,
-			CoverImageURL: load.CoverImageURL,
-			VenueID:       load.VenueID,
-			Concerts:      concerts,
+			Title:       load.Title,
+			Description: load.Description,
+			ImageURL:    load.ImageURL,
+			VenueID:     load.VenueID,
+			Concerts:    concerts,
 		})
 
 		if err != nil {
@@ -174,7 +173,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 	}
 }
 
-func (s Server) handleUploadEventCoverImage() http.HandlerFunc {
+func (s Server) handleUploadEventImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		file, fileHeader, err := r.FormFile("image")
 		if err != nil {
@@ -186,7 +185,7 @@ func (s Server) handleUploadEventCoverImage() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		url, err := s.eventService.UploadCoverImage(ctx, fileHeader.Filename, file)
+		url, err := s.eventService.UploadImage(ctx, fileHeader.Filename, file)
 		if err != nil {
 			writeError(w, err)
 			return

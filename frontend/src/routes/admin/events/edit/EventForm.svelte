@@ -32,7 +32,7 @@
 		title: event?.title || '',
 		description: event?.description || '',
 		venueId: event?.venue.id || 1,
-		coverImage: null,
+		image: null,
 		concerts:
 			event?.concerts.map((c) => ({
 				id: crypto.randomUUID().toString(),
@@ -43,9 +43,7 @@
 	});
 
 	let formError = $state<ZodError>();
-	let coverImageUrl = $derived(
-		form.coverImage ? URL.createObjectURL(form.coverImage) : event?.coverImageUrl || ''
-	);
+	let imageUrl = $derived(form.image ? URL.createObjectURL(form.image) : event?.imageUrl || '');
 
 	const deleteConcert = (id: string) => {
 		form.concerts = form.concerts.filter((c) => c.id !== id);
@@ -77,8 +75,8 @@
 <form class="space-y-8" onsubmit={submit}>
 	<h1 class="mb-8 text-2xl font-bold">Lav event.</h1>
 	<div>
-		<ImagePreview src={coverImageUrl || ''} onChange={(file) => (form.coverImage = file)} />
-		<FieldError errors={formError?.flatten().fieldErrors['coverImageUrl']} />
+		<ImagePreview src={imageUrl || ''} onChange={(file) => (form.image = file)} />
+		<FieldError errors={formError?.flatten().fieldErrors['imageUrl']} />
 	</div>
 	{@render generalSection()}
 	{@render concertsSection()}
@@ -91,7 +89,7 @@
 {#snippet generalSection()}
 	<div>
 		<h1 class="mb-4 text-2xl font-bold">Generelt.</h1>
-		<FieldError errors={formError?.flatten().fieldErrors['coverImage']} />
+		<FieldError errors={formError?.flatten().fieldErrors['image']} />
 		<div class="space-y-8">
 			<div class="flex gap-4 *:flex-1">
 				<Input

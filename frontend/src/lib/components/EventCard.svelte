@@ -38,7 +38,7 @@
 		class="group flex h-40 overflow-hidden rounded-md bg-gradient-to-t from-zinc-950 via-zinc-900 via-80% to-zinc-950 transition-colors group-hover:via-zinc-800"
 	>
 		<!-- Image -->
-		<img src={event.coverImageUrl} alt={`Cover for ${event.title}`} class="w-40 object-cover" />
+		<img src={event.imageUrl} alt={`Cover for ${event.title}`} class="w-40 object-cover" />
 		<!-- Information -->
 		<div
 			class="absolute z-50 h-full w-full bg-black opacity-30 transition-opacity duration-500 group-hover:opacity-0"
