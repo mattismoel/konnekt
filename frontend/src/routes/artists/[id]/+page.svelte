@@ -12,15 +12,17 @@
 <main>
 	<div class="grid min-h-svh grid-cols-2">
 		<div class="relative isolate h-full">
-			<h1 class="absolute top-20 left-16 z-10 w-screen text-9xl font-bold">{artist.name}</h1>
+			<h1 class="absolute top-20 left-24 z-10 w-screen text-9xl font-bold">{artist.name}</h1>
 			<img src={artist.imageUrl} alt="Cover af {artist.name}" class="h-full object-cover" />
 			<Fader direction="left" class="absolute w-64 from-zinc-950" />
 		</div>
-		<article class="prose prose-invert flex flex-col gap-8 px-16 pt-64 pb-16">
-			{@html artist.description}
+		<article class="prose prose-invert flex flex-col gap-8 pt-64 pb-16 pl-24">
+			<div class="flex-1">
+				{@html artist.description}
+			</div>
 			{#if trackId}
-			{@render spotifyPreview(trackId)}
-{/if}
+				{@render spotifyPreview(trackId)}
+			{/if}
 			{@render socials(artist.socials)}
 		</article>
 	</div>
