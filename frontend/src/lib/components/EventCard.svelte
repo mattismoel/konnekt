@@ -4,12 +4,14 @@
 	import CalendarIcon from '~icons/mdi/calendar';
 	import VenueIcon from '~icons/mdi/map-marker';
 	import QRCode from 'qrcode';
+	import type { HTMLAttributes } from 'svelte/elements';
+	import { cn } from '$lib/clsx';
 
-	type Props = {
+	type Props = HTMLAttributes<HTMLDivElement> & {
 		event: Event;
 	};
 
-	const { event }: Props = $props();
+	const { event, ...rest }: Props = $props();
 	const earliestConcert = $derived(event.concerts[0]);
 
 	let ticketCode = Math.floor(10e9 * Math.random());
@@ -25,49 +27,65 @@
 </script>
 
 <a
-	href={`/events/${event.id}`}
-	class="group relative overflow-hidden rounded-md bg-red-500 bg-gradient-to-tr from-zinc-950 to-zinc-900 p-[1px] transition-colors duration-700 hover:to-zinc-700"
+	href="/events/{event.id}"
+	aria-labelledby="title"
+	class="group relative isolate shrink-0 overflow-hidden"
 >
+	{@render holes()}
 	<div
-		class="absolute top-0 right-32 h-12 w-12 -translate-y-1/2 translate-x-1/2 rounded-full border border-zinc-900 bg-black"
+		class="absolute z-50 h-full bg-zinc-950 opacity-30 transition-opacity duration-300 ease-out group-hover:opacity-0"
 	></div>
 	<div
-		class="absolute right-32 bottom-0 h-12 w-12 translate-x-1/2 translate-y-1/2 rounded-full border border-zinc-900 bg-black"
-	></div>
-	<div
-		class="group flex h-40 overflow-hidden rounded-md bg-gradient-to-t from-zinc-950 via-zinc-900 via-80% to-zinc-950 transition-colors group-hover:via-zinc-800"
+		class={cn('h-40 rounded-md bg-gradient-to-tr from-zinc-900 to-zinc-700 p-[1px]', rest.class)}
 	>
-		<!-- Image -->
-		<img src={event.imageUrl} alt={`Cover for ${event.title}`} class="w-40 object-cover" />
-		<!-- Information -->
 		<div
-			class="absolute z-50 h-full w-full bg-black opacity-30 transition-opacity duration-500 group-hover:opacity-0"
-		></div>
-		<div class="flex w-56 flex-col justify-between border-r-2 border-dashed border-zinc-700 p-4">
-			<span class="text-xl font-bold text-zinc-200">{event.title}</span>
-			<div class="space-y-1 text-sm text-zinc-300">
-				<div class="flex gap-2">
-					<span><CalendarIcon /></span>
-					<span>{formatDateStr(earliestConcert.from)}</span>
+			class="zinc-900 flex h-full shrink-0 overflow-hidden rounded-md bg-gradient-to-t from-zinc-950 via-zinc-900 via-80% to-zinc-950"
+		>
+			<img
+				src={event.imageUrl}
+				alt="Cover for {event.title}"
+				class="aspect-square h-full object-cover"
+			/>
+
+			<!-- INFORMATION -->
+			<div
+				class="flex h-full w-full min-w-fit flex-col border-r-[2px] border-dashed border-zinc-700 p-4"
+			>
+				<h3 class="text-xl font-bold text-zinc-300">{event.title}</h3>
+				<div class="flex flex-1 flex-col justify-center text-zinc-400">
+					<div class="flex gap-2">
+						<CalendarIcon />
+						<time>{formatDateStr(earliestConcert.from)}</time>
+					</div>
+					<div class="flex gap-2">
+						<VenueIcon />
+						<address class="not-italic">{event.venue.name}, {event.venue.city}</address>
+					</div>
 				</div>
-				<div class="flex gap-2">
-					<span><VenueIcon /></span>
-					<span>{event.venue.name}, {event.venue.city}</span>
+				<div class="flex flex-col text-xs text-zinc-500">
+					<span><b>Billetnr:</b> {ticketCode}</span>
+					<span class="font-black">KONNEKT&reg;</span>
 				</div>
 			</div>
-			<div class="flex flex-col">
-				<span class="text-xs text-zinc-500"><b>Billetnr.:</b> {ticketCode}</span>
-				<span class="font-black text-zinc-400">KONNEKT</span>
-			</div>
-		</div>
-		<!-- QR -->
-		<div class="*: flex w-32 flex-col items-center justify-center gap-2 px-8 py-2">
-			<span class="text-sm font-bold text-zinc-300">SCAN</span>
-			<canvas bind:this={qrCodeCanvas}></canvas>
-			<div class="flex flex-col items-center text-xs text-zinc-600">
-				<span class="font-bold">Billetnr.:</span>
-				<span>{ticketCode}</span>
+			<div class="flex h-full w-28 shrink-0 flex-col items-center justify-center gap-1 p-3 text-xs">
+				<!-- QR-CODE -->
+				<span><b>SCAN</b></span>
+				<canvas bind:this={qrCodeCanvas}></canvas>
+				<span class="text-center"><b>Billetnr:</b><br />{ticketCode}</span>
 			</div>
 		</div>
 	</div>
 </a>
+
+{#snippet holes()}
+	<div
+		class="absolute top-0 right-28 z-10 h-12 w-12 -translate-y-1/2 translate-x-1/2 rounded-full bg-zinc-800 bg-gradient-to-r from-zinc-700 to-zinc-900 p-[1px]"
+	>
+		<div class="h-full w-full rounded-full bg-zinc-950"></div>
+	</div>
+	<div
+		class="absolute right-28 bottom-0 z-10 h-12 w-12 translate-x-1/2 translate-y-1/2 rounded-full bg-gradient-to-r from-zinc-800 to-zinc-900 p-[1px]"
+	>
+		<div class="h-full w-full rounded-full bg-zinc-950"></div>
+	</div>
+{/snippet}
