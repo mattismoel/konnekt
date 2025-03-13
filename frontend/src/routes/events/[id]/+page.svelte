@@ -6,7 +6,7 @@
 	const { event, recommendedEvents } = $derived(data);
 </script>
 
-<main class="min-h-sub-nav bg-black pb-16 text-white">
+<main class="min-h-sub-nav pb-16 text-white">
 	<EventDetails active {event} />
 	<article class="px-auto prose prose-invert max-w-none pt-20 pb-16 text-gray-400">
 		{@html event.description}
