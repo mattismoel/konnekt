@@ -34,10 +34,13 @@
 >
 	{@render holes()}
 	<div
-		class="absolute z-50 h-full w-full bg-zinc-950 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-0 md:opacity-30"
+		class="absolute z-50 h-full w-full bg-zinc-950 opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-0 md:opacity-30"
 	></div>
 	<div
-		class={cn('h-40 rounded-md bg-gradient-to-tr from-zinc-900 to-zinc-700 p-[1px]', rest.class)}
+		class={cn(
+			'h-40 rounded-md bg-gradient-to-tr from-zinc-900 to-zinc-800 p-[1px] transition-colors duration-500 group-hover:to-zinc-700',
+			rest.class
+		)}
 	>
 		<div
 			class="zinc-900 flex h-full shrink-0 overflow-hidden rounded-md bg-gradient-to-t from-zinc-950 via-zinc-900 via-80% to-zinc-950"
