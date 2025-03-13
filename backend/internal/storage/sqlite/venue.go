@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/mattismoel/konnekt/internal/domain/venue"
+	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type Venue struct {
@@ -30,32 +31,32 @@ type VenueQueryParams struct {
 	QueryParams
 }
 
-func (repo VenueRepository) List(ctx context.Context, offset, limit int) ([]venue.Venue, int, error) {
+func (repo VenueRepository) List(ctx context.Context, q venue.Query) (query.ListResult[venue.Venue], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[venue.Venue]{}, err
 	}
 
 	defer tx.Rollback()
 
 	dbVenues, err := listVenues(ctx, tx, VenueQueryParams{
 		QueryParams: QueryParams{
-			Offset: offset,
-			Limit:  limit,
+			Offset: q.Offset(),
+			Limit:  q.Limit,
 		},
 	})
 
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[venue.Venue]{}, err
 	}
 
 	totalCount, err := venueCount(ctx, tx)
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[venue.Venue]{}, err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, 0, err
+		return query.ListResult[venue.Venue]{}, err
 	}
 
 	venues := make([]venue.Venue, 0)
@@ -63,7 +64,13 @@ func (repo VenueRepository) List(ctx context.Context, offset, limit int) ([]venu
 		venues = append(venues, dbVenue.ToInternal())
 	}
 
-	return venues, totalCount, nil
+	return query.ListResult[venue.Venue]{
+		Page:       q.Page,
+		PerPage:    q.PerPage,
+		TotalCount: totalCount,
+		PageCount:  q.PageCount(totalCount),
+		Records:    venues,
+	}, nil
 }
 
 func (repo VenueRepository) ByID(ctx context.Context, venueID int64) (venue.Venue, error) {

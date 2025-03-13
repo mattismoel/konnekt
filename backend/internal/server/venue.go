@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mattismoel/konnekt/internal/domain/venue"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -13,7 +14,7 @@ func (s Server) handleListVenues() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		result, err := s.venueService.List(ctx, service.VenueListQuery{
+		result, err := s.venueService.List(ctx, venue.Query{
 			ListQuery: NewListQueryFromRequest(r),
 		})
 

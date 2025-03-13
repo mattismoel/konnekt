@@ -50,14 +50,6 @@ type UpdateArtist struct {
 	Socials     []string
 }
 
-type ArtistListQuery struct {
-	query.ListQuery
-}
-
-type GenreListQuery struct {
-	query.ListQuery
-}
-
 func (s ArtistService) ByID(ctx context.Context, artistID int64) (artist.Artist, error) {
 	a, err := s.artistRepo.ByID(ctx, artistID)
 	if err != nil {
@@ -67,19 +59,13 @@ func (s ArtistService) ByID(ctx context.Context, artistID int64) (artist.Artist,
 	return a, nil
 }
 
-func (s ArtistService) List(ctx context.Context, q ArtistListQuery) (query.ListResult[artist.Artist], error) {
-	artists, totalCount, err := s.artistRepo.List(ctx, q.Offset(), q.Limit)
+func (s ArtistService) List(ctx context.Context, q artist.Query) (query.ListResult[artist.Artist], error) {
+	result, err := s.artistRepo.List(ctx, q)
 	if err != nil {
 		return query.ListResult[artist.Artist]{}, err
 	}
 
-	return query.ListResult[artist.Artist]{
-		Records:    artists,
-		TotalCount: totalCount,
-		Page:       q.Page,
-		PerPage:    q.PerPage,
-		PageCount:  q.PageCount(totalCount),
-	}, nil
+	return result, nil
 }
 
 func (s ArtistService) SetImage(ctx context.Context, artistID int64, fileName string, file io.ReadCloser) (string, error) {
@@ -203,19 +189,13 @@ func (s ArtistService) Delete(ctx context.Context, artistID int64) error {
 	return nil
 }
 
-func (s ArtistService) ListGenres(ctx context.Context, q GenreListQuery) (query.ListResult[artist.Genre], error) {
-	genres, totalCount, err := s.artistRepo.ListGenres(ctx, q.Offset(), q.Limit)
+func (s ArtistService) ListGenres(ctx context.Context, q artist.GenreQuery) (query.ListResult[artist.Genre], error) {
+	result, err := s.artistRepo.ListGenres(ctx, q)
 	if err != nil {
 		return query.ListResult[artist.Genre]{}, err
 	}
 
-	return query.ListResult[artist.Genre]{
-		Page:       q.Page,
-		PerPage:    q.PerPage,
-		PageCount:  q.PageCount(totalCount),
-		TotalCount: totalCount,
-		Records:    genres,
-	}, nil
+	return result, nil
 }
 
 func (s ArtistService) CreateGenre(ctx context.Context, name string) (int64, error) {

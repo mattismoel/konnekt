@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
+	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type Artist struct {
@@ -39,10 +40,10 @@ func NewArtistRepository(db *sql.DB) (*ArtistRepository, error) {
 	}, nil
 }
 
-func (repo ArtistRepository) List(ctx context.Context, offset, limit int) ([]artist.Artist, int, error) {
+func (repo ArtistRepository) List(ctx context.Context, q artist.Query) (query.ListResult[artist.Artist], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[artist.Artist]{}, err
 	}
 
 	defer tx.Rollback()
@@ -51,13 +52,13 @@ func (repo ArtistRepository) List(ctx context.Context, offset, limit int) ([]art
 
 	dbArtists, err := listArtists(ctx, tx)
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[artist.Artist]{}, err
 	}
 
 	for _, dbArtist := range dbArtists {
 		dbGenres, err := artistGenres(ctx, tx, dbArtist.ID)
 		if err != nil {
-			return nil, 0, err
+			return query.ListResult[artist.Artist]{}, err
 		}
 
 		genres := make([]artist.Genre, 0)
@@ -70,7 +71,7 @@ func (repo ArtistRepository) List(ctx context.Context, offset, limit int) ([]art
 
 		dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
 		if err != nil {
-			return nil, 0, err
+			return query.ListResult[artist.Artist]{}, err
 		}
 
 		socials := make([]artist.Social, 0)
@@ -83,14 +84,20 @@ func (repo ArtistRepository) List(ctx context.Context, offset, limit int) ([]art
 
 	totalCount, err := artistCount(ctx, tx)
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[artist.Artist]{}, err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, 0, err
+		return query.ListResult[artist.Artist]{}, err
 	}
 
-	return artists, totalCount, nil
+	return query.ListResult[artist.Artist]{
+		Page:       q.Page,
+		PerPage:    q.PerPage,
+		TotalCount: totalCount,
+		PageCount:  q.PageCount(totalCount),
+		Records:    artists,
+	}, nil
 }
 
 func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64, error) {

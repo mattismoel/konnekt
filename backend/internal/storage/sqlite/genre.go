@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
+	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type Genre struct {
@@ -36,22 +37,22 @@ func (repo ArtistRepository) InsertGenre(ctx context.Context, name string) (int6
 	return genreID, nil
 }
 
-func (repo ArtistRepository) ListGenres(ctx context.Context, limit, offset int) ([]artist.Genre, int, error) {
+func (repo ArtistRepository) ListGenres(ctx context.Context, q artist.GenreQuery) (query.ListResult[artist.Genre], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[artist.Genre]{}, err
 	}
 
 	defer tx.Rollback()
 
 	dbGenres, err := listGenres(ctx, tx, GenreQueryParams{
 		QueryParams: QueryParams{
-			Offset: offset, Limit: limit,
+			Offset: q.Offset(), Limit: q.Limit,
 		},
 	})
 
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[artist.Genre]{}, err
 	}
 
 	genres := make([]artist.Genre, 0)
@@ -64,14 +65,20 @@ func (repo ArtistRepository) ListGenres(ctx context.Context, limit, offset int) 
 
 	totalCount, err := genreCount(ctx, tx)
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[artist.Genre]{}, err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, 0, err
+		return query.ListResult[artist.Genre]{}, err
 	}
 
-	return genres, totalCount, nil
+	return query.ListResult[artist.Genre]{
+		Page:       q.Page,
+		PerPage:    q.PerPage,
+		TotalCount: totalCount,
+		PageCount:  q.PageCount(totalCount),
+		Records:    genres,
+	}, nil
 }
 
 func (repo ArtistRepository) GenreByID(ctx context.Context, genreID int64) (artist.Genre, error) {

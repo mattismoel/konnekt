@@ -219,16 +219,10 @@ func (s EventService) UploadImage(ctx context.Context, fileName string, r io.Rea
 }
 
 func (s EventService) List(ctx context.Context, q event.Query) (query.ListResult[event.Event], error) {
-	events, totalCount, err := s.eventRepo.List(ctx, q)
+	result, err := s.eventRepo.List(ctx, q)
 	if err != nil {
 		return query.ListResult[event.Event]{}, err
 	}
 
-	return query.ListResult[event.Event]{
-		Page:       q.Page,
-		PerPage:    q.PerPage,
-		TotalCount: totalCount,
-		PageCount:  q.PageCount(totalCount),
-		Records:    events,
-	}, nil
+	return result, nil
 }

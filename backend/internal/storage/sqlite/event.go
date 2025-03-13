@@ -10,6 +10,7 @@ import (
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
+	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type EventRepository struct {
@@ -199,10 +200,10 @@ type EventQueryParams struct {
 	ArtistIDs []int64
 }
 
-func (repo EventRepository) List(ctx context.Context, q event.Query) ([]event.Event, int, error) {
+func (repo EventRepository) List(ctx context.Context, q event.Query) (query.ListResult[event.Event], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[event.Event]{}, err
 	}
 
 	defer tx.Rollback()
@@ -219,12 +220,12 @@ func (repo EventRepository) List(ctx context.Context, q event.Query) ([]event.Ev
 	)
 
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[event.Event]{}, err
 	}
 
 	totalCount, err := eventCount(ctx, tx)
 	if err != nil {
-		return nil, 0, err
+		return query.ListResult[event.Event]{}, err
 	}
 
 	events := make([]event.Event, 0)
@@ -232,19 +233,19 @@ func (repo EventRepository) List(ctx context.Context, q event.Query) ([]event.Ev
 	for _, dbEvent := range dbEvents {
 		dbVenue, err := venueByID(ctx, tx, dbEvent.VenueID)
 		if err != nil {
-			return nil, 0, err
+			return query.ListResult[event.Event]{}, err
 		}
 
 		venue := dbVenue.ToInternal()
 
 		dbConcerts, err := eventConcerts(ctx, tx, dbEvent.ID)
 		if err != nil {
-			return nil, 0, err
+			return query.ListResult[event.Event]{}, err
 		}
 
 		concerts, err := dbConcerts.Internalize(ctx, tx)
 		if err != nil {
-			return nil, 0, err
+			return query.ListResult[event.Event]{}, err
 		}
 
 		event := dbEvent.ToInternal(venue, concerts)
@@ -252,10 +253,16 @@ func (repo EventRepository) List(ctx context.Context, q event.Query) ([]event.Ev
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, 0, err
+		return query.ListResult[event.Event]{}, err
 	}
 
-	return events, totalCount, nil
+	return query.ListResult[event.Event]{
+		Page:       q.Page,
+		PerPage:    q.PerPage,
+		TotalCount: totalCount,
+		PageCount:  q.PageCount(totalCount),
+		Records:    events,
+	}, nil
 }
 
 func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {

@@ -14,10 +14,8 @@ func (s Server) handleListArtists() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		q := NewListQueryFromRequest(r)
-
-		result, err := s.artistService.List(ctx, service.ArtistListQuery{
-			ListQuery: q,
+		result, err := s.artistService.List(ctx, artist.Query{
+			ListQuery: NewListQueryFromRequest(r),
 		})
 
 		if err != nil {
@@ -189,7 +187,7 @@ func (s Server) handleListGenres() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		result, err := s.artistService.ListGenres(ctx, service.GenreListQuery{
+		result, err := s.artistService.ListGenres(ctx, artist.GenreQuery{
 			ListQuery: NewListQueryFromRequest(r),
 		})
 
