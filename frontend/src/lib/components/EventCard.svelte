@@ -33,7 +33,7 @@
 >
 	{@render holes()}
 	<div
-		class="absolute z-50 h-full w-full bg-zinc-950 opacity-20 transition-opacity duration-300 ease-out group-hover:opacity-0"
+		class="absolute z-50 h-full w-full bg-zinc-950 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-0 md:opacity-30"
 	></div>
 	<div
 		class={cn('h-40 rounded-md bg-gradient-to-tr from-zinc-900 to-zinc-700 p-[1px]', rest.class)}
