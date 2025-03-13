@@ -9,7 +9,7 @@
 	);
 </script>
 
-<div>
+<div class="max-w-xl">
 	<iframe
 		{src}
 		title="Audio preview"
