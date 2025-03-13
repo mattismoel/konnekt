@@ -1,4 +1,5 @@
 <script>
+	import Logo from '$lib/assets/Logo.svelte';
 	let { children } = $props();
 	import '../app.css';
 </script>
@@ -11,7 +12,9 @@
 	<nav
 		class="h-nav absolute z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/65 px-8"
 	>
-		<a href="/" class="font-black">KONNEKT&reg;</a>
+		<a href="/">
+			<Logo class="h-3" />
+		</a>
 		<ul class="*:hover:text-text hidden items-center gap-6 text-zinc-50 sm:flex">
 			<li><a href="/events">Events</a></li>
 			<li><a href="/artists">Kunstnere</a></li>
@@ -37,7 +40,7 @@
 			</div>
 			<!-- CONTACT INFORMATION -->
 			<div class="flex flex-1 flex-col items-end">
-				<h3 class="mb-2 font-black">KONNEKT&reg;</h3>
+				<Logo class="mb-2 h-4" />
 				<address class="not-italic">
 					<ul class="text-text/50 flex flex-col items-end">
 						<a href="tel:+4512345678">+45 12 34 56 78</a>

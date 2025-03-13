@@ -6,6 +6,7 @@
 	import QRCode from 'qrcode';
 	import type { HTMLAttributes } from 'svelte/elements';
 	import { cn } from '$lib/clsx';
+	import Logo from '$lib/assets/Logo.svelte';
 
 	type Props = HTMLAttributes<HTMLDivElement> & {
 		event: Event;
@@ -62,9 +63,9 @@
 						<address class="not-italic">{event.venue.name}, {event.venue.city}</address>
 					</div>
 				</div>
-				<div class="flex flex-col text-xs text-zinc-500">
+				<div class="flex flex-col gap-1 text-xs text-zinc-500">
 					<span><b>Billetnr:</b> {ticketCode}</span>
-					<span class="font-black">KONNEKT&reg;</span>
+					<Logo />
 				</div>
 			</div>
 			<div class="flex h-full w-28 shrink-0 flex-col items-center justify-center gap-1 p-3 text-xs">

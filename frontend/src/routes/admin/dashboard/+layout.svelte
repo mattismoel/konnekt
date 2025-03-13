@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Logo from '$lib/assets/Logo.svelte';
 	import { cn } from '$lib/clsx';
 	import Card from '$lib/components/ui/Card.svelte';
 	import type { User } from '$lib/user';
@@ -17,7 +18,7 @@
 {#snippet sidebar()}
 	<Card class="flex flex-col p-4">
 		<div class="flex flex-1 flex-col p-4">
-			<span class="mb-4 text-xl font-black">KONNEKT&reg;</span>
+			<Logo class="mb-6 h-5" />
 			<ul class="flex-1 space-y-2">
 				{@render sidebarEntry('Events.', '/admin/dashboard/events')}
 				{@render sidebarEntry('Kunstenre.', '/admin/dashboard/artists')}
