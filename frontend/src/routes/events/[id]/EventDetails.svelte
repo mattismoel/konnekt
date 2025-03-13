@@ -7,6 +7,7 @@
 	import { formatDateStr } from '$lib/time';
 	import type { Event } from '$lib/event';
 	import { earliestConcert } from '$lib/concert';
+	import Fader from '$lib/components/ui/Fader.svelte';
 
 	type Props = {
 		event: Event;
@@ -26,7 +27,7 @@
 		class="absolute top-0 left-0 h-full w-full object-cover"
 	/>
 	<!-- FADER -->
-	<!-- <Fader direction="to-bottom" /> -->
+	<Fader direction="up" class="absolute h-96 from-zinc-950" />
 	<div class="px-auto absolute bottom-0 left-0 w-full space-y-2 px-12 pb-12">
 		<h1 class="mb-8 w-full text-5xl font-bold md:text-8xl">{event?.title}</h1>
 		<div class="flex w-full items-end gap-8">
