@@ -12,7 +12,7 @@
 		class="h-nav absolute z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/65 px-8"
 	>
 		<a href="/" class="font-black">KONNEKT&reg;</a>
-		<ul class="*:hover:text-text hidden gap-6 text-zinc-50 sm:flex">
+		<ul class="*:hover:text-text hidden items-center gap-6 text-zinc-50 sm:flex">
 			<li><a href="/events">Events</a></li>
 			<li><a href="/artists">Kunstnere</a></li>
 			<li><a href="/sponsorer">Sponsorer</a></li>
