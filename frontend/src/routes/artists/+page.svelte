@@ -9,22 +9,24 @@
 	let selectedArtist = $state<Artist | null>(null);
 </script>
 
-<main class="isolate h-svh">
-	<div class="px-auto z-50 h-full w-full pt-20">
-		<h1 class="mb-8 text-7xl font-bold">Kunstnere.</h1>
-
-		<!-- ARTISTS -->
-		<ul class="divide-text/50 max-h-96 divide-y overflow-y-scroll">
-			{#each artists as artist (artist.id)}
-				{@render entry(artist)}
-			{/each}
-		</ul>
-	</div>
+<main class="px-auto isolate h-svh pt-20">
+	<img
+		src={selectedArtist?.imageUrl}
+		alt=""
+		class="pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover brightness-80"
+	/>
+	<h1 class="mb-8 text-7xl font-bold">Kunstnere.</h1>
+	<!-- ARTISTS -->
+	<ul class="divide-text/50 max-h-96 divide-y overflow-y-scroll">
+		{#each artists as artist (artist.id)}
+			{@render entry(artist)}
+		{/each}
+	</ul>
 </main>
 
 {#snippet entry(artist: Artist)}
 	<li
-		class="hover:bg-text group hover:text-zinc-900"
+		class="hover:bg-text group transition-colors hover:text-zinc-900"
 		onmouseenter={(_) => (selectedArtist = artist)}
 		onmouseleave={(_) => (selectedArtist = null)}
 	>
