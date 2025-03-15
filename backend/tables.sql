@@ -41,6 +41,7 @@ CREATE TABLE event (
   id INTEGER PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT NOT NULL,
+  ticket_url TEXT NOT NULL,
   image_url TEXT NOT NULL,
   venue_id INTEGER NOT NULL,
 

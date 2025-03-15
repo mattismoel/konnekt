@@ -9,6 +9,7 @@ export const eventSchema = z.object({
 	id: z.number().positive(),
 	title: z.string().nonempty(),
 	description: z.string().nonempty(),
+	ticketUrl: z.string().url(),
 	imageUrl: z.string().optional().or(z.string().url().optional()),
 	concerts: concertSchema.array(),
 	venue: venueSchema
@@ -17,6 +18,7 @@ export const eventSchema = z.object({
 export const eventForm = z.object({
 	title: z.string().nonempty({ message: "Eventtitel skal være defineret" }),
 	description: z.string().nonempty({ message: "Eventbeskrivelse skal være defineret" }),
+	ticketUrl: z.string().nonempty({ message: "Billet-URL skal være defineret" }),
 	image: z.instanceof(File).nullable(),
 	venueId: z.number().positive(),
 	concerts: concertForm.array().min(1, { message: "Et event skal have mindst én koncert" })

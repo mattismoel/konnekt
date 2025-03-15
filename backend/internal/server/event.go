@@ -124,6 +124,7 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 		Title       string              `json:"title"`
 		Description string              `json:"description"`
 		ImageURL    string              `json:"imageUrl"`
+		TicketURL   string              `json:"ticketUrl"`
 		VenueID     int64               `json:"venueId"`
 		Concerts    []createConcertLoad `json:"concerts"`
 	}
@@ -149,6 +150,7 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 		e, err := s.eventService.Create(r.Context(), service.CreateEvent{
 			Title:       load.Title,
 			Description: load.Description,
+			TicketURL:   load.TicketURL,
 			ImageURL:    load.ImageURL,
 			VenueID:     load.VenueID,
 			Concerts:    concerts,
@@ -173,6 +175,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 	type updateEventLoad struct {
 		Title       string              `json:"title"`
 		Description string              `json:"description"`
+		TicketURL   string              `json:"ticketURL"`
 		ImageURL    string              `json:"imageUrl"`
 		Concerts    []updateConcertLoad `json:"concerts"`
 		VenueID     int64               `json:"venueId"`
@@ -208,6 +211,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 		e, err := s.eventService.Update(ctx, int64(eventID), service.UpdateEvent{
 			Title:       load.Title,
 			Description: load.Description,
+			TicketURL:   load.TicketURL,
 			ImageURL:    load.ImageURL,
 			VenueID:     load.VenueID,
 			Concerts:    concerts,

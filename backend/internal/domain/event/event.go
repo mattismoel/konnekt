@@ -15,12 +15,16 @@ var (
 	ErrEmptyDescription     = errors.New("Event description must not be empty")
 	ErrInvalidImageURL      = errors.New("Event image URL must be valid")
 	ErrImageURLInaccessible = errors.New("Image URL must be accessible")
+
+	ErrTicketURLInvalid      = errors.New("Ticket URL must be valid")
+	ErrTicketURLInaccessible = errors.New("Ticket URL must be accessible")
 )
 
 type Event struct {
 	ID          int64             `json:"id"`
 	Title       string            `json:"title"`
 	Description string            `json:"description"`
+	TicketURL   string            `json:"ticketUrl"`
 	ImageURL    string            `json:"imageUrl"`
 	Venue       venue.Venue       `json:"venue"`
 	Concerts    []concert.Concert `json:"concerts"`
@@ -84,6 +88,27 @@ func WithDescription(description string) CfgFunc {
 
 		e.Description = description
 
+		return nil
+	}
+}
+
+func WithTicketURL(u string) CfgFunc {
+	return func(e *Event) error {
+		url, err := url.ParseRequestURI(u)
+		if err != nil {
+			return ErrTicketURLInvalid
+		}
+
+		resp, err := http.Get(url.String())
+		if err != nil {
+			return ErrTicketURLInaccessible
+		}
+
+		if !(resp.StatusCode >= 200) || !(resp.StatusCode < 400) {
+			return ErrTicketURLInaccessible
+		}
+
+		e.TicketURL = u
 		return nil
 	}
 }

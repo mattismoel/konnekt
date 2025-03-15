@@ -41,6 +41,7 @@ func NewEventService(
 type CreateEvent struct {
 	Title       string
 	Description string
+	TicketURL   string
 	ImageURL    string
 	VenueID     int64
 	Concerts    []CreateConcert
@@ -90,6 +91,7 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (event.Event
 	e, err := event.NewEvent(
 		event.WithTitle(load.Title),
 		event.WithDescription(load.Description),
+		event.WithTicketURL(load.TicketURL),
 		event.WithVenue(venue),
 		event.WithImageURL(load.ImageURL),
 		event.WithConcerts(concerts...),
@@ -121,6 +123,7 @@ type UpdateConcert struct {
 type UpdateEvent struct {
 	Title       string
 	Description string
+	TicketURL   string
 	ImageURL    string
 	VenueID     int64
 	Concerts    []UpdateConcert
@@ -163,6 +166,7 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 		event.WithID(eventID),
 		event.WithTitle(load.Title),
 		event.WithDescription(load.Description),
+		event.WithTicketURL(load.TicketURL),
 		event.WithConcerts(concerts...),
 		event.WithVenue(venue),
 	)
