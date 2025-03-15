@@ -1,15 +1,13 @@
 <script lang="ts">
 	import { cn } from '$lib/clsx';
-	import type { Event } from '$lib/event';
-	import EventCard from './EventCard.svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 	import Fader from './ui/Fader.svelte';
 
-	type Props = {
+	type Props = HTMLAttributes<HTMLDivElement> & {
 		title?: string;
-		events: Event[];
 	};
 
-	let { events }: Props = $props();
+	let { children }: Props = $props();
 
 	let scrollX = $state(0);
 	let inner: HTMLDivElement;
@@ -47,8 +45,6 @@
 		class="flex w-full gap-4 overflow-x-scroll"
 		onscroll={(e) => updateScroll(e.currentTarget.scrollLeft)}
 	>
-		{#each events as event (event.id)}
-			<EventCard {event} />
-		{/each}
+		{@render children?.()}
 	</div>
 </div>

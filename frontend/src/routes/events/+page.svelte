@@ -1,6 +1,6 @@
 <script lang="ts">
+	import Caroussel from '$lib/components/Caroussel.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
-	import EventCaroussel from '$lib/components/EventCaroussel.svelte';
 
 	let { data } = $props();
 	let { events } = $derived(data);
@@ -9,6 +9,10 @@
 <main class="min-h-sub-nav pt-20">
 	<div class="px-auto">
 		<h1 class="mb-4 text-3xl font-bold">Events.</h1>
-		<EventCaroussel {events} />
+		<Caroussel>
+			{#each events as event (event.id)}
+				<EventCard {event} />
+			{/each}
+		</Caroussel>
 	</div>
 </main>

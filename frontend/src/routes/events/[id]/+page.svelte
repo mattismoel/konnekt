@@ -1,5 +1,6 @@
 <script lang="ts">
-	import EventCaroussel from '$lib/components/EventCaroussel.svelte';
+	import Caroussel from '$lib/components/Caroussel.svelte';
+	import EventCard from '$lib/components/EventCard.svelte';
 	import EventDetails from './EventDetails.svelte';
 
 	const { data } = $props();
@@ -12,6 +13,10 @@
 		{@html event.description}
 	</article>
 	<div class="px-auto">
-		<EventCaroussel title="Se også." events={recommendedEvents} />
+		<Caroussel>
+			{#each recommendedEvents as event (event.id)}
+				<EventCard {event} />
+			{/each}
+		</Caroussel>
 	</div>
 </main>

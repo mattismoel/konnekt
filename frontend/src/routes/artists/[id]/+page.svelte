@@ -1,5 +1,6 @@
 <script lang="ts">
-	import EventCaroussel from '$lib/components/EventCaroussel.svelte';
+	import Caroussel from '$lib/components/Caroussel.svelte';
+	import EventCard from '$lib/components/EventCard.svelte';
 	import SpotifyPreview from '$lib/components/SpotifyPreview.svelte';
 	import Fader from '$lib/components/ui/Fader.svelte';
 	import { socialUrlToIcon } from '$lib/social';
@@ -52,7 +53,11 @@
 
 			{#if events.length > 0}
 				<h1 class="text-2xl font-bold">Kommende events.</h1>
-				<EventCaroussel {events} />
+				<Caroussel>
+					{#each events as event (event.id)}
+						<EventCard {event} />
+					{/each}
+				</Caroussel>
 			{/if}
 		</article>
 	</div>
