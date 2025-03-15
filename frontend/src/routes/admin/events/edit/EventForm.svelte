@@ -31,6 +31,7 @@
 	let form = $state<z.infer<typeof extendedForm>>({
 		title: event?.title || '',
 		description: event?.description || '',
+		ticketUrl: event?.ticketUrl || '',
 		venueId: event?.venue.id || 1,
 		image: null,
 		concerts:
@@ -112,6 +113,11 @@
 					<FieldError errors={formError?.flatten().fieldErrors['venueId']} />
 				</div>
 			</div>
+			<Input
+				errors={formError?.flatten().fieldErrors['ticketUrl']}
+				label="Billet-URL"
+				bind:value={form.ticketUrl}
+			/>
 			<Input
 				errors={formError?.flatten().fieldErrors['description']}
 				label="Beskrivelse"
