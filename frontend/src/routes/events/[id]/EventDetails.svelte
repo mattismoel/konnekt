@@ -30,7 +30,7 @@
 	<Fader direction="up" class="absolute h-96 from-zinc-950" />
 	<div class="px-auto absolute bottom-0 left-0 w-full space-y-2 px-12 pb-12">
 		<h1 class="mb-8 w-full text-5xl font-bold md:text-8xl">{event?.title}</h1>
-		<div class="flex w-full items-end gap-8">
+		<div class="flex w-full flex-col items-end gap-8 md:flex-row">
 			<div class="w-full space-y-1 text-zinc-300">
 				<div class="flex items-center gap-2">
 					<CalendarIcon />
@@ -49,10 +49,14 @@
 					<address class="not-italic">{event.venue.name}, {event.venue.city}</address>
 				</div>
 			</div>
-			<div class="w-96 space-y-2">
-				<Button expandX expandY class="h-18">Køb billet</Button>
+			<div class="w-full space-y-2 md:w-96">
+				<form action={event.ticketUrl}>
+					<Button type="submit" expandX expandY class="h-18">Køb billet</Button>
+				</form>
 				{#if !active}
-					<Button variant="secondary" expandX expandY class="h-18">Læs mere</Button>
+					<form action="/events/{event.id}">
+						<Button type="submit" variant="secondary" expandX expandY class="h-18">Læs mere</Button>
+					</form>
 				{/if}
 			</div>
 		</div>
