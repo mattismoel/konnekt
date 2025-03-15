@@ -9,7 +9,7 @@
 
 <main class="min-h-sub-nav pb-16 text-white">
 	<EventDetails active {event} />
-	<article class="px-auto prose prose-invert max-w-none pt-20 pb-16 text-gray-400">
+	<article class="px-auto prose prose-invert max-w-none pt-8 pb-16 text-gray-400">
 		{@html event.description}
 	</article>
 	<div class="px-auto">
