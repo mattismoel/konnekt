@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Artist } from '$lib/artist.js';
+	import { cn } from '$lib/clsx.js';
 	import { socialUrlToIcon } from '$lib/social.js';
+	import { fade } from 'svelte/transition';
 
 	let { data } = $props();
 
@@ -10,11 +12,14 @@
 </script>
 
 <main class="px-auto isolate h-svh pt-20">
-	<img
-		src={selectedArtist?.imageUrl}
-		alt=""
-		class="pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover brightness-80"
-	/>
+	{#each artists as artist (artist.id)}
+		<img
+			src={artist.imageUrl}
+			alt={artist.name}
+			class:opacity-100={selectedArtist?.id === artist.id}
+			class="pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-75 transition-opacity duration-300"
+		/>
+	{/each}
 	<h1 class="mb-8 text-7xl font-bold">Kunstnere.</h1>
 	<!-- ARTISTS -->
 	<ul class="divide-text/50 max-h-96 divide-y overflow-y-scroll">
