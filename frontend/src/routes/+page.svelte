@@ -1,9 +1,9 @@
 <script lang="ts">
+	import LandingImage from '$lib/assets/landing.jpg';
 	import Caroussel from '$lib/components/Caroussel.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
 	import LogoScroller from '$lib/components/ui/LogoScroller.svelte';
 	import RightArrowIcon from '~icons/mdi/arrow-right';
-	import LandingImage from '$lib/assets/landing.jpg';
 
 	import OdenseKommuneLogo from '$lib/assets/OdenseKommuneLogo.svg';
 	import UngOdenseLogo from '$lib/assets/ungodense.svg';
