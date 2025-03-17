@@ -5,7 +5,7 @@
 	let { ...rest }: HTMLAttributes<SVGSVGElement> = $props();
 </script>
 
-<div class={cn('fill-text', rest.class)}>
+<div class={cn('fill-text w-min', rest.class)}>
 	<svg
 		viewBox="0 0 138 24"
 		class="h-3 w-min fill-current"
