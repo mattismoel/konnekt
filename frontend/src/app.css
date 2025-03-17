@@ -8,8 +8,20 @@
   --color-text: var(--color-zinc-100);
   --spacing-sub-nav: calc(100svh - var(--spacing-nav));
   --font-sans: "Poppins", "sans-serif";
+
+  --animate-slide: slide 30s linear infinite;
 }
 
 .px-auto {
   @apply px-6 sm:px-8 md:px-16 lg:px-48;
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
 }
