@@ -50,7 +50,9 @@
 		/>
 		<div class="flex flex-col text-sm">
 			<span class="line-clamp-1">{user.firstName} {user.lastName}</span>
-			<p class="line-clamp-1 text-zinc-500">{roles.map((r) => r.displayName).join(', ')}</p>
+			<p title={roles.map((r) => r.displayName).join(', ')} class="line-clamp-1 text-zinc-500">
+				{roles.map((r) => r.displayName).join(', ')}
+			</p>
 		</div>
 		<a href={`/admin/dashboard/user/${user.id}`}>
 			<SettingsIcon class="text-zinc-500 hover:text-zinc-300" />
