@@ -2,20 +2,80 @@
 	import Caroussel from '$lib/components/Caroussel.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
 	import LogoScroller from '$lib/components/ui/LogoScroller.svelte';
-	import EventDetails from './events/[id]/EventDetails.svelte';
+	import RightArrowIcon from '~icons/mdi/arrow-right';
+	import LandingImage from '$lib/assets/landing.jpg';
 
-	import AlbaniLogo from '$lib/assets/AlbaniLogo.svg';
-	import MomentumLogo from '$lib/assets/MomentumLogo.svg';
 	import OdenseKommuneLogo from '$lib/assets/OdenseKommuneLogo.svg';
+	import UngOdenseLogo from '$lib/assets/ungodense.svg';
+	import PostenLogo from '$lib/assets/posten.svg';
+	import KulturMaskinenLogo from '$lib/assets/kulturmaskinen.svg';
+	import SpillestedetOdenseLogo from '$lib/assets/spillestedet-odense.svg';
+
+	import Button from '$lib/components/ui/Button.svelte';
+	import Fader from '$lib/components/ui/Fader.svelte';
 
 	let { data } = $props();
 	let { events } = $derived(data);
 </script>
 
 <div>
-	{#if events.length > 0}
-		<EventDetails event={events[0]} />
-	{/if}
+	<section class="px-auto isolate flex h-svh flex-col justify-center gap-16">
+		<img
+			src={LandingImage}
+			alt=""
+			class="absolute top-0 left-0 -z-50 h-full w-full object-cover brightness-50"
+		/>
+		<section class="flex max-w-lg flex-col gap-8">
+			<h2 class="text-5xl">For et stærkere <b>fynsk musisk vækstlag</b></h2>
+			<p class="text-text/75">
+				En forening med formål, at støtte det lokale fynske musiske vækstlag og give aspirerende
+				musikere et springbræt til den danske musikscene.
+			</p>
+			<div class="flex w-full flex-col-reverse gap-4 sm:flex-row">
+				<Button variant="secondary" class="h-16 w-full sm:w-fit">Læs mere</Button>
+				<form action="/events">
+					<Button type="submit" class="group h-16 w-full items-center gap-2 sm:w-fit">
+						Se events
+						<RightArrowIcon class="transition-transform group-hover:translate-x-2" />
+					</Button>
+				</form>
+			</div>
+		</section>
+	</section>
+	<section class="px-auto space-y-8 bg-zinc-900 py-16">
+		<section>
+			<h1 class="mb-8 text-2xl font-bold">Vores mission</h1>
+			<p class="text-text/75">
+				Foreningen Konnekt har som formål at støtte unge musikere og skabe en platform, hvor de kan
+				vise deres talent frem og få vigtig erfaring med liveoptrædener. Projektet skal gøre det
+				nemmere for spirende talenter at finde deres plads i musikmiljøet og opbygge et publikum.
+				<br />
+				<br />
+				Samtidig ønsker vi at give publikum – især unge – mulighed for at opdage nye kunstnere i genrer,
+				de allerede har stiftet bekendtskab med før. Derudover vil vi styrke musikmiljøet i Odense ved
+				at skabe et fællesskab mellem nye og mere erfarne upcoming kunstnere, som kan dele erfaringer,
+				inspirere hinanden og måske endda finde samarbejdspartnere. På den måde skaber Konnekt ikke kun
+				koncertoplevelser, men også en grobund for kreativ udvikling og vækst i den lokale kultur.
+			</p>
+		</section>
+		<section class="flex w-full flex-col gap-8">
+			<span class="font-bold">Med støtte fra</span>
+			<div class="relative isolate w-full">
+				<Fader direction="right" class="absolute z-50 w-32 from-zinc-900" />
+				<Fader direction="left" class="absolute z-50 w-32 from-zinc-900" />
+				<LogoScroller
+					class="h-10 w-full"
+					srcs={new Map<string, string>([
+						['Spillestedet Odense', SpillestedetOdenseLogo],
+						['UngOdense', UngOdenseLogo],
+						['Posten', PostenLogo],
+						['Kulturmaskinen', KulturMaskinenLogo],
+						['Odense Kommune', OdenseKommuneLogo]
+					])}
+				/>
+			</div>
+		</section>
+	</section>
 	<section class="px-auto py-16">
 		<h1 class="mb-8 text-2xl font-bold">Kommende events</h1>
 		<Caroussel>
@@ -23,28 +83,5 @@
 				<EventCard {event} />
 			{/each}
 		</Caroussel>
-	</section>
-	<section class="px-auto space-y-8 bg-zinc-900 py-16">
-		<section>
-			<h1 class="mb-8 text-2xl font-bold">Vores mission</h1>
-			<p class="text-text/75">
-				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam tincidunt ultrices magna
-				vitae tristique. Morbi ultricies ante molestie ipsum tempus, eget commodo mauris interdum.
-				Fusce fringilla nisi vel nisl gravida finibus. Integer fermentum rutrum cursus. Aliquam
-				commodo, odio imperdiet mollis tempus, ex velit congue nulla, sit amet lobortis nunc eros id
-				ligula. Quisque vel turpis sit amet nisi dictum dignissim. Nunc vestibulum molestie massa a
-				vehicula. Praesent auctor tellus quis volutpat semper.
-			</p>
-		</section>
-		<section>
-			<h1 class="mb-12 text-2xl font-bold">Med støtte fra</h1>
-			<LogoScroller
-				srcs={new Map<string, string>([
-					['Momentum', MomentumLogo],
-					['Albani', AlbaniLogo],
-					['Odense Kommune', OdenseKommuneLogo]
-				])}
-			></LogoScroller>
-		</section>
 	</section>
 </div>
