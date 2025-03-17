@@ -32,7 +32,9 @@
 				musikere et springbræt til den danske musikscene.
 			</p>
 			<div class="flex w-full flex-col-reverse gap-4 sm:flex-row">
-				<Button variant="secondary" class="h-16 w-full sm:w-fit">Læs mere</Button>
+				<form action="/om-os">
+					<Button type="submit" variant="secondary" class="h-16 w-full sm:w-fit">Læs mere</Button>
+				</form>
 				<form action="/events">
 					<Button type="submit" class="group h-16 w-full items-center gap-2 sm:w-fit">
 						Se events
