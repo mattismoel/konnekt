@@ -1,24 +1,23 @@
 <script lang="ts">
-	import Fader from './Fader.svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
+	import { cn } from '$lib/clsx';
 
-	type Props = {
+	type Props = HTMLAttributes<HTMLDivElement> & {
 		srcs: Map<string, string>;
 	};
 
-	let { srcs }: Props = $props();
+	let { srcs, ...rest }: Props = $props();
 </script>
 
-<div class="relative isolate w-full overflow-hidden whitespace-nowrap">
-	<Fader direction="right" class="absolute z-50 w-32 from-zinc-900" />
-	<Fader direction="left" class="absolute z-50 w-32 from-zinc-900" />
+<div class={cn('relative isolate h-8 w-full overflow-hidden whitespace-nowrap', rest.class)}>
 	{@render track(srcs)}
 	{@render track(srcs)}
 </div>
 
 {#snippet track(srcs: Map<string, string>)}
-	<div class="animate-slide inline-block w-fit flex-nowrap">
+	<div class="animate-slide inline-block h-full w-fit flex-nowrap">
 		{#each [...srcs] as [name, src] (src)}
-			<img {src} alt={name} class="mx-8 inline h-16" />
+			<img {src} alt={name} class="mx-8 inline h-full" />
 		{/each}
 	</div>
 {/snippet}
