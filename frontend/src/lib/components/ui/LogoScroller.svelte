@@ -12,6 +12,7 @@
 <div class={cn('relative isolate h-8 w-full overflow-hidden whitespace-nowrap', rest.class)}>
 	{@render track(srcs)}
 	{@render track(srcs)}
+	{@render track(srcs)}
 </div>
 
 {#snippet track(srcs: Map<string, string>)}
