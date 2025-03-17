@@ -1,8 +1,6 @@
 <script lang="ts">
-	import type { Artist } from '$lib/artist.js';
-	import { cn } from '$lib/clsx.js';
 	import { socialUrlToIcon } from '$lib/social.js';
-	import { fade } from 'svelte/transition';
+	import type { Artist } from '$lib/artist.js';
 
 	let { data } = $props();
 

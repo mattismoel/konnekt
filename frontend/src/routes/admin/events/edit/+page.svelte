@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { z, ZodError } from 'zod';
-	import EventForm from './EventForm.svelte';
+	import { error } from '@sveltejs/kit';
+
 	import { createEvent, eventForm, updateEvent } from '$lib/event';
 	import { page } from '$app/state';
 	import { APIError } from '$lib/error';
-	import { error } from '@sveltejs/kit';
+
+	import EventForm from './EventForm.svelte';
 
 	const { data } = $props();
 	const { event, artists, venues } = $derived(data);

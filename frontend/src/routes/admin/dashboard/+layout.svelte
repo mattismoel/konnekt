@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import Logo from '$lib/assets/Logo.svelte';
 	import { cn } from '$lib/clsx';
-	import Card from '$lib/components/ui/Card.svelte';
 	import type { User } from '$lib/user';
+
+	import Card from '$lib/components/ui/Card.svelte';
+	import Logo from '$lib/assets/Logo.svelte';
 	import SettingsIcon from '~icons/mdi/settings-outline';
 
 	let { children, data } = $props();

@@ -1,6 +1,6 @@
 import type { PageServerLoad } from "./$types";
-import { eventById, listEvents } from "$lib/event";
 import { startOfToday } from "date-fns";
+import { eventById, listEvents } from "$lib/event";
 
 export const load: PageServerLoad = async ({ params }) => {
   const id = parseInt(params.id)

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Artist } from '$lib/artist';
+
 	import SelectEntry from '$lib/components/SelectEntry.svelte';
+
 	import OpenIcon from '~icons/mdi/open-in-new';
 
 	type Props = {

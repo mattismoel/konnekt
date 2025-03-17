@@ -1,17 +1,21 @@
 <script lang="ts">
-	import { artistFormSchema, type Artist, type ArtistForm } from '$lib/artist';
-	import Input from '$lib/components/ui/Input.svelte';
-	import Pill from '$lib/components/ui/Pill.svelte';
-	import PlusIcon from '~icons/mdi/add';
-	import type { Genre } from '$lib/genre';
-	import GenreSelectorModal from '$lib/components/ui/GenreSelectorModal.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import SocialEntry from './SocialEntry.svelte';
 	import type { ZodError } from 'zod';
-	import FieldError from '$lib/components/ui/FieldError.svelte';
-	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
-	import SpotifyPreview from '$lib/components/SpotifyPreview.svelte';
+
+	import { artistFormSchema, type Artist, type ArtistForm } from '$lib/artist';
 	import { trackIdFromUrl } from '$lib/spotify';
+
+	import type { Genre } from '$lib/genre';
+
+	import Input from '$lib/components/ui/Input.svelte';
+	import FieldError from '$lib/components/ui/FieldError.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
+	import Pill from '$lib/components/ui/Pill.svelte';
+	import GenreSelectorModal from '$lib/components/ui/GenreSelectorModal.svelte';
+	import SpotifyPreview from '$lib/components/SpotifyPreview.svelte';
+	import SocialEntry from './SocialEntry.svelte';
+
+	import PlusIcon from '~icons/mdi/add';
 
 	type Props = {
 		artist: Artist | null;

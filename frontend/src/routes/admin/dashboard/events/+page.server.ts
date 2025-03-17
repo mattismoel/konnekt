@@ -1,5 +1,5 @@
-import { startOfToday } from "date-fns";
 import type { PageServerLoad } from "./$types";
+import { startOfToday } from "date-fns";
 import { listEvents } from "$lib/event";
 
 const UPCOMING_EVENTS_LIMIT: number = 5

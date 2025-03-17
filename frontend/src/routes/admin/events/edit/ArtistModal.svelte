@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Artist } from '$lib/artist';
+
 	import Modal from '$lib/components/Modal.svelte';
 	import ArtistSelectEntry from './ArtistSelectEntry.svelte';
 

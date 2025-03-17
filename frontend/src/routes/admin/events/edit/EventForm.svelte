@@ -1,16 +1,18 @@
 <script lang="ts">
+	import { z, ZodError } from 'zod';
+	import { addMinutes, roundToNearestHours } from 'date-fns';
+
 	import type { Artist } from '$lib/artist';
+	import type { Venue } from '$lib/venue';
+	import { eventForm, type Event } from '$lib/event';
+	import { concertForm } from '$lib/concert';
+
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
-	import Selector from '$lib/components/ui/Selector.svelte';
-	import { eventForm, type Event } from '$lib/event';
-	import type { Venue } from '$lib/venue';
-	import { z, ZodError } from 'zod';
-	import CreateConcertCard from './CreateConcertCard.svelte';
-	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
-	import { concertForm } from '$lib/concert';
-	import { addMinutes, roundToNearestHours } from 'date-fns';
 	import FieldError from '$lib/components/ui/FieldError.svelte';
+	import Selector from '$lib/components/ui/Selector.svelte';
+	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
+	import CreateConcertCard from './CreateConcertCard.svelte';
 
 	type Props = {
 		event: Event | null;

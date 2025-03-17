@@ -1,9 +1,9 @@
 import type { PageServerLoad } from "./$types";
+import { error } from "@sveltejs/kit";
+import { APIError } from "$lib/error";
 import { eventById } from "$lib/event";
 import { listArtists } from "$lib/artist";
 import { listVenues } from "$lib/venue";
-import { error } from "@sveltejs/kit";
-import { APIError } from "$lib/error";
 
 export const load: PageServerLoad = async ({ url, request }) => {
   try {

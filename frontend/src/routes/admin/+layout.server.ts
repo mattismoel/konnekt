@@ -1,5 +1,5 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { redirect } from "@sveltejs/kit";
+import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import type { LayoutServerLoad } from "./$types";
 import { roleSchema } from "$lib/auth";
 

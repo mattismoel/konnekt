@@ -1,11 +1,12 @@
 <script lang="ts">
-	import AlbaniLogo from '$lib/assets/AlbaniLogo.svg';
-	import MomentumLogo from '$lib/assets/MomentumLogo.svg';
-	import OdenseKommuneLogo from '$lib/assets/OdenseKommuneLogo.svg';
 	import Caroussel from '$lib/components/Caroussel.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
 	import LogoScroller from '$lib/components/ui/LogoScroller.svelte';
 	import EventDetails from './events/[id]/EventDetails.svelte';
+
+	import AlbaniLogo from '$lib/assets/AlbaniLogo.svg';
+	import MomentumLogo from '$lib/assets/MomentumLogo.svg';
+	import OdenseKommuneLogo from '$lib/assets/OdenseKommuneLogo.svg';
 
 	let { data } = $props();
 	let { events } = $derived(data);

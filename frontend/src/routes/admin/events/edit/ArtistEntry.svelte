@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Artist } from '$lib/artist';
-	import OpenIcon from '~icons/mdi/open-in-new';
 	import { cn } from '$lib/clsx';
+
+	import OpenIcon from '~icons/mdi/open-in-new';
 
 	type Props = {
 		artist: Artist;

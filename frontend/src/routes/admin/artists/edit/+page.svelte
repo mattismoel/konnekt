@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { z } from 'zod';
-	import ArtistForm from './ArtistForm.svelte';
+
 	import { createArtist, updateArtist, type artistFormSchema } from '$lib/artist';
 	import { page } from '$app/state';
+
+	import ArtistForm from './ArtistForm.svelte';
 
 	let { data } = $props();
 

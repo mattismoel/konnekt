@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import Logo from '$lib/assets/Logo.svelte';
 	import { cn } from '$lib/clsx';
+
+	import Logo from '$lib/assets/Logo.svelte';
 
 	const entries = new Map<string, string>([
 		['/events', 'Events'],

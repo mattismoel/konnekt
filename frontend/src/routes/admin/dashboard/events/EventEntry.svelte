@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { earliestConcert, latestConcert } from '$lib/concert';
 	import type { Event } from '$lib/event';
+
+	import { earliestConcert, latestConcert } from '$lib/concert';
 	import { formatDateStr } from '$lib/time';
 	import { format } from 'date-fns';
+
 	import TrashIcon from '~icons/mdi/trash';
 
 	type Props = {

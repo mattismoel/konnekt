@@ -1,7 +1,9 @@
+import type { Handle } from "@sveltejs/kit";
+
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
+
 import { roleSchema } from "$lib/auth";
 import { userSchema } from "$lib/user";
-import type { Handle } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
 	let res = await fetch(`${PUBLIC_BACKEND_URL}/auth/session`, {

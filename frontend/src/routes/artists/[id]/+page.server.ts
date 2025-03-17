@@ -1,6 +1,6 @@
+import type { PageServerLoad } from "./$types";
 import { artistById } from "$lib/artist";
 import { artistEvents } from "$lib/event";
-import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params }) => {
   const artist = await artistById(parseInt(params.id))

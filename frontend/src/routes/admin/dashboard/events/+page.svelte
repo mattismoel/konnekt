@@ -1,7 +1,7 @@
 <script lang="ts">
-	import PlusIcon from '~icons/mdi/plus';
-	import EventEntry from './EventEntry.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import EventEntry from './EventEntry.svelte';
+	import PlusIcon from '~icons/mdi/plus';
 
 	let { data } = $props();
 
