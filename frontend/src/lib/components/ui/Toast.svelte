@@ -42,11 +42,8 @@
 		class:text-red-200={toast.severity === 'error'}
 	>
 		<Icon />
-		<span class="font-medium">
+		<span class:font-medium={toast.message && toast.message !== ''}>
 			{toast.title}
-			<!--			{#if toast.severity === 'info'}Info{/if}
-			{#if toast.severity === 'warning'}Advarsel{/if}
-			{#if toast.severity === 'error'}Fejl{/if} -->
 		</span>
 		<button
 			type="button"
