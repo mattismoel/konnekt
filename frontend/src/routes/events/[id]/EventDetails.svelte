@@ -56,11 +56,11 @@
 			<!-- CTA -->
 			<section class="w-full space-y-2 md:w-96">
 				<form action={event.ticketUrl}>
-					<Button type="submit" expandX expandY class="h-18">Køb billet</Button>
+					<Button type="submit" class="h-18 w-full">Køb billet</Button>
 				</form>
 				{#if !active}
 					<form action="/events/{event.id}">
-						<Button type="submit" variant="secondary" expandX expandY class="h-18">Læs mere</Button>
+						<Button type="submit" variant="secondary" class="h-18 w-full">Læs mere</Button>
 					</form>
 				{/if}
 			</section>
