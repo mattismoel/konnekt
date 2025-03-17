@@ -13,7 +13,7 @@
 </script>
 
 <nav
-	class="h-nav absolute z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/65 px-8"
+	class="h-nav absolute z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 px-8"
 >
 	<a href="/">
 		<Logo class="h-3" />
