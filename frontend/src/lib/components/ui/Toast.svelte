@@ -29,7 +29,7 @@
 
 <div
 	transition:fade
-	class={cn('relative flex min-w-sm flex-col rounded-sm border p-2', {
+	class={cn('pointer-events-none relative flex min-w-sm flex-col rounded-sm border p-2', {
 		'border-blue-900 bg-blue-950': toast.severity === 'info',
 		'border-red-900 bg-red-950': toast.severity === 'error',
 		'border-yellow-900 bg-yellow-950': toast.severity === 'warning'
@@ -48,9 +48,13 @@
 		<button
 			type="button"
 			onclick={onDelete}
-			class="absolute top-2 right-2 rounded-full p-1"
-			class:hover:bg-red-900={true}><CloseIcon /></button
+			class="pointer-events-auto absolute top-2 right-2 rounded-full p-1"
+			class:hover:bg-blue-900={toast.severity === 'info'}
+			class:hover:bg-yellow-900={toast.severity === 'warning'}
+			class:hover:bg-red-900={toast.severity === 'error'}
 		>
+			<CloseIcon />
+		</button>
 	</div>
 	<span
 		class="whitespace-pre-wrap"
