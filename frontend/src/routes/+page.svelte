@@ -43,8 +43,9 @@
 				</form>
 			</div>
 		</section>
+		<Fader direction="up" class="absolute h-64 from-black/75" />
 	</section>
-	<section class="px-auto space-y-8 bg-zinc-900 py-16">
+	<section class="px-auto space-y-8 bg-zinc-950 py-16">
 		<section>
 			<h1 class="mb-8 text-2xl font-bold">Vores mission</h1>
 			<p class="text-text/75">
@@ -63,8 +64,8 @@
 		<section class="flex w-full flex-col gap-8">
 			<span class="font-bold">Med støtte fra</span>
 			<div class="relative isolate w-full">
-				<Fader direction="right" class="absolute z-50 w-32 from-zinc-900" />
-				<Fader direction="left" class="absolute z-50 w-32 from-zinc-900" />
+				<Fader direction="right" class="absolute z-50 w-32 from-zinc-950" />
+				<Fader direction="left" class="absolute z-50 w-32 from-zinc-950" />
 				<LogoScroller
 					class="h-10 w-full"
 					srcs={new Map<string, string>([
