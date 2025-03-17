@@ -18,7 +18,7 @@
 	<a href="/">
 		<Logo class="h-4" />
 	</a>
-	<ul class="*:hover:text-text hidden items-center gap-6 text-zinc-50 sm:flex">
+	<ul class="*:hover:text-text hidden items-center gap-6 text-lg text-zinc-50 sm:flex">
 		{#each [...entries] as [pathname, name]}
 			{@render navEntry(pathname, name)}
 		{/each}
