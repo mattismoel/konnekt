@@ -16,7 +16,7 @@
 	class="h-nav absolute z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 px-8"
 >
 	<a href="/">
-		<Logo class="h-3" />
+		<Logo class="h-4" />
 	</a>
 	<ul class="*:hover:text-text hidden items-center gap-6 text-zinc-50 sm:flex">
 		{#each [...entries] as [pathname, name]}
