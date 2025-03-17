@@ -10,7 +10,7 @@
 
 <Card>
 	<div class="flex justify-between">
-		<h1 class="mb-4 text-2xl font-bold">Kommende events.</h1>
+		<h1 class="mb-4 text-2xl font-bold">Kommende events</h1>
 		<a href="/admin/events/edit" class="flex gap-2">
 			<PlusIcon class="text-xl" />
 			Tilføj event

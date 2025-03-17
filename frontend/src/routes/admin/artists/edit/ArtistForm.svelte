@@ -70,7 +70,7 @@
 
 <form class="w-full max-w-xl space-y-16" onsubmit={submit}>
 	<div class="space-y-8">
-		<h1 class="mb-8 text-2xl font-bold">Generelt.</h1>
+		<h1 class="mb-8 text-2xl font-bold">Generelt</h1>
 		<ImagePreview src={imageUrl} onChange={updateImage} />
 		<div class="space-y-8">
 			<div class="space-y-1">
@@ -91,7 +91,7 @@
 	</div>
 
 	<div>
-		<h1 class="mb-4 text-2xl font-bold">Genrer.</h1>
+		<h1 class="mb-4 text-2xl font-bold">Genrer</h1>
 		<div class="mb-2 flex flex-wrap gap-2">
 			<button
 				type="button"
@@ -114,7 +114,7 @@
 	</div>
 
 	<div class="flex flex-col gap-4">
-		<h1 class="mb-8 text-2xl font-bold">Spotify Preview.</h1>
+		<h1 class="mb-8 text-2xl font-bold">Spotify Preview</h1>
 		<div class="space-y-4">
 			<Input label="Preview URL" bind:value={form.previewUrl} />
 			{#if trackId}
@@ -123,7 +123,7 @@
 		</div>
 	</div>
 	<div class="space-y-4">
-		<h1 class="mb-8 text-2xl font-bold">Sociale medier.</h1>
+		<h1 class="mb-8 text-2xl font-bold">Sociale medier</h1>
 		<div class="mb-4 flex w-full gap-2">
 			<Input type="text" label="URL" bind:value={socialUrl} class="flex-1" />
 			<Button type="button" onclick={addSocial}><PlusIcon />Tilføj</Button>

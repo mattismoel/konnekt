@@ -12,7 +12,7 @@
 		<EventDetails event={events[0]} prefix="Næste event:" />
 	{/if}
 	<div class="px-auto">
-		<h1 class="mb-4 text-3xl font-bold">Events.</h1>
+		<h1 class="mb-4 text-3xl font-bold">Events</h1>
 		<Caroussel>
 			{#each events as event (event.id)}
 				<EventCard {event} />

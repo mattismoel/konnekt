@@ -20,9 +20,9 @@
 		<div class="flex flex-1 flex-col p-4">
 			<Logo class="mb-6 h-5" />
 			<ul class="flex-1 space-y-2">
-				{@render sidebarEntry('Events.', '/admin/dashboard/events')}
-				{@render sidebarEntry('Kunstenre.', '/admin/dashboard/artists')}
-				{@render sidebarEntry('Generelt.', '/admin/dashboard/general')}
+				{@render sidebarEntry('Events', '/admin/dashboard/events')}
+				{@render sidebarEntry('Kunstenre', '/admin/dashboard/artists')}
+				{@render sidebarEntry('Generelt', '/admin/dashboard/general')}
 			</ul>
 		</div>
 		{@render userInformation(user)}

@@ -74,7 +74,7 @@
 </script>
 
 <form class="space-y-8" onsubmit={submit}>
-	<h1 class="mb-8 text-2xl font-bold">Lav event.</h1>
+	<h1 class="mb-8 text-2xl font-bold">Lav event</h1>
 	<div>
 		<ImagePreview src={imageUrl || ''} onChange={(file) => (form.image = file)} />
 		<FieldError errors={formError?.flatten().fieldErrors['imageUrl']} />
@@ -89,7 +89,7 @@
 
 {#snippet generalSection()}
 	<div>
-		<h1 class="mb-4 text-2xl font-bold">Generelt.</h1>
+		<h1 class="mb-4 text-2xl font-bold">Generelt</h1>
 		<FieldError errors={formError?.flatten().fieldErrors['image']} />
 		<div class="space-y-8">
 			<div class="flex gap-4 *:flex-1">
@@ -129,7 +129,7 @@
 
 {#snippet concertsSection()}
 	<div class="space-y-6">
-		<h1 class="text-2xl font-bold">Koncerter.</h1>
+		<h1 class="text-2xl font-bold">Koncerter</h1>
 		<div class="space-y-4">
 			{#each form.concerts || [] as concert, i (concert.id)}
 				<CreateConcertCard
