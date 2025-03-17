@@ -7,7 +7,6 @@
 	const entries = new Map<string, string>([
 		['/events', 'Events'],
 		['/artists', 'Kunstnere'],
-		['/sponsorer', 'Sponsorer'],
 		['/om-os', 'Om os']
 	]);
 </script>
