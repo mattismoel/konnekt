@@ -51,9 +51,11 @@ export const createEvent = async (form: z.infer<typeof eventForm>, init?: Reques
 }
 
 export const updateEvent = async (form: z.infer<typeof eventForm>, eventId: number, init?: RequestInit): Promise<Event> => {
-	const imageUrl = form.image ? await uploadEventCoverImage(form.image) : undefined
+	const { data, success, error } = eventForm.safeParse(form)
+	if (!success) throw error
 
-	const { image, ...rest } = form;
+	const imageUrl = data.image ? await uploadEventCoverImage(data.image) : undefined
+	const { image, ...rest } = data;
 
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${eventId}`, {
 		...init,

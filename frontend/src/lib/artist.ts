@@ -7,7 +7,7 @@ import { APIError, apiErrorSchema } from "./error";
 export const artistSchema = z.object({
 	id: z.number().positive(),
 	name: z.string(),
-	imageUrl: z.string().url().optional(),
+	imageUrl: z.string().optional().or(z.string().url().optional()),
 	description: z.string(),
 	genres: genreSchema.array(),
 	socials: z.string().url().array(),
@@ -81,7 +81,10 @@ export const updateArtist = async (
 	form: z.infer<typeof artistFormSchema>,
 	init?: RequestInit,
 ): Promise<Artist> => {
-	const { image, ...rest } = form;
+	const { data, success, error } = artistFormSchema.safeParse(form)
+	if (!success) throw error
+
+	const { image, ...rest } = data;
 
 	const imageUrl = image ? await uploadArtistImage(image) : undefined
 

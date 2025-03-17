@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { z, ZodError } from 'zod';
+	import { z } from 'zod';
 	import { error } from '@sveltejs/kit';
 
 	import { createEvent, eventForm, updateEvent } from '$lib/event';
@@ -7,24 +7,26 @@
 	import { APIError } from '$lib/error';
 
 	import EventForm from './EventForm.svelte';
+	import { toaster } from '$lib/toaster.svelte';
 
 	const { data } = $props();
 	const { event, artists, venues } = $derived(data);
 
 	const submit = async (form: z.infer<typeof eventForm>) => {
-		try {
-			const id = page.url.searchParams.get('id');
+		const id = page.url.searchParams.get('id');
+		const isEdit = id !== null;
 
-			id ? await updateEvent(form, parseInt(id)) : await createEvent(form);
+		try {
+			isEdit ? await updateEvent(form, parseInt(id)) : await createEvent(form);
+			toaster.addToast(`Event ${isEdit ? 'opdateret' : 'skabt'}.`);
 		} catch (e) {
 			if (e instanceof APIError) {
+				const msg = `Kunne ikke ${isEdit ? 'opdatere' : 'skabe'} event (${e.status})`;
+				toaster.addToast(msg, e.cause, 'error');
 				return error(e.status, e.message);
 			}
 
-			if (e instanceof ZodError) {
-				console.error(e.issues);
-				throw e;
-			}
+			toaster.addToast(`Kunne ikke ${isEdit ? 'opdatere' : 'skabe'} event`);
 
 			throw e;
 		}
