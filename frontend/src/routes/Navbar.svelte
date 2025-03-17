@@ -9,10 +9,18 @@
 		['/artists', 'Kunstnere'],
 		['/om-os', 'Om os']
 	]);
+
+	let scrollY = $state(0);
 </script>
 
+<svelte:window onscroll={(e) => (scrollY = e.currentTarget.scrollY)} />
 <nav
-	class="h-nav absolute z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 px-8"
+	class={cn(
+		'h-nav border-[] fixed z-50 flex w-screen items-center justify-between border-b bg-gradient-to-b from-black/80 px-8 transition-colors duration-500',
+		{
+			'border-solid border-zinc-900 from-zinc-950 to-zinc-950': scrollY > 0
+		}
+	)}
 >
 	<a href="/">
 		<Logo class="h-4" />
