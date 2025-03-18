@@ -33,16 +33,18 @@
 
 <div>
 	<section class="px-auto -z-50 flex h-svh flex-col justify-center gap-16">
-		<div class="pointer-events-none absolute top-0 left-0 -z-50 h-full w-full overflow-hidden">
+		<div
+			class="pointer-events-none absolute top-0 left-0 isolate -z-10 h-full w-full overflow-hidden"
+		>
 			<div
 				style:top={`${mousePos.y}px`}
 				style:left={`${mousePos.x}px`}
-				class="pointer-events-none absolute h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-soft-light blur-[265px] brightness-200"
+				class="pointer-events-none absolute z-10 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-soft-light blur-[265px] brightness-200"
 			></div>
 			<img
 				src={LandingImage}
 				alt=""
-				class="pointer-events-none fixed top-0 left-0 h-full w-full object-cover brightness-50"
+				class="pointer-events-none fixed top-0 left-0 z-0 h-full w-full object-cover brightness-50"
 			/>
 		</div>
 		<section class="flex max-w-lg flex-col gap-8">
