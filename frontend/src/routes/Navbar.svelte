@@ -16,9 +16,9 @@
 <svelte:window onscroll={(e) => (scrollY = e.currentTarget.scrollY)} />
 <nav
 	class={cn(
-		'h-nav border-[] fixed z-50 flex w-screen items-center justify-between border-b bg-gradient-to-b from-black/80 px-8 transition-colors duration-500',
+		'h-nav border-[] fixed z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 px-8 outline outline-transparent transition-colors duration-500',
 		{
-			'border-solid border-zinc-900 from-zinc-950 to-zinc-950': scrollY > 0
+			'from-zinc-950 to-zinc-950 outline-zinc-800': scrollY > 0
 		}
 	)}
 >
