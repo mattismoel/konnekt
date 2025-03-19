@@ -14,8 +14,14 @@ func (s Server) handleListVenues() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
+		baseQuery, err := NewListQueryFromURL(r.URL.Query())
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
 		result, err := s.venueService.List(ctx, venue.Query{
-			ListQuery: NewListQueryFromRequest(r),
+			ListQuery: baseQuery,
 		})
 
 		if err != nil {

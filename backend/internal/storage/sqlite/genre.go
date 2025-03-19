@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"strconv"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/query"
@@ -252,21 +253,21 @@ func associateArtistWithGenre(ctx context.Context, tx *sql.Tx, artistID int64, g
 
 // Dissasociates the given genre from the given artist.
 func dissasociateArtistFromGenre(ctx context.Context, tx *sql.Tx, artistID int64, genreID int64) error {
-	query, err := NewQuery("DELETE FROM artists_genres")
+	q, err := NewQuery("DELETE FROM artists_genres")
 	if err != nil {
 		return err
 	}
 
-	err = query.WithFilters(map[string]any{
-		"artist_id = ?": artistID,
-		"genre_id = ?":  genreID,
+	err = q.WithFilters([]query.Filter{
+		{Key: "artist_id", Cmp: query.Equal, Value: strconv.Itoa(int(artistID))},
+		{Key: "genre_id", Cmp: query.Equal, Value: strconv.Itoa(int(genreID))},
 	})
 
 	if err != nil {
 		return err
 	}
 
-	queryStr, args := query.Build()
+	queryStr, args := q.Build()
 
 	_, err = tx.ExecContext(ctx, queryStr, args...)
 	if err != nil {
@@ -331,17 +332,22 @@ func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
 
 // Gets a genre by its name.
 func genreByName(ctx context.Context, tx *sql.Tx, name string) (Genre, error) {
-	query, err := NewQuery("SELECT id FROM genre")
+	q, err := NewQuery("SELECT id FROM genre")
 	if err != nil {
 		return Genre{}, err
 	}
 
-	err = query.AddFilter("name = ?", name)
+	filter, err := query.NewFilter("name", query.Equal, name)
 	if err != nil {
 		return Genre{}, err
 	}
 
-	queryStr, args := query.Build()
+	err = q.AddFilter(filter)
+	if err != nil {
+		return Genre{}, err
+	}
+
+	queryStr, args := q.Build()
 
 	var id int64
 

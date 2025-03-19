@@ -222,7 +222,7 @@ func (s EventService) UploadImage(ctx context.Context, fileName string, r io.Rea
 	return url, nil
 }
 
-func (s EventService) List(ctx context.Context, q event.Query) (query.ListResult[event.Event], error) {
+func (s EventService) List(ctx context.Context, q query.ListQuery) (query.ListResult[event.Event], error) {
 	result, err := s.eventRepo.List(ctx, q)
 	if err != nil {
 		return query.ListResult[event.Event]{}, err

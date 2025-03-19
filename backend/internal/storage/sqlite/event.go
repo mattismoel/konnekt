@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -200,10 +202,11 @@ type EventQueryParams struct {
 	QueryParams
 	From      time.Time
 	To        time.Time
+	ID        int64
 	ArtistIDs []int64
 }
 
-func (repo EventRepository) List(ctx context.Context, q event.Query) (query.ListResult[event.Event], error) {
+func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.ListResult[event.Event], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return query.ListResult[event.Event]{}, err
@@ -213,12 +216,15 @@ func (repo EventRepository) List(ctx context.Context, q event.Query) (query.List
 
 	dbEvents, err := listEvents(ctx, tx, EventQueryParams{
 		QueryParams: QueryParams{
-			Offset: q.Offset(),
-			Limit:  q.Limit,
+			Offset:  q.Offset(),
+			Limit:   q.Limit,
+			Filters: q.Filters,
+			OrderBy: q.OrderBy,
 		},
-		From:      q.From,
-		To:        q.To,
-		ArtistIDs: q.ArtistIDs,
+		// From:      q.From,
+		// To:        q.To,
+		// ArtistIDs: q.ArtistIDs,
+		// ID:        q.ID,
 	},
 	)
 
@@ -306,7 +312,7 @@ func eventCount(ctx context.Context, tx *sql.Tx) (int, error) {
 }
 
 func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {
-	query, err := NewQuery(`
+	q, err := NewQuery(`
     SELECT DISTINCT
 		e.id,
 		e.title,
@@ -321,31 +327,66 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 		return nil, err
 	}
 
-	err = query.WithOffset(params.Offset)
+	err = q.WithOffset(params.Offset)
 	if err != nil {
 		return nil, err
 	}
 
-	err = query.WithLimit(params.Limit)
+	err = q.WithLimit(params.Limit)
 	if err != nil {
 		return nil, err
 	}
 
-	if !params.From.IsZero() {
-		err = query.AddFilter("c.from_date >= ?", params.From.Format(time.RFC3339))
-	}
-
-	if !params.To.IsZero() {
-		query.AddFilter("c.to_date <= ?", params.To.Format(time.RFC3339))
-	}
-
-	if len(params.ArtistIDs) > 0 {
-		for _, artistID := range params.ArtistIDs {
-			query.AddFilter("c.artist_id = ?", artistID)
+	if len(params.OrderBy) > 0 {
+		err := q.WithOrdering(params.OrderBy)
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	queryString, args := query.Build()
+	if filter, ok := params.Filters.Contains("from_date"); ok {
+		err = q.AddFilter(filter)
+		// err = q.AddFilter("c.from_date >= ?", fromDate.Value)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if filter, ok := params.Filters.Contains("to_date"); ok {
+		err = q.AddFilter(filter)
+		// err = q.AddFilter("c.to_date <= ?", toDate)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// if !params.From.IsZero() {
+	// 	err = query.AddFilter("c.from_date >= ?", params.From.Format(time.RFC3339))
+	// }
+	//
+	// if !params.To.IsZero() {
+	// 	query.AddFilter("c.to_date <= ?", params.To.Format(time.RFC3339))
+	// }
+
+	if filter, ok := params.Filters.Contains("artist_ids"); ok {
+		artistIdsStr := strings.Split(filter.Value, ",")
+		for _, artistId := range artistIdsStr {
+			filter, err := query.NewFilter("c.artist_id", query.Equal, artistId)
+			err = q.AddFilter(filter)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	// if len(params.ArtistIDs) > 0 {
+	// 	for _, artistID := range params.ArtistIDs {
+	// 		query.AddFilter("c.artist_id = ?", artistID)
+	// 	}
+	// }
+
+	queryString, args := q.Build()
+	fmt.Printf("QUERY %+v\n", queryString)
 
 	rows, err := tx.QueryContext(ctx, queryString, args...)
 	if err != nil {
