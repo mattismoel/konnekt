@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -220,12 +218,7 @@ func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.
 			Limit:   q.Limit,
 			Filters: q.Filters,
 			OrderBy: q.OrderBy,
-		},
-		// From:      q.From,
-		// To:        q.To,
-		// ArtistIDs: q.ArtistIDs,
-		// ID:        q.ID,
-	},
+		}},
 	)
 
 	if err != nil {
@@ -344,49 +337,54 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 		}
 	}
 
-	if filter, ok := params.Filters.Contains("from_date"); ok {
-		err = q.AddFilter(filter)
-		// err = q.AddFilter("c.from_date >= ?", fromDate.Value)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if filter, ok := params.Filters.Contains("to_date"); ok {
-		err = q.AddFilter(filter)
-		// err = q.AddFilter("c.to_date <= ?", toDate)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// if !params.From.IsZero() {
-	// 	err = query.AddFilter("c.from_date >= ?", params.From.Format(time.RFC3339))
-	// }
-	//
-	// if !params.To.IsZero() {
-	// 	query.AddFilter("c.to_date <= ?", params.To.Format(time.RFC3339))
-	// }
-
-	if filter, ok := params.Filters.Contains("artist_ids"); ok {
-		artistIdsStr := strings.Split(filter.Value, ",")
-		for _, artistId := range artistIdsStr {
-			filter, err := query.NewFilter("c.artist_id", query.Equal, artistId)
-			err = q.AddFilter(filter)
+	if filters, ok := params.Filters["from_date"]; ok {
+		for _, f := range filters {
+			err = q.AddFilter("from_date", f)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	// if len(params.ArtistIDs) > 0 {
-	// 	for _, artistID := range params.ArtistIDs {
-	// 		query.AddFilter("c.artist_id = ?", artistID)
-	// 	}
-	// }
+	if filters, ok := params.Filters["to_date"]; ok {
+		for _, f := range filters {
+			err = q.AddFilter("from_date", f)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if filters, ok := params.Filters["id"]; ok {
+		for _, f := range filters {
+			newFilter, err := query.NewFilter(f.Cmp, f.Values...)
+			if err != nil {
+				return nil, err
+			}
+
+			err = q.AddFilter("e.id", newFilter)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+	}
+
+	if filters, ok := params.Filters["artistIds"]; ok {
+		for _, f := range filters {
+			newFilter, err := query.NewFilter(query.Equal, f.Values...)
+			if err != nil {
+				return nil, err
+			}
+
+			err = q.AddFilter("c.artist_id", newFilter)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	queryString, args := q.Build()
-	fmt.Printf("QUERY %+v\n", queryString)
 
 	rows, err := tx.QueryContext(ctx, queryString, args...)
 	if err != nil {

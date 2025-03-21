@@ -51,10 +51,10 @@ func TestNewListQueryFromRequest(t *testing.T) {
 					"prop_a": query.OrderAscending,
 					"prop_b": query.OrderDescending,
 				}
-				q.Filters = []query.Filter{
-					{Key: "prop_a", Cmp: query.Equal, Value: "4"},
-					{Key: "prop_b", Cmp: query.GreaterThanEqual, Value: "3"},
-					{Key: "prop_c", Cmp: query.NotEqual, Value: "2"},
+				q.Filters = map[string][]query.Filter{
+					"prop_a": {{Cmp: query.Equal, Values: []string{"4"}}},
+					"prop_b": {{Cmp: query.GreaterThanEqual, Values: []string{"3"}}},
+					"prop_c": {{Cmp: query.NotEqual, Values: []string{"2"}}},
 				}
 				return q
 			},

@@ -47,12 +47,12 @@ func deleteArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64) error 
 		return err
 	}
 
-	filter, err := query.NewFilter("artist_id", query.Equal, strconv.Itoa(int(artistID)))
+	filter, err := query.NewFilter(query.Equal, strconv.Itoa(int(artistID)))
 	if err != nil {
 		return err
 	}
 
-	err = q.AddFilter(filter)
+	err = q.AddFilter("artist_id", filter)
 	if err != nil {
 		return err
 	}

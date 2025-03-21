@@ -44,12 +44,12 @@ func orderMapFromRequest(vals url.Values) (map[string]query.Order, error) {
 	m := make(map[string]query.Order)
 
 	orderBy := vals.Get("order_by")
-	orderParts := strings.Split(orderBy, ",") // ["title", "created_at desc"]
+	orderParts := strings.Split(orderBy, ",")
 
 	isOrderByPresent := len(orderParts) > 0 && strings.TrimSpace(orderParts[0]) != ""
 
 	if isOrderByPresent {
-		for _, part := range orderParts { // each | "prop order"|
+		for _, part := range orderParts {
 			key, order, err := orderByStrToPair(part)
 			if err != nil {
 				return nil, err
@@ -92,13 +92,14 @@ func orderByStrToPair(s string) (string, query.Order, error) {
 }
 
 // "filter=id!=4,title=what, hello>world"
-func parseFilters(vals url.Values) ([]query.Filter, error) {
+func parseFilters(vals url.Values) (query.FilterCollection, error) {
 	filterStr := vals.Get("filter")
+
 	if filterStr == "" {
-		return make([]query.Filter, 0), nil
+		return make(query.FilterCollection), nil
 	}
 
-	filters := make([]query.Filter, 0)
+	fc := make(query.FilterCollection)
 	filterPairs := strings.SplitSeq(filterStr, ",")
 
 	for pair := range filterPairs {
@@ -117,23 +118,31 @@ func parseFilters(vals url.Values) ([]query.Filter, error) {
 		case strings.Contains(pair, "="):
 			cmp = query.Equal
 		default:
-			return make([]query.Filter, 0), fmt.Errorf("Invalid filter format in pair %q", pair)
+			return nil, fmt.Errorf("Invalid filter format in pair %q", pair)
 		}
 
-		parts := strings.SplitN(pair, string(cmp), 2)
+		parts := strings.Split(pair, string(cmp))
 		if len(parts) != 2 {
-			return make([]query.Filter, 0), fmt.Errorf("Invalid filter format in pair %q", pair)
+			return nil, fmt.Errorf("Invalid filter format in pair %q", pair)
 		}
 
-		filter, err := query.NewFilter(parts[0], cmp, parts[1])
+		values := strings.Split(parts[1], ",")
+		for i, v := range values {
+			values[i] = strings.TrimSpace(v)
+		}
+
+		filter, err := query.NewFilter(cmp, values...)
 		if err != nil {
-			return make([]query.Filter, 0), err
+			return nil, err
 		}
 
-		filters = append(filters, filter)
+		err = fc.Add(parts[0], filter)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return filters, nil
+	return fc, nil
 }
 
 // Returns the page entry of a url. If not found, zero is returned

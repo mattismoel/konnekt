@@ -108,17 +108,17 @@ func TestNewListQuery(t *testing.T) {
 		},
 		"With valid filters": {
 			cfgs: []query.CfgFunc{
-				query.WithFilters([]query.Filter{
-					{Key: "prop_a", Cmp: query.GreaterThan, Value: "2"},
-					{Key: "prop_b", Cmp: query.Equal, Value: "hello_world"},
-					{Key: "prop_c", Cmp: query.LessThan, Value: "d"},
+				query.WithFilters(map[string][]query.Filter{
+					"prop_a": {{Cmp: query.GreaterThan, Values: []string{"2"}}},
+					"prop_b": {{Cmp: query.Equal, Values: []string{"hello_world"}}},
+					"prop_c": {{Cmp: query.LessThan, Values: []string{"d"}}},
 				}),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
-				q.Filters = []query.Filter{
-					{Key: "prop_a", Cmp: query.GreaterThan, Value: "2"},
-					{Key: "prop_b", Cmp: query.Equal, Value: "hello_world"},
-					{Key: "prop_c", Cmp: query.LessThan, Value: "d"},
+				q.Filters = map[string][]query.Filter{
+					"prop_a": {{Cmp: query.GreaterThan, Values: []string{"2"}}},
+					"prop_b": {{Cmp: query.Equal, Values: []string{"hello_world"}}},
+					"prop_c": {{Cmp: query.LessThan, Values: []string{"d"}}},
 				}
 				return q
 			},
@@ -126,8 +126,8 @@ func TestNewListQuery(t *testing.T) {
 		},
 		"With invalid filter key": {
 			cfgs: []query.CfgFunc{
-				query.WithFilters([]query.Filter{
-					{Key: "", Cmp: query.GreaterThan, Value: "2"},
+				query.WithFilters(map[string][]query.Filter{
+					"": {{Cmp: query.GreaterThan, Values: []string{"2"}}},
 				}),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -137,8 +137,8 @@ func TestNewListQuery(t *testing.T) {
 		},
 		"With invalid filter cmp": {
 			cfgs: []query.CfgFunc{
-				query.WithFilters([]query.Filter{
-					{Key: "prop_a", Cmp: query.Comparator(""), Value: "2"},
+				query.WithFilters(map[string][]query.Filter{
+					"prop_a": {{Cmp: query.Comparator(""), Values: []string{"2"}}},
 				}),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -148,8 +148,8 @@ func TestNewListQuery(t *testing.T) {
 		},
 		"With invalid filter value": {
 			cfgs: []query.CfgFunc{
-				query.WithFilters([]query.Filter{
-					{Key: "prop_a", Cmp: query.GreaterThan, Value: ""},
+				query.WithFilters(map[string][]query.Filter{
+					"prop_a": {{Cmp: query.GreaterThan, Values: []string{""}}},
 				}),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {

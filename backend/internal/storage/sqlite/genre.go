@@ -258,9 +258,22 @@ func dissasociateArtistFromGenre(ctx context.Context, tx *sql.Tx, artistID int64
 		return err
 	}
 
-	err = q.WithFilters([]query.Filter{
-		{Key: "artist_id", Cmp: query.Equal, Value: strconv.Itoa(int(artistID))},
-		{Key: "genre_id", Cmp: query.Equal, Value: strconv.Itoa(int(genreID))},
+	err = q.WithFilters(map[string][]query.Filter{
+		"artist_id": {
+			{
+				Cmp: query.Equal,
+				Values: []string{
+					strconv.Itoa(int(artistID)),
+				},
+			}},
+		"genre_id": {
+			{
+				Cmp: query.Equal,
+				Values: []string{
+					strconv.Itoa(int(genreID)),
+				},
+			},
+		},
 	})
 
 	if err != nil {
@@ -337,12 +350,12 @@ func genreByName(ctx context.Context, tx *sql.Tx, name string) (Genre, error) {
 		return Genre{}, err
 	}
 
-	filter, err := query.NewFilter("name", query.Equal, name)
+	filter, err := query.NewFilter(query.Equal, name)
 	if err != nil {
 		return Genre{}, err
 	}
 
-	err = q.AddFilter(filter)
+	err = q.AddFilter("name", filter)
 	if err != nil {
 		return Genre{}, err
 	}

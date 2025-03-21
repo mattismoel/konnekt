@@ -71,7 +71,7 @@ func NewListQuery(cfgs ...CfgFunc) (ListQuery, error) {
 		PerPage: DEFAULT_PER_PAGE,
 		Limit:   DEFAULT_LIMIT,
 		OrderBy: map[string]Order{},
-		Filters: make([]Filter, 0),
+		Filters: make(FilterCollection),
 	}
 
 	for _, cfg := range cfgs {
@@ -187,10 +187,8 @@ func (q1 ListQuery) Equals(q2 ListQuery) bool {
 		return false
 	}
 
-	for i, f1 := range q1.Filters {
-		if !f1.Equals(q2.Filters[i]) {
-			return false
-		}
+	if !q1.Filters.Equals(q2.Filters) {
+		return false
 	}
 
 	for key1, o1 := range q1.OrderBy {

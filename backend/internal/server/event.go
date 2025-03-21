@@ -18,62 +18,13 @@ var (
 
 func (s Server) handleListEvents() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		query, err := NewListQueryFromURL(r.URL.Query())
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-
-		// fromStr, toStr := r.URL.Query().Get("from"), r.URL.Query().Get("to")
-		// from, _ := time.Parse(time.RFC3339, fromStr)
-		// to, _ := time.Parse(time.RFC3339, toStr)
-		//
-		// artistIds := make([]int64, 0)
-		// artistIdsStr := r.URL.Query().Get("artistIds")
-		//
-		// if artistIdsStr != "" {
-		// 	artistIdsStrs := strings.SplitSeq(r.URL.Query().Get("artistIds"), ",")
-		//
-		// 	for artistIdStr := range artistIdsStrs {
-		// 		id, err := strconv.Atoi(artistIdStr)
-		// 		if err != nil {
-		// 			writeError(w, err)
-		// 			return
-		// 		}
-		//
-		// 		artistIds = append(artistIds, int64(id))
-		// 	}
-		// }
-
-		ctx := r.Context()
-
-		// if !from.IsZero() {
-		// 	err := query.WithCfgs(event.WithFromDate(from))
-		// 	if err != nil {
-		// 		writeError(w, err)
-		// 		return
-		// 	}
-		// }
-		//
-		// if !to.IsZero() {
-		// 	err := query.WithCfgs(event.WithToDate(to))
-		// 	if err != nil {
-		// 		writeError(w, err)
-		// 		return
-		// 	}
-		// }
-		//
-		// if len(artistIds) > 0 {
-		// 	err := query.WithCfgs(event.WithArtistIDsFilter(artistIds...))
-		// 	if err != nil {
-		// 		writeError(w, err)
-		// 		return
-		// 	}
-		// }
-
-		// if (orderStr) != "" {
-		// 	err := query.WithCfgs(event.WithOrdering())
-		// }
 
 		result, err := s.eventService.List(ctx, query)
 		if err != nil {

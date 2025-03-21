@@ -2,6 +2,7 @@ package query
 
 import (
 	"errors"
+	"slices"
 	"strings"
 )
 
@@ -23,27 +24,28 @@ const (
 )
 
 type Filter struct {
-	Key   string
-	Cmp   Comparator
-	Value string
+	Cmp    Comparator
+	Values []string
 }
 
-type FilterCollection []Filter
+// A collection of key-to-filter entries.
+type FilterCollection map[string][]Filter
 
-func NewFilter(key string, cmp Comparator, value string) (Filter, error) {
-	if err := validateFilterKey(key); err != nil {
-		return Filter{}, err
-	}
-
+func NewFilter(cmp Comparator, values ...string) (Filter, error) {
 	if !cmp.valid() {
 		return Filter{}, ErrFilterCmpInvalid
 	}
 
-	if err := validateFilterValue(value); err != nil {
-		return Filter{}, err
+	for _, v := range values {
+		if err := validateFilterValue(v); err != nil {
+			return Filter{}, err
+		}
 	}
 
-	return Filter{Key: key, Cmp: cmp, Value: value}, nil
+	return Filter{
+		Cmp:    cmp,
+		Values: values,
+	}, nil
 }
 
 // Returns whether or not the input filter key is valid, i.e. a single property.
@@ -88,14 +90,50 @@ func validateFilterValue(value string) error {
 	return nil
 }
 
-func WithFilters(filters FilterCollection) CfgFunc {
+func WithFilters(fc FilterCollection) CfgFunc {
 	return func(q *ListQuery) error {
-		for _, f := range filters {
-			if err := validateFilterKey(f.Key); err != nil {
+		for key, filters := range fc {
+			if err := validateFilterKey(key); err != nil {
 				return err
 			}
 
-			if err := validateFilterValue(f.Value); err != nil {
+			if err := q.Filters.Add(key, filters...); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func (c Comparator) valid() bool {
+	return c == GreaterThan || c == LessThan || c == GreaterThanEqual || c == LessThanEqual || c == Equal || c == NotEqual
+}
+
+// Returns if two filters are equal.
+func (f1 Filter) Equals(f2 Filter) bool {
+	if len(f1.Values) != len(f2.Values) {
+		return false
+	}
+
+	for i, v1 := range f1.Values {
+		if f2.Values[i] != v1 {
+			return false
+		}
+	}
+
+	if f1.Cmp != f2.Cmp {
+		return false
+	}
+
+	return true
+}
+
+// Adds a new filter to the given key entry of the FilterCollection.
+func (fc FilterCollection) Add(key string, filters ...Filter) error {
+	for _, f := range filters {
+		for _, v := range f.Values {
+			if err := validateFilterValue(v); err != nil {
 				return err
 			}
 
@@ -104,42 +142,27 @@ func WithFilters(filters FilterCollection) CfgFunc {
 			}
 		}
 
-		q.Filters = filters
-
-		return nil
+		fc[key] = append(fc[key], f)
 	}
+
+	return nil
 }
 
-func (c Comparator) valid() bool {
-	return c == GreaterThan || c == LessThan || c == GreaterThanEqual || c == LessThanEqual || c == Equal
-}
+func (fc1 FilterCollection) Equals(fc2 FilterCollection) bool {
+	if len(fc1) != len(fc2) {
+		return false
+	}
 
-// Checks whether the filter collection contains a filter entry with the given
-// key.
-//
-// If found, the filter is returned, as well as a true boolean.
-// If not found, an uninitialized filter, and a false boolean is returned.
-func (fs FilterCollection) Contains(key string) (Filter, bool) {
-	for _, f := range fs {
-		if f.Key == key {
-			return f, true
+	for key, fs1 := range fc1 {
+		if _, ok := fc2[key]; !ok {
+			return false
 		}
-	}
 
-	return Filter{}, false
-}
-
-func (f1 Filter) Equals(f2 Filter) bool {
-	if f1.Key != f2.Key {
-		return false
-	}
-
-	if f1.Value != f2.Value {
-		return false
-	}
-
-	if f1.Cmp != f2.Cmp {
-		return false
+		for i, f := range fs1 {
+			if !slices.Equal(f.Values, fc2[key][i].Values) {
+				return false
+			}
+		}
 	}
 
 	return true
