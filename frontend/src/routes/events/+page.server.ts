@@ -4,7 +4,10 @@ import { listEvents } from "$lib/event"
 
 export const load: PageServerLoad = async () => {
   const result = await listEvents(new URLSearchParams({
-    from: startOfToday().toISOString(),
+    "filter": [
+      "from_date" + ">=" + startOfToday().toISOString(),
+    ].join(","),
+    "order_by": "from_date desc"
   }))
 
   return {

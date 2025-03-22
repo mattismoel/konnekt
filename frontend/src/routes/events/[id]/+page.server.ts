@@ -8,7 +8,10 @@ export const load: PageServerLoad = async ({ params }) => {
   const event = await eventById(id)
 
   const recommendedEventsResult = await listEvents(new URLSearchParams({
-    from: startOfToday().toISOString()
+    "filter": [
+      "id" + "!=" + id,
+      "from_date" + ">=" + startOfToday().toISOString(),
+    ].join(",")
   }))
 
   return {
