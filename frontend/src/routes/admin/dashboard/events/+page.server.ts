@@ -6,9 +6,8 @@ const UPCOMING_EVENTS_LIMIT: number = 5
 
 export const load: PageServerLoad = async () => {
   const upcomingEventsResult = await listEvents(new URLSearchParams({
-    filter: `from=${startOfToday().toISOString()}`,
+    filter: `from_date>=${startOfToday().toISOString()}`,
     limit: UPCOMING_EVENTS_LIMIT.toString(),
-    order: `date,asc`
   }))
 
   return {
