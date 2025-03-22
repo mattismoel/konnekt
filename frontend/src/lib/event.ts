@@ -122,7 +122,7 @@ export const eventById = async (id: number): Promise<Event> => {
 
 export const artistEvents = async (artistId: number): Promise<ListResult<Event>> => {
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/events?` + new URLSearchParams({
-		artistIds: artistId.toString()
+		"filter": `artist_id=${artistId.toString()}`,
 	}))
 
 	if (!res.ok) {

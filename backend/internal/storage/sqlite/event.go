@@ -375,7 +375,7 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 
 	}
 
-	if filters, ok := params.Filters["artistIds"]; ok {
+	if filters, ok := params.Filters["artist_id"]; ok {
 		for _, f := range filters {
 			newFilter, err := query.NewFilter(query.Equal, f.Values...)
 			if err != nil {
