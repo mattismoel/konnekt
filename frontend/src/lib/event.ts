@@ -119,18 +119,3 @@ export const eventById = async (id: number): Promise<Event> => {
 
 	return event
 }
-
-export const artistEvents = async (artistId: number): Promise<ListResult<Event>> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/events?` + new URLSearchParams({
-		"filter": `artist_id=${artistId.toString()}`,
-	}))
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not get artist events", err.message)
-	}
-
-	const eventResult = createListResult(eventSchema).parse(await res.json())
-
-	return eventResult
-}
