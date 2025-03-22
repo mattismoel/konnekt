@@ -2,6 +2,7 @@ package query
 
 import (
 	"slices"
+	"strings"
 )
 
 const (
@@ -166,7 +167,8 @@ func IsOrderingAllowed(orderKey string, allowedKeys ...string) bool {
 
 // Checks whether the Order string is valid, i.e. is either "ASC" or "DESC"
 func (o Order) Valid() bool {
-	return o == OrderAscending || o == OrderDescending
+	return Order(strings.ToUpper(string(o))) == OrderAscending ||
+		Order(strings.ToUpper(string(o))) == OrderDescending
 }
 
 // Checks whether or not two list queries are equal.
