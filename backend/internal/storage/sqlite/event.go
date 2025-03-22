@@ -330,8 +330,13 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 		return nil, err
 	}
 
-	if len(params.OrderBy) > 0 {
-		err := q.WithOrdering(params.OrderBy)
+	if order, ok := params.OrderBy["from_date"]; ok {
+		err := q.WithOrdering(map[string]query.Order{"c.from_date": order})
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := q.WithOrdering(map[string]query.Order{"c.from_date": query.OrderAscending})
 		if err != nil {
 			return nil, err
 		}
