@@ -154,9 +154,9 @@ func (q *Query) AddLine(s string) {
 //	db.QueryContext(ctx, queryString, args...)
 func (q Query) Build() (string, []any) {
 	q.addFilterString()
+	q.addOrderingString()
 	q.addLimitString()
 	q.addOffsetString()
-	q.addOrderingString()
 
 	return q.baseQuery, q.args
 }
