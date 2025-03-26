@@ -14,6 +14,8 @@
 	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
 	import CreateConcertCard from './CreateConcertCard.svelte';
 
+	import PlusIcon from '~icons/mdi/plus';
+
 	type Props = {
 		event: Event | null;
 		artists: Artist[];
@@ -103,15 +105,20 @@
 					bind:value={form.title}
 				/>
 				<div class="flex flex-col">
-					<Selector
-						class="w-full"
-						onchange={(e) => (form.venueId = parseInt(e.currentTarget.value))}
-						value={form.venueId.toString()}
-						entries={venues.map((v) => ({
-							name: `${v.name}, ${v.city}`,
-							value: v.id.toString()
-						}))}
-					/>
+					<div class="flex gap-2">
+						<Selector
+							class="w-full"
+							onchange={(e) => (form.venueId = parseInt(e.currentTarget.value))}
+							value={form.venueId.toString()}
+							entries={venues.map((v) => ({
+								name: `${v.name}, ${v.city}`,
+								value: v.id.toString()
+							}))}
+						/>
+						<form action="/admin/venues">
+							<Button type="submit"><PlusIcon />Tilføj</Button>
+						</form>
+					</div>
 					<FieldError errors={formError?.flatten().fieldErrors['venueId']} />
 				</div>
 			</div>
