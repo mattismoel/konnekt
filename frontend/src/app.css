@@ -13,7 +13,7 @@
 }
 
 .px-auto {
-  @apply px-6 sm:px-16 md:px-32 lg:px-64;
+  @apply px-6 sm:px-16 md:px-32 lg:px-48 xl:px-64;
 }
 
 @keyframes slide {
