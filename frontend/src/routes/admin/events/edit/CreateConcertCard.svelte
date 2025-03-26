@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { z } from 'zod';
 
-	import { goto, invalidateAll } from '$app/navigation';
 	import type { concertForm } from '$lib/concert';
 	import type { Artist } from '$lib/artist';
 
@@ -11,7 +10,6 @@
 	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
 
 	import PlusIcon from '~icons/mdi/plus';
-	import RefreshIcon from '~icons/mdi/refresh';
 	import CloseIcon from '~icons/mdi/close';
 	import RightArrowIcon from '~icons/mdi/arrow-right';
 
@@ -32,13 +30,13 @@
 </script>
 
 <Card class="relative flex-1 space-y-4">
-	<button
-		type="button"
-		class="hover:text-text absolute top-4 right-4 text-zinc-500"
-		onclick={onDelete}><CloseIcon /></button
-	>
 	<div class="space-y-8">
-		<h3 class="text-xl font-semibold">#{idx}</h3>
+		<div class="flex items-center justify-between">
+			<h3 class="text-xl font-semibold">#{idx}</h3>
+			<button type="button" class="hover:text-text text-zinc-500" onclick={onDelete}
+				><CloseIcon /></button
+			>
+		</div>
 		<div class="flex w-full gap-4">
 			<Selector
 				value={concert.artistID.toString()}
@@ -49,21 +47,25 @@
 					value: a.id.toString()
 				}))}
 			/>
-			<button type="button" onclick={invalidateAll}>
-				<RefreshIcon class="text-zinc-500" />
-			</button>
-			<Button variant="primary" onclick={() => goto('/admin/artists/edit')}>
-				<PlusIcon />Ny
-			</Button>
+			<form action="/admin/artists/edit">
+				<Button variant="primary" type="submit">
+					<PlusIcon />Ny
+				</Button>
+			</form>
 		</div>
 		<div class="flex items-center gap-8">
 			<DateTimePicker
+				class="w-full"
 				label="Fra"
 				defaultValue={concert.from}
 				onChange={(d) => (concert.from = d)}
 			/>
-			<RightArrowIcon />
-			<DateTimePicker label="Til" defaultValue={concert.to} onChange={(d) => (concert.to = d)} />
+			<DateTimePicker
+				class="w-full"
+				label="Til"
+				defaultValue={concert.to}
+				onChange={(d) => (concert.to = d)}
+			/>
 		</div>
 	</div>
 </Card>
