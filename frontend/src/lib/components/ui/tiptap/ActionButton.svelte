@@ -1,0 +1,23 @@
+<script lang="ts">
+	import { cn } from '$lib/clsx';
+	import type { HTMLAttributes } from 'svelte/elements';
+
+	type Props = HTMLAttributes<HTMLButtonElement> & {
+		active: boolean;
+	};
+
+	let { active, children, ...rest }: Props = $props();
+
+	$inspect(active);
+</script>
+
+<button
+	{...rest}
+	type="button"
+	class:active
+	class={cn('px-4 py-1 hover:bg-zinc-700', {
+		'bg-zinc-500': active
+	})}
+>
+	{@render children?.()}
+</button>
