@@ -84,8 +84,8 @@
 	{@render generalSection()}
 	{@render concertsSection()}
 	<div class="flex gap-4">
-		<Button expandX variant="secondary">Preview</Button>
-		<Button type="submit" expandX>Offentligør</Button>
+		<Button variant="secondary">Preview</Button>
+		<Button type="submit">Offentligør</Button>
 	</div>
 </form>
 
@@ -142,7 +142,7 @@
 				/>
 			{/each}
 		</div>
-		<Button onclick={addConcert} expandX variant="ghost">+ Tilføj koncert</Button>
+		<Button onclick={addConcert} variant="ghost">+ Tilføj koncert</Button>
 		<FieldError errors={formError?.flatten().fieldErrors['concerts']} />
 	</div>
 {/snippet}
