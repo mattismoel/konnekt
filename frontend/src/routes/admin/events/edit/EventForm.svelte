@@ -16,6 +16,7 @@
 
 	import PlusIcon from '~icons/mdi/plus';
 	import { goto } from '$app/navigation';
+	import TipTapEditor from '$lib/components/ui/tiptap/TipTapEditor.svelte';
 
 	type Props = {
 		event: Event | null;
@@ -47,6 +48,8 @@
 				to: c.to
 			})) || []
 	});
+
+	$inspect('DESC', form.description);
 
 	let formError = $state<ZodError>();
 	let imageUrl = $derived(form.image ? URL.createObjectURL(form.image) : event?.imageUrl || '');
@@ -126,11 +129,12 @@
 				label="Billet-URL"
 				bind:value={form.ticketUrl}
 			/>
-			<Input
+			<TipTapEditor bind:value={form.description} />
+			<!-- <Input
 				errors={formError?.flatten().fieldErrors['description']}
 				label="Beskrivelse"
 				bind:value={form.description}
-			/>
+			/> -->
 		</div>
 	</div>
 {/snippet}
