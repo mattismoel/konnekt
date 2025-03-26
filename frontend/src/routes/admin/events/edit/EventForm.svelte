@@ -104,9 +104,9 @@
 				/>
 				<div class="flex flex-col">
 					<Selector
-						onChange={(value) => (form.venueId = parseInt(value))}
 						class="w-full"
-						selected={form.venueId.toString()}
+						onchange={(e) => (form.venueId = parseInt(e.currentTarget.value))}
+						value={form.venueId.toString()}
 						entries={venues.map((v) => ({
 							name: `${v.name}, ${v.city}`,
 							value: v.id.toString()

@@ -41,8 +41,8 @@
 		<h3 class="text-xl font-semibold">#{idx}</h3>
 		<div class="flex w-full gap-4">
 			<Selector
-				selected={concert.artistID.toString()}
-				onChange={(value) => selectArtist(parseInt(value))}
+				value={concert.artistID.toString()}
+				onchange={(e) => selectArtist(parseInt(e.currentTarget.value))}
 				class="w-full"
 				entries={artists.map((a) => ({
 					name: a.name,
