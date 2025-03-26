@@ -19,8 +19,6 @@
 
 	type Position = { x: number; y: number };
 	let mousePos = $state<Position>({ x: 0, y: 0 });
-
-	$inspect(mousePos);
 </script>
 
 <svelte:window

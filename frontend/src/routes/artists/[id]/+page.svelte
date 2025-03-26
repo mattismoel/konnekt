@@ -13,7 +13,6 @@
 	let trackId = $derived(trackIdFromUrl(artist.previewUrl));
 
 	let contentScrollPosY = $state(0);
-	$inspect(contentScrollPosY);
 </script>
 
 <main>

@@ -27,7 +27,6 @@
 			}
 
 			toaster.addToast(`Kunne ikke ${isEdit ? 'opdatere' : 'lave'} kunstner...`, '', 'error');
-			console.log(e);
 		}
 	};
 </script>

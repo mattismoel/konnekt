@@ -40,8 +40,6 @@
 	let showGenreModal = $state(false);
 	let formError = $state<ZodError | null>(null);
 
-	$inspect(formError?.flatten());
-
 	let imageUrl = $derived(form.image ? URL.createObjectURL(form.image) : artist?.imageUrl || '');
 
 	let trackId = $derived(artist?.previewUrl ? trackIdFromUrl(form.previewUrl) : '');
