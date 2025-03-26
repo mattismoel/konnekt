@@ -12,6 +12,7 @@
 	import PlusIcon from '~icons/mdi/plus';
 	import CloseIcon from '~icons/mdi/close';
 	import RightArrowIcon from '~icons/mdi/arrow-right';
+	import { goto } from '$app/navigation';
 
 	type Props = {
 		artists: Artist[];
@@ -47,11 +48,9 @@
 					value: a.id.toString()
 				}))}
 			/>
-			<form action="/admin/artists/edit">
-				<Button variant="primary" type="submit">
-					<PlusIcon />Ny
-				</Button>
-			</form>
+			<Button variant="primary" onclick={() => goto('/admin/artists/edit')}>
+				<PlusIcon />Ny
+			</Button>
 		</div>
 		<div class="flex items-center gap-8">
 			<DateTimePicker

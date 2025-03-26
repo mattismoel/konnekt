@@ -15,6 +15,7 @@
 	import CreateConcertCard from './CreateConcertCard.svelte';
 
 	import PlusIcon from '~icons/mdi/plus';
+	import { goto } from '$app/navigation';
 
 	type Props = {
 		event: Event | null;
@@ -115,9 +116,7 @@
 								value: v.id.toString()
 							}))}
 						/>
-						<form action="/admin/venues">
-							<Button type="submit"><PlusIcon />Tilføj</Button>
-						</form>
+						<Button type="submit" onclick={() => goto('/admin/venues')}><PlusIcon />Tilføj</Button>
 					</div>
 					<FieldError errors={formError?.flatten().fieldErrors['venueId']} />
 				</div>
