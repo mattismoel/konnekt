@@ -1,12 +1,13 @@
 <script lang="ts">
 	import type { Event } from '$lib/event';
-	import { formatDateStr } from '$lib/time';
 	import CalendarIcon from '~icons/mdi/calendar';
 	import VenueIcon from '~icons/mdi/map-marker';
 	import QRCode from 'qrcode';
 	import type { HTMLAttributes } from 'svelte/elements';
 	import { cn } from '$lib/clsx';
 	import Logo from '$lib/assets/Logo.svelte';
+	import { format } from 'date-fns';
+	import { DATE_FORMAT } from '$lib/time';
 
 	type Props = HTMLAttributes<HTMLDivElement> & {
 		event: Event;
@@ -59,7 +60,7 @@
 				<div class="flex flex-1 flex-col justify-center text-zinc-400">
 					<div class="flex gap-2">
 						<CalendarIcon />
-						<time>{formatDateStr(earliestConcert.from)}</time>
+						<time>{format(earliestConcert.from, DATE_FORMAT)}</time>
 					</div>
 					<div class="flex gap-2">
 						<VenueIcon />
@@ -83,7 +84,7 @@
 
 {#snippet holes()}
 	<div
-		class="absolute top-0 right-28 z-10 h-12 w-12 -translate-y-1/2 translate-x-1/2 rounded-full bg-zinc-800 bg-gradient-to-r from-zinc-700 to-zinc-900 p-[1px]"
+		class="absolute top-0 right-28 z-10 h-12 w-12 translate-x-1/2 -translate-y-1/2 rounded-full bg-zinc-800 bg-gradient-to-r from-zinc-700 to-zinc-900 p-[1px]"
 	>
 		<div class="h-full w-full rounded-full bg-zinc-950"></div>
 	</div>

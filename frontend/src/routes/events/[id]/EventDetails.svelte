@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { formatDateStr } from '$lib/time';
 	import { earliestConcert } from '$lib/concert';
 	import type { Event } from '$lib/event';
 
@@ -10,6 +9,8 @@
 	import CalendarIcon from '~icons/mdi/calendar';
 	import MusicIcon from '~icons/mdi/music';
 	import GroupIcon from '~icons/mdi/account-group';
+	import { format } from 'date-fns';
+	import { DATE_FORMAT } from '$lib/time';
 
 	type Props = {
 		event: Event;
@@ -38,7 +39,7 @@
 			<section class="w-full space-y-1 text-zinc-300">
 				<div class="flex items-center gap-2">
 					<CalendarIcon />
-					<time>{formatDateStr(fromDate || new Date())}</time>
+					<time>{format(fromDate || new Date(), DATE_FORMAT)}</time>
 				</div>
 				<div class="flex items-center gap-2">
 					<GroupIcon />

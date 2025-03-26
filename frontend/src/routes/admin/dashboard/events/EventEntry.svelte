@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { DATETIME_FORMAT } from '$lib/time';
+
 	import type { Event } from '$lib/event';
 
 	import { earliestConcert, latestConcert } from '$lib/concert';
-	import { formatDateStr } from '$lib/time';
 	import { format } from 'date-fns';
 
 	import TrashIcon from '~icons/mdi/trash';
@@ -22,12 +23,8 @@
 	href="/admin/events/edit?id={event.id}"
 >
 	<span class="flex-1">{event.title}</span>
-	<span class="line-clamp-1 flex-1 text-zinc-500"
-		>{formatDateStr(fromDate)}, {format(fromDate, 'HH:mm')}</span
-	>
-	<span class="line-clamp-1 flex-1 text-zinc-500"
-		>{formatDateStr(toDate)}, {format(toDate, 'HH:mm')}</span
-	>
+	<span class="line-clamp-1 flex-1 text-zinc-500">{format(fromDate, DATETIME_FORMAT)}</span>
+	<span class="line-clamp-1 flex-1 text-zinc-500">{format(toDate, DATETIME_FORMAT)}</span>
 	<button class="text-zinc-400 hover:text-red-500">
 		<TrashIcon />
 	</button>
