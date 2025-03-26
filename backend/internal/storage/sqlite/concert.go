@@ -76,8 +76,8 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 	res, err := tx.ExecContext(ctx, query,
 		sql.Named("event_id", c.EventID),
 		sql.Named("artist_id", c.ArtistID),
-		sql.Named("from_date", c.From),
-		sql.Named("to_date", c.To),
+		sql.Named("from_date", c.From.UTC().Format(time.RFC3339)),
+		sql.Named("to_date", c.To.UTC().Format(time.RFC3339)),
 	)
 
 	if err != nil {

@@ -57,9 +57,13 @@
 			</Button>
 		</div>
 		<div class="flex items-center gap-8">
-			<DateTimePicker label="Fra" bind:date={concert.from} />
+			<DateTimePicker
+				label="Fra"
+				defaultValue={concert.from}
+				onChange={(d) => (concert.from = d)}
+			/>
 			<RightArrowIcon />
-			<DateTimePicker label="Til" bind:date={concert.to} />
+			<DateTimePicker label="Til" defaultValue={concert.to} onChange={(d) => (concert.to = d)} />
 		</div>
 	</div>
 </Card>

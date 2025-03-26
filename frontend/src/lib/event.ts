@@ -27,7 +27,7 @@ export const eventForm = z.object({
 export type Event = z.infer<typeof eventSchema>
 
 export const createEvent = async (form: z.infer<typeof eventForm>, init?: RequestInit): Promise<Event> => {
-	const { image, ...rest } = form
+	const { image, concerts, ...rest } = form
 
 	if (!image) throw new APIError(400, "Could not create event", "Cover image must be set")
 
@@ -37,7 +37,15 @@ export const createEvent = async (form: z.infer<typeof eventForm>, init?: Reques
 		...init,
 		method: "POST",
 		credentials: "include",
-		body: JSON.stringify({ ...rest, imageUrl }),
+		body: JSON.stringify({
+			...rest,
+			concerts: concerts.map(c => ({
+				...c,
+				from: c.from.toISOString(),
+				to: c.to.toISOString(),
+			})),
+			imageUrl
+		}),
 	})
 
 	if (!res.ok) {
@@ -55,13 +63,21 @@ export const updateEvent = async (form: z.infer<typeof eventForm>, eventId: numb
 	if (!success) throw error
 
 	const imageUrl = data.image ? await uploadEventCoverImage(data.image) : undefined
-	const { image, ...rest } = data;
+	const { image, concerts, ...rest } = data;
 
 	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${eventId}`, {
 		...init,
 		method: "PUT",
 		credentials: "include",
-		body: JSON.stringify({ ...rest, imageUrl })
+		body: JSON.stringify({
+			...rest,
+			concerts: concerts.map(c => ({
+				...c,
+				from: c.from.toISOString(),
+				to: c.to.toISOString(),
+			})),
+			imageUrl
+		})
 	})
 
 	if (!res.ok) {

@@ -1,24 +1,31 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
 	import Input from './Input.svelte';
-	import { format, formatISO } from 'date-fns';
+	import { formatHTMLDatetimeLocal } from '$lib/time';
+	import { formatISO } from 'date-fns';
 
-	type Props = HTMLInputAttributes & {
+	type Props = Omit<HTMLInputAttributes, 'defaultValue'> & {
 		label: string;
-		date: Date;
+		defaultValue: Date;
+		onChange: (newDate: Date) => void;
 	};
 
-	let { label, date = $bindable(), ...rest }: Props = $props();
+	let { label, defaultValue, onChange, ...rest }: Props = $props();
 
-	let value = $derived(format(date, "yyyy-MM-dd'T'HH:mm"));
+	let dateString = $state(formatISO(defaultValue).slice(0, 16));
+
+	const handleChange = (e: Event) => {
+		const currentTarget = e.currentTarget as HTMLInputElement;
+		const newDate = new Date(currentTarget.value);
+		onChange(newDate);
+	};
 </script>
 
 <Input
-	expandX
 	nonEmpty
 	type="datetime-local"
-	onchange={(e) => (date = e.currentTarget.valueAsDate || new Date())}
-	{value}
+	value={dateString}
+	onchange={handleChange}
 	{label}
 	{...rest}
 />
