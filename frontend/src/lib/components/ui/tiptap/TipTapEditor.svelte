@@ -103,6 +103,7 @@
 					<ListOrderedIcon />
 				</ActionButton>
 			</ActionGroup>
+			<div class="flex-1"></div>
 			<ActionGroup>
 				<ActionButton
 					active={editor.isActive('bold')}
