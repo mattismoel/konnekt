@@ -80,12 +80,12 @@
 	{#if editor}
 		<Toolbar>
 			<ActionGroup>
-				{#each HEADER_LEVELS as level, i}
+				{#each HEADER_LEVELS as level}
 					<ActionButton
 						active={editor.isActive('heading', { level })}
 						onclick={() => editor?.chain().focus().toggleHeading({ level }).run()}
 					>
-						H{i + 1}
+						H{level}
 					</ActionButton>
 				{/each}
 			</ActionGroup>
