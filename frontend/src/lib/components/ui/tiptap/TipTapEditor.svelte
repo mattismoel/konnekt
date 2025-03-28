@@ -49,7 +49,11 @@
 				Bold,
 				Italic,
 				Underline,
-				Placeholder.configure({ placeholder: 'Eventbeskrivelse...' }),
+				Placeholder.configure({
+					placeholder: 'Eventbeskrivelse...',
+					emptyNodeClass:
+						'cursor-text before:content-[attr(data-placeholder)] before:absolute before:text-text/50 before:pointer-events-none'
+				}),
 				Heading.configure({ levels: HEADER_LEVELS }),
 				BulletList,
 				ListItem,
