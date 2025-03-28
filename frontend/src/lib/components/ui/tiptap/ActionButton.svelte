@@ -15,7 +15,7 @@
 	{...rest}
 	type="button"
 	class:active
-	class={cn('px-4 py-1 hover:bg-zinc-700', {
+	class={cn('px-3 py-1 text-sm hover:bg-zinc-700', {
 		'bg-zinc-500': active
 	})}
 >
