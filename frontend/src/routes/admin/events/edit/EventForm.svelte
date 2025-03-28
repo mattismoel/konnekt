@@ -81,23 +81,14 @@
 	};
 </script>
 
-<form class="space-y-8" onsubmit={submit}>
+<form class="space-y-16" onsubmit={submit}>
 	<h1 class="mb-8 text-2xl font-bold">Lav event</h1>
+	<!-- GENERAL -->
 	<div>
-		<ImagePreview src={imageUrl || ''} onChange={(file) => (form.image = file)} />
-		<FieldError errors={formError?.flatten().fieldErrors['imageUrl']} />
-	</div>
-	{@render generalSection()}
-	{@render concertsSection()}
-	<div class="flex gap-4">
-		<Button variant="secondary">Preview</Button>
-		<Button type="submit">Offentligør</Button>
-	</div>
-</form>
-
-{#snippet generalSection()}
-	<div>
-		<h1 class="mb-4 text-2xl font-bold">Generelt</h1>
+		<div>
+			<ImagePreview src={imageUrl || ''} onChange={(file) => (form.image = file)} />
+			<FieldError errors={formError?.flatten().fieldErrors['imageUrl']} />
+		</div>
 		<FieldError errors={formError?.flatten().fieldErrors['image']} />
 		<div class="space-y-8">
 			<div class="flex gap-4 *:flex-1">
@@ -129,17 +120,16 @@
 				label="Billet-URL"
 				bind:value={form.ticketUrl}
 			/>
-			<TipTapEditor bind:value={form.description} />
-			<!-- <Input
-				errors={formError?.flatten().fieldErrors['description']}
-				label="Beskrivelse"
-				bind:value={form.description}
-			/> -->
 		</div>
 	</div>
-{/snippet}
 
-{#snippet concertsSection()}
+	<!-- EVENT DESCRIPTION -->
+	<div>
+		<h1 class="mb-4 text-2xl font-bold">Eventbeskrivelse</h1>
+		<TipTapEditor bind:value={form.description} />
+	</div>
+
+	<!-- CONCERTS SECTION -->
 	<div class="space-y-6">
 		<h1 class="text-2xl font-bold">Koncerter</h1>
 		<div class="space-y-4">
@@ -155,4 +145,10 @@
 		<Button onclick={addConcert} variant="ghost">+ Tilføj koncert</Button>
 		<FieldError errors={formError?.flatten().fieldErrors['concerts']} />
 	</div>
-{/snippet}
+
+	<!-- ACTIONS -->
+	<div class="flex gap-4">
+		<Button variant="secondary">Preview</Button>
+		<Button type="submit">Offentligør</Button>
+	</div>
+</form>
