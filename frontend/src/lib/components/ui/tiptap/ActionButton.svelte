@@ -7,8 +7,6 @@
 	};
 
 	let { active, children, ...rest }: Props = $props();
-
-	$inspect(active);
 </script>
 
 <button

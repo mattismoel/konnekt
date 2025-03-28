@@ -49,8 +49,6 @@
 			})) || []
 	});
 
-	$inspect('DESC', form.description);
-
 	let formError = $state<ZodError>();
 	let imageUrl = $derived(form.image ? URL.createObjectURL(form.image) : event?.imageUrl || '');
 
