@@ -82,6 +82,7 @@
 			<ActionGroup>
 				{#each HEADER_LEVELS as level}
 					<ActionButton
+						title="Heading {level}"
 						active={editor.isActive('heading', { level })}
 						onclick={() => editor?.chain().focus().toggleHeading({ level }).run()}
 					>
@@ -91,12 +92,14 @@
 			</ActionGroup>
 			<ActionGroup>
 				<ActionButton
+					title="Bullet List"
 					active={editor.isActive('bulletList')}
 					onclick={() => editor?.chain().focus().toggleBulletList().run()}
 				>
 					<ListBulletedIcon />
 				</ActionButton>
 				<ActionButton
+					title="Numbered List"
 					active={editor.isActive('orderedList')}
 					onclick={() => editor?.chain().focus().toggleOrderedList().run()}
 				>
@@ -106,18 +109,21 @@
 			<div class="flex-1"></div>
 			<ActionGroup>
 				<ActionButton
+					title="Toggle Bold"
 					active={editor.isActive('bold')}
 					onclick={() => editor?.chain().focus().toggleBold().run()}
 				>
 					<BoldIcon />
 				</ActionButton>
 				<ActionButton
+					title="Toggle Italic"
 					active={editor.isActive('italic')}
 					onclick={() => editor?.chain().focus().toggleItalic().run()}
 				>
 					<ItalicIcon />
 				</ActionButton>
 				<ActionButton
+					title="Toggle Underline"
 					active={editor.isActive('underline')}
 					onclick={() => editor?.chain().focus().toggleUnderline().run()}
 				>
