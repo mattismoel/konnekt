@@ -31,6 +31,12 @@
 		artists
 			.flatMap((artist) => artist.genres)
 			.filter((value, index, self) => index === self.findIndex((t) => t.id === value.id))
+			.sort((a, b) => {
+				const nameA = a.name.toUpperCase();
+				const nameB = b.name.toUpperCase();
+
+				return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
+			})
 	);
 </script>
 
