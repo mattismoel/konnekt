@@ -13,32 +13,19 @@
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Fader from '$lib/components/ui/Fader.svelte';
+	import GlowCursor from '$lib/components/GlowCursor.svelte';
 
 	let { data } = $props();
 	let { events } = $derived(data);
 
-	type Position = { x: number; y: number };
-	let mousePos = $state<Position>({ x: 0, y: 0 });
 </script>
-
-<svelte:window
-	onmousemove={(e) =>
-		(mousePos = {
-			x: e.clientX,
-			y: e.clientY + e.currentTarget.scrollY
-		})}
-/>
 
 <div>
 	<section class="px-auto -z-50 flex h-svh flex-col justify-center gap-16">
 		<div
 			class="pointer-events-none absolute top-0 left-0 isolate -z-10 h-full w-full overflow-hidden"
 		>
-			<div
-				style:top={`${mousePos.y}px`}
-				style:left={`${mousePos.x}px`}
-				class="pointer-events-none absolute z-10 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-soft-light blur-[265px] brightness-200"
-			></div>
+			<GlowCursor />
 			<img
 				src={LandingImage}
 				alt=""
