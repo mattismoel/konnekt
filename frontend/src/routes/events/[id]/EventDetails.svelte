@@ -23,6 +23,14 @@
 	let fromDate = $derived(earliestConcert(event.concerts)?.from);
 
 	let artistNames = $derived(event.concerts.map((concert) => concert.artist.name));
+	let artists = $derived(event.concerts.map(({ artist }) => artist));
+
+	// https://stackoverflow.com/questions/2218999/how-to-remove-all-duplicates-from-an-array-of-objects
+	const genres = $derived(
+		artists
+			.flatMap((artist) => artist.genres)
+			.filter((value, index, self) => index === self.findIndex((t) => t.id === value.id))
+	);
 </script>
 
 <section class="relative h-[calc((100vh/4)*3)] overflow-hidden">
@@ -49,11 +57,7 @@
 				</div>
 				<div class="flex items-center gap-2">
 					<MusicIcon />
-					<span>{['EDM', 'Dance', 'House', "Drum'n'Bass"].join(', ')}</span>
-				</div>
-				<div class="flex items-center gap-2">
-					<MapIcon />
-					<address class="not-italic">{event.venue.name}, {event.venue.city}</address>
+					<span>{genres.map(({ name }) => name).join(', ')}</span>
 				</div>
 			</section>
 			<!-- CTA -->
