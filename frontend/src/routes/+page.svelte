@@ -5,11 +5,11 @@
 	import LogoScroller from '$lib/components/ui/LogoScroller.svelte';
 	import RightArrowIcon from '~icons/mdi/arrow-right';
 
-	import OdenseKommuneLogo from '$lib/assets/OdenseKommuneLogo.svg';
-	import UngOdenseLogo from '$lib/assets/ungodense.svg';
-	import PostenLogo from '$lib/assets/posten.svg';
-	import KulturMaskinenLogo from '$lib/assets/kulturmaskinen.svg';
-	import SpillestedetOdenseLogo from '$lib/assets/spillestedet-odense.svg';
+	import OdenseKommuneLogo from '$lib/assets/logos/odense-kommune-logo.svg';
+	import UngOdenseLogo from '$lib/assets/logos/ungodense-logo.svg';
+	import PostenLogo from '$lib/assets/logos/posten-logo.svg';
+	import KulturMaskinenLogo from '$lib/assets/logos/kulturmaskinen-logo.svg';
+	import SpillestedetOdenseLogo from '$lib/assets/logos/spillestedet-odense-logo.svg';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Fader from '$lib/components/ui/Fader.svelte';
