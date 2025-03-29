@@ -22,7 +22,6 @@
 	let { event, active, prefix }: Props = $props();
 	let fromDate = $derived(earliestConcert(event.concerts)?.from);
 
-	let artistNames = $derived(event.concerts.map((concert) => concert.artist.name));
 	let artists = $derived(event.concerts.map(({ artist }) => artist));
 
 	// https://stackoverflow.com/questions/2218999/how-to-remove-all-duplicates-from-an-array-of-objects
@@ -52,8 +51,8 @@
 					<time>{format(fromDate || new Date(), DATE_FORMAT)}</time>
 				</div>
 				<div class="flex items-center gap-2">
-					<GroupIcon />
-					<span>{artistNames.join(', ')}</span>
+					<MapIcon />
+					<address class="not-italic">{event.venue.name}, {event.venue.city}</address>
 				</div>
 				<div class="flex items-center gap-2">
 					<MusicIcon />
