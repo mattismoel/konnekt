@@ -11,6 +11,7 @@
 	import GroupIcon from '~icons/mdi/account-group';
 	import { format } from 'date-fns';
 	import { DATE_FORMAT } from '$lib/time';
+	import GlowCursor from '$lib/components/GlowCursor.svelte';
 
 	type Props = {
 		event: Event;
@@ -28,12 +29,13 @@
 	<img
 		src={event?.imageUrl}
 		alt={event?.title}
-		class="absolute top-0 left-0 h-full w-full object-cover"
+		class="absolute top-0 left-0 h-full w-full object-cover brightness-75"
 	/>
-	<Fader direction="up" class="absolute h-[512px] from-zinc-950 md:h-96" />
-	<div class="px-auto absolute bottom-0 left-0 flex w-full flex-col gap-y-2 px-12 pb-12">
+	<Fader direction="up" class="absolute z-10 h-[512px] from-zinc-950 md:h-96" />
+	<GlowCursor class="z-0" />
+	<div class="px-auto absolute bottom-0 left-0 z-20 flex w-full flex-col gap-y-2 px-12 pb-12">
 		<span class="mb-1 font-medium">{prefix}</span>
-		<h1 class="mb-4 w-full text-5xl font-bold md:text-8xl">{event?.title}</h1>
+		<h1 class="w-full text-5xl font-bold md:text-9xl">{event?.title}</h1>
 		<div class="flex w-full flex-col items-end gap-8 md:flex-row">
 			<!-- DETAILS -->
 			<section class="w-full space-y-1 text-zinc-300">
