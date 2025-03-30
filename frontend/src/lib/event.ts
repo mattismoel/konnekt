@@ -4,6 +4,7 @@ import { venueSchema } from "./venue";
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { createListResult, type ListResult } from "./list-result";
 import { APIError, apiErrorSchema } from "./error";
+import { startOfToday } from "date-fns";
 
 export const eventSchema = z.object({
 	id: z.number().positive(),
@@ -119,6 +120,17 @@ export const listEvents = async (params: URLSearchParams): Promise<ListResult<Ev
 	}
 
 	const result = createListResult(eventSchema).parse(await res.json())
+
+	return result
+}
+
+/**
+ * @description Returns all upcoming events, if any.
+ */
+export const listUpcomingEvents = async (): Promise<ListResult<Event>> => {
+	const result = await listEvents(new URLSearchParams({
+		"filter": `from_date>=${startOfToday().toISOString()}`,
+	}))
 
 	return result
 }
