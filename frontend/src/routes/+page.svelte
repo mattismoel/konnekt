@@ -14,10 +14,10 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Fader from '$lib/components/ui/Fader.svelte';
 	import GlowCursor from '$lib/components/GlowCursor.svelte';
+	import ArtistDisplay from '$lib/components/ui/ArtistDisplay.svelte';
 
 	let { data } = $props();
 	let { events } = $derived(data);
-
 </script>
 
 <div>
@@ -95,12 +95,14 @@
 
 		<!-- EVENTS -->
 		<section>
-			<h1 class="mb-8 text-2xl font-bold">Kommende events</h1>
-			<Caroussel>
-				{#each events as event (event.id)}
-					<EventCard {event} />
-				{/each}
-			</Caroussel>
+			{#if events.length > 0}
+				<h1 class="mb-8 text-2xl font-bold">Kommende events</h1>
+				<Caroussel>
+					{#each events as event (event.id)}
+						<EventCard {event} />
+					{/each}
+				</Caroussel>
+			{/if}
 		</section>
 	</section>
 </div>
