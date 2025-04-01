@@ -149,5 +149,5 @@
 		</div>
 		<FieldError errors={formError?.flatten().fieldErrors['socials']} />
 	</div>
-	<Button type="submit" expandX>Offentligør</Button>
+	<Button type="submit">Offentligør</Button>
 </form>
