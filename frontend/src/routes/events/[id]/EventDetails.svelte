@@ -38,6 +38,16 @@
 				return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
 			})
 	);
+
+	const locationUrl = $derived(
+		new URL(
+			`https://www.google.com/maps/search/?` +
+				new URLSearchParams({
+					api: '1',
+					query: `${event.venue.name},${event.venue.city},${event.venue.countryCode}`
+				})
+		)
+	);
 </script>
 
 <section class="relative h-[calc((100vh/4)*3)] overflow-hidden">
@@ -58,10 +68,10 @@
 					<CalendarIcon />
 					<time>{format(fromDate || new Date(), DATE_FORMAT)}</time>
 				</div>
-				<div class="flex items-center gap-2">
+				<a href={locationUrl.toString()} class="flex items-center gap-2">
 					<MapIcon />
 					<address class="not-italic">{event.venue.name}, {event.venue.city}</address>
-				</div>
+				</a>
 				<div class="flex items-center gap-2">
 					<MusicIcon />
 					<span>{genres.map(({ name }) => name).join(', ')}</span>
