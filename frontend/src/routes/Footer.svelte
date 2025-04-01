@@ -12,7 +12,6 @@
 				<li><a href="/events">Events</a></li>
 				<li><a href="/artists">Kunstnere</a></li>
 				<li><a href="/om-os">Om os</a></li>
-				<li><a href="/sponsorer">Sponsorer</a></li>
 			</ul>
 		</div>
 		<!-- CONTACT INFORMATION -->
