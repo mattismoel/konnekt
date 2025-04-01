@@ -28,7 +28,10 @@
 			<div
 				class="z-10 flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-end"
 			>
-				<h1 style:word-spacing="100vw" class="text-7xl font-bold md:text-8xl lg:text-9xl">
+				<h1
+					style:word-spacing="100vw"
+					class="font-heading text-7xl font-bold md:text-8xl lg:text-9xl"
+				>
 					{artist.name}
 				</h1>
 				<div class="text-text/50 flex gap-4 text-3xl">
@@ -52,12 +55,14 @@
 			{/if}
 
 			{#if events.length > 0}
-				<h1 class="text-2xl font-bold">Kommende events.</h1>
-				<Caroussel>
-					{#each events as event (event.id)}
-						<EventCard {event} />
-					{/each}
-				</Caroussel>
+				<section>
+					<h1 class="font-heading mb-8 text-2xl font-bold">Kommende events.</h1>
+					<Caroussel>
+						{#each events as event (event.id)}
+							<EventCard {event} />
+						{/each}
+					</Caroussel>
+				</section>
 			{/if}
 		</article>
 	</div>

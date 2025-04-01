@@ -80,7 +80,13 @@
 </script>
 
 <form class="space-y-16" onsubmit={submit}>
-	<h1 class="mb-8 text-2xl font-bold">Lav event</h1>
+	<h1 class="font-heading mb-8 text-4xl font-bold">
+		{#if event}
+			Redigér event
+		{:else}
+			Lav event
+		{/if}
+	</h1>
 	<!-- GENERAL -->
 	<div>
 		<div>
@@ -123,13 +129,13 @@
 
 	<!-- EVENT DESCRIPTION -->
 	<div>
-		<h1 class="mb-4 text-2xl font-bold">Eventbeskrivelse</h1>
+		<h1 class="font-heading mb-8 text-4xl font-bold">Eventbeskrivelse</h1>
 		<TipTapEditor bind:value={form.description} />
 	</div>
 
 	<!-- CONCERTS SECTION -->
 	<div class="space-y-6">
-		<h1 class="text-2xl font-bold">Koncerter</h1>
+		<h1 class="font-heading mb-8 text-4xl font-bold">Koncerter</h1>
 		<div class="space-y-4">
 			{#each form.concerts || [] as concert, i (concert.id)}
 				<CreateConcertCard

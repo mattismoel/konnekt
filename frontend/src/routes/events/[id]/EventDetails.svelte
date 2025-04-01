@@ -50,7 +50,7 @@
 	<GlowCursor class="z-0" />
 	<div class="px-auto absolute bottom-0 left-0 z-20 flex w-full flex-col gap-y-2 px-12 pb-12">
 		<span class="mb-1 font-medium">{prefix}</span>
-		<h1 class="w-full text-5xl font-bold md:text-9xl">{event?.title}</h1>
+		<h1 class="font-heading mb-4 w-full text-6xl font-bold md:text-9xl">{event?.title}</h1>
 		<div class="flex w-full flex-col items-end gap-8 md:flex-row">
 			<!-- DETAILS -->
 			<section class="w-full space-y-1 text-zinc-300">

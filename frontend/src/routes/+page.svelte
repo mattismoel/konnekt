@@ -33,7 +33,7 @@
 			/>
 		</div>
 		<section class="flex max-w-lg flex-col gap-8">
-			<h2 class="text-5xl">For et stærkere <b>fynsk musisk vækstlag</b></h2>
+			<h2 class="font-heading text-5xl">For et stærkere <b>fynsk musisk vækstlag</b></h2>
 			<p class="text-text/75">
 				En forening med formål, at støtte det lokale fynske musiske vækstlag og give aspirerende
 				musikere et springbræt til den danske musikscene.
@@ -57,7 +57,7 @@
 		<section class="space-y-8 py-16">
 			<!-- MISSION STATEMENT -->
 			<section>
-				<h1 class="mb-8 text-2xl font-bold">Vores mission</h1>
+				<h1 class="font-heading mb-8 text-2xl font-bold">Vores mission</h1>
 				<p class="text-text/75">
 					Foreningen Konnekt har som formål at støtte unge musikere og skabe en platform, hvor de
 					kan vise deres talent frem og få vigtig erfaring med liveoptrædener. Projektet skal gøre
@@ -96,7 +96,7 @@
 		<!-- EVENTS -->
 		<section>
 			{#if events.length > 0}
-				<h1 class="mb-8 text-2xl font-bold">Kommende events</h1>
+				<h1 class="font-heading mb-8 text-2xl font-bold">Kommende events</h1>
 				<Caroussel>
 					{#each events as event (event.id)}
 						<EventCard {event} />
