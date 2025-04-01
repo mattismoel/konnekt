@@ -23,6 +23,7 @@
 			<ul class="flex-1 space-y-2">
 				{@render sidebarEntry('Events', '/admin/dashboard/events')}
 				{@render sidebarEntry('Kunstenre', '/admin/dashboard/artists')}
+				{@render sidebarEntry('Venues', '/admin/dashboard/venues')}
 				{@render sidebarEntry('Generelt', '/admin/dashboard/general')}
 			</ul>
 		</div>

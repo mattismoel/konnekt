@@ -22,6 +22,7 @@
 
 	import PlusIcon from '~icons/mdi/plus';
 	import TrashIcon from '~icons/mdi/trash';
+	import Card from '$lib/components/ui/Card.svelte';
 
 	let { data } = $props();
 	let { venues } = $derived(data);
@@ -70,8 +71,8 @@
 	};
 </script>
 
-<main class="px-auto min-h-svh py-20">
-	<h1 class="mb-4 text-4xl font-bold">Venues</h1>
+<Card class="">
+	<h1 class="font-heading mb-4 text-4xl font-bold">Venues</h1>
 
 	<Table class="mb-8">
 		<TableHead>
@@ -82,8 +83,8 @@
 				<TableHeader alignment="right">Handling</TableHeader>
 			</TableRow>
 		</TableHead>
-		<TableBody>
-			<TableRow class="hover:bg-zinc-950">
+		<TableBody class="divide-zinc-800">
+			<TableRow class="hover:bg-zinc-900">
 				<InputCell bind:value={form.name} placeholder="Venuenavn..." />
 				<InputCell bind:value={form.city} placeholder="By" />
 				<TableCell>
@@ -95,12 +96,12 @@
 				</TableCell>
 				<TableCell alignment="right">
 					<div class="flex w-full justify-end">
-						<Button variant="ghost" onclick={handleAddVenue}><PlusIcon /> Tilføj</Button>
+						<Button onclick={handleAddVenue}><PlusIcon /> Tilføj</Button>
 					</div>
 				</TableCell>
 			</TableRow>
 			{#each venues as venue (venue.id)}
-				<TableRow>
+				<TableRow class="hover:bg-zinc-800">
 					<TableCell>{venue.name}</TableCell>
 					<TableCell class="text-text/50">{venue.city}</TableCell>
 					<TableCell class="text-text/50">
@@ -117,4 +118,4 @@
 			{/each}
 		</TableBody>
 	</Table>
-</main>
+</Card>
