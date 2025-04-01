@@ -12,8 +12,6 @@ export const load: PageServerLoad = async ({ request }) => {
 
   currentArtists = removeDuplicates(currentArtists)
 
-  console.log(currentArtists.map(a => ({ id: a.id, name: a.name })))
-
   const { records: artists } = await listArtists(new URLSearchParams())
 
   return {
