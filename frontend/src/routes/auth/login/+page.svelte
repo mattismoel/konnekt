@@ -25,12 +25,17 @@
 </script>
 
 <main class="flex h-svh items-center justify-center">
-	<Card>
-		<h1 class="mb-8 text-2xl font-bold">Login.</h1>
-		<form class="flex flex-col gap-2" onsubmit={handleLogin}>
-			<Input type="email" bind:value={email} label="Email" />
-			<Input type="password" bind:value={password} label="Adgangskode" />
-			<Button expandX type="submit">Login</Button>
+	<Card class="max-w-96">
+		<form class="flex w-full flex-col gap-8" onsubmit={handleLogin}>
+			<section>
+				<h1 class="font-heading mb-4 text-2xl font-bold">Login</h1>
+				<p class="text-text/50">Her kan du logge ind som medlem på Konnekts dashboard.</p>
+			</section>
+			<section>
+				<Input type="email" bind:value={email} label="Email" />
+				<Input type="password" bind:value={password} label="Adgangskode" />
+			</section>
+			<Button class="w-full" type="submit">Login</Button>
 		</form>
 	</Card>
 </main>
