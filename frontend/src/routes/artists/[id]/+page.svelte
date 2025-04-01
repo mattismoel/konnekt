@@ -44,15 +44,16 @@
 				</div>
 			</div>
 		</div>
-		<article class="px-auto space-y-8 bg-zinc-950 py-16">
+		<article class="px-auto space-y-16 bg-zinc-950 py-16">
 			<!-- ARTICLE CONTENT -->
-			<div class="prose prose-lg md:prose-base prose-invert max-w-none">
-				{@html artist.description}
-			</div>
-
-			{#if trackId}
-				<SpotifyPreview {trackId} />
-			{/if}
+			<section class="space-y-8">
+				<div class="prose prose-lg md:prose-base prose-invert max-w-none">
+					{@html artist.description}
+				</div>
+				{#if trackId}
+					<SpotifyPreview {trackId} />
+				{/if}
+			</section>
 
 			{#if events.length > 0}
 				<section>
