@@ -1,7 +1,10 @@
 <script lang="ts">
-	let { children } = $props();
+	import { cn } from '$lib/clsx';
+	import type { HTMLAttributes } from 'svelte/elements';
+
+	let { children, ...rest }: HTMLAttributes<HTMLDivElement> = $props();
 </script>
 
-<tbody class="divide-y divide-zinc-900">
-	{@render children()}
+<tbody class={cn('divide-y divide-zinc-900', rest.class)}>
+	{@render children?.()}
 </tbody>
