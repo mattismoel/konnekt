@@ -30,6 +30,8 @@
 
 	let { data } = $props();
 
+	let search = $state('');
+
 	let venues = $derived(
 		data.venues.filter((v) => v.name.toLowerCase().includes(search.toLowerCase()))
 	);
@@ -39,8 +41,6 @@
 		city: '',
 		countryCode: 'DK'
 	});
-
-	let search = $state('');
 
 	const handleEditVenue = async (id: number, form: z.infer<typeof venueForm>) => {
 		const { error } = await tryCatch(editVenue(id, form));
