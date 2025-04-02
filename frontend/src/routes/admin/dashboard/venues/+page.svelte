@@ -4,10 +4,10 @@
 	import type { z } from 'zod';
 
 	import { toaster } from '$lib/toaster.svelte.js';
-	import { APIError } from '$lib/error.js';
+	import { APIError, tryCatch } from '$lib/error.js';
 
 	import { COUNTRIES_MAP } from '$lib/location.js';
-	import { createVenue, deleteVenue, venueForm } from '$lib/venue.js';
+	import { createVenue, editVenue, deleteVenue, venueForm, type Venue } from '$lib/venue.js';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Selector from '$lib/components/ui/Selector.svelte';
@@ -22,100 +22,116 @@
 
 	import PlusIcon from '~icons/mdi/plus';
 	import TrashIcon from '~icons/mdi/trash';
+	import EditIcon from '~icons/mdi/edit';
 	import Card from '$lib/components/ui/Card.svelte';
+	import VenueEntry from './VenueEntry.svelte';
+	import Input from '$lib/components/ui/Input.svelte';
 
 	let { data } = $props();
-	let { venues } = $derived(data);
 
-	const form = $state<z.infer<typeof venueForm>>({
+	let venues = $derived(
+		data.venues.filter((v) => v.name.toLowerCase().includes(search.toLowerCase()))
+	);
+
+	let form = $state<z.infer<typeof venueForm>>({
+		name: '',
 		city: '',
-		countryCode: 'DK',
-		name: ''
+		countryCode: 'DK'
 	});
 
-	const handleAddVenue = async () => {
-		try {
-			await createVenue(form);
-			toaster.addToast('Venue tilføjet');
+	let search = $state('');
 
-			await invalidateAll();
-		} catch (e) {
-			if (e instanceof APIError) {
-				toaster.addToast('Kunne ikke tilføje venue', e.cause, 'error');
+	const handleEditVenue = async (id: number, form: z.infer<typeof venueForm>) => {
+		const { error } = await tryCatch(editVenue(id, form));
+		if (error) {
+			if (error instanceof APIError) {
+				toaster.addToast('Kunne ikke regigere venue', error.cause, 'error');
+				return;
+			}
+
+			toaster.addToast('Kunne ikke redigere venue', 'Noget gik galt...', 'error');
+			return;
+		}
+
+		toaster.addToast('Venue redigeret');
+	};
+
+	const handleAddVenue = async (form: z.infer<typeof venueForm>) => {
+		const { error } = await tryCatch(createVenue(form));
+		if (error) {
+			if (error instanceof APIError) {
+				toaster.addToast('Kunne ikke tilføje venue', error.cause, 'error');
 				return;
 			}
 
 			toaster.addToast('Kunne ikke tilføje venue', 'Noget gik galt...', 'error');
+			return;
 		}
+
+		toaster.addToast('Venue tilføjet');
+		await invalidateAll();
 	};
 
 	const handleDeleteVenue = async (id: number) => {
-		if (!venues.some((v) => v.id === id)) return;
-
-		const venue = venues.reduce((prev, curr) => (curr.id === id ? curr : prev));
+		const venue = venues.find((v) => v.id === id);
+		if (!venue) return;
 
 		if (!confirm(`Er sikker på, at du vil slette venue "${venue.name}"?`)) return;
 
-		try {
-			await deleteVenue(id);
-			toaster.addToast('Venue slettet');
-			await invalidateAll();
-		} catch (e) {
-			if (e instanceof APIError) {
-				toaster.addToast('Kunne ikke slette venue', e.cause, 'error');
+		const { error } = await tryCatch(deleteVenue(id));
+		if (error) {
+			if (error instanceof APIError) {
+				toaster.addToast('Kunne ikke slette venue', error.cause, 'error');
 				return;
 			}
 
 			toaster.addToast('Kunne ikke slette venue', 'Noget gik galt...', 'error');
+			return;
 		}
+
+		toaster.addToast('Venue slettet');
+		await invalidateAll();
 	};
+
+	let selectedVenue = $state<Venue | undefined>(undefined);
+	let showVenueModal = $state(false);
+
+	const toggleVenueModal = (venueId: number) => {
+		const venue = venues.find((v) => v.id === venueId);
+
+		selectedVenue = venue;
+
+		showVenueModal = true;
+	};
+
+	$inspect(selectedVenue);
 </script>
 
-<Card class="">
-	<h1 class="font-heading mb-4 text-4xl font-bold">Venues</h1>
+<Card class="space-y-8">
+	<div>
+		<div class="flex justify-between">
+			<h1 class="font-heading mb-4 text-4xl font-bold">Venues</h1>
+			<Button><PlusIcon />Tilføj</Button>
+		</div>
+		<span class="text-text/50">
+			Overblik over alle venues, som er associerede med events for Konnekt.
+		</span>
+	</div>
 
-	<Table class="mb-8">
-		<TableHead>
-			<TableRow>
-				<TableHeader>Venuenavn</TableHeader>
-				<TableHeader>By</TableHeader>
-				<TableHeader>Land</TableHeader>
-				<TableHeader alignment="right">Handling</TableHeader>
-			</TableRow>
-		</TableHead>
-		<TableBody class="divide-zinc-800">
-			<TableRow class="hover:bg-zinc-900">
-				<InputCell bind:value={form.name} placeholder="Venuenavn..." />
-				<InputCell bind:value={form.city} placeholder="By" />
-				<TableCell>
-					<Selector
-						class="h-min w-full"
-						entries={Array.from(COUNTRIES_MAP).map(([key, value]) => ({ name: value, value: key }))}
-						bind:value={form.countryCode}
-					/>
-				</TableCell>
-				<TableCell alignment="right">
-					<div class="flex w-full justify-end">
-						<Button onclick={handleAddVenue}><PlusIcon /> Tilføj</Button>
-					</div>
-				</TableCell>
-			</TableRow>
+	<section class="space-y-4">
+		<input
+			bind:value={search}
+			placeholder="Søg"
+			class="w-full rounded-sm border-zinc-800 bg-zinc-900"
+		/>
+		<ul>
 			{#each venues as venue (venue.id)}
-				<TableRow class="hover:bg-zinc-800">
-					<TableCell>{venue.name}</TableCell>
-					<TableCell class="text-text/50">{venue.city}</TableCell>
-					<TableCell class="text-text/50">
-						{COUNTRIES_MAP.get(venue.countryCode)}, {venue.countryCode}
-					</TableCell>
-					<TableCell alignment="right">
-						<div class="flex justify-end gap-2">
-							<Button variant="dangerous" class="w-full" onclick={() => handleDeleteVenue(venue.id)}
-								><TrashIcon /></Button
-							>
-						</div>
-					</TableCell>
-				</TableRow>
+				<VenueEntry
+					initialValue={venue}
+					onEdit={(form) => handleEditVenue(venue.id, form)}
+					onDelete={() => handleDeleteVenue(venue.id)}
+				/>
 			{/each}
-		</TableBody>
-	</Table>
+		</ul>
+	</section>
 </Card>
