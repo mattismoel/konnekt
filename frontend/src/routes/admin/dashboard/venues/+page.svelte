@@ -26,6 +26,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import VenueEntry from './VenueEntry.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
+	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 
 	let { data } = $props();
 
@@ -119,11 +120,7 @@
 	</div>
 
 	<section class="space-y-4">
-		<input
-			bind:value={search}
-			placeholder="Søg"
-			class="w-full rounded-sm border-zinc-800 bg-zinc-900"
-		/>
+		<SearchBar bind:value={search} />
 		<ul>
 			{#each venues as venue (venue.id)}
 				<VenueEntry
