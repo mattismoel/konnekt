@@ -16,58 +16,32 @@
 	import TrashIcon from '~icons/mdi/trash';
 	import EditIcon from '~icons/mdi/edit';
 	import { goto } from '$app/navigation';
+	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 
 	let { data } = $props();
 
-	let { upcomingEvents } = $derived(data);
+	let search = $state('');
+
+	let upcomingEvents = $derived(
+		data.upcomingEvents.filter((v) => v.title.toLowerCase().includes(search.toLowerCase()))
+	);
 </script>
 
-<Card>
-	<div class="flex justify-between">
-		<h1 class="font-heading mb-4 text-4xl font-bold">Kommende events</h1>
-		<a href="/admin/events/edit" class="flex gap-2">
-			<PlusIcon class="text-xl" />
-			Tilføj event
-		</a>
+<Card class="space-y-8">
+	<div>
+		<div class="flex justify-between">
+			<h1 class="font-heading mb-4 text-4xl font-bold">Kommende events</h1>
+			<Button onclick={() => goto(`/admin/events/edit`)}><PlusIcon />Tilføj</Button>
+		</div>
+		<p class="text-text/50">Overblik over alle events.</p>
 	</div>
-	<section>
-		<Table>
-			<TableHead>
-				<TableRow>
-					<TableHeader>Eventtitel</TableHeader>
-					<TableHeader>Dato</TableHeader>
-					<TableHeader>Tidspunkt</TableHeader>
-					<TableHeader></TableHeader>
-				</TableRow>
-			</TableHead>
-			<TableBody class="divide-zinc-800">
-				{#each upcomingEvents as event (event.id)}
-					{@const fromDate = earliestConcert(event.concerts)?.from || new Date()}
-					{@const toDate = latestConcert(event.concerts)?.to || new Date()}
 
-					<TableRow class="hover:bg-zinc-800">
-						<TableCell class="font-medium">{event.title}</TableCell>
-						<TableCell class="text-text/50">{format(fromDate, DATE_FORMAT)}</TableCell>
-						<TableCell class="text-text/50"
-							>{format(fromDate, 'HH:mm')}-{format(toDate, 'HH:mm')}</TableCell
-						>
-						<TableCell>
-							<div class="flex justify-end gap-6">
-								<button
-									title="Redigér event"
-									onclick={() => goto(`/admin/events/edit?id=${event.id}`)}
-									class="text-text/50 hover:text-text"
-								>
-									<EditIcon />
-								</button>
-								<Button variant="dangerous">
-									<TrashIcon />
-								</Button>
-							</div>
-						</TableCell>
-					</TableRow>
-				{/each}
-			</TableBody>
-		</Table>
-	</section></Card
->
+	<section class="space-y-4">
+		<SearchBar bind:value={search} />
+		<ul>
+			{#each upcomingEvents as event (event.id)}
+				<EventEntry {event} />
+			{/each}
+		</ul>
+	</section>
+</Card>
