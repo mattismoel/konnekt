@@ -62,3 +62,20 @@ export const deleteVenue = async (id: number, init?: RequestInit) => {
 		throw new APIError(res.status, "Could not create venue", err.message)
 	}
 }
+
+export const editVenue = async (id: number, form: z.infer<typeof venueForm>, init?: RequestInit) => {
+	const { data, success, error } = venueForm.safeParse(form)
+	if (!success) throw error
+
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/venues/${id}`, {
+		method: "PUT",
+		credentials: "include",
+		body: JSON.stringify(data),
+		...init,
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not edit venue", err.message)
+	}
+}

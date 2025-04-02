@@ -114,6 +114,29 @@ func (repo VenueRepository) Insert(ctx context.Context, v venue.Venue) (int64, e
 	return venueID, nil
 }
 
+func (repo VenueRepository) Update(ctx context.Context, venueID int64, v venue.Venue) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	if err := updateVenue(ctx, tx, venueID, Venue{
+		Name:        v.Name,
+		City:        v.City,
+		CountryCode: v.CountryCode,
+	}); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo VenueRepository) Delete(ctx context.Context, venueID int64) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -238,6 +261,46 @@ func deleteVenue(ctx context.Context, tx *sql.Tx, venueID int64) error {
 	_, err := tx.ExecContext(ctx, query, sql.Named("venue_id", venueID))
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func updateVenue(ctx context.Context, tx *sql.Tx, venueID int64, v Venue) error {
+	query := `
+	UPDATE venue SET
+	name = CASE
+		when @name = '' THEN name 
+		ELSE @name 
+	END,
+	city = CASE
+		WHEN @city = '' THEN city 
+		ELSE @city
+	END,
+	country_code = CASE
+		WHEN @country_code = '' THEN country_code 
+		ELSE @country_code 
+	END
+	WHERE id = @id`
+
+	res, err := tx.ExecContext(ctx, query,
+		sql.Named("name", v.Name),
+		sql.Named("city", v.City),
+		sql.Named("country_code", v.CountryCode),
+		sql.Named("id", venueID),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected <= 0 {
+		return ErrNotFound
 	}
 
 	return nil

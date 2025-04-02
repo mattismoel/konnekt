@@ -52,3 +52,27 @@ func (s VenueService) Delete(ctx context.Context, venueID int64) error {
 
 	return nil
 }
+
+type UpdateVenue struct {
+	Name        string
+	City        string
+	CountryCode string
+}
+
+func (s VenueService) Update(ctx context.Context, id int64, load UpdateVenue) (venue.Venue, error) {
+	v, err := venue.NewVenue(load.Name, load.CountryCode, load.City)
+	if err != nil {
+		return venue.Venue{}, err
+	}
+
+	if err := s.venueRepo.Update(ctx, id, v); err != nil {
+		return venue.Venue{}, err
+	}
+
+	updatedVenue, err := s.venueRepo.ByID(ctx, id)
+	if err != nil {
+		return venue.Venue{}, err
+	}
+
+	return updatedVenue, nil
+}

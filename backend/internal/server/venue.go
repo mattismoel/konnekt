@@ -80,3 +80,42 @@ func (s Server) handleDeleteVenue() http.HandlerFunc {
 		}
 	}
 }
+
+func (s Server) handleUpdateVenue() http.HandlerFunc {
+	type UpdateVenueLoad struct {
+		Name        string `json:"name"`
+		City        string `json:"city"`
+		CountryCode string `json:"countryCode"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		var load UpdateVenueLoad
+
+		err := json.NewDecoder(r.Body).Decode(&load)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		venueID, err := strconv.Atoi(chi.URLParam(r, "venueID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		venue, err := s.venueService.Update(ctx, int64(venueID), service.UpdateVenue{
+			Name:        load.Name,
+			City:        load.City,
+			CountryCode: load.CountryCode,
+		})
+
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, venue)
+	}
+}
