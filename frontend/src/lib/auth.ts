@@ -11,3 +11,12 @@ export const roleSchema = z.object({
 })
 
 export type Role = z.infer<typeof roleSchema>
+
+export const permissionSchema = z.object({
+	id: z.number().int().positive(),
+	name: z.string().nonempty(),
+	displayName: z.string().nonempty(),
+	description: z.string().nonempty(),
+})
+
+export type Permission = z.infer<typeof permissionSchema>
