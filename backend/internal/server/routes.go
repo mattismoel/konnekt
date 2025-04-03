@@ -16,6 +16,7 @@ func (s *Server) setupRoutes() {
 
 		r.Route("/roles", func(r chi.Router) {
 			r.Get("/", s.withPermissions(s.handleListRoles(), "role-list"))
+			r.Get("/{userID}", s.withPermissions(s.handleListUserRoles(), "role-list"))
 		})
 	})
 
@@ -43,9 +44,6 @@ func (s *Server) setupRoutes() {
 		r.Delete("/{venueID}", s.withPermissions(s.handleDeleteVenue(), "venue-delete"))
 	})
 
-	s.mux.Route("/users", func(r chi.Router) {
-		r.Get("/roles/{userID}", s.withPermissions(s.handleListUserRoles(), "role-list"))
-	})
 
 	s.mux.Route("/genres", func(r chi.Router) {
 		r.Post("/", s.withPermissions(s.handleCreateGenre(), "genre-edit"))
