@@ -62,7 +62,12 @@ func (repo UserRepository) ByID(ctx context.Context, userID int64) (user.User, e
 
 	usr, err := userByID(ctx, tx, userID)
 	if err != nil {
-		return user.User{}, err
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return user.User{}, ErrNotFound
+		default:
+			return user.User{}, err
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
