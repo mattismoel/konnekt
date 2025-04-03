@@ -81,3 +81,21 @@ func (s Server) handleCreateRole() http.HandlerFunc {
 		writeJSON(w, http.StatusOK, role)
 	}
 }
+
+func (s Server) handleDeleteRole() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		roleID, err := strconv.Atoi(chi.URLParam(r, "roleID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = s.authService.DeleteRole(ctx, int64(roleID))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+	}
+}

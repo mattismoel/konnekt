@@ -20,4 +20,5 @@ type Repository interface {
 	RoleByName(ctx context.Context, name string) (Role, error)
 	UserRoles(ctx context.Context, userID int64) ([]Role, error)
 	RolePermissions(ctx context.Context, roleID int64) (PermissionCollection, error)
+	DeleteRole(ctx context.Context, roleID int64) error
 }

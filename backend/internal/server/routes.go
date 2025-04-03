@@ -18,6 +18,7 @@ func (s *Server) setupRoutes() {
 			r.Get("/", s.withPermissions(s.handleListRoles(), "role-list"))
 			r.Get("/{userID}", s.withPermissions(s.handleListUserRoles(), "role-list"))
 			r.Post("/", s.withPermissions(s.handleCreateRole(), "role-edit"))
+			r.Delete("/{roleID}", s.withPermissions(s.handleDeleteRole(), "role-delete"))
 		})
 	})
 

@@ -63,6 +63,25 @@ func (repo AuthRepository) InsertRole(ctx context.Context, r auth.Role) (int64, 
 	return roleID, nil
 }
 
+func (repo AuthRepository) DeleteRole(ctx context.Context, roleID int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	if err := deleteRole(ctx, tx, roleID); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo AuthRepository) RoleByID(ctx context.Context, id int64) (auth.Role, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -627,4 +646,24 @@ func roleByName(ctx context.Context, tx *sql.Tx, name string) (Role, error) {
 		DisplayName: displayName,
 		Description: description,
 	}, nil
+}
+
+func deleteRole(ctx context.Context, tx *sql.Tx, roleID int64) error {
+	query := "DELETE FROM role WHERE id = @role_id"
+
+	res, err := tx.ExecContext(ctx, query, sql.Named("role_id", roleID))
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected <= 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }

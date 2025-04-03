@@ -282,3 +282,12 @@ func (srv AuthService) CreateRole(ctx context.Context, load CreateRole) (auth.Ro
 
 	return role, nil
 }
+
+func (srv AuthService) DeleteRole(ctx context.Context, roleID int64) error {
+	err := srv.authRepo.DeleteRole(ctx, roleID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
