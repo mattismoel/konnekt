@@ -17,6 +17,7 @@ func (s *Server) setupRoutes() {
 		r.Route("/roles", func(r chi.Router) {
 			r.Get("/", s.withPermissions(s.handleListRoles(), "role-list"))
 			r.Get("/{userID}", s.withPermissions(s.handleListUserRoles(), "role-list"))
+			r.Post("/", s.withPermissions(s.handleCreateRole(), "role-edit"))
 		})
 	})
 

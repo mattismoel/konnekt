@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
@@ -41,6 +42,46 @@ func NewAuthRepository(db *sql.DB) (*AuthRepository, error) {
 	}, nil
 }
 
+func (repo AuthRepository) InsertRole(ctx context.Context, r auth.Role) (int64, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	defer tx.Rollback()
+
+	roleID, err := insertRole(ctx, tx, Role{
+		Name:        r.Name,
+		DisplayName: r.DisplayName,
+		Description: r.Description,
+	})
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return roleID, nil
+}
+
+func (repo AuthRepository) RoleByID(ctx context.Context, id int64) (auth.Role, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return auth.Role{}, err
+	}
+
+	defer tx.Rollback()
+
+	dbRole, err := roleByID(ctx, tx, id)
+	if err != nil {
+		return auth.Role{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return auth.Role{}, err
+	}
+
+	return dbRole.ToInternal(), nil
+}
 func (repo AuthRepository) InsertSession(ctx context.Context, session auth.Session) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -448,5 +489,58 @@ func roleCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	}
 
 	return count, nil
+}
+
+func insertRole(ctx context.Context, tx *sql.Tx, r Role) (int64, error) {
+	query := `
+	INSERT INTO role (name, display_name, description) 
+	VALUES (@name, @display_name, @description)`
+
+	res, err := tx.ExecContext(ctx, query,
+		sql.Named("name", r.Name),
+		sql.Named("display_name", r.DisplayName),
+		sql.Named("description", r.Description),
+	)
+
+	if err != nil {
+		return 0, err
+	}
+
+	roleID, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return roleID, nil
+}
+
+func roleByID(ctx context.Context, tx *sql.Tx, id int64) (Role, error) {
+	q, err := NewQuery("SELECT name, display_name, description FROM role")
+	if err != nil {
+		return Role{}, err
+	}
+
+	if err := q.AddFilter("id", query.Equal, strconv.Itoa(int(id))); err != nil {
+		return Role{}, err
+	}
+
+	queryStr, args := q.Build()
+
+	var name, displayName, description string
+
+	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(
+		&name, &displayName, &description,
+	)
+
+	if err != nil {
+		return Role{}, err
+	}
+
+	return Role{
+		ID:          id,
+		Name:        name,
+		DisplayName: displayName,
+		Description: description,
+	}, nil
 }
 

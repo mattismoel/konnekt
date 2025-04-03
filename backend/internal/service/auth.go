@@ -252,3 +252,33 @@ func (srv AuthService) ListRoles(ctx context.Context, q query.ListQuery) (query.
 
 	return result, nil
 }
+
+type CreateRole struct {
+	Name        string
+	DisplayName string
+	Description string
+}
+
+func (srv AuthService) CreateRole(ctx context.Context, load CreateRole) (auth.Role, error) {
+	r, err := auth.NewRole(
+		auth.WithName(load.Name),
+		auth.WithDisplayName(load.DisplayName),
+		auth.WithDescription(load.Description),
+	)
+
+	if err != nil {
+		return auth.Role{}, err
+	}
+
+	roleID, err := srv.authRepo.InsertRole(ctx, r)
+	if err != nil {
+		return auth.Role{}, err
+	}
+
+	role, err := srv.authRepo.RoleByID(ctx, roleID)
+	if err != nil {
+		return auth.Role{}, err
+	}
+
+	return role, nil
+}
