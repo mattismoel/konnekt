@@ -342,9 +342,18 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 		}
 	}
 
+	if filters, ok := params.Filters["title"]; ok {
+		for _, f := range filters {
+			err := q.AddFilter("title", f.Cmp, f.Value)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	if filters, ok := params.Filters["from_date"]; ok {
 		for _, f := range filters {
-			err = q.AddFilter("from_date", f)
+			err = q.AddFilter("from_date", f.Cmp, f.Value)
 			if err != nil {
 				return nil, err
 			}
@@ -353,7 +362,7 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 
 	if filters, ok := params.Filters["to_date"]; ok {
 		for _, f := range filters {
-			err = q.AddFilter("from_date", f)
+			err = q.AddFilter("from_date", f.Cmp, f.Value)
 			if err != nil {
 				return nil, err
 			}
@@ -362,12 +371,7 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 
 	if filters, ok := params.Filters["id"]; ok {
 		for _, f := range filters {
-			newFilter, err := query.NewFilter(f.Cmp, f.Values...)
-			if err != nil {
-				return nil, err
-			}
-
-			err = q.AddFilter("e.id", newFilter)
+			err = q.AddFilter("e.id", f.Cmp, f.Value)
 			if err != nil {
 				return nil, err
 			}
@@ -377,12 +381,7 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 
 	if filters, ok := params.Filters["artist_id"]; ok {
 		for _, f := range filters {
-			newFilter, err := query.NewFilter(query.Equal, f.Values...)
-			if err != nil {
-				return nil, err
-			}
-
-			err = q.AddFilter("c.artist_id", newFilter)
+			err = q.AddFilter("c.artist_id", f.Cmp, f.Value)
 			if err != nil {
 				return nil, err
 			}

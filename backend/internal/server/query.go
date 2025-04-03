@@ -91,7 +91,6 @@ func orderByStrToPair(s string) (string, query.Order, error) {
 	return key, order, nil
 }
 
-// "filter=id!=4,title=what, hello>world"
 func parseFilters(vals url.Values) (query.FilterCollection, error) {
 	filterStr := vals.Get("filter")
 
@@ -126,17 +125,14 @@ func parseFilters(vals url.Values) (query.FilterCollection, error) {
 			return nil, fmt.Errorf("Invalid filter format in pair %q", pair)
 		}
 
-		values := strings.Split(parts[1], ",")
-		for i, v := range values {
-			values[i] = strings.TrimSpace(v)
-		}
+		key, value := parts[0], parts[1]
 
-		filter, err := query.NewFilter(cmp, values...)
+		filter, err := query.NewFilter(cmp, value)
 		if err != nil {
 			return nil, err
 		}
 
-		err = fc.Add(parts[0], filter)
+		err = fc.Add(key, filter)
 		if err != nil {
 			return nil, err
 		}

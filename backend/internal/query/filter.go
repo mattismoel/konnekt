@@ -2,7 +2,6 @@ package query
 
 import (
 	"errors"
-	"slices"
 	"strings"
 )
 
@@ -24,27 +23,25 @@ const (
 )
 
 type Filter struct {
-	Cmp    Comparator
-	Values []string
+	Cmp   Comparator
+	Value string
 }
 
 // A collection of key-to-filter entries.
 type FilterCollection map[string][]Filter
 
-func NewFilter(cmp Comparator, values ...string) (Filter, error) {
+func NewFilter(cmp Comparator, value string) (Filter, error) {
 	if !cmp.valid() {
 		return Filter{}, ErrFilterCmpInvalid
 	}
 
-	for _, v := range values {
-		if err := validateFilterValue(v); err != nil {
-			return Filter{}, err
-		}
+	if err := validateFilterValue(value); err != nil {
+		return Filter{}, err
 	}
 
 	return Filter{
-		Cmp:    cmp,
-		Values: values,
+		Cmp:   cmp,
+		Value: value,
 	}, nil
 }
 
@@ -112,14 +109,8 @@ func (c Comparator) valid() bool {
 
 // Returns if two filters are equal.
 func (f1 Filter) Equals(f2 Filter) bool {
-	if len(f1.Values) != len(f2.Values) {
+	if f1.Value != f2.Value {
 		return false
-	}
-
-	for i, v1 := range f1.Values {
-		if f2.Values[i] != v1 {
-			return false
-		}
 	}
 
 	if f1.Cmp != f2.Cmp {
@@ -132,14 +123,12 @@ func (f1 Filter) Equals(f2 Filter) bool {
 // Adds a new filter to the given key entry of the FilterCollection.
 func (fc FilterCollection) Add(key string, filters ...Filter) error {
 	for _, f := range filters {
-		for _, v := range f.Values {
-			if err := validateFilterValue(v); err != nil {
-				return err
-			}
+		if err := validateFilterValue(f.Value); err != nil {
+			return err
+		}
 
-			if !f.Cmp.valid() {
-				return ErrFilterCmpInvalid
-			}
+		if !f.Cmp.valid() {
+			return ErrFilterCmpInvalid
 		}
 
 		fc[key] = append(fc[key], f)
@@ -159,7 +148,7 @@ func (fc1 FilterCollection) Equals(fc2 FilterCollection) bool {
 		}
 
 		for i, f := range fs1 {
-			if !slices.Equal(f.Values, fc2[key][i].Values) {
+			if f.Value != fc2[key][i].Value {
 				return false
 			}
 		}

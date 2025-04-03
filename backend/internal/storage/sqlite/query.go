@@ -130,8 +130,14 @@ func (q *Query) WithFilters(fc query.FilterCollection) error {
 //
 // The value is the value of which to replace the placeholder '?' with when
 // the query is built with Query.Build().
-func (q *Query) AddFilter(key string, filter query.Filter) error {
-	q.filters.Add(key, filter)
+func (q *Query) AddFilter(key string, cmp query.Comparator, value string) error {
+	f, err := query.NewFilter(cmp, value)
+	if err != nil {
+		return err
+	}
+
+	q.filters.Add(key, f)
+
 	return nil
 }
 
@@ -183,11 +189,9 @@ func (q *Query) addFilterString() {
 	if len(q.filters) > 0 {
 		for key, filters := range q.filters {
 			for _, f := range filters {
-				for _, v := range f.Values {
-					filterStr := fmt.Sprintf("%s %s ?", key, string(f.Cmp))
-					q.AddLine("AND " + filterStr)
-					q.args = append(q.args, v)
-				}
+				filterStr := fmt.Sprintf("%s %s ?", key, string(f.Cmp))
+				q.AddLine("AND " + filterStr)
+				q.args = append(q.args, f.Value)
 			}
 		}
 	}
