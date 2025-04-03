@@ -27,6 +27,7 @@ type Role struct {
 type Permission struct {
 	ID          int64
 	Name        string
+	DisplayName string
 	Description string
 }
 
@@ -522,6 +523,7 @@ func (p Permission) ToInternal() auth.Permission {
 	return auth.Permission{
 		ID:          p.ID,
 		Name:        p.Name,
+		DisplayName: p.DisplayName,
 		Description: p.Description,
 	}
 }

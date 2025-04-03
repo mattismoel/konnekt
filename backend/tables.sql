@@ -28,6 +28,7 @@ CREATE TABLE users_roles (
 CREATE TABLE permission (
   id INTEGER PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
+  display_name TEXT NOT NULL,
   description TEXT
 );
 

@@ -12,6 +12,7 @@ var (
 type Permission struct {
 	ID          int64
 	Name        string
+	DisplayName string
 	Description string
 }
 
