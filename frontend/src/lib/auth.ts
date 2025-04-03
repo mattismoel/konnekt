@@ -1,5 +1,8 @@
 import { z } from "zod"
 
+import { PUBLIC_BACKEND_URL } from "$env/static/public"
+import { APIError, apiErrorSchema } from "./error"
+
 export const SESSION_COOKIE_NAME = "konnekt-session"
 export const SESSION_COOKIE_LIFETIME_MILLIS = 30 * 60000 * 60 * 24 // 30 days.
 
@@ -36,3 +39,14 @@ export const listUserRoles = async (userId: number, init?: RequestInit): Promise
 	return roles
 }
 
+
+/**
+ * @description Checks whether or not a given user has all required input roles.
+ */
+export const hasAllRoles = (userRoles: Role[], roleNames: string[]): boolean => {
+	return roleNames.every(role => userRoles.some(userRole => userRole.name === role))
+}
+
+export const hasSomeRole = (userRoles: Role[], roleNames: string[]): boolean => {
+	return roleNames.some(role => userRoles.some(userRole => userRole.name === role))
+}
