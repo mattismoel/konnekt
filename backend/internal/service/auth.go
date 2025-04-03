@@ -291,3 +291,12 @@ func (srv AuthService) DeleteRole(ctx context.Context, roleID int64) error {
 
 	return nil
 }
+
+func (srv AuthService) ListPermissions(ctx context.Context, q query.ListQuery) (query.ListResult[auth.Permission], error) {
+	result, err := srv.authRepo.ListPermissions(ctx, q)
+	if err != nil {
+		return query.ListResult[auth.Permission]{}, err
+	}
+
+	return result, nil
+}

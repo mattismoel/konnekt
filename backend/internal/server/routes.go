@@ -20,6 +20,10 @@ func (s *Server) setupRoutes() {
 			r.Post("/", s.withPermissions(s.handleCreateRole(), "role-edit"))
 			r.Delete("/{roleID}", s.withPermissions(s.handleDeleteRole(), "role-delete"))
 		})
+
+		r.Route("/permissions", func(r chi.Router) {
+			r.Get("/", s.withPermissions(s.handleListPermissions(), "permission-list"))
+		})
 	})
 
 	s.mux.Route("/events", func(r chi.Router) {

@@ -297,6 +297,48 @@ func (repo AuthRepository) ListRoles(ctx context.Context, q query.ListQuery) (qu
 	}, nil
 }
 
+func (repo AuthRepository) ListPermissions(ctx context.Context, q query.ListQuery) (query.ListResult[auth.Permission], error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return query.ListResult[auth.Permission]{}, err
+	}
+
+	defer tx.Rollback()
+
+	dbPermissions, err := listPermissions(ctx, tx, QueryParams{
+		Offset:  q.Offset(),
+		Limit:   q.Limit,
+		OrderBy: q.OrderBy,
+		Filters: q.Filters,
+	})
+
+	if err != nil {
+		return query.ListResult[auth.Permission]{}, err
+	}
+
+	permissions := make([]auth.Permission, 0)
+	for _, dbPerm := range dbPermissions {
+		permissions = append(permissions, dbPerm.ToInternal())
+	}
+
+	totalCount, err := permissionCount(ctx, tx)
+	if err != nil {
+		return query.ListResult[auth.Permission]{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return query.ListResult[auth.Permission]{}, err
+	}
+
+	return query.ListResult[auth.Permission]{
+		Page:       q.Page,
+		PerPage:    q.PerPage,
+		TotalCount: totalCount,
+		PageCount:  q.PageCount(totalCount),
+		Records:    permissions,
+	}, nil
+}
+
 func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (auth.PermissionCollection, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -668,4 +710,57 @@ func deleteRole(ctx context.Context, tx *sql.Tx, roleID int64) error {
 	}
 
 	return nil
+}
+
+func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Permission, error) {
+	q, err := NewQuery(`SELECT id, name, display_name, description FROM permission`)
+	if err != nil {
+		return nil, err
+	}
+
+	queryStr, args := q.Build()
+
+	rows, err := tx.QueryContext(ctx, queryStr, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	permissions := make([]Permission, 0)
+
+	for rows.Next() {
+		var id int64
+		var name, displayName, description string
+
+		err := rows.Scan(&id, &name, &displayName, &description)
+		if err != nil {
+			return nil, err
+		}
+
+		permissions = append(permissions, Permission{
+			ID:          id,
+			DisplayName: displayName,
+			Name:        name,
+			Description: description,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return permissions, nil
+}
+
+func permissionCount(ctx context.Context, tx *sql.Tx) (int, error) {
+	query := "SELECT COUNT(*) FROM permission"
+
+	var count int
+	err := tx.QueryRowContext(ctx, query).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
