@@ -7,22 +7,22 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (s Server) handleListUserRoles() http.HandlerFunc {
+func (s Server) handleListRoles() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
+		query, err := NewListQueryFromURL(r.URL.Query())
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		roles, err := s.authService.UserRoles(ctx, int64(userID))
+		result, err := s.authService.ListRoles(ctx, query)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		writeJSON(w, http.StatusOK, roles)
+		writeJSON(w, http.StatusOK, result)
 	}
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
 	"github.com/mattismoel/konnekt/internal/domain/user"
+	"github.com/mattismoel/konnekt/internal/query"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -241,4 +242,13 @@ func (srv AuthService) createSession(ctx context.Context, userID int64) (auth.Se
 	}
 
 	return token, session.ExpiresAt, nil
+}
+
+func (srv AuthService) ListRoles(ctx context.Context, q query.ListQuery) (query.ListResult[auth.Role], error) {
+	result, err := srv.authRepo.ListRoles(ctx, q)
+	if err != nil {
+		return query.ListResult[auth.Role]{}, err
+	}
+
+	return result, nil
 }

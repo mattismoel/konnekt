@@ -13,6 +13,10 @@ func (s *Server) setupRoutes() {
 		r.Post("/register", s.handleRegister())
 		r.Post("/log-out", s.handleLogOut())
 		r.Get("/session", s.handleGetSession())
+
+		r.Route("/roles", func(r chi.Router) {
+			r.Get("/", s.withPermissions(s.handleListRoles(), "role-list"))
+		})
 	})
 
 	s.mux.Route("/events", func(r chi.Router) {

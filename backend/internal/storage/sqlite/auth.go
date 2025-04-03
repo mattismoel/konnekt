@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
+	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type Session struct {
@@ -147,6 +148,49 @@ func (repo AuthRepository) UserRoles(ctx context.Context, userID int64) ([]auth.
 	}
 
 	return roles, nil
+}
+
+func (repo AuthRepository) ListRoles(ctx context.Context, q query.ListQuery) (query.ListResult[auth.Role], error) {
+	roles := []auth.Role{}
+
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return query.ListResult[auth.Role]{}, err
+	}
+
+	defer tx.Rollback()
+
+	dbRoles, err := listRoles(ctx, tx, QueryParams{
+		Offset:  q.Offset(),
+		Limit:   q.Limit,
+		OrderBy: q.OrderBy,
+		Filters: q.Filters,
+	})
+
+	if err != nil {
+		return query.ListResult[auth.Role]{}, err
+	}
+
+	totalCount, err := roleCount(ctx, tx)
+	if err != nil {
+		return query.ListResult[auth.Role]{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return query.ListResult[auth.Role]{}, err
+	}
+
+	for _, dbRole := range dbRoles {
+		roles = append(roles, dbRole.ToInternal())
+	}
+
+	return query.ListResult[auth.Role]{
+		Records:    roles,
+		Page:       q.Page,
+		PerPage:    q.PerPage,
+		TotalCount: totalCount,
+		PageCount:  q.PageCount(totalCount),
+	}, nil
 }
 
 func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (auth.PermissionCollection, error) {
@@ -323,6 +367,46 @@ func setSessionExpiry(ctx context.Context, tx *sql.Tx, sessionID string, newExpi
 	return nil
 }
 
+func listRoles(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Role, error) {
+	q, err := NewQuery(`
+	SELECT DISTINCT id, name, description, display_name
+	FROM role`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	queryStr, args := q.Build()
+
+	rows, err := tx.QueryContext(ctx, queryStr, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	roles := make([]Role, 0)
+
+	for rows.Next() {
+		var id int64
+		var name, description, displayName string
+
+		err := rows.Scan(&id, &name, &description, &displayName)
+		if err != nil {
+			return nil, err
+		}
+
+		roles = append(roles, Role{
+			ID:          id,
+			Name:        name,
+			Description: description,
+			DisplayName: displayName,
+		})
+	}
+
+	return roles, nil
+}
+
 func (s Session) ToInternal() auth.Session {
 	return auth.Session{
 		ID:        auth.SessionID(s.ID),
@@ -347,3 +431,22 @@ func (r Role) ToInternal() auth.Role {
 		Description: r.Description,
 	}
 }
+
+func roleCount(ctx context.Context, tx *sql.Tx) (int, error) {
+	q, err := NewQuery("SELECT COUNT(*) FROM role")
+	if err != nil {
+		return 0, err
+	}
+
+	queryStr, args := q.Build()
+
+	var count int
+
+	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
