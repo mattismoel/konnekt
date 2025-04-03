@@ -17,7 +17,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.user = userSchema.parse(await res.json())
 	}
 
-	res = await fetch(`${PUBLIC_BACKEND_URL}/users/roles/${event.locals.user?.id}`, {
+	res = await fetch(`${PUBLIC_BACKEND_URL}/auth/roles/${event.locals.user?.id}`, {
 		credentials: "include",
 		headers: event.request.headers
 	})
@@ -27,6 +27,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	} else {
 		event.locals.roles = roleSchema.array().parse(await res.json())
 	}
+
+	console.log(event.locals.user, event.locals.roles)
 
 	const response = await resolve(event)
 
