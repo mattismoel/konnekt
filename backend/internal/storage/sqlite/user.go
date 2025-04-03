@@ -28,7 +28,7 @@ func NewUserRepository(db *sql.DB) (*UserRepository, error) {
 	}, nil
 }
 
-func (repo UserRepository) Insert(ctx context.Context, email string, firstName string, lastName string, passwordHash []byte) (int64, error) {
+func (repo UserRepository) Insert(ctx context.Context, u user.User) (int64, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
@@ -36,7 +36,14 @@ func (repo UserRepository) Insert(ctx context.Context, email string, firstName s
 
 	defer tx.Rollback()
 
-	userID, err := insertUser(ctx, tx, email, firstName, lastName, passwordHash)
+	userID, err := insertUser(ctx, tx, User{
+		ID:           u.ID,
+		Email:        u.Email,
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		PasswordHash: u.PasswordHash,
+	})
+
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserAlreadyExists):
@@ -126,16 +133,16 @@ func (repo UserRepository) PasswordHash(ctx context.Context, userID int64) (user
 	return ph, nil
 }
 
-func insertUser(ctx context.Context, tx *sql.Tx, email string, firstName string, lastName string, passwordHash []byte) (int64, error) {
+func insertUser(ctx context.Context, tx *sql.Tx, u User) (int64, error) {
 	query := `
 	INSERT OR IGNORE INTO user (email, first_name, last_name, password_hash) 
 	VALUES (@email, @first_name, @last_name, @password_hash)`
 
 	res, err := tx.ExecContext(ctx, query,
-		sql.Named("email", email),
-		sql.Named("first_name", firstName),
-		sql.Named("last_name", lastName),
-		sql.Named("password_hash", passwordHash),
+		sql.Named("email", u.Email),
+		sql.Named("first_name", u.FirstName),
+		sql.Named("last_name", u.LastName),
+		sql.Named("password_hash", u.PasswordHash),
 	)
 
 	if err != nil {

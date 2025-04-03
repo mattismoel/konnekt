@@ -42,11 +42,21 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 		return "", time.Time{}, err
 	}
 
-	userID, err := srv.userRepo.Insert(ctx, email, firstName, lastName, hash)
+	u, err := user.NewUser(
+		user.WithEmail(email),
+		user.WithFirstName(firstName),
+		user.WithLastName(lastName),
+		user.WithPasswordHash(hash),
+	)
+
 	if err != nil {
 		return "", time.Time{}, err
 	}
 
+	userID, err := srv.userRepo.Insert(ctx, u)
+	if err != nil {
+		return "", time.Time{}, err
+	}
 	token, expiry, err := srv.createSession(ctx, userID)
 	if err != nil {
 		return "", time.Time{}, err
