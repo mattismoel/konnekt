@@ -57,6 +57,16 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 	if err != nil {
 		return "", time.Time{}, err
 	}
+
+	role, err := srv.authRepo.RoleByName(ctx, "member")
+	if err != nil {
+		return "", time.Time{}, err
+	}
+	err = srv.authRepo.AddUserRoles(ctx, userID, role.ID)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
 	token, expiry, err := srv.createSession(ctx, userID)
 	if err != nil {
 		return "", time.Time{}, err
