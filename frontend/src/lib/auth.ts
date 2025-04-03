@@ -20,3 +20,19 @@ export const permissionSchema = z.object({
 })
 
 export type Permission = z.infer<typeof permissionSchema>
+export const listUserRoles = async (userId: number, init?: RequestInit): Promise<Role[]> => {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/roles/${userId}`, {
+		credentials: "include",
+		...init,
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not list user roles", err.message)
+	}
+
+	const roles = roleSchema.array().parse(await res.json())
+
+	return roles
+}
+
