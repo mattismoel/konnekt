@@ -6,6 +6,7 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import Logo from '$lib/assets/Logo.svelte';
 	import SettingsIcon from '~icons/mdi/settings-outline';
+	import { hasAllRoles, hasSomeRole } from '$lib/auth.js';
 
 	let { children, data } = $props();
 	let { user, roles } = $derived(data);
@@ -21,10 +22,16 @@
 		<div class="flex flex-1 flex-col p-4">
 			<Logo class="mb-6 h-5" />
 			<ul class="flex-1 space-y-2">
-				{@render sidebarEntry('Events', '/admin/dashboard/events')}
-				{@render sidebarEntry('Kunstenre', '/admin/dashboard/artists')}
-				{@render sidebarEntry('Venues', '/admin/dashboard/venues')}
-				{@render sidebarEntry('Generelt', '/admin/dashboard/general')}
+				{#if hasSomeRole(roles, ['admin', 'event-management'])}
+					{@render sidebarEntry('Events', '/admin/dashboard/events')}
+				{/if}
+				{#if hasSomeRole(roles, ['admin', 'artist-management'])}
+					{@render sidebarEntry('Kunstenre', '/admin/dashboard/artists')}
+					{@render sidebarEntry('Venues', '/admin/dashboard/venues')}
+				{/if}
+				{#if hasSomeRole(roles, ['member'])}
+					{@render sidebarEntry('Generelt', '/admin/dashboard/general')}
+				{/if}
 			</ul>
 		</div>
 		{@render userInformation(user)}
