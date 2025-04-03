@@ -82,6 +82,49 @@ func (repo AuthRepository) RoleByID(ctx context.Context, id int64) (auth.Role, e
 
 	return dbRole.ToInternal(), nil
 }
+
+func (repo AuthRepository) RoleByName(ctx context.Context, name string) (auth.Role, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return auth.Role{}, err
+	}
+
+	defer tx.Rollback()
+
+	dbRole, err := roleByName(ctx, tx, name)
+	if err != nil {
+		return auth.Role{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return auth.Role{}, err
+	}
+
+	return dbRole.ToInternal(), nil
+}
+
+func (repo AuthRepository) AddUserRoles(ctx context.Context, userID int64, roleIDs ...int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	for _, roleID := range roleIDs {
+		err := associateUserWithRole(ctx, tx, userID, roleID)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo AuthRepository) InsertSession(ctx context.Context, session auth.Session) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -514,6 +557,17 @@ func insertRole(ctx context.Context, tx *sql.Tx, r Role) (int64, error) {
 	return roleID, nil
 }
 
+func associateUserWithRole(ctx context.Context, tx *sql.Tx, userID int64, roleID int64) error {
+	query := `INSERT INTO users_roles (user_id, role_id) VALUES (@user_id, @role_id)`
+
+	_, err := tx.ExecContext(ctx, query, sql.Named("user_id", userID), sql.Named("role_id", roleID))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func roleByID(ctx context.Context, tx *sql.Tx, id int64) (Role, error) {
 	q, err := NewQuery("SELECT name, display_name, description FROM role")
 	if err != nil {
@@ -544,3 +598,33 @@ func roleByID(ctx context.Context, tx *sql.Tx, id int64) (Role, error) {
 	}, nil
 }
 
+func roleByName(ctx context.Context, tx *sql.Tx, name string) (Role, error) {
+	q, err := NewQuery("SELECT id, display_name, description FROM role")
+	if err != nil {
+		return Role{}, err
+	}
+
+	if err := q.AddFilter("name", query.Equal, name); err != nil {
+		return Role{}, err
+	}
+
+	queryStr, args := q.Build()
+
+	var id int64
+	var displayName, description string
+
+	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(
+		&id, &displayName, &description,
+	)
+
+	if err != nil {
+		return Role{}, err
+	}
+
+	return Role{
+		ID:          id,
+		Name:        name,
+		DisplayName: displayName,
+		Description: description,
+	}, nil
+}
