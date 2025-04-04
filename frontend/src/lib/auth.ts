@@ -55,6 +55,7 @@ export const listUserPermissions = async (userId: number, init?: RequestInit): P
 	return permissions
 }
 
+
 /**
  * @description Checks whether or not a given user has all required input roles.
  */
@@ -64,4 +65,8 @@ export const hasAllRoles = (userRoles: Role[], roleNames: string[]): boolean => 
 
 export const hasSomeRole = (userRoles: Role[], roleNames: string[]): boolean => {
 	return roleNames.some(role => userRoles.some(userRole => userRole.name === role))
+}
+
+export const hasPermissions = (userPermissions: Permission[], permNames: string[]): boolean => {
+	return permNames.every(perm => userPermissions.some(userPerm => userPerm.name === perm))
 }
