@@ -3,6 +3,10 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
+  --spacing-sidenav-sm: 4rem;
+  --spacing-sidenav-md: 16rem;
+  --spacing-sidenav-lg: 20rem;
+
   --spacing-nav: 3.5rem;
   --color-background: var(--color-zinc-950);
   --color-text: var(--color-zinc-100);
