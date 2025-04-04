@@ -14,7 +14,6 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Fader from '$lib/components/ui/Fader.svelte';
 	import GlowCursor from '$lib/components/GlowCursor.svelte';
-	import ArtistDisplay from '$lib/components/ui/ArtistDisplay.svelte';
 
 	let { data } = $props();
 	let { events } = $derived(data);
