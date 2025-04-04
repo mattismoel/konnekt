@@ -45,7 +45,7 @@
 
 <li
 	class={cn(
-		'group flex items-center gap-8 rounded-md border border-transparent p-2 hover:border-zinc-700 hover:bg-zinc-800',
+		'group flex items-center gap-8 rounded-md border border-transparent p-2 hover:border-zinc-800 hover:bg-zinc-900',
 		{
 			'border-green-800 bg-green-950 hover:border-green-800 hover:bg-green-950': isEdited
 		}
@@ -64,7 +64,7 @@
 		})}
 	/>
 	<Selector
-		class={cn('text-text/50 border-transparent bg-transparent group-hover:border-zinc-700', {
+		class={cn('text-text/50 border-transparent bg-transparent group-hover:border-zinc-800', {
 			italic: form.countryCode !== initialValue?.countryCode
 		})}
 		entries={Array.from(COUNTRIES_MAP).map(([key, val]) => ({ name: val, value: key }))}

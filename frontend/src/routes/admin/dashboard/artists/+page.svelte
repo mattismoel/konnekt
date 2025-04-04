@@ -13,9 +13,11 @@
 	let artists = $derived(
 		data.artists.filter((a) => a.name.toLowerCase().includes(search.toLowerCase()))
 	);
+
+	const deleteArtist = (id: number) => {};
 </script>
 
-<Card class="space-y-8">
+<main class="space-y-8 px-16 py-16">
 	<div>
 		<div class="flex justify-between">
 			<h1 class="font-heading mb-4 text-4xl font-bold">Kunstnere</h1>
@@ -28,8 +30,8 @@
 		<SearchBar bind:value={search} />
 		<ul>
 			{#each artists as artist (artist.id)}
-				<ArtistEntry {artist} />
+				<ArtistEntry {artist} onDelete={() => deleteArtist(artist.id)} />
 			{/each}
 		</ul>
 	</section>
-</Card>
+</main>

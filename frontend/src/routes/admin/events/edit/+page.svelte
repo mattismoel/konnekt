@@ -33,6 +33,6 @@
 	};
 </script>
 
-<main class="min-h-sub-nav px-auto py-20">
+<main class="min-h-sub-nav px-16 py-20">
 	<EventForm onSubmit={submit} {event} artists={artists || []} venues={venues || []} />
 </main>

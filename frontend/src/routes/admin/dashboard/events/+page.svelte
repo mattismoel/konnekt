@@ -17,6 +17,7 @@
 	import EditIcon from '~icons/mdi/edit';
 	import { goto } from '$app/navigation';
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
+	import { hasPermissions } from '$lib/auth';
 
 	let { data } = $props();
 
@@ -27,7 +28,7 @@
 	);
 </script>
 
-<Card class="space-y-8">
+<main class="space-y-8 px-8 py-16 md:px-16">
 	<div>
 		<div class="flex justify-between">
 			<h1 class="font-heading mb-4 text-4xl font-bold">Kommende events</h1>
@@ -36,12 +37,16 @@
 		<p class="text-text/50">Overblik over alle events.</p>
 	</div>
 
-	<section class="space-y-4">
-		<SearchBar bind:value={search} />
-		<ul>
-			{#each upcomingEvents as event (event.id)}
-				<EventEntry {event} />
-			{/each}
-		</ul>
-	</section>
-</Card>
+	{#if hasPermissions(data.permissions, ['event-list'])}
+		<section class="space-y-4">
+			<SearchBar bind:value={search} />
+			<ul>
+				{#each upcomingEvents as event (event.id)}
+					<EventEntry {event} />
+				{/each}
+			</ul>
+		</section>
+	{:else}
+		<span>Du har ikke tilladelse til at se denne side...</span>
+	{/if}
+</main>

@@ -23,10 +23,12 @@
 		artists: Artist[];
 		venues: Venue[];
 
+		editable?: boolean;
+
 		onSubmit: (e: z.infer<typeof eventForm>) => void;
 	};
 
-	const { event, artists, venues, onSubmit }: Props = $props();
+	const { event, artists, venues, editable = false, onSubmit }: Props = $props();
 
 	const concertWithID = concertForm.extend({ id: z.string().uuid() });
 
@@ -114,7 +116,9 @@
 								value: v.id.toString()
 							}))}
 						/>
-						<Button type="submit" onclick={() => goto('/admin/venues')}><PlusIcon />Tilføj</Button>
+						<Button disabled={editable} type="submit" onclick={() => goto('/admin/venues')}
+							><PlusIcon />Tilføj</Button
+						>
 					</div>
 					<FieldError errors={formError?.flatten().fieldErrors['venueId']} />
 				</div>

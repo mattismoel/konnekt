@@ -108,7 +108,7 @@
 	$inspect(selectedVenue);
 </script>
 
-<Card class="space-y-8">
+<main class="space-y-8 px-16 py-16">
 	<div>
 		<div class="flex justify-between">
 			<h1 class="font-heading mb-4 text-4xl font-bold">Venues</h1>
@@ -131,4 +131,4 @@
 			{/each}
 		</ul>
 	</section>
-</Card>
+</main>

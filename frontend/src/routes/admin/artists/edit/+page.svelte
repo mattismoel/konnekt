@@ -31,6 +31,6 @@
 	};
 </script>
 
-<main class="flex min-h-svh justify-center py-20">
+<main class="flex min-h-svh justify-center p-16">
 	<ArtistForm artist={data.artist} genres={data.genres} onSubmit={submit} />
 </main>
