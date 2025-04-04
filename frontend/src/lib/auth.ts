@@ -39,6 +39,21 @@ export const listUserRoles = async (userId: number, init?: RequestInit): Promise
 	return roles
 }
 
+export const listUserPermissions = async (userId: number, init?: RequestInit): Promise<Permission[]> => {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/permissions/${userId}`, {
+		credentials: "include",
+		...init,
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not list user roles", err.message)
+	}
+
+	const permissions = permissionSchema.array().parse(await res.json())
+
+	return permissions
+}
 
 /**
  * @description Checks whether or not a given user has all required input roles.
