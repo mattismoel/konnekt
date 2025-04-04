@@ -1,6 +1,6 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 
-import type { Role } from "$lib/auth";
+import type { Permission, Role } from "$lib/auth";
 import type { User } from "$lib/user";
 
 // for information about these interfaces
@@ -10,6 +10,7 @@ declare global {
 		interface Locals {
 			user: User | null
 			roles: Role[]
+			permissions: Permission[]
 		}
 		// interface PageData {}
 		// interface PageState {}
