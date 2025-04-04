@@ -23,6 +23,7 @@ func (s *Server) setupRoutes() {
 
 		r.Route("/permissions", func(r chi.Router) {
 			r.Get("/", s.withPermissions(s.handleListPermissions(), "permission-list"))
+			r.Get("/{userID}", s.withPermissions(s.handleListUserPermissions(), "permission-list"))
 		})
 	})
 
@@ -49,7 +50,6 @@ func (s *Server) setupRoutes() {
 		r.Put("/{venueID}", s.withPermissions(s.handleUpdateVenue(), "venue-edit"))
 		r.Delete("/{venueID}", s.withPermissions(s.handleDeleteVenue(), "venue-delete"))
 	})
-
 
 	s.mux.Route("/genres", func(r chi.Router) {
 		r.Post("/", s.withPermissions(s.handleCreateGenre(), "genre-edit"))

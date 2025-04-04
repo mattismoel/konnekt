@@ -146,7 +146,7 @@ func (srv AuthService) Session(ctx context.Context, id auth.SessionID) (auth.Ses
 
 // Checks whether or not a user has all required permissions.
 func (srv AuthService) HasPermission(ctx context.Context, userID int64, permNames ...string) error {
-	userPermissions, err := srv.userPermissions(ctx, userID)
+	userPermissions, err := srv.UserPermissions(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -173,7 +173,7 @@ func (srv AuthService) UserRoles(ctx context.Context, userID int64) ([]auth.Role
 	return roles, nil
 }
 
-func (srv AuthService) userPermissions(ctx context.Context, userID int64) (auth.PermissionCollection, error) {
+func (srv AuthService) UserPermissions(ctx context.Context, userID int64) (auth.PermissionCollection, error) {
 	usr, err := srv.userRepo.ByID(ctx, userID)
 	if err != nil {
 		return nil, err
