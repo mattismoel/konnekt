@@ -2,8 +2,9 @@ import type { Handle } from "@sveltejs/kit";
 
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 
-import { roleSchema } from "$lib/auth";
+import { listUserPermissions, listUserRoles } from "$lib/auth";
 import { userSchema } from "$lib/user";
+import { tryCatch } from "$lib/error";
 
 export const handle: Handle = async ({ event, resolve }) => {
 	let res = await fetch(`${PUBLIC_BACKEND_URL}/auth/session`, {
@@ -17,20 +18,22 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.user = userSchema.parse(await res.json())
 	}
 
-	res = await fetch(`${PUBLIC_BACKEND_URL}/auth/roles/${event.locals.user?.id}`, {
-		credentials: "include",
-		headers: event.request.headers
-	})
+	if (!event.locals.user) return await resolve(event)
 
-	if (!res.ok) {
+	const rolesResp = await tryCatch(listUserRoles(event.locals.user?.id, { headers: event.request.headers }))
+	if (rolesResp.error) {
 		event.locals.roles = []
-	} else {
-		event.locals.roles = roleSchema.array().parse(await res.json())
+		return await resolve(event)
 	}
 
-	console.log(event.locals.user, event.locals.roles)
+	const permsResp = await tryCatch(listUserPermissions(event.locals.user.id, { headers: event.request.headers }))
+	if (permsResp.error) {
+		event.locals.roles = []
+		return await resolve(event)
+	}
 
-	const response = await resolve(event)
+	event.locals.roles = rolesResp.data
+	event.locals.permissions = permsResp.data
 
-	return response
+	return await resolve(event)
 }
