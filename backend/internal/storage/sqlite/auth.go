@@ -408,7 +408,7 @@ func userRoles(ctx context.Context, tx *sql.Tx, userID int64) ([]Role, error) {
 
 func rolePermissions(ctx context.Context, tx *sql.Tx, roleID int64) ([]Permission, error) {
 	query := `
-	SELECT p.id, p.name, p.description
+	SELECT p.id, p.name, p.display_name, p.description
 	FROM permission p
 	JOIN roles_permissions rp on rp.permission_id = p.id
 	WHERE rp.role_id = @role_id`
@@ -424,15 +424,16 @@ func rolePermissions(ctx context.Context, tx *sql.Tx, roleID int64) ([]Permissio
 
 	for rows.Next() {
 		var id int64
-		var name, description string
+		var name, displayName, description string
 
-		if err := rows.Scan(&id, &name, &description); err != nil {
+		if err := rows.Scan(&id, &name, &displayName, &description); err != nil {
 			return nil, err
 		}
 
 		permissions = append(permissions, Permission{
 			ID:          id,
 			Name:        name,
+			DisplayName: displayName,
 			Description: description,
 		})
 	}
