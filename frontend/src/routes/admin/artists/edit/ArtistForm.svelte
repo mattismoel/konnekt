@@ -16,6 +16,7 @@
 	import SocialEntry from './SocialEntry.svelte';
 
 	import PlusIcon from '~icons/mdi/add';
+	import TipTapEditor from '$lib/components/ui/tiptap/TipTapEditor.svelte';
 
 	type Props = {
 		artist: Artist | null;
@@ -89,11 +90,8 @@
 				/>
 			</div>
 			<div class="space-y-1">
-				<Input
-					label="Beskrivelse"
-					bind:value={form.description}
-					errors={formError?.flatten().fieldErrors['description']}
-				/>
+				<TipTapEditor bind:value={form.description} />
+				<FieldError errors={formError?.flatten().fieldErrors['description']} />
 			</div>
 		</div>
 	</div>
