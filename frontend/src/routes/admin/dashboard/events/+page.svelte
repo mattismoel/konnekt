@@ -42,7 +42,7 @@
 		</Button>
 	</div>
 
-	{#if hasPermissions(data.permissions, ['event-list'])}
+	{#if hasPermissions(data.permissions, ['view:event'])}
 		<section class="space-y-4">
 			<SearchBar bind:value={search} />
 			<ul>
