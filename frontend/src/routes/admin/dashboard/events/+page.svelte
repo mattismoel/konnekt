@@ -34,7 +34,12 @@
 			<h1 class="font-heading mb-4 text-4xl font-bold md:line-clamp-1">Kommende events</h1>
 			<p class="text-text/50">Overblik over alle events.</p>
 		</div>
-		<Button onclick={() => goto(`/admin/events/edit`)}><PlusIcon />Tilføj</Button>
+		<Button
+			disabled={!hasPermissions(data.permissions, ['edit:event'])}
+			onclick={() => goto(`/admin/events/edit`)}
+		>
+			<PlusIcon />Tilføj
+		</Button>
 	</div>
 
 	{#if hasPermissions(data.permissions, ['event-list'])}
