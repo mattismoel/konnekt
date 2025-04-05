@@ -27,6 +27,7 @@
 	import VenueEntry from './VenueEntry.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
+	import { hasPermissions } from '$lib/auth';
 
 	let { data } = $props();
 
@@ -116,19 +117,25 @@
 				Overblik over alle venues, som er associerede med events for Konnekt.
 			</span>
 		</div>
-		<Button><PlusIcon />Tilføj</Button>
+		<Button disabled={!hasPermissions(data.permissions, ['edit:venue'])}>
+			<PlusIcon />Tilføj
+		</Button>
 	</div>
 
-	<section class="space-y-4">
-		<SearchBar bind:value={search} />
-		<ul>
-			{#each venues as venue (venue.id)}
-				<VenueEntry
-					initialValue={venue}
-					onEdit={(form) => handleEditVenue(venue.id, form)}
-					onDelete={() => handleDeleteVenue(venue.id)}
-				/>
-			{/each}
-		</ul>
-	</section>
+	{#if hasPermissions(data.permissions, ['view:venue'])}
+		<section class="space-y-4">
+			<SearchBar bind:value={search} />
+			<ul>
+				{#each venues as venue (venue.id)}
+					<VenueEntry
+						initialValue={venue}
+						onEdit={(form) => handleEditVenue(venue.id, form)}
+						onDelete={() => handleDeleteVenue(venue.id)}
+					/>
+				{/each}
+			</ul>
+		</section>
+	{:else}
+		<span>Du har ikke tilladelse til at se venues...</span>
+	{/if}
 </main>
