@@ -59,14 +59,17 @@
 	/>
 	<input
 		bind:value={form.city}
-		class={cn('text-text/50 w-full rounded-sm border-transparent bg-transparent', {
+		class={cn('text-text/50 hidden w-full rounded-sm border-transparent bg-transparent lg:inline', {
 			italic: form.city !== initialValue?.city
 		})}
 	/>
 	<Selector
-		class={cn('text-text/50 border-transparent bg-transparent group-hover:border-zinc-800', {
-			italic: form.countryCode !== initialValue?.countryCode
-		})}
+		class={cn(
+			'text-text/50 hidden border-transparent bg-transparent group-hover:border-zinc-800 lg:inline',
+			{
+				italic: form.countryCode !== initialValue?.countryCode
+			}
+		)}
 		entries={Array.from(COUNTRIES_MAP).map(([key, val]) => ({ name: val, value: key }))}
 		bind:value={form.countryCode}
 	/>

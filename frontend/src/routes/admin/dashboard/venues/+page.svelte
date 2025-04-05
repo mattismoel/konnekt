@@ -108,15 +108,15 @@
 	$inspect(selectedVenue);
 </script>
 
-<main class="space-y-8 px-16 py-16">
-	<div>
-		<div class="flex justify-between">
+<main class="space-y-8 px-8 py-16 md:px-16">
+	<div class="flex flex-col justify-between gap-8 md:flex-row">
+		<div>
 			<h1 class="font-heading mb-4 text-4xl font-bold">Venues</h1>
-			<Button><PlusIcon />Tilføj</Button>
+			<span class="text-text/50">
+				Overblik over alle venues, som er associerede med events for Konnekt.
+			</span>
 		</div>
-		<span class="text-text/50">
-			Overblik over alle venues, som er associerede med events for Konnekt.
-		</span>
+		<Button><PlusIcon />Tilføj</Button>
 	</div>
 
 	<section class="space-y-4">
