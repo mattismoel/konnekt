@@ -5,6 +5,7 @@
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 	import PlusIcon from '~icons/mdi/plus';
 	import ArtistEntry from './ArtistEntry.svelte';
+	import { hasPermissions } from '$lib/auth';
 
 	let { data } = $props();
 
@@ -23,15 +24,28 @@
 			<h1 class="font-heading mb-4 text-4xl font-bold">Kunstnere</h1>
 			<p class="text-text/50">Overblik over alle kunstnere, som er associerede med events.</p>
 		</div>
-		<Button onclick={() => goto('/admin/artists/edit')}><PlusIcon />Tilføj</Button>
+		<Button
+			disabled={!hasPermissions(data.permissions, ['edit:artist'])}
+			onclick={() => goto('/admin/artists/edit')}
+		>
+			<PlusIcon />Tilføj
+		</Button>
 	</div>
 
-	<section class="space-y-8">
-		<SearchBar bind:value={search} />
-		<ul>
-			{#each artists as artist (artist.id)}
-				<ArtistEntry {artist} onDelete={() => deleteArtist(artist.id)} />
-			{/each}
-		</ul>
-	</section>
+	{#if hasPermissions(data.permissions, ['view:artist'])}
+		<section class="space-y-8">
+			<SearchBar bind:value={search} />
+			<ul>
+				{#each artists as artist (artist.id)}
+					<ArtistEntry
+						userPermissions={data.permissions}
+						{artist}
+						onDelete={() => deleteArtist(artist.id)}
+					/>
+				{/each}
+			</ul>
+		</section>
+	{:else}
+		<span>Du har ikke tilladelse til at se kunstnere...</span>
+	{/if}
 </main>
