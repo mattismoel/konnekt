@@ -6,7 +6,7 @@ import { hasAllRoles, roleSchema } from "$lib/auth";
 export const load: LayoutServerLoad = async ({ locals, request }) => {
   if (!locals.user) return redirect(302, "/auth/login")
 
-  if (!await hasAllRoles(locals.roles, ["member"])) {
+  if (!hasAllRoles(locals.roles, ["member"])) {
     return redirect(302, "/auth/login")
   }
 
