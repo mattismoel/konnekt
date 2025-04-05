@@ -14,10 +14,16 @@
 	import Button from '$lib/components/ui/Button.svelte';
 
 	import TrashIcon from '~icons/mdi/trash';
+	import CleanIcon from '~icons/mdi/broom';
+
 	import EditIcon from '~icons/mdi/edit';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import SearchBar from '$lib/components/ui/SearchBar.svelte';
 	import { hasPermissions } from '$lib/auth';
+	import EventList from './EventList.svelte';
+	import { APIError, tryCatch } from '$lib/error';
+	import { toaster } from '$lib/toaster.svelte';
+	import { deleteEvent } from '$lib/event';
 
 	let { data } = $props();
 
@@ -26,31 +32,95 @@
 	let upcomingEvents = $derived(
 		data.upcomingEvents.filter((v) => v.title.toLowerCase().includes(search.toLowerCase()))
 	);
+
+	let listPreviousEvents = $state(false);
+	let previousEvents = $derived(data.previousEvents);
+
+	const handleCleanPreviousEvents = async () => {
+		let message = 'Er du sikker på, at du vil rydde alle tidligere events?\n\n';
+
+		previousEvents.map((e) => {
+			message += `- ${e.title}\n`;
+		});
+
+		message += '\n';
+		message += 'Handlingen kan ikke fortrydes.';
+
+		if (!confirm(message)) return;
+
+		previousEvents.forEach(async ({ id }) => {
+			const { error } = await tryCatch(deleteEvent(id));
+			if (error) {
+				if (error instanceof APIError) {
+					toaster.addToast('Kunne ikke rydde op', error.cause, 'error');
+					return;
+				}
+
+				toaster.addToast('Kunne ikke rydde op', 'Noget gik galt...', 'error');
+				return;
+			}
+		});
+
+		toaster.addToast('Events blev ryddet op');
+		await invalidateAll();
+	};
+
+	const handleDeleteEvent = async (id: number) => {
+		const event = [...upcomingEvents, ...data.previousEvents].find((e) => e.id === id);
+
+		if (!event) return;
+
+		if (!confirm(`Vil du slette ${event.title}?`)) return;
+
+		const { error } = await tryCatch(deleteEvent(id));
+		if (error) {
+			if (error instanceof APIError) {
+				toaster.addToast('Kunne ikke slette event', error.cause, 'error');
+				return;
+			}
+
+			toaster.addToast('Kunne ikke slette event', 'Noget gik galt...', 'error');
+			return;
+		}
+
+		toaster.addToast('Event slettet');
+		await invalidateAll();
+	};
 </script>
 
 <main class="space-y-8 px-8 py-16 md:px-16">
 	<div class="flex flex-col justify-between gap-8 md:flex-row">
 		<div>
-			<h1 class="font-heading mb-4 text-4xl font-bold md:line-clamp-1">Kommende events</h1>
+			<h1 class="font-heading mb-4 text-4xl font-bold md:line-clamp-1">Events</h1>
 			<p class="text-text/50">Overblik over alle events.</p>
 		</div>
-		<Button
-			disabled={!hasPermissions(data.permissions, ['edit:event'])}
-			onclick={() => goto(`/admin/events/edit`)}
-		>
-			<PlusIcon />Tilføj
-		</Button>
+		<div class="flex gap-2">
+			<Button
+				disabled={!hasPermissions(data.permissions, ['edit:event'])}
+				onclick={() => goto(`/admin/events/edit`)}
+			>
+				<PlusIcon />Tilføj
+			</Button>
+			<Button onclick={handleCleanPreviousEvents} variant="ghost"><CleanIcon />Ryd</Button>
+		</div>
 	</div>
 
 	{#if hasPermissions(data.permissions, ['view:event'])}
-		<section class="space-y-4">
+		<div class="space-y-8">
 			<SearchBar bind:value={search} />
-			<ul>
-				{#each upcomingEvents as event (event.id)}
-					<EventEntry {event} />
-				{/each}
-			</ul>
-		</section>
+			<section>
+				<EventList onDelete={handleDeleteEvent} events={upcomingEvents} />
+			</section>
+
+			{#if data.previousEvents.length > 0}
+				<section>
+					<details>
+						<summary class="mb-4">Tidligere events ({data.previousEvents.length})</summary>
+						<EventList events={data.previousEvents} onDelete={handleDeleteEvent} />
+					</details>
+				</section>
+			{/if}
+		</div>
 	{:else}
 		<span>Du har ikke tilladelse til at se denne side...</span>
 	{/if}

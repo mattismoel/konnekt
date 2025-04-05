@@ -4,7 +4,6 @@ import { listEvents } from "$lib/event";
 import { hasSomeRole } from "$lib/auth";
 import { redirect } from "@sveltejs/kit";
 
-const UPCOMING_EVENTS_LIMIT: number = 5
 
 export const load: PageServerLoad = async ({ locals, request }) => {
   if (!hasSomeRole(locals.roles, ["admin", "event-management"])) {
@@ -12,11 +11,15 @@ export const load: PageServerLoad = async ({ locals, request }) => {
   }
 
   const upcomingEventsResult = await listEvents(new URLSearchParams({
-    filter: `from_date>=${startOfToday().toISOString()}`,
-    limit: UPCOMING_EVENTS_LIMIT.toString(),
+    filter: `from_date>=${startOfToday().toISOString()}`
+  }))
+
+  const previousEventsResult = await listEvents(new URLSearchParams({
+    filter: `from_date<${startOfToday().toISOString()}`
   }))
 
   return {
     upcomingEvents: upcomingEventsResult.records,
+    previousEvents: previousEventsResult.records,
   }
 }
