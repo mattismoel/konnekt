@@ -17,13 +17,13 @@
 	const deleteArtist = (id: number) => {};
 </script>
 
-<main class="space-y-8 px-16 py-16">
-	<div>
-		<div class="flex justify-between">
+<main class="space-y-8 px-8 py-16 md:px-16">
+	<div class="flex flex-col justify-between gap-8 md:flex-row">
+		<div class="">
 			<h1 class="font-heading mb-4 text-4xl font-bold">Kunstnere</h1>
-			<Button onclick={() => goto('/admin/artists/edit')}><PlusIcon />Tilføj</Button>
+			<p class="text-text/50">Overblik over alle kunstnere, som er associerede med events.</p>
 		</div>
-		<p class="text-text/50">Overblik over alle kunstnere, som er associerede med events.</p>
+		<Button onclick={() => goto('/admin/artists/edit')}><PlusIcon />Tilføj</Button>
 	</div>
 
 	<section class="space-y-8">
