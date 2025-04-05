@@ -230,3 +230,12 @@ func (s EventService) List(ctx context.Context, q query.ListQuery) (query.ListRe
 
 	return result, nil
 }
+
+func (s EventService) Delete(ctx context.Context, eventID int64) error {
+	err := s.eventRepo.Delete(ctx, eventID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

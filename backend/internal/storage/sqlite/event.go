@@ -44,7 +44,6 @@ func NewEventRepository(db *sql.DB) (*EventRepository, error) {
 		db: db,
 	}, nil
 }
-
 func (repo EventRepository) ByID(ctx context.Context, eventID int64) (event.Event, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -166,6 +165,29 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 
 	_, err = setEventConcerts(ctx, tx, eventID, concerts...)
 	if err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repo EventRepository) Delete(ctx context.Context, eventID int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	if err := deleteEventConcerts(ctx, tx, eventID); err != nil {
+		return err
+	}
+
+	if err := deleteEvent(ctx, tx, eventID); err != nil {
 		return err
 	}
 
@@ -498,6 +520,26 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 	}
 
 	rowsAffected, err := res.RowsAffected()
+	if rowsAffected <= 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
+func deleteEvent(ctx context.Context, tx *sql.Tx, eventID int64) error {
+	query := "DELETE FROM event WHERE id = @event_id"
+
+	res, err := tx.ExecContext(ctx, query, sql.Named("event_id", eventID))
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
 	if rowsAffected <= 0 {
 		return ErrNotFound
 	}

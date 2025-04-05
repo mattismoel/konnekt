@@ -195,3 +195,21 @@ func (s Server) handleUploadEventImage() http.HandlerFunc {
 		writeText(w, http.StatusOK, url)
 	}
 }
+
+func (s Server) handleDeleteEvent() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = s.eventService.Delete(ctx, int64(eventID))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+	}
+}
