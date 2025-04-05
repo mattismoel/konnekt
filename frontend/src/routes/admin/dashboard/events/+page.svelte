@@ -29,12 +29,12 @@
 </script>
 
 <main class="space-y-8 px-8 py-16 md:px-16">
-	<div>
-		<div class="flex justify-between">
-			<h1 class="font-heading mb-4 text-4xl font-bold">Kommende events</h1>
-			<Button onclick={() => goto(`/admin/events/edit`)}><PlusIcon />Tilføj</Button>
+	<div class="flex flex-col justify-between gap-8 md:flex-row">
+		<div>
+			<h1 class="font-heading mb-4 text-4xl font-bold md:line-clamp-1">Kommende events</h1>
+			<p class="text-text/50">Overblik over alle events.</p>
 		</div>
-		<p class="text-text/50">Overblik over alle events.</p>
+		<Button onclick={() => goto(`/admin/events/edit`)}><PlusIcon />Tilføj</Button>
 	</div>
 
 	{#if hasPermissions(data.permissions, ['event-list'])}

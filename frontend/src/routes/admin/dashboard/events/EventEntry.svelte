@@ -25,8 +25,10 @@
 		href="/admin/events/edit?id={event.id}"
 	>
 		<span class="flex-1 font-medium">{event.title}</span>
-		<span class="text-text/50 line-clamp-1 flex-1">{format(fromDate, DATE_FORMAT)}</span>
-		<span class="text-text/50 line-clamp-1 flex-1"
+		<span class="text-text/50 line-clamp-1 hidden flex-1 md:inline"
+			>{format(fromDate, DATE_FORMAT)}</span
+		>
+		<span class="text-text/50 line-clamp-1 hidden flex-1 md:inline"
 			>{format(fromDate, 'HH:mm')} - {format(toDate, 'HH:mm')}</span
 		>
 		<Button variant="dangerous">
