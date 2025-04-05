@@ -147,3 +147,16 @@ export const eventById = async (id: number): Promise<Event> => {
 
 	return event
 }
+
+export const deleteEvent = async (id: number, init?: RequestInit) => {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${id}`, {
+		credentials: "include",
+		method: "DELETE",
+		...init
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not delete event", err.message)
+	}
+}
