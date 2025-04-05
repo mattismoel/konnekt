@@ -6,13 +6,17 @@
 
 	import Toast from '$lib/components/ui/Toast.svelte';
 	import Sidebar from './Sidebar.svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	let { children, data } = $props();
 	let { user, roles } = $derived(data);
 
 	let windowWidth = $state(0);
 
-	let sidebarExpanded = $derived(windowWidth > 640);
+	const large = new MediaQuery("min-width: 768px")
+
+	let sidebarExpanded = $derived(large.current);
+
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />
