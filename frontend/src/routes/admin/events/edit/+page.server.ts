@@ -1,11 +1,16 @@
 import type { PageServerLoad } from "./$types";
-import { error } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import { APIError } from "$lib/error";
 import { eventById } from "$lib/event";
 import { listArtists } from "$lib/artist";
 import { listVenues } from "$lib/venue";
+import { hasPermissions } from "$lib/auth";
 
-export const load: PageServerLoad = async ({ url, request }) => {
+export const load: PageServerLoad = async ({ locals, url, request }) => {
+  if (!hasPermissions(locals.permissions, ["view:event", "edit:event"])) {
+    return redirect(302, "/auth/login")
+  }
+
   try {
     const artistsResult = await listArtists()
     const venuesResult = await listVenues({
