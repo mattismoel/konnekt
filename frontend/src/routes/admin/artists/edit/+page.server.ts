@@ -1,10 +1,15 @@
-import { error } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { artistById } from "$lib/artist";
 import { listGenres } from "$lib/genre";
 import { APIError } from "$lib/error";
+import { hasPermissions } from "$lib/auth";
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
+  if (!hasPermissions(locals.permissions, ["view:artist", "edit:artist"])) {
+    return redirect(302, "/auth/login")
+  }
+
   try {
     const id = url.searchParams.get("id")
 
