@@ -164,3 +164,16 @@ export const artistById = async (id: number): Promise<Artist> => {
 	return artist
 }
 
+
+export const deleteArtist = async (id: number, init?: RequestInit) => {
+	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/${id}`, {
+		credentials: "include",
+		method: "DELETE",
+		...init
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not delete artist", err.message)
+	}
+}
