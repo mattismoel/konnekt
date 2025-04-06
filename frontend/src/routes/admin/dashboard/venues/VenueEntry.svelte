@@ -6,17 +6,22 @@
 	import type { z } from 'zod';
 
 	import CheckIcon from '~icons/mdi/check';
-	import TrashIcon from '~icons/mdi/trash';
+	import MenuIcon from '~icons/mdi/dots-vertical';
 	import XIcon from '~icons/mdi/close';
-	import Button from '$lib/components/ui/Button.svelte';
+	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
+	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
+	import { hasPermissions, type Permission } from '$lib/auth';
 
 	type Props = {
 		initialValue?: Venue;
+		userPermissions: Permission[];
 		onEdit: (form: z.infer<typeof venueForm>) => void;
 		onDelete: () => void;
 	};
 
-	let { initialValue, onEdit, onDelete }: Props = $props();
+	let { initialValue, userPermissions, onEdit, onDelete }: Props = $props();
+
+	let showContextMenu = $state(false);
 
 	let form = $state<z.infer<typeof venueForm>>({
 		...(initialValue || {
@@ -45,7 +50,7 @@
 
 <li
 	class={cn(
-		'group flex items-center gap-8 rounded-md border border-transparent p-2 hover:border-zinc-800 hover:bg-zinc-900',
+		'group relative flex items-center gap-8 rounded-md border border-transparent p-2 hover:border-zinc-800 hover:bg-zinc-900',
 		{
 			'border-green-800 bg-green-950 hover:border-green-800 hover:bg-green-950': isEdited
 		}
@@ -74,11 +79,7 @@
 		bind:value={form.countryCode}
 	/>
 	<div class="text-text/50 flex w-full justify-end gap-8">
-		{#if !isEdited}
-			<Button variant="dangerous" onclick={onDelete}>
-				<TrashIcon />
-			</Button>
-		{:else}
+		{#if isEdited}
 			<div class="flex gap-4">
 				<button onclick={resetForm} class="hover:text-red-400">
 					<XIcon />
@@ -87,4 +88,17 @@
 			</div>
 		{/if}
 	</div>
+	<button onclick={() => (showContextMenu = true)}>
+		<MenuIcon />
+	</button>
+	<ContextMenu
+		open={showContextMenu}
+		onClose={() => (showContextMenu = false)}
+		class="absolute top-1/2 right-4"
+	>
+		<ContextMenuEntry
+			disabled={!hasPermissions(userPermissions, ['delete:venue'])}
+			action={onDelete}>Slet</ContextMenuEntry
+		>
+	</ContextMenu>
 </li>

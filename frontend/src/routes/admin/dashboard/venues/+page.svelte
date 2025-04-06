@@ -1,24 +1,15 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	import type { z } from 'zod';
 
 	import { toaster } from '$lib/toaster.svelte.js';
 	import { APIError, tryCatch } from '$lib/error.js';
 
-	import { COUNTRIES_MAP } from '$lib/location.js';
 	import { createVenue, editVenue, deleteVenue, venueForm, type Venue } from '$lib/venue.js';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Selector from '$lib/components/ui/Selector.svelte';
-
-	import Table from '$lib/components/ui/table/Table.svelte';
-	import TableBody from '$lib/components/ui/table/TableBody.svelte';
-	import TableCell from '$lib/components/ui/table/TableCell.svelte';
-	import TableHead from '$lib/components/ui/table/TableHead.svelte';
-	import TableHeader from '$lib/components/ui/table/TableHeader.svelte';
-	import TableRow from '$lib/components/ui/table/TableRow.svelte';
-	import InputCell from '$lib/components/ui/table/InputCell.svelte';
 
 	import PlusIcon from '~icons/mdi/plus';
 	import TrashIcon from '~icons/mdi/trash';
@@ -105,8 +96,6 @@
 
 		showVenueModal = true;
 	};
-
-	$inspect(selectedVenue);
 </script>
 
 <main class="space-y-8 px-8 py-16 md:px-16">
@@ -128,6 +117,7 @@
 			<ul>
 				{#each venues as venue (venue.id)}
 					<VenueEntry
+						userPermissions={data.permissions}
 						initialValue={venue}
 						onEdit={(form) => handleEditVenue(venue.id, form)}
 						onDelete={() => handleDeleteVenue(venue.id)}
