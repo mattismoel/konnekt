@@ -1,18 +1,16 @@
 import { redirect } from "@sveltejs/kit";
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
+import { userPermissions, userRoles, hasAllRoles } from "$lib/auth";
+import { userSession } from "$lib/user";
 import type { LayoutServerLoad } from "./$types";
-import { hasAllRoles, roleSchema } from "$lib/auth";
 
-export const load: LayoutServerLoad = async ({ locals, request }) => {
-  if (!locals.user) return redirect(302, "/auth/login")
+export const load: LayoutServerLoad = async ({ fetch }) => {
+  const user = await userSession(fetch)
+  const roles = await userRoles(fetch, user.id)
+  const permissions = await userPermissions(fetch, user.id)
 
-  if (!hasAllRoles(locals.roles, ["member"])) {
+  if (!hasAllRoles(roles, ["member"])) {
     return redirect(302, "/auth/login")
   }
 
-  return {
-    user: locals.user,
-    roles: locals.roles,
-    permissions: locals.permissions,
-  }
+  return { user, roles, permissions }
 }

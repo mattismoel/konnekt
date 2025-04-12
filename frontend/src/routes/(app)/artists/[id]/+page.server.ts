@@ -1,19 +1,11 @@
 import type { PageServerLoad } from "./$types";
 import { artistById } from "$lib/artist";
-import { listEvents } from "$lib/event";
-import { startOfToday } from "date-fns";
+import { artistEvents } from "$lib/event";
 
-export const load: PageServerLoad = async ({ params }) => {
-  const artist = await artistById(parseInt(params.id))
-  const artistEventsResult = await listEvents(new URLSearchParams({
-    "filter": [
-      "from_date>=" + startOfToday().toISOString(),
-      "artist_id=" + parseInt(params.id)
-    ].join(",")
-  }))
+export const load: PageServerLoad = async ({ params, fetch }) => {
+  const artist = await artistById(fetch, parseInt(params.id))
 
-  return {
-    artist,
-    events: artistEventsResult.records,
-  }
+  const { records: events } = await artistEvents(fetch, parseInt(params.id))
+
+  return { artist, events }
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createListResult, type ListResult } from "./list-result";
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
-import { APIError, apiErrorSchema } from "./error";
+import { createUrl, requestAndParse, type Query } from "./api";
 
 export const venueForm = z.object({
 	name: z.string().nonempty(),
@@ -20,62 +20,51 @@ export type Venue = z.infer<typeof venueSchema>
 
 /**
  * @description Lists venues.
- * @param {RequestInit} init - Must be specified with {credentials: "include"} if fetching with auth cookie.
  */
-export const listVenues = async (init?: RequestInit, params?: URLSearchParams): Promise<ListResult<Venue>> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/venues?` + params, init)
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not list venues", err.message)
-	}
+export const fetchVenues = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Venue>> => {
+	const venues = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/venues`, query),
+		createListResult(venueSchema),
+		"Could not fetch venues"
+	)
 
-	const result = createListResult(venueSchema).parse(await res.json())
-
-	return result
+	return venues
 }
 
-export const createVenue = async (form: z.infer<typeof venueForm>, init?: RequestInit) => {
-	const data = venueForm.parse(form)
+export const createVenue = async (fetchFn: typeof fetch, form: z.infer<typeof venueForm>) => {
+	const venue = requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/venues`),
+		venueSchema,
+		"Could not create venue",
+		{ bodySchema: venueForm, body: form },
+		"POST"
+	)
 
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/venues`, {
-		method: "POST",
-		credentials: "include",
-		body: JSON.stringify(data),
-		...init
-	})
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not create venue", err.message)
-	}
+	return venue
 }
 
-export const deleteVenue = async (id: number, init?: RequestInit) => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/venues/${id}`, {
-		method: "DELETE",
-		credentials: "include",
-		...init,
-	})
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not create venue", err.message)
-	}
+export const deleteVenue = async (fetchFn: typeof fetch, id: number) => {
+	await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/venues/${id}`),
+		undefined,
+		"Could not delete venue",
+		undefined,
+		"DELETE"
+	)
 }
 
-export const editVenue = async (id: number, form: z.infer<typeof venueForm>, init?: RequestInit) => {
-	const { data, success, error } = venueForm.safeParse(form)
-	if (!success) throw error
+export const editVenue = async (fetchFn: typeof fetch, id: number, form: z.infer<typeof venueForm>) => {
+	const venue = requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/venues/${id}`),
+		venueSchema,
+		"Could not edit venue",
+		{ bodySchema: venueForm, body: form },
+		"PUT"
+	)
 
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/venues/${id}`, {
-		method: "PUT",
-		credentials: "include",
-		body: JSON.stringify(data),
-		...init,
-	})
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not edit venue", err.message)
-	}
+	return venue
 }

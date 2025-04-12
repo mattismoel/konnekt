@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 import { PUBLIC_BACKEND_URL } from "$env/static/public"
-import { APIError, apiErrorSchema } from "./error"
+import { createUrl, requestAndParse } from "./api"
 
 export const SESSION_COOKIE_NAME = "konnekt-session"
 export const SESSION_COOKIE_LIFETIME_MILLIS = 30 * 60000 * 60 * 24 // 30 days.
@@ -60,34 +60,24 @@ export const permissionSchema = z.object({
 export type PermissionType = z.infer<typeof permissionTypes>
 export type Permission = z.infer<typeof permissionSchema>
 
-export const listUserRoles = async (userId: number, init?: RequestInit): Promise<Role[]> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/roles/${userId}`, {
-		credentials: "include",
-		...init,
-	})
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not list user roles", err.message)
-	}
-
-	const roles = roleSchema.array().parse(await res.json())
+export const userRoles = async (fetchFn: typeof fetch, userId: number): Promise<Role[]> => {
+	const roles = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/auth/roles/${userId}`),
+		roleSchema.array(),
+		"Could not fetch user roles",
+	)
 
 	return roles
 }
 
-export const listUserPermissions = async (userId: number, init?: RequestInit): Promise<Permission[]> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/permissions/${userId}`, {
-		credentials: "include",
-		...init,
-	})
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not list user roles", err.message)
-	}
-
-	const permissions = permissionSchema.array().parse(await res.json())
+export const userPermissions = async (fetchFn: typeof fetch, userId: number): Promise<Permission[]> => {
+	const permissions = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/auth/permissions/${userId}`),
+		permissionSchema.array(),
+		"Could not fetch user permissions",
+	)
 
 	return permissions
 }

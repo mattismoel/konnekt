@@ -5,6 +5,7 @@ import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { createListResult, type ListResult } from "./list-result";
 import { APIError, apiErrorSchema } from "./error";
 import { startOfToday } from "date-fns";
+import { createUrl, requestAndParse, type Query } from "./api";
 
 export const eventSchema = z.object({
 	id: z.number().positive(),
@@ -25,68 +26,62 @@ export const eventForm = z.object({
 	concerts: concertForm.array().min(1, { message: "Et event skal have mindst én koncert" })
 });
 
+const createEventSchema = eventForm
+	.omit({
+		image: true
+	})
+	.extend({
+		imageUrl: z.string().url()
+	})
+
+const updateEventSchema = createEventSchema
+
 export type Event = z.infer<typeof eventSchema>
 
-export const createEvent = async (form: z.infer<typeof eventForm>, init?: RequestInit): Promise<Event> => {
+export const createEvent = async (fetchFn: typeof fetch, form: z.infer<typeof eventForm>): Promise<Event> => {
 	const { image, concerts, ...rest } = form
 
 	if (!image) throw new APIError(400, "Could not create event", "Cover image must be set")
 
 	const imageUrl = await uploadEventCoverImage(image)
 
-	let res = await fetch(`${PUBLIC_BACKEND_URL}/events`, {
-		...init,
-		method: "POST",
-		credentials: "include",
-		body: JSON.stringify({
-			...rest,
-			concerts: concerts.map(c => ({
-				...c,
-				from: c.from.toISOString(),
-				to: c.to.toISOString(),
-			})),
-			imageUrl
-		}),
-	})
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not update event", err.message)
-	}
-
-	const event = eventSchema.parse(await res.json())
+	const event = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}`),
+		eventSchema,
+		"Could not create event",
+		{
+			bodySchema: createEventSchema,
+			body: { ...rest, concerts, imageUrl }
+		},
+	)
 
 	return event
 }
 
-export const updateEvent = async (form: z.infer<typeof eventForm>, eventId: number, init?: RequestInit): Promise<Event> => {
+export const updateEvent = async (
+	fetchFn: typeof fetch,
+	form: z.infer<typeof eventForm>,
+	eventId: number,
+): Promise<Event> => {
 	const { data, success, error } = eventForm.safeParse(form)
 	if (!success) throw error
 
 	const imageUrl = data.image ? await uploadEventCoverImage(data.image) : undefined
 	const { image, concerts, ...rest } = data;
 
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${eventId}`, {
-		...init,
-		method: "PUT",
-		credentials: "include",
-		body: JSON.stringify({
-			...rest,
-			concerts: concerts.map(c => ({
-				...c,
-				from: c.from.toISOString(),
-				to: c.to.toISOString(),
-			})),
-			imageUrl
-		})
-	})
+	const event = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/events/${eventId}`),
+		eventSchema,
+		"Could not update event",
+		{
+			bodySchema: updateEventSchema,
+			body: { ...rest, concerts, imageUrl }
+		},
+		"PUT"
+	)
 
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not update event", err.message)
-	}
-
-	const event = eventSchema.parse(await res.json())
 	return event
 }
 
@@ -112,14 +107,13 @@ export const uploadEventCoverImage = async (file: File, init?: RequestInit): Pro
 	return url
 }
 
-export const listEvents = async (params: URLSearchParams): Promise<ListResult<Event>> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/events?` + params.toString())
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not list events", err.message)
-	}
-
-	const result = createListResult(eventSchema).parse(await res.json())
+export const listEvents = async (fetchFn: typeof fetch, query: Query): Promise<ListResult<Event>> => {
+	const result = requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/events`, query),
+		createListResult(eventSchema),
+		"Could not fetch events"
+	)
 
 	return result
 }
@@ -127,36 +121,58 @@ export const listEvents = async (params: URLSearchParams): Promise<ListResult<Ev
 /**
  * @description Returns all upcoming events, if any.
  */
-export const listUpcomingEvents = async (): Promise<ListResult<Event>> => {
-	const result = await listEvents(new URLSearchParams({
-		"filter": `from_date>=${startOfToday().toISOString()}`,
-	}))
+export const listUpcomingEvents = async (fetchFn: typeof fetch): Promise<ListResult<Event>> => {
+	const result = await listEvents(fetchFn, {
+		filter: ["from_date" + ">=" + startOfToday().toISOString()]
+	})
 
 	return result
 }
 
-export const eventById = async (id: number): Promise<Event> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${id}`)
+/**
+ * @description Returns all upcoming events, if any.
+ */
+export const listPreviousEvents = async (fetchFn: typeof fetch): Promise<ListResult<Event>> => {
+	const result = await listEvents(fetchFn, {
+		filter: ["from_date" + "<" + startOfToday().toISOString()]
+	})
 
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, `Could not get event`, err.message)
-	}
+	return result
+}
 
-	const event = eventSchema.parse(await res.json())
+
+export const eventById = async (fetchFn: typeof fetch, id: number): Promise<Event> => {
+	const event = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/events/${id}`),
+		eventSchema,
+	)
 
 	return event
 }
 
-export const deleteEvent = async (id: number, init?: RequestInit) => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/${id}`, {
-		credentials: "include",
-		method: "DELETE",
-		...init
-	})
+export const artistEvents = async (fetchFn: typeof fetch, artistId: number): Promise<ListResult<Event>> => {
+	const result = requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/events`, {
+			filter: [
+				"from_date" + ">=" + startOfToday().toISOString(),
+				"artist_id" + "=" + artistId.toString()
+			]
+		}),
+		createListResult(eventSchema),
+	)
 
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not delete event", err.message)
-	}
+	return result
+}
+
+export const deleteEvent = async (fetchFn: typeof fetch, id: number) => {
+	await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/events/${id}`),
+		undefined,
+		"Could not delete event",
+		undefined,
+		"DELETE"
+	)
 }

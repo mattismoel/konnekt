@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createListResult, type ListResult } from "./list-result";
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { APIError, apiErrorSchema } from "./error";
+import { createUrl, requestAndParse, type Query } from "./api";
 
 export const genreSchema = z.object({
 	id: z.number().positive(),
@@ -10,32 +11,27 @@ export const genreSchema = z.object({
 
 export type Genre = z.infer<typeof genreSchema>
 
-export const listGenres = async (params?: URLSearchParams, init?: RequestInit): Promise<ListResult<Genre>> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/genres?` + params?.toString(), {
-		...init,
-		credentials: "include",
-	})
+const createGenreSchema = z.object({
+	name: z.string().nonempty()
+})
 
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not list genres", err.message)
-	}
-
-	const result = createListResult(genreSchema).parse(await res.json())
+export const listGenres = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Genre>> => {
+	const result = requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/genres`, query),
+		createListResult(genreSchema)
+	)
 
 	return result
 }
 
-export const createGenre = async (name: string, init?: RequestInit): Promise<void> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/genres`, {
-		method: "POST",
-		credentials: "include",
-		body: JSON.stringify({ name }),
-		...init
-	})
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not create genre", err.message)
-	}
+export const createGenre = async (fetchFn: typeof fetch, name: string): Promise<void> => {
+	await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/genres`),
+		undefined,
+		"Could not create genre",
+		{ bodySchema: createGenreSchema, body: { name } },
+		"POST",
+	)
 }

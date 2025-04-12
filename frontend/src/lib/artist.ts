@@ -3,6 +3,7 @@ import { genreSchema } from "./genre";
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { createListResult, type ListResult } from "./list-result";
 import { APIError, apiErrorSchema } from "./error";
+import { createUrl, requestAndParse, type Query } from "./api";
 
 export const artistSchema = z.object({
 	id: z.number().positive(),
@@ -45,27 +46,36 @@ export const artistFormSchema = z.object({
 		.array(),
 })
 
+const createArtistSchema = artistFormSchema
+	.omit({
+		image: true
+	})
+	.extend({
+		imageUrl: z.string().url()
+	})
+
+const updateArtistSchema = createArtistSchema
+
 export type ArtistForm = z.infer<typeof artistFormSchema>
 
-export const createArtist = async (form: z.infer<typeof artistFormSchema>, init?: RequestInit) => {
+export const createArtist = async (
+	fetchFn: typeof fetch,
+	form: z.infer<typeof artistFormSchema>,
+) => {
 	let { image, ...rest } = form
 	if (!image) throw new APIError(400, "Could not upload artist image", "Image file not present")
 
 	const imageUrl = await uploadArtistImage(image)
 
-	let res = await fetch(`${PUBLIC_BACKEND_URL}/artists`, {
-		...init,
-		method: 'POST',
-		credentials: 'include',
-		body: JSON.stringify({ ...rest, imageUrl })
-	});
+	const artist = requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/artists`),
+		artistSchema,
+		"Could not create artist",
 
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not create artist", err.message)
-	}
-
-	const artist = artistSchema.parse(await res.json())
+		{ bodySchema: createArtistSchema, body: { ...rest, imageUrl } },
+		"POST",
+	)
 
 	return artist
 };
@@ -74,12 +84,11 @@ export const createArtist = async (form: z.infer<typeof artistFormSchema>, init?
  * @description Updates an artist.
  * @param {number} artistId - The artist to be updated's ID.
  * @param form - The form data to update the artist with.
- * @param {RequestInit} init - Must be specified with request headers if called from server.
  */
 export const updateArtist = async (
+	fetchFn: typeof fetch,
 	artistId: number,
 	form: z.infer<typeof artistFormSchema>,
-	init?: RequestInit,
 ): Promise<Artist> => {
 	const { data, success, error } = artistFormSchema.safeParse(form)
 	if (!success) throw error
@@ -88,19 +97,14 @@ export const updateArtist = async (
 
 	const imageUrl = image ? await uploadArtistImage(image) : undefined
 
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/${artistId}`, {
-		...init,
-		method: 'PUT',
-		credentials: "include",
-		body: JSON.stringify({ ...rest, imageUrl })
-	});
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not update artist", err.message)
-	}
-
-	const artist = artistSchema.parse({ ...await res.json() })
+	const artist = requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/artists/${artistId}`),
+		artistSchema,
+		"Could not update artist",
+		{ bodySchema: updateArtistSchema, body: { ...rest, imageUrl } },
+		"PUT"
+	)
 
 	return artist
 };
@@ -134,15 +138,12 @@ export const uploadArtistImage = async (file: File, init?: RequestInit): Promise
 /**
  * @description Lists artists as a {ListResult} object.
  */
-export const listArtists = async (params?: URLSearchParams): Promise<ListResult<Artist>> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists?` + (params || ""))
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not list artists", err.message)
-	}
-
-	const result = createListResult(artistSchema).parse(await res.json())
+export const listArtists = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Artist>> => {
+	const result = requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/artists`, query),
+		createListResult(artistSchema)
+	)
 
 	return result
 }
@@ -151,29 +152,24 @@ export const listArtists = async (params?: URLSearchParams): Promise<ListResult<
  * @description Gets an artists by its ID.
  * @param {number} id - The ID of the artist.
  */
-export const artistById = async (id: number): Promise<Artist> => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/${id}`)
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, `Could not get artist`, err.message)
-	}
-
-	const artist = artistSchema.parse(await res.json())
+export const artistById = async (fetchFn: typeof fetch, id: number): Promise<Artist> => {
+	const artist = requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/artists/${id}`),
+		artistSchema,
+	)
 
 	return artist
 }
 
 
-export const deleteArtist = async (id: number, init?: RequestInit) => {
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/${id}`, {
-		credentials: "include",
-		method: "DELETE",
-		...init
-	})
-
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not delete artist", err.message)
-	}
+export const deleteArtist = async (fetchFn: typeof fetch, id: number) => {
+	await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/artists/${id}`),
+		undefined,
+		"Could not delete artist",
+		undefined,
+		"DELETE"
+	)
 }

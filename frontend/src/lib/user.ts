@@ -1,4 +1,6 @@
+import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { z } from "zod";
+import { createUrl, requestAndParse } from "./api";
 
 export const userSchema = z.object({
 	id: z.number().positive(),
@@ -9,3 +11,13 @@ export const userSchema = z.object({
 
 export type User = z.infer<typeof userSchema>
 
+export const userSession = async (fetchFn: typeof fetch) => {
+	const user = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/auth/session`),
+		userSchema,
+		"Could not fetch user session",
+	)
+
+	return user
+}
