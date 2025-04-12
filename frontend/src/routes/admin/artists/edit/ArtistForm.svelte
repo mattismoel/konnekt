@@ -9,14 +9,14 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import FieldError from '$lib/components/ui/FieldError.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
-	import Pill from '$lib/components/ui/Pill.svelte';
-	import GenreSelectorModal from '$lib/components/ui/GenreSelectorModal.svelte';
+	import ImagePreview from '$lib/components/ImagePreview.svelte';
+	import Pill from '$lib/components/Pill.svelte';
+	import GenreSelectorModal from '$lib/components/GenreSelectorModal.svelte';
 	import SpotifyPreview from '$lib/components/SpotifyPreview.svelte';
 	import SocialEntry from './SocialEntry.svelte';
 
 	import PlusIcon from '~icons/mdi/add';
-	import TipTapEditor from '$lib/components/ui/tiptap/TipTapEditor.svelte';
+	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 
 	type Props = {
 		artist: Artist | null;

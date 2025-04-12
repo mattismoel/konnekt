@@ -4,7 +4,7 @@
 	import { cn } from '$lib/clsx';
 	import { toaster } from '$lib/toaster.svelte';
 
-	import Toast from '$lib/components/ui/Toast.svelte';
+	import Toast from '$lib/components/Toast.svelte';
 	import Sidebar from './Sidebar.svelte';
 	import { MediaQuery } from 'svelte/reactivity';
 
@@ -13,10 +13,9 @@
 
 	let windowWidth = $state(0);
 
-	const large = new MediaQuery("min-width: 768px")
+	const large = new MediaQuery('min-width: 768px');
 
 	let sidebarExpanded = $derived(large.current);
-
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />

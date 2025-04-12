@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 
 	import type { z } from 'zod';
 
@@ -9,15 +9,12 @@
 	import { createVenue, editVenue, deleteVenue, venueForm, type Venue } from '$lib/venue.js';
 
 	import Button from '$lib/components/ui/Button.svelte';
-	import Selector from '$lib/components/ui/Selector.svelte';
 
 	import PlusIcon from '~icons/mdi/plus';
 	import TrashIcon from '~icons/mdi/trash';
 	import EditIcon from '~icons/mdi/edit';
-	import Card from '$lib/components/ui/Card.svelte';
 	import VenueEntry from './VenueEntry.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
-	import SearchBar from '$lib/components/ui/SearchBar.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { hasPermissions } from '$lib/auth';
 
 	let { data } = $props();

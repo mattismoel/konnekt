@@ -5,7 +5,7 @@
 	import Caroussel from '$lib/components/Caroussel.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
 	import SpotifyPreview from '$lib/components/SpotifyPreview.svelte';
-	import Fader from '$lib/components/ui/Fader.svelte';
+	import Fader from '$lib/components/Fader.svelte';
 
 	let { data } = $props();
 	let { artist, events } = $derived(data);

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
-	import Input from './Input.svelte';
+	import Input from './ui/Input.svelte';
 	import { formatISO } from 'date-fns';
 
 	type Props = Omit<HTMLInputAttributes, 'defaultValue'> & {

@@ -18,7 +18,7 @@
 
 	import EditIcon from '~icons/mdi/edit';
 	import { goto, invalidateAll } from '$app/navigation';
-	import SearchBar from '$lib/components/ui/SearchBar.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { hasPermissions } from '$lib/auth';
 	import EventList from './EventList.svelte';
 	import { APIError, tryCatch } from '$lib/error';

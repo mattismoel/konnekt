@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
-	import SearchBar from '$lib/components/ui/SearchBar.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 	import PlusIcon from '~icons/mdi/plus';
 	import ArtistEntry from './ArtistEntry.svelte';
 	import { hasPermissions } from '$lib/auth';

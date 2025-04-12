@@ -7,7 +7,7 @@
 	import { cn } from '$lib/clsx';
 	import Logo from '$lib/assets/Logo.svelte';
 	import { format } from 'date-fns';
-	import { DATE_FORMAT } from '$lib/time';
+	import { DATETIME_FORMAT } from '$lib/time';
 
 	type Props = HTMLAttributes<HTMLDivElement> & {
 		event: Event;
@@ -60,7 +60,7 @@
 				<div class="flex flex-1 flex-col justify-center text-zinc-400">
 					<div class="flex gap-2">
 						<CalendarIcon />
-						<time>{format(earliestConcert.from, DATE_FORMAT)}</time>
+						<time>{format(earliestConcert.from, DATETIME_FORMAT)}</time>
 					</div>
 					<div class="flex gap-2">
 						<VenueIcon />

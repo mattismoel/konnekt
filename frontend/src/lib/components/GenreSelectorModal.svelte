@@ -1,15 +1,14 @@
 <script lang="ts">
 	import PlusIcon from '~icons/mdi/add';
-	import SelectorEntry from './SelectorEntry.svelte';
+	import SelectorEntry from './ui/SelectorEntry.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 	import { error } from '@sveltejs/kit';
 	import { invalidateAll } from '$app/navigation';
 	import { createGenre, type Genre } from '$lib/genre';
-	import Modal from './modal/Modal.svelte';
-	import ModalHeader from './modal/ModalHeader.svelte';
-	import ModalContent from './modal/ModalContent.svelte';
-	import ModalFooter from './modal/ModalFooter.svelte';
+	import Modal from './ui/modal/Modal.svelte';
+	import ModalHeader from './ui/modal/ModalHeader.svelte';
+	import ModalContent from './ui/modal/ModalContent.svelte';
+	import ModalFooter from './ui/modal/ModalFooter.svelte';
 	import { APIError } from '$lib/error';
 
 	type Props = {

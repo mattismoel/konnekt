@@ -7,7 +7,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Selector from '$lib/components/ui/Selector.svelte';
-	import DateTimePicker from '$lib/components/ui/DateTimePicker.svelte';
+	import DateTimePicker from '$lib/components/DateTimePicker.svelte';
 
 	import PlusIcon from '~icons/mdi/plus';
 	import CloseIcon from '~icons/mdi/close';

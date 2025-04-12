@@ -2,7 +2,7 @@
 	import LandingImage from '$lib/assets/landing.jpg';
 	import Caroussel from '$lib/components/Caroussel.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
-	import LogoScroller from '$lib/components/ui/LogoScroller.svelte';
+	import LogoScroller from '$lib/components/LogoScroller.svelte';
 	import RightArrowIcon from '~icons/mdi/arrow-right';
 
 	import OdenseKommuneLogo from '$lib/assets/logos/odense-kommune-logo.svg';
@@ -12,7 +12,7 @@
 	import SpillestedetOdenseLogo from '$lib/assets/logos/spillestedet-odense-logo.svg';
 
 	import Button from '$lib/components/ui/Button.svelte';
-	import Fader from '$lib/components/ui/Fader.svelte';
+	import Fader from '$lib/components/Fader.svelte';
 	import GlowCursor from '$lib/components/GlowCursor.svelte';
 
 	let { data } = $props();

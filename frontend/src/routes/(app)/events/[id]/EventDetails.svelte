@@ -7,7 +7,7 @@
 	import type { Event } from '$lib/event';
 
 	import Button from '$lib/components/ui/Button.svelte';
-	import Fader from '$lib/components/ui/Fader.svelte';
+	import Fader from '$lib/components/Fader.svelte';
 	import GlowCursor from '$lib/components/GlowCursor.svelte';
 
 	import MapIcon from '~icons/mdi/map-marker';

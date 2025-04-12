@@ -11,12 +11,12 @@
 	import Input from '$lib/components/ui/Input.svelte';
 	import FieldError from '$lib/components/ui/FieldError.svelte';
 	import Selector from '$lib/components/ui/Selector.svelte';
-	import ImagePreview from '$lib/components/ui/ImagePreview.svelte';
+	import ImagePreview from '$lib/components/ImagePreview.svelte';
 	import CreateConcertCard from './CreateConcertCard.svelte';
 
 	import PlusIcon from '~icons/mdi/plus';
 	import { goto } from '$app/navigation';
-	import TipTapEditor from '$lib/components/ui/tiptap/TipTapEditor.svelte';
+	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 
 	type Props = {
 		event: Event | null;
