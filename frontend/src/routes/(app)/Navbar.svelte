@@ -4,16 +4,22 @@
 
 	import Logo from '$lib/assets/Logo.svelte';
 
-	const entries = new Map<string, string>([
-		['/events', 'Events'],
-		['/artists', 'Kunstnere'],
-		['/om-os', 'Om os']
-	]);
+	type Entry = {
+		href: string;
+		name: string;
+	};
+
+	type Props = {
+		entries: Entry[];
+	};
+
+	const { entries }: Props = $props();
 
 	let scrollY = $state(0);
 </script>
 
 <svelte:window onscroll={(e) => (scrollY = e.currentTarget.scrollY)} />
+
 <nav
 	class={cn(
 		'h-nav border-[] fixed z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 px-8 outline outline-transparent transition-colors duration-500',
@@ -26,18 +32,18 @@
 		<Logo class="h-4" />
 	</a>
 	<ul class="*:hover:text-text hidden items-center gap-6 text-lg text-zinc-50 sm:flex">
-		{#each [...entries] as [pathname, name]}
-			{@render navEntry(pathname, name)}
+		{#each entries as entry}
+			{@render navEntry(entry)}
 		{/each}
 	</ul>
 </nav>
 
-{#snippet navEntry(pathname: string, name: string)}
+{#snippet navEntry({ href, name }: Entry)}
 	<li
 		class={cn('text-text/75 hover:text-text transition-colors', {
-			'text-text font-medium': page.url.pathname === pathname
+			'text-text font-medium': page.url.pathname === href
 		})}
 	>
-		<a href={pathname}>{name}</a>
+		<a {href}>{name}</a>
 	</li>
 {/snippet}

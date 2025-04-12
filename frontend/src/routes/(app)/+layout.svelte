@@ -7,6 +7,12 @@
 	let { children } = $props();
 </script>
 
-<Navbar />
+<Navbar
+	entries={[
+		{ href: '/events', name: 'Events' },
+		{ href: '/artists', name: 'Kunstnere' },
+		{ href: '/about', name: 'Om os' }
+	]}
+/>
 {@render children()}
 <Footer />
