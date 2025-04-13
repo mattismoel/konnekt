@@ -29,17 +29,18 @@
 
 	let search = $state('');
 
-	let upcomingEvents = $derived(
-		data.upcomingEvents.filter((v) => v.title.toLowerCase().includes(search.toLowerCase()))
+	let filteredEvents = $derived(
+		[...data.previousEvents, ...data.upcomingEvents].filter((event) =>
+			event.title.toLowerCase().includes(search.toLowerCase())
+		)
 	);
 
 	let listPreviousEvents = $state(false);
-	let previousEvents = $derived(data.previousEvents);
 
 	const handleCleanPreviousEvents = async () => {
 		let message = 'Er du sikker på, at du vil rydde alle tidligere events?\n\n';
 
-		previousEvents.map((e) => {
+		data.previousEvents.map((e) => {
 			message += `- ${e.title}\n`;
 		});
 
@@ -48,8 +49,8 @@
 
 		if (!confirm(message)) return;
 
-		previousEvents.forEach(async ({ id }) => {
-			const { error } = await tryCatch(deleteEvent(id));
+		data.previousEvents.forEach(async ({ id }) => {
+			const { error } = await tryCatch(deleteEvent(fetch, id));
 			if (error) {
 				if (error instanceof APIError) {
 					toaster.addToast('Kunne ikke rydde op', error.cause, 'error');
@@ -66,13 +67,13 @@
 	};
 
 	const handleDeleteEvent = async (id: number) => {
-		const event = [...upcomingEvents, ...data.previousEvents].find((e) => e.id === id);
+		const event = [...data.upcomingEvents, ...data.previousEvents].find((event) => event.id === id);
 
 		if (!event) return;
 
 		if (!confirm(`Vil du slette ${event.title}?`)) return;
 
-		const { error } = await tryCatch(deleteEvent(id));
+		const { error } = await tryCatch(deleteEvent(fetch, id));
 		if (error) {
 			if (error instanceof APIError) {
 				toaster.addToast('Kunne ikke slette event', error.cause, 'error');
@@ -108,9 +109,15 @@
 	{#if hasPermissions(data.permissions, ['view:event'])}
 		<div class="space-y-8">
 			<SearchBar bind:value={search} />
-			<section>
-				<EventList onDelete={handleDeleteEvent} events={upcomingEvents} />
-			</section>
+			{#if search.trim() !== ''}
+				<section>
+					<EventList onDelete={handleDeleteEvent} events={filteredEvents} />
+				</section>
+			{:else}
+				<section>
+					<EventList onDelete={handleDeleteEvent} events={data.upcomingEvents} />
+				</section>
+			{/if}
 
 			{#if data.previousEvents.length > 0}
 				<section>
