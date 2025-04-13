@@ -21,7 +21,7 @@ export type Venue = z.infer<typeof venueSchema>
 /**
  * @description Lists venues.
  */
-export const fetchVenues = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Venue>> => {
+export const listVenues = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Venue>> => {
 	const venues = await requestAndParse(
 		fetchFn,
 		createUrl(`${PUBLIC_BACKEND_URL}/venues`, query),
