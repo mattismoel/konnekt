@@ -1,5 +1,5 @@
 import { userRoles, hasSomeRole } from "$lib/auth";
-import { fetchVenues } from "$lib/venue";
+import { listVenues } from "$lib/venue";
 import { redirect } from "@sveltejs/kit";
 import { userSession } from "$lib/user";
 import type { PageServerLoad } from "./$types";
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
     return redirect(302, "/auth/login")
   }
 
-  const { records: venues } = await fetchVenues(fetch)
+  const { records: venues } = await listVenues(fetch)
 
   return { venues }
 }
