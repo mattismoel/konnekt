@@ -4,7 +4,7 @@ import { eventById } from "$lib/event";
 import { listArtists } from "$lib/artist";
 import { hasPermissions, userPermissions } from "$lib/auth";
 import { listVenues } from "$lib/venue";
-import { userSession } from "$lib/user";
+import { userSession } from "$lib/auth";
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
   const user = await userSession(fetch)

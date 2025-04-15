@@ -7,6 +7,26 @@ import { createUrl } from "./url";
 export const SESSION_COOKIE_NAME = "konnekt-session"
 export const SESSION_COOKIE_LIFETIME_MILLIS = 30 * 60000 * 60 * 24 // 30 days.
 
+export const userSchema = z.object({
+	id: z.number().positive(),
+	email: z.string().email(),
+	firstName: z.string(),
+	lastName: z.string()
+})
+
+export type User = z.infer<typeof userSchema>
+
+export const userSession = async (fetchFn: typeof fetch) => {
+	const user = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/auth/session`),
+		userSchema,
+		"Could not fetch user session",
+	)
+
+	return user
+}
+
 export const permissionTypes = z.union([
 	z.literal("view:event"),
 	z.literal("edit:event"),

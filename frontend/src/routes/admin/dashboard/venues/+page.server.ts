@@ -1,7 +1,7 @@
 import { userRoles, hasSomeRole } from "$lib/auth";
 import { listVenues } from "$lib/venue";
 import { redirect } from "@sveltejs/kit";
-import { userSession } from "$lib/user";
+import { userSession } from "$lib/auth";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ fetch }) => {
