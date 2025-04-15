@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { createListResult, type ListResult } from "./list-result";
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
-import { APIError, apiErrorSchema } from "./error";
-import { createUrl, requestAndParse, type Query } from "./api";
+import { requestAndParse } from "./api";
+import { createUrl, type Query } from "./url";
 
 export const genreSchema = z.object({
 	id: z.number().positive(),

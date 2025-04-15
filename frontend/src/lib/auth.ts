@@ -1,7 +1,8 @@
 import { z } from "zod"
 
 import { PUBLIC_BACKEND_URL } from "$env/static/public"
-import { createUrl, requestAndParse } from "./api"
+import { requestAndParse } from "./api"
+import { createUrl } from "./url";
 
 export const SESSION_COOKIE_NAME = "konnekt-session"
 export const SESSION_COOKIE_LIFETIME_MILLIS = 30 * 60000 * 60 * 24 // 30 days.

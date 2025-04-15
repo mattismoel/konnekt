@@ -1,6 +1,7 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { z } from "zod";
-import { createUrl, requestAndParse } from "./api";
+import { requestAndParse } from "./api";
+import { createUrl } from "./url";
 
 export const userSchema = z.object({
 	id: z.number().positive(),

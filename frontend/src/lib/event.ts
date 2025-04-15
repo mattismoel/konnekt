@@ -5,7 +5,8 @@ import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { createListResult, type ListResult } from "./list-result";
 import { APIError, apiErrorSchema } from "./error";
 import { startOfToday } from "date-fns";
-import { createUrl, requestAndParse, type Query } from "./api";
+import { requestAndParse } from "./api";
+import { createUrl, type Query } from "./url";
 
 export const eventSchema = z.object({
 	id: z.number().positive(),

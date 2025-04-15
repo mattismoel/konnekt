@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { createListResult, type ListResult } from "./list-result";
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
-import { createUrl, requestAndParse, type Query } from "./api";
+import { requestAndParse } from "./api";
+import { createUrl, type Query } from "./url";
 
 export const venueForm = z.object({
 	name: z.string().nonempty(),
