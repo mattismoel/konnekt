@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { z } from 'zod';
 
-	import type { concertForm } from '$lib/concert';
-	import type { Artist } from '$lib/artist';
+	import type { concertForm } from '$lib/features/concert/concert';
+	import type { Artist } from '$lib/features/artist/artist';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Card from '$lib/components/ui/Card.svelte';

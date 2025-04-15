@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { ZodError } from 'zod';
 
-	import { artistFormSchema, type Artist, type ArtistForm } from '$lib/artist';
-	import { trackIdFromUrl } from '$lib/spotify';
+	import { artistFormSchema, type Artist, type ArtistForm } from '$lib/features/artist/artist';
+	import { trackIdFromUrl } from '$lib/features/artist/spotify';
 
-	import type { Genre } from '$lib/artist';
+	import type { Genre } from '$lib/features/artist/genre';
 
 	import Input from '$lib/components/ui/Input.svelte';
 	import FieldError from '$lib/components/ui/FieldError.svelte';

@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { socialUrlToIcon } from '$lib/artist.js';
-	import type { Artist } from '$lib/artist.js';
+	import { socialUrlToIcon } from '$lib/features/artist/social.js';
+	import type { Artist } from '$lib/features/artist/artist.js';
 	import { pickRandom, removeDuplicates } from '$lib/array.js';
-	import Button from '$lib/components/ui/Button.svelte';
 
 	let { data } = $props();
 

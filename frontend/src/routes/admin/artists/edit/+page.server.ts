@@ -1,9 +1,9 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { artistById } from "$lib/artist";
-import { listGenres } from "$lib/artist";
+import { artistById } from "$lib/features/artist/artist";
+import { listGenres } from "$lib/features/artist/genre";
 import { APIError } from "$lib/api";
-import { hasPermissions } from "$lib/auth";
+import { hasPermissions } from "$lib/features/auth/permission";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   if (!hasPermissions(locals.permissions, ["view:artist", "edit:artist"])) {

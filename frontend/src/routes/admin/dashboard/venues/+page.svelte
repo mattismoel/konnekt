@@ -5,7 +5,13 @@
 
 	import { toaster } from '$lib/toaster.svelte.js';
 
-	import { createVenue, editVenue, deleteVenue, venueForm, type Venue } from '$lib/venue.js';
+	import {
+		createVenue,
+		editVenue,
+		deleteVenue,
+		venueForm,
+		type Venue
+	} from '$lib/features/venue/venue.js';
 
 	import Button from '$lib/components/ui/Button.svelte';
 
@@ -14,7 +20,7 @@
 	import EditIcon from '~icons/mdi/edit';
 	import VenueEntry from './VenueEntry.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
-	import { hasPermissions } from '$lib/auth';
+	import { hasPermissions } from '$lib/features/auth/permission';
 	import { tryCatch } from '$lib/error';
 	import { APIError } from '$lib/api';
 

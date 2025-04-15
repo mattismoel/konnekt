@@ -2,7 +2,7 @@
 	import { z } from 'zod';
 	import { error } from '@sveltejs/kit';
 
-	import { createEvent, eventForm, updateEvent } from '$lib/event';
+	import { createEvent, eventForm, updateEvent } from '$lib/features/event/event';
 	import { page } from '$app/state';
 	import { APIError } from '$lib/api';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Artist } from '$lib/artist';
+	import type { Artist } from '$lib/features/artist/artist';
 
-	import Modal from '$lib/components/Modal.svelte';
+	import Modal from '$lib/components/ui/modal/Modal.svelte';
 	import ArtistSelectEntry from './ArtistSelectEntry.svelte';
 
 	type Props = {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Genre } from '$lib/artist';
+	import type { Genre } from '$lib/features/artist/genre';
 
 	type Props = {
 		genres: Genre[];

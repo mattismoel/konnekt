@@ -19,10 +19,10 @@
 	import EditIcon from '~icons/mdi/edit';
 	import { goto, invalidateAll } from '$app/navigation';
 	import SearchBar from '$lib/components/SearchBar.svelte';
-	import { hasPermissions } from '$lib/auth';
+	import { hasPermissions } from '$lib/features/auth/permission';
 	import EventList from './EventList.svelte';
 	import { toaster } from '$lib/toaster.svelte';
-	import { deleteEvent } from '$lib/event';
+	import { deleteEvent } from '$lib/features/event/event';
 	import { tryCatch } from '$lib/error';
 	import { APIError } from '$lib/api';
 

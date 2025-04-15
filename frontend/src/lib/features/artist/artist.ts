@@ -1,78 +1,10 @@
 import { z } from "zod";
 import { PUBLIC_BACKEND_URL } from "$env/static/public";
-import { createListResult, type ListResult } from "./list-result";
-import { APIError, apiErrorSchema } from "./error";
-import { requestAndParse } from "./api";
-import { createUrl, type Query } from "./url";
+import { genreSchema } from "./genre";
+import { APIError, apiErrorSchema, requestAndParse } from "$lib/api";
+import { createUrl, type Query } from "$lib/url";
+import { createListResult, type ListResult } from "$lib/query";
 
-import SpotifyIcon from "~icons/mdi/spotify"
-import InstagramIcon from "~icons/mdi/instagram"
-import AppleIcon from "~icons/mdi/apple"
-import FacebookIcon from "~icons/mdi/facebook"
-import YouTubeIcon from "~icons/mdi/youtube"
-
-import MissingIcon from "~icons/mdi/question-mark-circle-outline"
-import type { Component } from "svelte";
-
-
-// -- SOCIAL --
-const iconMap = new Map<string, Component>([
-	["spotify.com", SpotifyIcon],
-	["instagram.com", InstagramIcon],
-	["music.apple.com", AppleIcon],
-	["facebook.com", FacebookIcon],
-	["youtube.com", YouTubeIcon]
-])
-
-export const socialUrlToIcon = (url: string): Component => {
-	const { hostname } = new URL(url);
-	const iconKey = hostname.replace(/^www\./, '');
-
-	const icon = iconMap.get(iconKey)
-
-	if (!icon) return MissingIcon
-
-	return icon
-}
-
-/*
- * GENRES
- * This section contains all this genres.
- */
-export const genreSchema = z.object({
-	id: z.number().positive(),
-	name: z.string()
-})
-
-export type Genre = z.infer<typeof genreSchema>
-
-const createGenreSchema = z.object({
-	name: z.string().nonempty()
-})
-
-export const listGenres = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Genre>> => {
-	const result = requestAndParse(
-		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/genres`, query),
-		createListResult(genreSchema)
-	)
-
-	return result
-}
-
-export const createGenre = async (fetchFn: typeof fetch, name: string): Promise<void> => {
-	await requestAndParse(
-		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/genres`),
-		undefined,
-		"Could not create genre",
-		{ bodySchema: createGenreSchema, body: { name } },
-		"POST",
-	)
-}
-
-
-// -- ARTIST --
 export const artistSchema = z.object({
 	id: z.number().positive(),
 	name: z.string(),

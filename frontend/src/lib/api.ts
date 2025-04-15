@@ -77,5 +77,3 @@ export async function requestAndParse<TBody, TResponse>(
 	const data = resSchema.parse(await res.json())
 	return data
 }
-
-

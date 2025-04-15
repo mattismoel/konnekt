@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Artist } from '$lib/artist';
+	import type { Artist } from '$lib/features/artist/artist';
 
 	import SelectEntry from '$lib/components/SelectEntry.svelte';
 

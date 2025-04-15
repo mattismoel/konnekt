@@ -3,8 +3,8 @@
 
 	import { cn } from '$lib/clsx';
 
-	import { hasSomeRole, type Role } from '$lib/auth';
-	import { type User } from '$lib/auth';
+	import { hasSomeRole, type Role } from '$lib/features/auth/role';
+	import { type User } from '$lib/features/auth/user';
 
 	import Logo from '$lib/assets/Logo.svelte';
 

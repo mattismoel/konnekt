@@ -4,9 +4,9 @@
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import PlusIcon from '~icons/mdi/plus';
 	import ArtistEntry from './ArtistEntry.svelte';
-	import { hasPermissions } from '$lib/auth';
+	import { hasPermissions } from '$lib/features/auth/permission';
 	import { toaster } from '$lib/toaster.svelte';
-	import { deleteArtist } from '$lib/artist';
+	import { deleteArtist } from '$lib/features/artist/artist';
 	import { APIError } from '$lib/api';
 	import { tryCatch } from '$lib/error';
 

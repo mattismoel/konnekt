@@ -1,10 +1,11 @@
 import type { PageServerLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
-import { eventById } from "$lib/event";
-import { listArtists } from "$lib/artist";
-import { hasPermissions, userPermissions } from "$lib/auth";
-import { listVenues } from "$lib/venue";
-import { userSession } from "$lib/auth";
+import { eventById } from "$lib/features/event/event";
+import { listArtists } from "$lib/features/artist/artist";
+import { listVenues } from "$lib/features/venue/venue";
+
+import { hasPermissions, userPermissions } from "$lib/features/auth/permission";
+import { userSession } from "$lib/features/auth/user";
 
 export const load: PageServerLoad = async ({ url, fetch }) => {
   const user = await userSession(fetch)

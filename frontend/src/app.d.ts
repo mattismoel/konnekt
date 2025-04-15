@@ -1,7 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 
-import type { Permission, Role } from "$lib/auth";
-import type { User } from "$lib/auth";
+import type { Permission, Role } from "$lib/features/auth/user";
+import type { User } from "$lib/features/auth/user";
 
 // for information about these interfaces
 declare global {

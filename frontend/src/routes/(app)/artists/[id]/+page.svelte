@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { socialUrlToIcon } from '$lib/artist';
-	import { trackIdFromUrl } from '$lib/spotify.js';
+	import { socialUrlToIcon } from '$lib/features/artist/social.js';
+	import { trackIdFromUrl } from '$lib/features/artist/spotify.js';
 
 	import Caroussel from '$lib/components/Caroussel.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';

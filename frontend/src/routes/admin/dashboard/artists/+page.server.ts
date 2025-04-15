@@ -1,5 +1,5 @@
-import { listArtists } from "$lib/artist";
-import { hasSomeRole } from "$lib/auth";
+import { listArtists } from "$lib/features/artist/artist";
+import { hasSomeRole } from "$lib/features/auth/role";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 

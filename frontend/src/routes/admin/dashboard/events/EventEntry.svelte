@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { DATE_FORMAT } from '$lib/time';
 
-	import type { Event } from '$lib/event';
+	import type { Event } from '$lib/features/event/event';
 
-	import { earliestConcert, latestConcert } from '$lib/concert';
 	import { format, isBefore, startOfToday, startOfTomorrow, startOfYesterday } from 'date-fns';
+	import { earliestConcert, latestConcert } from '$lib/features/concert/concert';
 
 	import MenuIcon from '~icons/mdi/dots-vertical';
 	import Button from '$lib/components/ui/Button.svelte';

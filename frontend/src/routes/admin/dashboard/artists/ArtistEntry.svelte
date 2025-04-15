@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { Artist } from '$lib/artist';
-	import { hasPermissions, type Permission } from '$lib/auth';
 	import Button from '$lib/components/ui/Button.svelte';
+	import type { Artist } from '$lib/features/artist/artist';
+	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import MenuIcon from '~icons/mdi/dots-vertical';

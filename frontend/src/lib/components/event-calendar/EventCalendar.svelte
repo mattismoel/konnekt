@@ -4,7 +4,7 @@
 	import { cn } from '$lib/clsx';
 	import type { HTMLAttributes } from 'svelte/elements';
 
-	import type { Event } from '$lib/event';
+	import type { Event } from '$lib/features/event/event';
 
 	import ConcertEntry from './ConcertEntry.svelte';
 

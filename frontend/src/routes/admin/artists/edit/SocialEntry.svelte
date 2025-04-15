@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
 
-	import { socialUrlToIcon } from '$lib/artist';
+	import { socialUrlToIcon } from '$lib/features/artist/social';
 
 	import Button from '$lib/components/ui/Button.svelte';
 

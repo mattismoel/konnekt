@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { artistSchema } from "./artist";
+import { artistSchema } from "../artist/artist";
 
 export const concertSchema = z.object({
 	id: z.number().positive(),

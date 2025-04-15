@@ -1,4 +1,4 @@
-import { listUpcomingEvents } from "$lib/event"
+import { listUpcomingEvents } from "$lib/features/event/event"
 import type { PageServerLoad } from "./$types"
 
 export const load: PageServerLoad = async ({ fetch }) => {

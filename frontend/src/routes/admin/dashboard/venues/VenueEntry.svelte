@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { cn } from '$lib/clsx';
 	import Selector from '$lib/components/ui/Selector.svelte';
-	import { COUNTRIES_MAP } from '$lib/location';
-	import type { Venue, venueForm } from '$lib/venue';
+	import { COUNTRIES_MAP } from '$lib/features/venue/countries';
+	import type { Venue, venueForm } from '$lib/features/venue/venue';
 	import type { z } from 'zod';
 
 	import CheckIcon from '~icons/mdi/check';
@@ -10,7 +10,7 @@
 	import XIcon from '~icons/mdi/close';
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
-	import { hasPermissions, type Permission } from '$lib/auth';
+	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
 
 	type Props = {
 		initialValue?: Venue;

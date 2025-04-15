@@ -3,8 +3,8 @@
 
 	import { format } from 'date-fns';
 
-	import { earliestConcert } from '$lib/concert';
-	import type { Event } from '$lib/event';
+	import { earliestConcert } from '$lib/features/concert/concert';
+	import type { Event } from '$lib/features/event/event';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Fader from '$lib/components/Fader.svelte';

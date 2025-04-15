@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Concert } from '$lib/concert';
+	import type { Concert } from '$lib/features/concert/concert';
 	import { differenceInMinutes, format } from 'date-fns';
 
 	type Props = {
