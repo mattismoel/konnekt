@@ -9,7 +9,7 @@
 	import ModalHeader from './ui/modal/ModalHeader.svelte';
 	import ModalContent from './ui/modal/ModalContent.svelte';
 	import ModalFooter from './ui/modal/ModalFooter.svelte';
-	import { APIError } from '$lib/error';
+	import { APIError } from '$lib/api';
 
 	type Props = {
 		genres: Genre[];

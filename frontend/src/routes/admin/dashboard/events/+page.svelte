@@ -21,9 +21,10 @@
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { hasPermissions } from '$lib/auth';
 	import EventList from './EventList.svelte';
-	import { APIError, tryCatch } from '$lib/error';
 	import { toaster } from '$lib/toaster.svelte';
 	import { deleteEvent } from '$lib/event';
+	import { tryCatch } from '$lib/error';
+	import { APIError } from '$lib/api';
 
 	let { data } = $props();
 

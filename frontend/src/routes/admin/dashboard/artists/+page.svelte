@@ -5,9 +5,10 @@
 	import PlusIcon from '~icons/mdi/plus';
 	import ArtistEntry from './ArtistEntry.svelte';
 	import { hasPermissions } from '$lib/auth';
-	import { APIError, tryCatch } from '$lib/error';
 	import { toaster } from '$lib/toaster.svelte';
 	import { deleteArtist } from '$lib/artist';
+	import { APIError } from '$lib/api';
+	import { tryCatch } from '$lib/error';
 
 	let { data } = $props();
 

@@ -2,7 +2,7 @@ import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { artistById } from "$lib/artist";
 import { listGenres } from "$lib/artist";
-import { APIError } from "$lib/error";
+import { APIError } from "$lib/api";
 import { hasPermissions } from "$lib/auth";
 
 export const load: PageServerLoad = async ({ locals, url }) => {

@@ -4,7 +4,6 @@
 	import type { z } from 'zod';
 
 	import { toaster } from '$lib/toaster.svelte.js';
-	import { APIError, tryCatch } from '$lib/error.js';
 
 	import { createVenue, editVenue, deleteVenue, venueForm, type Venue } from '$lib/venue.js';
 
@@ -16,6 +15,8 @@
 	import VenueEntry from './VenueEntry.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { hasPermissions } from '$lib/auth';
+	import { tryCatch } from '$lib/error';
+	import { APIError } from '$lib/api';
 
 	let { data } = $props();
 

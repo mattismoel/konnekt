@@ -6,7 +6,7 @@
 
 	import ArtistForm from './ArtistForm.svelte';
 	import { toaster } from '$lib/toaster.svelte';
-	import { APIError } from '$lib/error';
+	import { APIError } from '$lib/api';
 
 	let { data } = $props();
 

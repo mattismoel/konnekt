@@ -4,7 +4,7 @@
 
 	import { createEvent, eventForm, updateEvent } from '$lib/event';
 	import { page } from '$app/state';
-	import { APIError } from '$lib/error';
+	import { APIError } from '$lib/api';
 
 	import EventForm from './EventForm.svelte';
 	import { toaster } from '$lib/toaster.svelte';
