@@ -13,7 +13,6 @@
 	import MapIcon from '~icons/mdi/map-marker';
 	import CalendarIcon from '~icons/mdi/calendar';
 	import MusicIcon from '~icons/mdi/music';
-	import GroupIcon from '~icons/mdi/account-group';
 
 	type Props = {
 		event: Event;

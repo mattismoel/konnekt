@@ -3,11 +3,10 @@
 
 	import type { Event } from '$lib/features/event/event';
 
-	import { format, isBefore, startOfToday, startOfTomorrow, startOfYesterday } from 'date-fns';
 	import { earliestConcert, latestConcert } from '$lib/features/concert/concert';
+	import { format, isBefore, startOfYesterday } from 'date-fns';
 
 	import MenuIcon from '~icons/mdi/dots-vertical';
-	import Button from '$lib/components/ui/Button.svelte';
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import { goto } from '$app/navigation';
@@ -23,7 +22,6 @@
 	const toDate = $derived(latestConcert(event.concerts)?.to || new Date());
 
 	let showContextMenu = $state(false);
-	let contextBtn: HTMLButtonElement;
 </script>
 
 <li

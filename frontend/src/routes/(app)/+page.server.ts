@@ -1,5 +1,3 @@
-import { startOfToday } from "date-fns";
-
 import type { PageServerLoad } from "./$types";
 
 import { listUpcomingEvents } from "$lib/features/event/event";

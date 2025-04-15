@@ -1,18 +1,9 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
-
 	import { socialUrlToIcon } from '$lib/features/artist/social';
 
 	import Button from '$lib/components/ui/Button.svelte';
 
-	import SpotifyIcon from '~icons/mdi/spotify';
-	import InstagramIcon from '~icons/mdi/instagram';
 	import TrashIcon from '~icons/mdi/trash';
-
-	const iconMap = new Map<string, Component>([
-		['spotify.com', SpotifyIcon],
-		['instagram.com', InstagramIcon]
-	]);
 
 	type Props = {
 		url: string;

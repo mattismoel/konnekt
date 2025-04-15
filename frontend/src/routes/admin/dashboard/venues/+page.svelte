@@ -16,8 +16,6 @@
 	import Button from '$lib/components/ui/Button.svelte';
 
 	import PlusIcon from '~icons/mdi/plus';
-	import TrashIcon from '~icons/mdi/trash';
-	import EditIcon from '~icons/mdi/edit';
 	import VenueEntry from './VenueEntry.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { hasPermissions } from '$lib/features/auth/permission';

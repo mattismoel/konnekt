@@ -1,22 +1,9 @@
 <script lang="ts">
-	import Card from '$lib/components/ui/Card.svelte';
-	import Table from '$lib/components/ui/table/Table.svelte';
-	import TableBody from '$lib/components/ui/table/TableBody.svelte';
-	import TableCell from '$lib/components/ui/table/TableCell.svelte';
-	import TableHead from '$lib/components/ui/table/TableHead.svelte';
-	import TableHeader from '$lib/components/ui/table/TableHeader.svelte';
-	import TableRow from '$lib/components/ui/table/TableRow.svelte';
-	import { earliestConcert, latestConcert } from '$lib/concert';
-	import { format } from 'date-fns';
-	import EventEntry from './EventEntry.svelte';
 	import PlusIcon from '~icons/mdi/plus';
-	import { DATE_FORMAT, DATETIME_FORMAT } from '$lib/time';
 	import Button from '$lib/components/ui/Button.svelte';
 
-	import TrashIcon from '~icons/mdi/trash';
 	import CleanIcon from '~icons/mdi/broom';
 
-	import EditIcon from '~icons/mdi/edit';
 	import { goto, invalidateAll } from '$app/navigation';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { hasPermissions } from '$lib/features/auth/permission';

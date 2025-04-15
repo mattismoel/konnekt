@@ -11,7 +11,6 @@
 
 	import PlusIcon from '~icons/mdi/plus';
 	import CloseIcon from '~icons/mdi/close';
-	import RightArrowIcon from '~icons/mdi/arrow-right';
 	import { goto } from '$app/navigation';
 
 	type Props = {
