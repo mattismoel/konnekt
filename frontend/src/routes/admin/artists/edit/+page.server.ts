@@ -1,7 +1,7 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { artistById } from "$lib/artist";
-import { listGenres } from "$lib/genre";
+import { listGenres } from "$lib/artist";
 import { APIError } from "$lib/error";
 import { hasPermissions } from "$lib/auth";
 

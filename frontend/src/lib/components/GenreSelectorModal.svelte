@@ -4,7 +4,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { error } from '@sveltejs/kit';
 	import { invalidateAll } from '$app/navigation';
-	import { createGenre, type Genre } from '$lib/genre';
+	import { createGenre, type Genre } from '$lib/artist';
 	import Modal from './ui/modal/Modal.svelte';
 	import ModalHeader from './ui/modal/ModalHeader.svelte';
 	import ModalContent from './ui/modal/ModalContent.svelte';

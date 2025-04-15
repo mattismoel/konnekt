@@ -4,7 +4,7 @@
 	import { artistFormSchema, type Artist, type ArtistForm } from '$lib/artist';
 	import { trackIdFromUrl } from '$lib/spotify';
 
-	import type { Genre } from '$lib/genre';
+	import type { Genre } from '$lib/artist';
 
 	import Input from '$lib/components/ui/Input.svelte';
 	import FieldError from '$lib/components/ui/FieldError.svelte';

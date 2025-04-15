@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { socialUrlToIcon } from '$lib/social.js';
+	import { socialUrlToIcon } from '$lib/artist.js';
 	import type { Artist } from '$lib/artist.js';
 	import { pickRandom, removeDuplicates } from '$lib/array.js';
 	import Button from '$lib/components/ui/Button.svelte';
