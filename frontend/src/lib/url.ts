@@ -65,3 +65,10 @@ const createQueryParams = (query: Query): URLSearchParams => {
 
 	return params
 }
+
+/**
+ * @description Cleans the input URL for any trailing slashes
+ */
+export const cleanUrl = (url: string): string => {
+	return url.replace(/\/$/, "")
+}
