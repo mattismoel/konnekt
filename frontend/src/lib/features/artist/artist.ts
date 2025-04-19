@@ -17,16 +17,13 @@ export const artistSchema = z.object({
 
 export type Artist = z.infer<typeof artistSchema>
 
-export const artistFormSchema = z.object({
+const artistForm = z.object({
 	name: z
 		.string()
 		.nonempty({ message: "Kustnernavn skal være defineret" }),
 	description: z
 		.string()
 		.nonempty({ message: "Kunstnerbeskreivelse skal være defineret" }),
-	image: z
-		.instanceof(File)
-		.nullable(),
 	previewUrl: z
 		.string()
 		.url({ message: "URL skal være gyldigt" })
@@ -46,21 +43,24 @@ export const artistFormSchema = z.object({
 		.array(),
 })
 
-const createArtistSchema = artistFormSchema
-	.omit({
-		image: true
-	})
-	.extend({
-		imageUrl: z.string().url()
-	})
+export const createArtistForm = artistForm
+	.extend({ image: z.instanceof(File).nullable() })
 
-const updateArtistSchema = createArtistSchema
+export const editArtistForm = artistForm
+	.extend({ image: z.instanceof(File).nullable() })
 
-export type ArtistForm = z.infer<typeof artistFormSchema>
+
+const createArtistSchema = createArtistForm
+	.omit({ image: true })
+	.extend({ imageUrl: z.string().url() })
+
+const updateArtistSchema = editArtistForm
+	.omit({ image: true })
+	.extend({ imageUrl: z.string().url().optional() })
 
 export const createArtist = async (
 	fetchFn: typeof fetch,
-	form: z.infer<typeof artistFormSchema>,
+	form: z.infer<typeof createArtistForm>,
 ) => {
 	let { image, ...rest } = form
 	if (!image) throw new APIError(400, "Could not upload artist image", "Image file not present")
@@ -88,9 +88,9 @@ export const createArtist = async (
 export const updateArtist = async (
 	fetchFn: typeof fetch,
 	artistId: number,
-	form: z.infer<typeof artistFormSchema>,
+	form: z.infer<typeof editArtistForm>,
 ): Promise<Artist> => {
-	const { data, success, error } = artistFormSchema.safeParse(form)
+	const { data, success, error } = editArtistForm.safeParse(form)
 	if (!success) throw error
 
 	const { image, ...rest } = data;

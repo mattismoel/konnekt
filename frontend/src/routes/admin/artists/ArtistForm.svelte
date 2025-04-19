@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { ZodError } from 'zod';
+	import type { z, ZodError } from 'zod';
 
-	import { artistFormSchema, type Artist, type ArtistForm } from '$lib/features/artist/artist';
+	import { createArtistForm, editArtistForm, type Artist } from '$lib/features/artist/artist';
 	import { trackIdFromUrl } from '$lib/features/artist/spotify';
 
 	import type { Genre } from '$lib/features/artist/genre';
@@ -19,21 +19,38 @@
 	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 
 	type Props = {
-		artist: Artist | null;
+		artist?: Artist;
+
 		genres: Genre[];
-		onSubmit: (form: ArtistForm) => void;
+
+		errors:
+			| z.typeToFlattenedError<z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>>
+			| undefined;
+
+		onSubmit: (form: z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>) => void;
 	};
 
 	let { artist, genres, onSubmit }: Props = $props();
 
-	let form: ArtistForm = $state({
-		name: artist?.name || '',
-		description: artist?.description || '',
-		previewUrl: artist?.previewUrl || '',
-		genreIds: artist?.genres.map((genre) => genre.id) || [],
-		image: null,
-		socials: artist?.socials || []
-	});
+	let form = $state<z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>>(
+		artist
+			? {
+					name: artist.name,
+					description: artist.description,
+					previewUrl: artist.previewUrl,
+					genreIds: artist.genres.map((genre) => genre.id),
+					image: null,
+					socials: artist.socials
+				}
+			: {
+					name: '',
+					description: '',
+					previewUrl: '',
+					genreIds: [],
+					socials: [],
+					image: null
+				}
+	);
 
 	let socialUrl = $state('');
 	let selectedGenres = $derived(genres.filter((genre) => form.genreIds.includes(genre.id)));
@@ -58,16 +75,10 @@
 		form.socials = [...form.socials, socialUrl];
 	};
 
-	const submit = (e: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) => {
+	const submit = (e: SubmitEvent) => {
 		e.preventDefault();
 
-		const { data, success, error } = artistFormSchema.safeParse(form);
-		if (!success) {
-			formError = error;
-			return;
-		}
-
-		onSubmit(data);
+		onSubmit(form);
 	};
 </script>
 
@@ -97,7 +108,7 @@
 	</div>
 
 	<div>
-		<h1 class="font-heading mb-4 mb-8 text-2xl font-bold">Genrer</h1>
+		<h1 class="font-heading mb-8 text-2xl font-bold">Genrer</h1>
 		<div class="mb-2 flex flex-wrap gap-2">
 			<button
 				type="button"

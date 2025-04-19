@@ -1,30 +1,26 @@
-import { error, redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import { error, redirect } from "@sveltejs/kit";
+
 import { artistById } from "$lib/features/artist/artist";
 import { listGenres } from "$lib/features/artist/genre";
-import { APIError } from "$lib/api";
-import { hasPermissions } from "$lib/features/auth/permission";
+import { hasPermissions, userPermissions } from "$lib/features/auth/permission";
+import { userSession } from "$lib/features/auth/user";
 
-export const load: PageServerLoad = async ({ locals, url }) => {
-  if (!hasPermissions(locals.permissions, ["view:artist", "edit:artist"])) {
+export const load: PageServerLoad = async ({ fetch, url }) => {
+  const { id: userId } = await userSession(fetch)
+
+  const permissions = await userPermissions(fetch, userId)
+
+  if (!hasPermissions(permissions, ["view:artist", "edit:artist"])) {
     return redirect(302, "/auth/login")
   }
 
-  try {
-    const id = url.searchParams.get("id")
+  const id = url.searchParams.get("id")
+  if (!id) return error(500, "No artist ID")
 
-    const genresResult = await listGenres()
+  const { records: genres } = await listGenres(fetch)
 
-    if (!id) return { artist: null, genres: genresResult.records }
+  const artist = await artistById(fetch, parseInt(id))
 
-    const artist = await artistById(parseInt(id))
-
-    return {
-      genres: genresResult.records,
-      artist
-    }
-  } catch (e) {
-    if (e instanceof APIError) return error(e.status, e.message)
-    throw e
-  }
+  return { genres, artist }
 }

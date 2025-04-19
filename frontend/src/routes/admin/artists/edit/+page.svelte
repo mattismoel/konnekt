@@ -1,36 +1,30 @@
 <script lang="ts">
-	import type { z } from 'zod';
-
-	import { createArtist, updateArtist, type artistFormSchema } from '$lib/features/artist/artist';
-	import { page } from '$app/state';
-
-	import ArtistForm from './ArtistForm.svelte';
-	import { toaster } from '$lib/toaster.svelte';
-	import { APIError } from '$lib/api';
+	import { toaster } from '$lib/toaster.svelte.js';
+	import { ZodError, type z } from 'zod';
+	import ArtistForm from '../ArtistForm.svelte';
+	import { updateArtist, type editArtistForm } from '$lib/features/artist/artist';
 
 	let { data } = $props();
 
-	const submit = async (form: z.infer<typeof artistFormSchema>) => {
-		const id = page.url.searchParams.get('id');
-		const isEdit = id !== null;
+	let errors = $state<z.typeToFlattenedError<z.infer<typeof editArtistForm>>>();
 
+	const handleSubmit = async (form: z.infer<typeof editArtistForm>) => {
 		try {
-			isEdit ? await updateArtist(parseInt(id), form) : createArtist(form);
-			toaster.addToast(`Kunstner ${isEdit ? 'opdateret' : 'skabt'}.`);
+			await updateArtist(fetch, data.artist.id, form);
+			toaster.addToast('Kunstner opdateret');
 		} catch (e) {
-			if (e instanceof APIError) {
-				toaster.addToast(
-					`Kunne ikke ${isEdit ? 'opdatere' : 'lave'} kunstner ${e.status}`,
-					e.cause,
-					'error'
-				);
+			if (e instanceof ZodError) {
+				toaster.addToast('Kunne ikke opdatere kunstner', 'Ugyldig kunstnerdata', 'error');
+				errors = e.flatten();
+				return;
 			}
 
-			toaster.addToast(`Kunne ikke ${isEdit ? 'opdatere' : 'lave'} kunstner...`, '', 'error');
+			toaster.addToast('Kunne ikke opdatere kunstner', 'Noget gik galt...', 'error');
+			throw e;
 		}
 	};
 </script>
 
 <main class="flex min-h-svh justify-center p-16">
-	<ArtistForm artist={data.artist} genres={data.genres} onSubmit={submit} />
+	<ArtistForm {errors} artist={data.artist} genres={data.genres} onSubmit={handleSubmit} />
 </main>
