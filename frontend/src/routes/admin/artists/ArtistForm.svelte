@@ -15,7 +15,9 @@
 	import SpotifyPreview from '$lib/components/SpotifyPreview.svelte';
 	import SocialEntry from './SocialEntry.svelte';
 
+	import PublishIcon from '~icons/mdi/upload';
 	import PlusIcon from '~icons/mdi/add';
+
 	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 
@@ -165,6 +167,7 @@
 			<Spinner />
 			Offentligører...
 		{:else}
+			<PublishIcon />
 			Offentligør
 		{/if}
 	</Button>

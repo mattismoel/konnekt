@@ -11,6 +11,7 @@
 	import type { createEventForm, editEventForm, Event } from '$lib/features/event/event';
 
 	import ConcertsList from './ConcertsList.svelte';
+	import PublishIcon from '~icons/mdi/upload';
 
 	import FieldError from '$lib/components/ui/FieldError.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
@@ -149,6 +150,7 @@
 				<Spinner />
 				Offentligører...
 			{:else}
+				<PublishIcon />
 				Offentliggør
 			{/if}
 		</Button>
