@@ -17,6 +17,7 @@
 
 	import PlusIcon from '~icons/mdi/add';
 	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	type Props = {
 		artist?: Artist;
@@ -27,10 +28,11 @@
 			| z.typeToFlattenedError<z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>>
 			| undefined;
 
+		loading: boolean;
 		onSubmit: (form: z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>) => void;
 	};
 
-	let { artist, genres, onSubmit }: Props = $props();
+	let { artist, genres, loading, onSubmit }: Props = $props();
 
 	let form = $state<z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>>(
 		artist
@@ -158,5 +160,12 @@
 		</div>
 		<FieldError errors={formError?.flatten().fieldErrors['socials']} />
 	</div>
-	<Button type="submit">Offentligør</Button>
+	<Button type="submit">
+		{#if loading}
+			<Spinner />
+			Offentligører...
+		{:else}
+			Offentligør
+		{/if}
+	</Button>
 </form>

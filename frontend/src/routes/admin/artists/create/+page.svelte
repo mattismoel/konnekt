@@ -7,21 +7,28 @@
 	let { data } = $props();
 
 	let errors = $state<z.typeToFlattenedError<z.infer<typeof createArtistForm>>>();
+	let loading = $state(false);
 
 	const handleSubmit = async (form: z.infer<typeof createArtistForm>) => {
 		try {
+			loading = true;
 			await createArtist(fetch, form);
-			toaster.addToast("Kunstner skabt")
+			toaster.addToast('Kunstner skabt');
+			loading = false;
 		} catch (e) {
 			if (e instanceof ZodError) {
 				toaster.addToast('Kunne ikke skabe kunstner', 'Ugyldig kunstnerdata', 'error');
 				errors = e.flatten();
+				loading = false;
 				return;
 			}
+			toaster.addToast('Kunne ikke skabe kunstner', 'Noget gik galt...', 'error');
+			loading = false;
+			throw e;
 		}
 	};
 </script>
 
 <main class="px-8 py-16 md:px-16">
-	<ArtistForm genres={data.genres} onSubmit={handleSubmit} {errors} />
+	<ArtistForm {loading} genres={data.genres} onSubmit={handleSubmit} {errors} />
 </main>
