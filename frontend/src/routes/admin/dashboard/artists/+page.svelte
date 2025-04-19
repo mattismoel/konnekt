@@ -24,7 +24,7 @@
 
 		if (!confirm(`Vil du slette kunstner "${artist.name}"?`)) return;
 
-		const { error } = await tryCatch(deleteArtist(artist.id));
+		const { error } = await tryCatch(deleteArtist(fetch, artist.id));
 
 		if (error) {
 			if (error instanceof APIError) {
