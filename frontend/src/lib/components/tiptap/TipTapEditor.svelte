@@ -31,10 +31,11 @@
 	const HEADER_LEVELS: Level[] = [1, 2, 3];
 
 	type Props = {
-		value: string;
+		value?: string;
+		onChange?: (html: string) => void;
 	};
 
-	let { value = $bindable() }: Props = $props();
+	let { value = $bindable(), onChange }: Props = $props();
 
 	let element: HTMLDivElement;
 	let editor = $state<Editor | null>(null);
@@ -67,6 +68,9 @@
 			},
 			onTransaction: () => {
 				editor = editor;
+			},
+			onBlur({ editor }) {
+				onChange?.(editor.getHTML());
 			},
 			onUpdate: ({ editor }) => {
 				value = editor.getHTML();
