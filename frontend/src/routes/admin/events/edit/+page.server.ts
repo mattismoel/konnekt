@@ -18,6 +18,5 @@ export const load: PageServerLoad = async ({ url, fetch }) => {
 		venues,
 		artists,
 		event,
-		eventId: parseInt(eventId),
 	}
 }

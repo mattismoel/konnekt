@@ -12,7 +12,7 @@
 
 	const handleSubmit = async (form: z.infer<typeof editEventForm>) => {
 		try {
-			await updateEvent(fetch, form, data.eventId);
+			await updateEvent(fetch, form, data.event.id);
 			toaster.addToast('Event opdateret');
 			goto('/admin/dashboard/events');
 		} catch (e) {
