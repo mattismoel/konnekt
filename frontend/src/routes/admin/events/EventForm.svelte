@@ -18,6 +18,7 @@
 	import ImagePreview from '$lib/components/ImagePreview.svelte';
 	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	type Props = {
 		venues: Venue[];
@@ -28,10 +29,12 @@
 			| z.typeToFlattenedError<z.infer<typeof createEventForm> | z.infer<typeof editEventForm>>
 			| undefined;
 
+		loading: boolean;
+
 		onSubmit: (form: z.infer<typeof createEventForm> | z.infer<typeof editEventForm>) => void;
 	};
 
-	let { event, venues, artists, errors, onSubmit }: Props = $props();
+	let { event, venues, artists, errors, loading, onSubmit }: Props = $props();
 
 	const form = $state<z.infer<typeof createEventForm> | z.infer<typeof editEventForm>>(
 		event
@@ -141,6 +144,13 @@
 
 	<div class="flex flex-col gap-2 md:flex-row">
 		<Button variant="ghost" class="w-full md:max-w-64">Preview</Button>
-		<Button type="submit" class="w-full md:max-w-64">Offentliggør</Button>
+		<Button type="submit" class="w-full md:max-w-64">
+			{#if loading}
+				<Spinner />
+				Offentligører...
+			{:else}
+				Offentliggør
+			{/if}
+		</Button>
 	</div>
 </form>
