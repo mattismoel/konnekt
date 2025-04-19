@@ -47,11 +47,11 @@
 			{#if hasSomeRole(roles, ['admin', 'event-management'])}
 				{@render entry(EventIcon, '/admin/dashboard/events', 'Events')}
 			{/if}
-			{#if hasSomeRole(roles, ['admin', 'event-management'])}
-				{@render entry(VenueIcon, '/admin/dashboard/venues', 'Venues')}
-			{/if}
 			{#if hasSomeRole(roles, ['admin', 'booking'])}
 				{@render entry(ArtistIcon, '/admin/dashboard/artists', 'Kunstnere')}
+			{/if}
+			{#if hasSomeRole(roles, ['admin', 'event-management'])}
+				{@render entry(VenueIcon, '/admin/dashboard/venues', 'Venues')}
 			{/if}
 			{#if hasSomeRole(roles, ['admin', 'team-management'])}
 				{@render entry(MemberIcon, '/admin/dashboard/members', 'Medlemmer')}
