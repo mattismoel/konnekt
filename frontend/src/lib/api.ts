@@ -53,9 +53,8 @@ export async function requestAndParse<TBody, TResponse>(
 	method?: Method,
 ): Promise<TResponse | void> {
 	const res = await fetchFn(url, {
-		headers: {
-			"Content-Type": "application/json",
-		},
+		headers: { "Content-Type": "application/json" },
+		credentials: "include",
 		method,
 		body: bodyOpts
 			? JSON.stringify(bodyOpts.bodySchema.parse(bodyOpts.bodySchema))
