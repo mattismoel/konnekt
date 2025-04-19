@@ -10,6 +10,7 @@
 	import Fader from '$lib/components/Fader.svelte';
 	import GlowCursor from '$lib/components/GlowCursor.svelte';
 
+	import TicketIcon from '~icons/mdi/ticket-confirmation-outline';
 	import MapIcon from '~icons/mdi/map-marker';
 	import CalendarIcon from '~icons/mdi/calendar';
 	import MusicIcon from '~icons/mdi/music';
@@ -79,7 +80,7 @@
 			<!-- CTA -->
 			<section class="w-full space-y-2 md:w-96">
 				<form action={event.ticketUrl}>
-					<Button type="submit" class="h-18 w-full">Køb billet</Button>
+					<Button type="submit" class="h-18 w-full"><TicketIcon />Køb billet</Button>
 				</form>
 				{#if !active}
 					<form action="/events/{event.id}">
