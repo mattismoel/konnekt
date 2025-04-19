@@ -26,9 +26,7 @@ const eventForm = z.object({
 });
 
 export const createEventForm = eventForm
-	.extend({
-		image: z.instanceof(File).nullable()
-	})
+	.extend({ image: z.instanceof(File).nullable() })
 
 export const editEventForm = eventForm
 	.extend({ image: z.instanceof(File).nullable() })

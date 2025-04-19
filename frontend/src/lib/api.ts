@@ -24,8 +24,6 @@ type RequestBody<T> = {
 	body: T,
 }
 
-// requestAndParse("api.example.com", )
-
 export async function requestAndParse<TBody, TResponse>(
 	fetchFn: typeof fetch,
 	url: string | URL,
@@ -57,7 +55,7 @@ export async function requestAndParse<TBody, TResponse>(
 		credentials: "include",
 		method,
 		body: bodyOpts
-			? JSON.stringify(bodyOpts.bodySchema.parse(bodyOpts.bodySchema))
+			? JSON.stringify(bodyOpts.bodySchema.parse(bodyOpts.body))
 			: undefined
 	})
 
@@ -74,5 +72,6 @@ export async function requestAndParse<TBody, TResponse>(
 	if (!resSchema) return
 
 	const data = resSchema.parse(await res.json())
+
 	return data
 }
