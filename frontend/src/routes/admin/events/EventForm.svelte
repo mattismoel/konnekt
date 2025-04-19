@@ -24,9 +24,11 @@
 		artists: Artist[];
 
 		event?: Event;
-		errors: z.typeToFlattenedError<z.infer<typeof createEventForm>> | undefined;
+		errors:
+			| z.typeToFlattenedError<z.infer<typeof createEventForm> | z.infer<typeof editEventForm>>
+			| undefined;
 
-		onSubmit: (form: z.infer<typeof createEventForm>) => void;
+		onSubmit: (form: z.infer<typeof createEventForm> | z.infer<typeof editEventForm>) => void;
 	};
 
 	let { event, venues, artists, errors, onSubmit }: Props = $props();
