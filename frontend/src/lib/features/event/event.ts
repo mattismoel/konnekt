@@ -17,43 +17,50 @@ export const eventSchema = z.object({
 	venue: venueSchema
 })
 
-export const eventForm = z.object({
+const eventForm = z.object({
 	title: z.string().nonempty({ message: "Eventtitel skal være defineret" }),
 	description: z.string().nonempty({ message: "Eventbeskrivelse skal være defineret" }),
 	ticketUrl: z.string().nonempty({ message: "Billet-URL skal være defineret" }),
-	image: z.instanceof(File).nullable(),
 	venueId: z.number().positive(),
 	concerts: concertForm.array().min(1, { message: "Et event skal have mindst én koncert" })
 });
 
-const createEventSchema = eventForm
-	.omit({
-		image: true
-	})
+export const createEventForm = eventForm
 	.extend({
-		imageUrl: z.string().url()
+		image: z.instanceof(File).nullable()
 	})
 
-const updateEventSchema = createEventSchema
+export const editEventForm = eventForm
+	.extend({ image: z.instanceof(File).nullable() })
+
+
+const createEventSchema = createEventForm
+	.omit({ image: true })
+	.extend({ imageUrl: z.string().url() })
+
+const updateEventSchema = editEventForm
+	.omit({ image: true })
+	.extend({ imageUrl: z.string().url().optional() })
 
 export type Event = z.infer<typeof eventSchema>
 
-export const createEvent = async (fetchFn: typeof fetch, form: z.infer<typeof eventForm>): Promise<Event> => {
-	const { image, concerts, ...rest } = form
 
+export const createEvent = async (fetchFn: typeof fetch, form: z.infer<typeof createEventForm>): Promise<Event> => {
+	const { data: formData, error: formError } = createEventForm.safeParse(form)
+	if (formError) throw formError
+
+	const { image, ...rest } = formData
 	if (!image) throw new APIError(400, "Could not create event", "Cover image must be set")
 
 	const imageUrl = await uploadEventCoverImage(image)
 
 	const event = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}`),
+		createUrl(`${PUBLIC_BACKEND_URL}/events`),
 		eventSchema,
 		"Could not create event",
-		{
-			bodySchema: createEventSchema,
-			body: { ...rest, concerts, imageUrl }
-		},
+		{ body: { ...rest, imageUrl }, bodySchema: createEventSchema },
+		"POST",
 	)
 
 	return event
@@ -61,14 +68,14 @@ export const createEvent = async (fetchFn: typeof fetch, form: z.infer<typeof ev
 
 export const updateEvent = async (
 	fetchFn: typeof fetch,
-	form: z.infer<typeof eventForm>,
+	form: z.infer<typeof editEventForm>,
 	eventId: number,
 ): Promise<Event> => {
-	const { data, success, error } = eventForm.safeParse(form)
+	const { data, success, error } = editEventForm.safeParse(form)
 	if (!success) throw error
 
 	const imageUrl = data.image ? await uploadEventCoverImage(data.image) : undefined
-	const { image, concerts, ...rest } = data;
+	const { image, ...rest } = data;
 
 	const event = await requestAndParse(
 		fetchFn,
@@ -77,7 +84,7 @@ export const updateEvent = async (
 		"Could not update event",
 		{
 			bodySchema: updateEventSchema,
-			body: { ...rest, concerts, imageUrl }
+			body: { ...rest, imageUrl }
 		},
 		"PUT"
 	)

@@ -29,7 +29,7 @@
 	};
 </script>
 
-<Card class="relative flex-1 space-y-4">
+<Card class="relative flex-1 space-y-4 last-of-type:mb-8">
 	<div class="space-y-8">
 		<div class="flex items-center justify-between">
 			<h3 class="text-xl font-semibold">#{idx}</h3>
