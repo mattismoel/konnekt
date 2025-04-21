@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/mattismoel/konnekt/internal/domain/auth"
 	"github.com/mattismoel/konnekt/internal/domain/user"
 )
 
@@ -77,11 +78,22 @@ func (repo UserRepository) ByID(ctx context.Context, userID int64) (user.User, e
 		}
 	}
 
+	userRoles, err := userRoles(ctx, tx, userID)
+	if err != nil {
+		return user.User{}, err
+	}
+
+	userPerms, err := userPermsissions(ctx, tx, userID)
+	if err != nil {
+		return user.User{}, err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return user.User{}, err
 	}
 
-	return usr.ToInternal(), nil
+	return usr.ToInternal(userRoles.ToInternal(), userPerms.ToInternal()), nil
+}
 
 }
 
@@ -102,11 +114,21 @@ func (repo UserRepository) ByEmail(ctx context.Context, email string) (user.User
 		return user.User{}, err
 	}
 
+	userRoles, err := userRoles(ctx, tx, usr.ID)
+	if err != nil {
+		return user.User{}, err
+	}
+
+	userPerms, err := userPermsissions(ctx, tx, usr.ID)
+	if err != nil {
+		return user.User{}, err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return user.User{}, err
 	}
 
-	return usr.ToInternal(), nil
+	return usr.ToInternal(userRoles.ToInternal(), userPerms.ToInternal()), nil
 }
 
 func (repo UserRepository) PasswordHash(ctx context.Context, userID int64) (user.PasswordHash, error) {
@@ -230,12 +252,15 @@ func userPasswordHash(ctx context.Context, tx *sql.Tx, userID int64) ([]byte, er
 	return passwordHash, nil
 }
 
-func (u User) ToInternal() user.User {
+func (u User) ToInternal(roles []auth.Role, perms auth.PermissionCollection) user.User {
 	return user.User{
 		ID:           u.ID,
 		FirstName:    u.FirstName,
 		LastName:     u.LastName,
 		Email:        u.Email,
 		PasswordHash: u.PasswordHash,
+
+		Roles:       roles,
+		Permissions: perms,
 	}
 }
