@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
 	"github.com/mattismoel/konnekt/internal/domain/member"
@@ -98,6 +99,30 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 	}
 
 	return m.ToInternal(memberRoles.ToInternal(), memeberPerms.ToInternal()), nil
+}
+
+func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	if err := approveMember(ctx, tx, memberID); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TODO: Implement...
+func (repo MemberRepository) SetProfilePictureURL(ctx context.Context, memberID int64, url string) error {
+	return nil
 }
 
 func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query.ListResult[member.Member], error) {
@@ -411,6 +436,26 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 	}
 
 	return members, nil
+}
+
+func approveMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
+	query := `UPDATE member SET active = "TRUE" WHERE id = @member_id`
+
+	res, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID))
+	if err != nil {
+		return err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected <= 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }
 
 func deleteMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
