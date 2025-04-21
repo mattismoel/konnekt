@@ -2,12 +2,17 @@ import { PUBLIC_BACKEND_URL } from "$env/static/public"
 import { requestAndParse } from "$lib/api"
 import { createUrl } from "$lib/url"
 import { z } from "zod"
+import { roleSchema } from "./role"
+import { permissionSchema } from "./permission"
 
 export const userSchema = z.object({
 	id: z.number().positive(),
 	email: z.string().email(),
 	firstName: z.string(),
-	lastName: z.string()
+	lastName: z.string(),
+
+	roles: roleSchema.array(),
+	permissions: permissionSchema.array(),
 })
 
 export type User = z.infer<typeof userSchema>

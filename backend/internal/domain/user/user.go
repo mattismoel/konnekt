@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/mail"
 	"strings"
+
+	"github.com/mattismoel/konnekt/internal/domain/auth"
 )
 
 var (
@@ -20,6 +22,9 @@ type User struct {
 	LastName     string       `json:"lastName"`
 	Email        string       `json:"email"`
 	PasswordHash PasswordHash `json:"-"`
+
+	Roles       auth.RoleCollection       `json:"roles"`
+	Permissions auth.PermissionCollection `json:"permissions"`
 }
 
 type cfgFunc func(u *User) error
@@ -102,6 +107,20 @@ func WithPasswordHash(hash []byte) cfgFunc {
 
 		u.PasswordHash = hash
 
+		return nil
+	}
+}
+
+func WithPermissions(perms auth.PermissionCollection) cfgFunc {
+	return func(u *User) error {
+		u.Permissions = perms
+		return nil
+	}
+}
+
+func WithRoles(roles auth.RoleCollection) cfgFunc {
+	return func(u *User) error {
+		u.Roles = roles
 		return nil
 	}
 }
