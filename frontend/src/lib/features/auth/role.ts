@@ -10,6 +10,7 @@ export const roleTypes = z.union([
 	z.literal("booking"),
 	z.literal("public-relations"),
 	z.literal("visual-identity"),
+	z.literal("team-management")
 ])
 
 export type RoleType = z.infer<typeof roleTypes>
