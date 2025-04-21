@@ -1,7 +1,7 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public"
 import { requestAndParse } from "$lib/api"
 import { createListResult } from "$lib/query"
-import { createUrl } from "$lib/url"
+import { createUrl, type Query } from "$lib/url"
 import { z } from "zod"
 import { roleSchema } from "./role"
 import { permissionSchema } from "./permission"
@@ -11,6 +11,11 @@ export const memberSchema = z.object({
 	email: z.string().email(),
 	firstName: z.string(),
 	lastName: z.string(),
+
+	profilePictureUrl: z
+		.string()
+		.url()
+		.optional(),
 
 	active: z.boolean(),
 
@@ -31,13 +36,35 @@ export const memberSession = async (fetchFn: typeof fetch) => {
 	return member
 }
 
-export const listMembers = async (fetchFn: typeof fetch) => {
+export const listMembers = async (fetchFn: typeof fetch, query?: Query) => {
 	const result = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/members`),
+		createUrl(`${PUBLIC_BACKEND_URL}/members`, query),
 		createListResult(memberSchema),
 		"Could not fetch members",
 	)
 
 	return result
+}
+
+export const approveMember = async (fetchFn: typeof fetch, memberId: number) => {
+	return requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}/approve`),
+		undefined,
+		"Could not approve member",
+		undefined,
+		"POST"
+	)
+}
+
+export const deleteMember = async (fetchFn: typeof fetch, memberId: number) => {
+	return requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}`),
+		undefined,
+		"Could not delete member",
+		undefined,
+		"DELETE"
+	)
 }
