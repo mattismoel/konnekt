@@ -8,6 +8,10 @@ import (
 func (s *Server) setupRoutes() {
 	s.mux.Use(middleware.Logger)
 
+	s.mux.Route("/members", func(r chi.Router) {
+		r.Get("/", s.withPermissions(s.handleListMembers(), "view:member", "view:role", "view:permission"))
+	})
+
 	s.mux.Route("/auth", func(r chi.Router) {
 		r.Post("/login", s.handleLogin())
 		r.Post("/register", s.handleRegister())

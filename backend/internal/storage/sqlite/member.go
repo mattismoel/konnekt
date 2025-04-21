@@ -99,6 +99,61 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 	return m.ToInternal(memberRoles.ToInternal(), memeberPerms.ToInternal()), nil
 }
 
+func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query.ListResult[member.Member], error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return query.ListResult[member.Member]{}, err
+	}
+
+	defer tx.Rollback()
+
+	dbMembers, err := listMembers(ctx, tx, QueryParams{
+		Offset:  q.Offset(),
+		Limit:   q.Limit,
+		OrderBy: q.OrderBy,
+		Filters: q.Filters,
+	})
+
+	if err != nil {
+		return query.ListResult[member.Member]{}, err
+	}
+
+	members := make([]member.Member, 0)
+
+	for _, dbMember := range dbMembers {
+		memberRoles, err := memberRoles(ctx, tx, dbMember.ID)
+		if err != nil {
+			return query.ListResult[member.Member]{}, err
+		}
+
+		memberPerms, err := memberPermissions(ctx, tx, dbMember.ID)
+		if err != nil {
+			return query.ListResult[member.Member]{}, err
+		}
+
+		roles, perms := memberRoles.ToInternal(), memberPerms.ToInternal()
+
+		members = append(members, dbMember.ToInternal(roles, perms))
+	}
+
+	totalCount, err := memberCount(ctx, tx)
+	if err != nil {
+		return query.ListResult[member.Member]{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return query.ListResult[member.Member]{}, err
+	}
+
+	return query.ListResult[member.Member]{
+		Page:       q.Page,
+		PerPage:    q.PerPage,
+		TotalCount: totalCount,
+		PageCount:  q.PageCount(totalCount),
+		Records:    members,
+	}, nil
+}
+
 func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.Member, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -252,6 +307,80 @@ func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte
 	}
 
 	return passwordHash, nil
+}
+
+func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollection, error) {
+	query, err := NewQuery(`
+		SELECT 
+			id, 
+			first_name, 
+			last_name, 
+			email, 
+			password_hash
+		FROM member`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := query.WithLimit(q.Limit); err != nil {
+		return nil, err
+	}
+
+	if err := query.WithOffset(q.Offset); err != nil {
+		return nil, err
+	}
+
+	queryStr, args := query.Build()
+
+	fmt.Println(queryStr)
+
+	rows, err := tx.QueryContext(ctx, queryStr, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	members := make(MemberCollection, 0)
+
+	for rows.Next() {
+		var id int64
+		var firstName, lastName, email string
+		var passwordhash []byte
+
+		err := rows.Scan(&id, &firstName, &lastName, &email, &passwordhash)
+		if err != nil {
+			return nil, err
+		}
+
+		members = append(members, Member{
+			ID:           id,
+			FirstName:    firstName,
+			LastName:     lastName,
+			Email:        email,
+			PasswordHash: passwordhash,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return members, nil
+}
+
+
+func memberCount(ctx context.Context, tx *sql.Tx) (int, error) {
+	var count int
+	query := "SELECT COUNT(*) FROM member"
+
+	err := tx.QueryRowContext(ctx, query).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (u Member) ToInternal(roles []auth.Role, perms auth.PermissionCollection) member.Member {

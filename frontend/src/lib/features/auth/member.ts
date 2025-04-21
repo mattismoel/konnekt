@@ -28,3 +28,14 @@ export const memberSession = async (fetchFn: typeof fetch) => {
 
 	return member
 }
+
+export const listMembers = async (fetchFn: typeof fetch) => {
+	const result = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/members`),
+		createListResult(memberSchema),
+		"Could not fetch members",
+	)
+
+	return result
+}

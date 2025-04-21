@@ -33,6 +33,15 @@ func (srv MemberService) ByID(ctx context.Context, memberID int64) (member.Membe
 	return u, nil
 }
 
+func (srv MemberService) List(ctx context.Context, q query.ListQuery) (query.ListResult[member.Member], error) {
+	result, err := srv.memberRepo.List(ctx, q)
+	if err != nil {
+		return query.ListResult[member.Member]{}, err
+	}
+
+	return result, nil
+}
+
 func (srv MemberService) SetMemberProfilePicture(ctx context.Context, memberID int64, fileName string, r io.Reader) (string, error) {
 	ext := path.Ext(fileName)
 
