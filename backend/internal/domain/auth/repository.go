@@ -10,7 +10,7 @@ import (
 type Repository interface {
 	Session(ctx context.Context, sessionID SessionID) (Session, error)
 	InsertSession(ctx context.Context, s Session) error
-	DeleteUserSession(ctx context.Context, userID int64) error
+	DeleteMemberSession(ctx context.Context, memberID int64) error
 	SetSessionExpiry(ctx context.Context, sessionID SessionID, newExpiry time.Time) error
 
 	InsertRole(ctx context.Context, r Role) (int64, error)
@@ -19,8 +19,8 @@ type Repository interface {
 	RoleByID(ctx context.Context, id int64) (Role, error)
 	RoleByName(ctx context.Context, name string) (Role, error)
 
-	UserRoles(ctx context.Context, userID int64) (RoleCollection, error)
-	AddUserRoles(ctx context.Context, userID int64, roleIDs ...int64) error
+	MemberRoles(ctx context.Context, memberID int64) (RoleCollection, error)
+	AddMemberRoles(ctx context.Context, memberID int64, roleIDs ...int64) error
 
 	ListPermissions(ctx context.Context, q query.ListQuery) (query.ListResult[Permission], error)
 	RolePermissions(ctx context.Context, roleID int64) (PermissionCollection, error)

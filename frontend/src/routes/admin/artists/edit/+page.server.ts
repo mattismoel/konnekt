@@ -4,12 +4,12 @@ import { error, redirect } from "@sveltejs/kit";
 import { artistById } from "$lib/features/artist/artist";
 import { listGenres } from "$lib/features/artist/genre";
 import { hasPermissions } from "$lib/features/auth/permission";
-import { userSession } from "$lib/features/auth/user";
+import { memberSession } from "$lib/features/auth/member";
 
 export const load: PageServerLoad = async ({ fetch, url }) => {
-  const user = await userSession(fetch)
+  const member = await memberSession(fetch)
 
-  if (!hasPermissions(user.permissions, ["view:artist", "edit:artist"])) {
+  if (!hasPermissions(member.permissions, ["view:artist", "edit:artist"])) {
     return redirect(302, "/auth/login")
   }
 

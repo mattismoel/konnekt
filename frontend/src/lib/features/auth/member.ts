@@ -1,11 +1,12 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public"
 import { requestAndParse } from "$lib/api"
+import { createListResult } from "$lib/query"
 import { createUrl } from "$lib/url"
 import { z } from "zod"
 import { roleSchema } from "./role"
 import { permissionSchema } from "./permission"
 
-export const userSchema = z.object({
+export const memberSchema = z.object({
 	id: z.number().positive(),
 	email: z.string().email(),
 	firstName: z.string(),
@@ -15,15 +16,15 @@ export const userSchema = z.object({
 	permissions: permissionSchema.array(),
 })
 
-export type User = z.infer<typeof userSchema>
+export type Member = z.infer<typeof memberSchema>
 
-export const userSession = async (fetchFn: typeof fetch) => {
-	const user = await requestAndParse(
+export const memberSession = async (fetchFn: typeof fetch) => {
+	const member = await requestAndParse(
 		fetchFn,
 		createUrl(`${PUBLIC_BACKEND_URL}/auth/session`),
-		userSchema,
-		"Could not fetch user session",
+		memberSchema,
+		"Could not fetch member session",
 	)
 
-	return user
+	return member
 }

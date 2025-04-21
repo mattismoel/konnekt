@@ -2,15 +2,15 @@ import type { LayoutServerLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
 
 import { hasAllRoles } from "$lib/features/auth/role";
-import { userSession } from "$lib/features/auth/user";
+import { memberSession } from "$lib/features/auth/member";
 
 
 export const load: LayoutServerLoad = async ({ fetch }) => {
-  const user = await userSession(fetch)
+  const member = await memberSession(fetch)
 
-  if (!hasAllRoles(user.roles, ["member"])) {
+  if (!hasAllRoles(member.roles, ["member"])) {
     return redirect(302, "/auth/login")
   }
 
-  return { user }
+  return { member }
 }

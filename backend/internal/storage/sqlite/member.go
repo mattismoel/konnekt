@@ -1,0 +1,268 @@
+package sqlite
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+
+	"github.com/mattismoel/konnekt/internal/domain/auth"
+	"github.com/mattismoel/konnekt/internal/domain/member"
+	"github.com/mattismoel/konnekt/internal/query"
+)
+
+var _ member.Repository = (*MemberRepository)(nil)
+
+type Member struct {
+	ID           int64
+	Email        string
+	FirstName    string
+	LastName     string
+	PasswordHash []byte
+}
+
+type MemberCollection []Member
+
+type MemberRepository struct {
+	db *sql.DB
+}
+
+func NewMemberRepository(db *sql.DB) (*MemberRepository, error) {
+	return &MemberRepository{
+		db: db,
+	}, nil
+}
+
+func (repo MemberRepository) Insert(ctx context.Context, m member.Member) (int64, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	defer tx.Rollback()
+
+	memberID, err := insertMember(ctx, tx, Member{
+		ID:           m.ID,
+		Email:        m.Email,
+		FirstName:    m.FirstName,
+		LastName:     m.LastName,
+		PasswordHash: m.PasswordHash,
+	})
+
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrAlreadyExists):
+			return 0, member.ErrAlreadyExists
+		}
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return memberID, nil
+}
+
+func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.Member, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	defer tx.Rollback()
+
+	m, err := memberByID(ctx, tx, memberID)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return member.Member{}, ErrNotFound
+		default:
+			return member.Member{}, err
+		}
+	}
+
+	memberRoles, err := memberRoles(ctx, tx, memberID)
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	memeberPerms, err := memberPermissions(ctx, tx, memberID)
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return member.Member{}, err
+	}
+
+	return m.ToInternal(memberRoles.ToInternal(), memeberPerms.ToInternal()), nil
+}
+
+func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.Member, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	defer tx.Rollback()
+
+	m, err := memberByEmail(ctx, tx, email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return member.Member{}, member.ErrNotFound
+		}
+
+		return member.Member{}, err
+	}
+
+	memberRoles, err := memberRoles(ctx, tx, m.ID)
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	memberPerms, err := memberPermissions(ctx, tx, m.ID)
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return member.Member{}, err
+	}
+
+	return m.ToInternal(memberRoles.ToInternal(), memberPerms.ToInternal()), nil
+}
+
+func (repo MemberRepository) PasswordHash(ctx context.Context, memberID int64) (member.PasswordHash, error) {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer tx.Rollback()
+
+	ph, err := memberPasswordHash(ctx, tx, memberID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, member.ErrNotFound
+		}
+
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return ph, nil
+}
+
+func insertMember(ctx context.Context, tx *sql.Tx, u Member) (int64, error) {
+	query := `
+	INSERT OR IGNORE INTO member (email, first_name, last_name, password_hash) 
+	VALUES (@email, @first_name, @last_name, @password_hash)`
+
+	res, err := tx.ExecContext(ctx, query,
+		sql.Named("email", u.Email),
+		sql.Named("first_name", u.FirstName),
+		sql.Named("last_name", u.LastName),
+		sql.Named("password_hash", u.PasswordHash),
+	)
+
+	if err != nil {
+		return 0, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	if rowsAffected <= 0 {
+		return 0, ErrAlreadyExists
+	}
+
+	memberID, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return memberID, nil
+}
+
+func memberByEmail(ctx context.Context, tx *sql.Tx, email string) (Member, error) {
+	query := `
+  SELECT id, first_name, last_name, password_hash FROM member 
+  WHERE email = @email`
+
+	var id int64
+	var firstName, lastName string
+	var passwordHash []byte
+
+	err := tx.QueryRowContext(ctx, query, sql.Named("email", email)).Scan(
+		&id, &firstName, &lastName, &passwordHash,
+	)
+
+	if err != nil {
+		return Member{}, err
+	}
+
+	return Member{
+		ID:           id,
+		Email:        email,
+		FirstName:    firstName,
+		LastName:     lastName,
+		PasswordHash: passwordHash,
+	}, nil
+}
+
+func memberByID(ctx context.Context, tx *sql.Tx, memberID int64) (Member, error) {
+	query := `
+  SELECT email, first_name, last_name, password_hash FROM member 
+  WHERE id = @member_id`
+
+	var email, firstName, lastName string
+	var passwordHash []byte
+
+	err := tx.QueryRowContext(ctx, query, sql.Named("member_id", memberID)).Scan(
+		&email, &firstName, &lastName, &passwordHash,
+	)
+
+	if err != nil {
+		return Member{}, err
+	}
+
+	return Member{
+		ID:           memberID,
+		Email:        email,
+		FirstName:    firstName,
+		LastName:     lastName,
+		PasswordHash: passwordHash,
+	}, nil
+}
+
+func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte, error) {
+	query := `SELECT password_hash FROM member WHERE id = @id`
+
+	var passwordHash []byte
+
+	err := tx.QueryRowContext(ctx, query, sql.Named("id", memberID)).Scan(&passwordHash)
+	if err != nil {
+		return nil, err
+	}
+
+	return passwordHash, nil
+}
+
+func (u Member) ToInternal(roles []auth.Role, perms auth.PermissionCollection) member.Member {
+	return member.Member{
+		ID:           u.ID,
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Email:        u.Email,
+		PasswordHash: u.PasswordHash,
+
+		Roles:       roles,
+		Permissions: perms,
+	}
+}

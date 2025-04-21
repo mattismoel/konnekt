@@ -1,4 +1,4 @@
-package user
+package member
 
 import "golang.org/x/crypto/bcrypt"
 

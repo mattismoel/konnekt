@@ -46,21 +46,21 @@
 			<p class="text-text/50">Overblik over alle kunstnere, som er associerede med events.</p>
 		</div>
 		<Button
-			disabled={!hasPermissions(data.user.permissions, ['edit:artist'])}
+			disabled={!hasPermissions(data.member.permissions, ['edit:artist'])}
 			onclick={() => goto('/admin/artists/edit')}
 		>
 			<PlusIcon />Tilføj
 		</Button>
 	</div>
 
-	{#if hasPermissions(data.user.permissions, ['view:artist'])}
+	{#if hasPermissions(data.member.permissions, ['view:artist'])}
 		<section class="space-y-8">
 			<SearchBar bind:value={search} />
 			<ul>
 				{#each artists as artist (artist.id)}
 					<ArtistEntry
 						{artist}
-						userPermissions={data.user.permissions}
+						memberPermissions={data.member.permissions}
 						onDelete={() => handleDeleteArtist(artist.id)}
 					/>
 				{/each}

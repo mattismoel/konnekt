@@ -1,13 +1,13 @@
-import { userSession } from "$lib/features/auth/user";
+import { memberSession } from "$lib/features/auth/member";
 import { hasSomeRole } from "$lib/features/auth/role";
 import { listVenues } from "$lib/features/venue/venue";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ fetch }) => {
-  const user = await userSession(fetch)
+  const member = await memberSession(fetch)
 
-  if (!hasSomeRole(user.roles, ["admin", "event-management"])) {
+  if (!hasSomeRole(member.roles, ["admin", "event-management"])) {
     return redirect(302, "/auth/login")
   }
 

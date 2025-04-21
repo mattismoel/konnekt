@@ -25,7 +25,7 @@ func (s Server) withPermissions(next http.HandlerFunc, perms ...string) http.Han
 			return
 		}
 
-		err = s.authService.HasPermission(ctx, session.UserID, perms...)
+		err = s.authService.HasPermission(ctx, session.MemberID, perms...)
 		if err != nil {
 			switch {
 			case errors.Is(err, auth.ErrMissingPermissions):

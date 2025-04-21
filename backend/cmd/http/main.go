@@ -43,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	userRepo, err := sqlite.NewUserRepository(db)
+	memberRepo, err := sqlite.NewMemberRepository(db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,17 +68,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	authService, err := service.NewAuthService(userRepo, authRepo)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	userService, err := service.NewUserService(userRepo)
+	authService, err := service.NewAuthService(memberRepo, authRepo)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	s3Store, err := s3.NewS3ObjectStore(*s3Region, *s3Bucket)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	memberService, err := service.NewMemberService(memberRepo, s3Store)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,7 +99,7 @@ func main() {
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithCORSOrigins(*frontendURL),
 		server.WithAuthService(authService),
-		server.WithUserService(userService),
+		server.WithMemberService(memberService),
 		server.WithEventService(eventService),
 		server.WithArtistService(artistService),
 		server.WithVenueService(venueService),

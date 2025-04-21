@@ -1,14 +1,15 @@
-CREATE TABLE user (
+CREATE TABLE member (
   id INTEGER PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  password_hash TEXT NOT NULL
+  password_hash TEXT NOT NULL,
+  profile_picture_url TEXT
 );
 
 CREATE TABLE session (
   id TEXT PRIMARY KEY,
-  user_id INTEGER NOT NULL,
+  member_id INTEGER NOT NULL,
   expires_at TIMESTAMP NOT NULL
 );
 
@@ -19,10 +20,10 @@ CREATE TABLE role (
   description TEXT
 );
 
-CREATE TABLE users_roles (
-  user_id INTEGER NOT NULL,
+CREATE TABLE members_roles (
+  member_id INTEGER NOT NULL,
   role_id INTEGER NOT NULL,
-  PRIMARY KEY (user_id, role_id)
+  PRIMARY KEY (member_id, role_id)
 );
 
 CREATE TABLE permission (

@@ -14,11 +14,11 @@
 
 	type Props = {
 		event: Event;
-		userPermissions: Permission[];
+		memberPermissions: Permission[];
 		onDelete: () => void;
 	};
 
-	let { event, userPermissions, onDelete }: Props = $props();
+	let { event, memberPermissions, onDelete }: Props = $props();
 
 	const fromDate = $derived(earliestConcert(event.concerts)?.from || new Date());
 	const toDate = $derived(latestConcert(event.concerts)?.to || new Date());
@@ -51,11 +51,11 @@
 		class="absolute top-1/2 right-4"
 	>
 		<ContextMenuEntry
-			disabled={!hasPermissions(userPermissions, ['edit:event'])}
+			disabled={!hasPermissions(memberPermissions, ['edit:event'])}
 			action={() => goto(`/admin/events/edit?id=${event.id}`)}>Redigér</ContextMenuEntry
 		>
 		<ContextMenuEntry
-			disabled={!hasPermissions(userPermissions, ['delete:event'])}
+			disabled={!hasPermissions(memberPermissions, ['delete:event'])}
 			action={onDelete}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>

@@ -9,10 +9,10 @@
 	type Props = {
 		artist: Artist;
 		onDelete: () => void;
-		userPermissions: Permission[];
+		memberPermissions: Permission[];
 	};
 
-	let { artist, userPermissions, onDelete }: Props = $props();
+	let { artist, memberPermissions, onDelete }: Props = $props();
 
 	let showContextMenu = $state(false);
 </script>
@@ -33,11 +33,11 @@
 		class="absolute top-1/2 right-4"
 	>
 		<ContextMenuEntry
-			disabled={!hasPermissions(userPermissions, ['delete:artist'])}
+			disabled={!hasPermissions(memberPermissions, ['delete:artist'])}
 			action={onDelete}>Slet</ContextMenuEntry
 		>
 		<ContextMenuEntry
-			disabled={!hasPermissions(userPermissions, ['edit:artist'])}
+			disabled={!hasPermissions(memberPermissions, ['edit:artist'])}
 			action={() => goto(`/admin/artists/edit?id=${artist.id}`)}>Redigér</ContextMenuEntry
 		>
 	</ContextMenu>

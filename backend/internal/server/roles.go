@@ -29,17 +29,17 @@ func (s Server) handleListRoles() http.HandlerFunc {
 	}
 }
 
-func (s Server) handleListUserRoles() http.HandlerFunc {
+func (s Server) handleListMemberRoles() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
+		memberID, err := strconv.Atoi(chi.URLParam(r, "memberID"))
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		roles, err := s.authService.UserRoles(ctx, int64(userID))
+		roles, err := s.authService.MemberRoles(ctx, int64(memberID))
 		if err != nil {
 			writeError(w, err)
 			return

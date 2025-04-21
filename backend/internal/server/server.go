@@ -24,7 +24,7 @@ type Server struct {
 	authService   *service.AuthService
 	eventService  *service.EventService
 	artistService *service.ArtistService
-	userService   *service.UserService
+	memberService *service.MemberService
 	venueService  *service.VenueService
 }
 
@@ -79,9 +79,9 @@ func WithArtistService(artistService *service.ArtistService) CfgFunc {
 	}
 }
 
-func WithUserService(userService *service.UserService) CfgFunc {
+func WithMemberService(memberService *service.MemberService) CfgFunc {
 	return func(s *Server) error {
-		s.userService = userService
+		s.memberService = memberService
 		return nil
 	}
 }

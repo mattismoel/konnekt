@@ -83,7 +83,7 @@
 		</div>
 		<div class="flex gap-2">
 			<Button
-				disabled={!hasPermissions(data.user.permissions, ['edit:event'])}
+				disabled={!hasPermissions(data.member.permissions, ['edit:event'])}
 				onclick={() => goto(`/admin/events/edit`)}
 			>
 				<PlusIcon />Tilføj
@@ -92,7 +92,7 @@
 		</div>
 	</div>
 
-	{#if hasPermissions(data.user.permissions, ['view:event'])}
+	{#if hasPermissions(data.member.permissions, ['view:event'])}
 		<div class="space-y-8">
 			<SearchBar bind:value={search} />
 			{#if search.trim() !== ''}
@@ -100,7 +100,7 @@
 					<EventList
 						onDelete={handleDeleteEvent}
 						events={filteredEvents}
-						userPermissions={data.user.permissions}
+						memberPermissions={data.member.permissions}
 					/>
 				</section>
 			{:else}
@@ -108,7 +108,7 @@
 					<EventList
 						onDelete={handleDeleteEvent}
 						events={data.upcomingEvents}
-						userPermissions={data.user.permissions}
+						memberPermissions={data.member.permissions}
 					/>
 				</section>
 			{/if}
@@ -120,7 +120,7 @@
 						<EventList
 							events={data.previousEvents}
 							onDelete={handleDeleteEvent}
-							userPermissions={data.user.permissions}
+							memberPermissions={data.member.permissions}
 						/>
 					</details>
 				</section>

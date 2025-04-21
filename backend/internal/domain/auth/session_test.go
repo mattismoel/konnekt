@@ -35,14 +35,14 @@ func TestIsRefreshable(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			userID := 1
+			memberID := 1
 
 			token, err := auth.NewSessionToken()
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			s := auth.NewSession(token, int64(userID), SESSION_LIFETIME)
+			s := auth.NewSession(token, int64(memberID), SESSION_LIFETIME)
 
 			refreshable := s.IsRefreshable(REFRESH_BUFFER_DURATION)
 			if tt.expectRefreshable != refreshable {

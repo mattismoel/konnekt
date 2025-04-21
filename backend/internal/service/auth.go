@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
-	"github.com/mattismoel/konnekt/internal/domain/user"
+	"github.com/mattismoel/konnekt/internal/domain/member"
 	"github.com/mattismoel/konnekt/internal/query"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,20 +16,20 @@ const (
 )
 
 type AuthService struct {
-	userRepo user.Repository
-	authRepo auth.Repository
+	memberRepo member.Repository
+	authRepo   auth.Repository
 }
 
-func NewAuthService(userRepo user.Repository, authRepo auth.Repository) (*AuthService, error) {
+func NewAuthService(memberRepo member.Repository, authRepo auth.Repository) (*AuthService, error) {
 	return &AuthService{
-		userRepo: userRepo,
-		authRepo: authRepo,
+		memberRepo: memberRepo,
+		authRepo:   authRepo,
 	}, nil
 }
 
 func (srv AuthService) Register(ctx context.Context, email string, password []byte, passwordConfirm []byte, firstName, lastName string) (auth.SessionToken, time.Time, error) {
-	// Return if user already exists.
-	_, err := srv.userRepo.ByEmail(ctx, email)
+	// Return if member already exists.
+	_, err := srv.memberRepo.ByEmail(ctx, email)
 	if err == nil {
 		return "", time.Time{}, err
 	}
@@ -43,18 +43,18 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 		return "", time.Time{}, err
 	}
 
-	u, err := user.NewUser(
-		user.WithEmail(email),
-		user.WithFirstName(firstName),
-		user.WithLastName(lastName),
-		user.WithPasswordHash(hash),
+	u, err := member.NewMember(
+		member.WithEmail(email),
+		member.WithFirstName(firstName),
+		member.WithLastName(lastName),
+		member.WithPasswordHash(hash),
 	)
 
 	if err != nil {
 		return "", time.Time{}, err
 	}
 
-	userID, err := srv.userRepo.Insert(ctx, u)
+	memberID, err := srv.memberRepo.Insert(ctx, u)
 	if err != nil {
 		return "", time.Time{}, err
 	}
@@ -63,12 +63,12 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 	if err != nil {
 		return "", time.Time{}, err
 	}
-	err = srv.authRepo.AddUserRoles(ctx, userID, role.ID)
+	err = srv.authRepo.AddMemberRoles(ctx, memberID, role.ID)
 	if err != nil {
 		return "", time.Time{}, err
 	}
 
-	token, expiry, err := srv.createSession(ctx, userID)
+	token, expiry, err := srv.createSession(ctx, memberID)
 	if err != nil {
 		return "", time.Time{}, err
 	}
@@ -77,17 +77,17 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 }
 
 func (srv AuthService) Login(ctx context.Context, email string, password []byte) (auth.SessionToken, time.Time, error) {
-	usr, err := srv.validateUser(ctx, email, password)
+	m, err := srv.validateMember(ctx, email, password)
 	if err != nil {
 		return "", time.Time{}, err
 	}
 
-	err = srv.clearUserSession(ctx, usr.ID)
+	err = srv.clearMemberSession(ctx, m.ID)
 	if err != nil {
 		return "", time.Time{}, err
 	}
 
-	token, expiry, err := srv.createSession(ctx, usr.ID)
+	token, expiry, err := srv.createSession(ctx, m.ID)
 	if err != nil {
 		return "", time.Time{}, err
 	}
@@ -103,7 +103,7 @@ func (srv AuthService) LogOut(ctx context.Context, token auth.SessionToken) erro
 		return err
 	}
 
-	err = srv.authRepo.DeleteUserSession(ctx, session.UserID)
+	err = srv.authRepo.DeleteMemberSession(ctx, session.MemberID)
 	if err != nil {
 		return err
 	}
@@ -144,14 +144,14 @@ func (srv AuthService) Session(ctx context.Context, id auth.SessionID) (auth.Ses
 	return session, nil
 }
 
-// Checks whether or not a user has all required permissions.
-func (srv AuthService) HasPermission(ctx context.Context, userID int64, permNames ...string) error {
-	userPermissions, err := srv.UserPermissions(ctx, userID)
+// Checks whether or not a member has all required permissions.
+func (srv AuthService) HasPermission(ctx context.Context, memberID int64, permNames ...string) error {
+	memberPerms, err := srv.MemberPermissions(ctx, memberID)
 	if err != nil {
 		return err
 	}
 
-	err = userPermissions.ContainsAll(permNames...)
+	err = memberPerms.ContainsAll(permNames...)
 	if err != nil {
 		return err
 	}
@@ -159,13 +159,13 @@ func (srv AuthService) HasPermission(ctx context.Context, userID int64, permName
 	return nil
 }
 
-func (srv AuthService) UserRoles(ctx context.Context, userID int64) ([]auth.Role, error) {
-	_, err := srv.userRepo.ByID(ctx, userID)
+func (srv AuthService) MemberRoles(ctx context.Context, memberID int64) ([]auth.Role, error) {
+	_, err := srv.memberRepo.ByID(ctx, memberID)
 	if err != nil {
 		return nil, err
 	}
 
-	roles, err := srv.authRepo.UserRoles(ctx, userID)
+	roles, err := srv.authRepo.MemberRoles(ctx, memberID)
 	if err != nil {
 		return nil, err
 	}
@@ -173,54 +173,54 @@ func (srv AuthService) UserRoles(ctx context.Context, userID int64) ([]auth.Role
 	return roles, nil
 }
 
-func (srv AuthService) UserPermissions(ctx context.Context, userID int64) (auth.PermissionCollection, error) {
-	usr, err := srv.userRepo.ByID(ctx, userID)
+func (srv AuthService) MemberPermissions(ctx context.Context, memberID int64) (auth.PermissionCollection, error) {
+	m, err := srv.memberRepo.ByID(ctx, memberID)
 	if err != nil {
 		return nil, err
 	}
 
-	userRoles, err := srv.authRepo.UserRoles(ctx, usr.ID)
+	memberRoles, err := srv.authRepo.MemberRoles(ctx, m.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	userPerms := auth.PermissionCollection(make([]auth.Permission, 0))
+	memberPerms := auth.PermissionCollection(make([]auth.Permission, 0))
 
-	for _, role := range userRoles {
+	for _, role := range memberRoles {
 		rolePerms, err := srv.authRepo.RolePermissions(ctx, role.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		// Add the role perms to the users permissions.
-		userPerms = append(userPerms, rolePerms...)
+		// Add the role perms to the members permissions.
+		memberPerms = append(memberPerms, rolePerms...)
 	}
 
-	return userPerms, nil
+	return memberPerms, nil
 
 }
 
-func (srv AuthService) validateUser(ctx context.Context, email string, password []byte) (user.User, error) {
-	// Return early if user does not exist.
-	usr, err := srv.userRepo.ByEmail(ctx, email)
+func (srv AuthService) validateMember(ctx context.Context, email string, password []byte) (member.Member, error) {
+	// Return early if member does not exist.
+	m, err := srv.memberRepo.ByEmail(ctx, email)
 	if err != nil {
-		return user.User{}, err
+		return member.Member{}, err
 	}
 
-	hash, err := srv.userRepo.PasswordHash(ctx, usr.ID)
+	hash, err := srv.memberRepo.PasswordHash(ctx, m.ID)
 	if err != nil {
-		return user.User{}, err
+		return member.Member{}, err
 	}
 
 	if err := hash.Matches(password); err != nil {
-		return user.User{}, err
+		return member.Member{}, err
 	}
 
-	return usr, err
+	return m, err
 }
 
-func (srv AuthService) clearUserSession(ctx context.Context, userID int64) error {
-	err := srv.authRepo.DeleteUserSession(ctx, userID)
+func (srv AuthService) clearMemberSession(ctx context.Context, memberID int64) error {
+	err := srv.authRepo.DeleteMemberSession(ctx, memberID)
 	if err != nil {
 		return err
 	}
@@ -228,13 +228,13 @@ func (srv AuthService) clearUserSession(ctx context.Context, userID int64) error
 	return nil
 }
 
-func (srv AuthService) createSession(ctx context.Context, userID int64) (auth.SessionToken, time.Time, error) {
+func (srv AuthService) createSession(ctx context.Context, memberID int64) (auth.SessionToken, time.Time, error) {
 	token, err := auth.NewSessionToken()
 	if err != nil {
 		return "", time.Time{}, err
 	}
 
-	session := auth.NewSession(token, userID, SESSION_LIFETIME)
+	session := auth.NewSession(token, memberID, SESSION_LIFETIME)
 
 	err = srv.authRepo.InsertSession(ctx, session)
 	if err != nil {

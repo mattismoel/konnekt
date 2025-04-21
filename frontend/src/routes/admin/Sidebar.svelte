@@ -3,8 +3,8 @@
 
 	import { cn } from '$lib/clsx';
 
-	import { hasSomeRole, type Role } from '$lib/features/auth/role';
-	import { type User } from '$lib/features/auth/user';
+	import { hasSomeRole } from '$lib/features/auth/role';
+	import { type Member } from '$lib/features/auth/member';
 
 	import Logo from '$lib/assets/Logo.svelte';
 
@@ -21,12 +21,12 @@
 	import Button from '$lib/components/ui/Button.svelte';
 
 	type Props = {
-		user: User;
+		member: Member;
 		expanded: boolean;
 		onToggle: () => void;
 	};
 
-	let { user, expanded, onToggle }: Props = $props();
+	let { member, expanded, onToggle }: Props = $props();
 </script>
 
 <aside
@@ -43,35 +43,35 @@
 	</div>
 	<section class="flex flex-1 flex-col gap-8">
 		<ul class="space-y-1">
-			{#if hasSomeRole(user.roles, ['admin', 'event-management'])}
+			{#if hasSomeRole(member.roles, ['admin', 'event-management'])}
 				{@render entry(EventIcon, '/admin/dashboard/events', 'Events')}
 			{/if}
-			{#if hasSomeRole(user.roles, ['admin', 'booking'])}
+			{#if hasSomeRole(member.roles, ['admin', 'booking'])}
 				{@render entry(ArtistIcon, '/admin/dashboard/artists', 'Kunstnere')}
 			{/if}
-			{#if hasSomeRole(user.roles, ['admin', 'event-management'])}
+			{#if hasSomeRole(member.roles, ['admin', 'event-management'])}
 				{@render entry(VenueIcon, '/admin/dashboard/venues', 'Venues')}
 			{/if}
-			{#if hasSomeRole(user.roles, ['admin', 'team-management'])}
+			{#if hasSomeRole(member.roles, ['admin', 'team-management'])}
 				{@render entry(MemberIcon, '/admin/dashboard/members', 'Medlemmer')}
 			{/if}
 			{@render entry(SettingsIcon, '/admin/dashboard/general', 'Generelt')}
 		</ul>
 	</section>
-	{@render userInformation(user)}
+	{@render memberInformation(member)}
 </aside>
 
-{#snippet userInformation(user: User)}
-	{@const rolesString = user.roles.map((r) => r.displayName).join(', ')}
+{#snippet memberInformation(member: Member)}
+	{@const rolesString = member.roles.map((r) => r.displayName).join(', ')}
 	<div class="flex flex-col-reverse items-center justify-between gap-8 group-[.expanded]:flex-row">
-		<a href="/admin/dashboard/user/{user.id}" class="flex items-center gap-4">
+		<a href="/admin/dashboard/member/{member.id}" class="flex items-center gap-4">
 			<img
 				src="https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
 				alt=""
 				class="aspect-square h-full w-10 rounded-full"
 			/>
 			<div class="hidden group-[.expanded]:block">
-				<span>{user.firstName} {user.lastName}</span>
+				<span>{member.firstName} {member.lastName}</span>
 				<span class="text-text/50 line-clamp-1" title={rolesString}>{rolesString}</span>
 			</div>
 		</a>

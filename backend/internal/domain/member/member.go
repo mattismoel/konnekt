@@ -1,22 +1,31 @@
-package user
+package member
 
 import (
 	"errors"
+	"net/http"
 	"net/mail"
+	"net/url"
 	"strings"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
 )
 
 var (
-	ErrIDInvalid           = errors.New("ID must be a positive integer")
-	ErrFirstNameInvalid    = errors.New("First name must be valid and non-empty")
-	ErrLastNameInvalid     = errors.New("Last name must be valid and non-empty")
-	ErrEmailInvalid        = errors.New("Email must be valid")
+	ErrIDInvalid = errors.New("ID must be a positive integer")
+
+	ErrFirstNameInvalid = errors.New("First name must be valid and non-empty")
+
+	ErrLastNameInvalid = errors.New("Last name must be valid and non-empty")
+
+	ErrEmailInvalid = errors.New("Email must be valid")
+
 	ErrPasswordHashInvalid = errors.New("Password hash must be a non-empty byte array")
+
+	ErrProfileImageURLInvalid      = errors.New("Profile image URL must be valid")
+	ErrProfileImageURLInaccessible = errors.New("Profile image URL must be accessible")
 )
 
-type User struct {
+type Member struct {
 	ID           int64        `json:"id"`
 	FirstName    string       `json:"firstName"`
 	LastName     string       `json:"lastName"`
@@ -25,16 +34,18 @@ type User struct {
 
 	Roles       auth.RoleCollection       `json:"roles"`
 	Permissions auth.PermissionCollection `json:"permissions"`
+
+	ProfileImageURL string `json:"profileImageUrl"`
 }
 
-type cfgFunc func(u *User) error
+type cfgFunc func(m *Member) error
 
-func NewUser(cfgs ...cfgFunc) (User, error) {
-	u := &User{}
+func NewMember(cfgs ...cfgFunc) (Member, error) {
+	u := &Member{}
 
 	for _, cfg := range cfgs {
 		if err := cfg(u); err != nil {
-			return User{}, err
+			return Member{}, err
 		}
 	}
 
@@ -42,12 +53,12 @@ func NewUser(cfgs ...cfgFunc) (User, error) {
 }
 
 func WithID(id int64) cfgFunc {
-	return func(u *User) error {
+	return func(m *Member) error {
 		if id <= 0 {
 			return ErrIDInvalid
 		}
 
-		u.ID = id
+		m.ID = id
 
 		return nil
 	}
@@ -55,12 +66,12 @@ func WithID(id int64) cfgFunc {
 
 func WithFirstName(firstName string) cfgFunc {
 	firstName = strings.TrimSpace(firstName)
-	return func(u *User) error {
+	return func(m *Member) error {
 		if firstName == "" {
 			return ErrFirstNameInvalid
 		}
 
-		u.FirstName = firstName
+		m.FirstName = firstName
 
 		return nil
 	}
@@ -69,12 +80,12 @@ func WithFirstName(firstName string) cfgFunc {
 func WithLastName(lastName string) cfgFunc {
 	lastName = strings.TrimSpace(lastName)
 
-	return func(u *User) error {
+	return func(m *Member) error {
 		if lastName == "" {
 			return ErrLastNameInvalid
 		}
 
-		u.LastName = lastName
+		m.LastName = lastName
 
 		return nil
 	}
@@ -83,44 +94,66 @@ func WithLastName(lastName string) cfgFunc {
 func WithEmail(email string) cfgFunc {
 	email = strings.TrimSpace(email)
 
-	return func(u *User) error {
+	return func(m *Member) error {
 		if email == "" {
 			return ErrEmailInvalid
 		}
 
-		m, err := mail.ParseAddress(email)
+		mail, err := mail.ParseAddress(email)
 		if err != nil {
 			return ErrEmailInvalid
 		}
 
-		u.Email = m.Address
+		m.Email = mail.Address
 
 		return nil
 	}
 }
 
 func WithPasswordHash(hash []byte) cfgFunc {
-	return func(u *User) error {
+	return func(m *Member) error {
 		if len(hash) <= 0 {
 			return ErrPasswordHashInvalid
 		}
 
-		u.PasswordHash = hash
+		m.PasswordHash = hash
 
 		return nil
 	}
 }
 
 func WithPermissions(perms auth.PermissionCollection) cfgFunc {
-	return func(u *User) error {
-		u.Permissions = perms
+	return func(m *Member) error {
+		m.Permissions = perms
 		return nil
 	}
 }
 
 func WithRoles(roles auth.RoleCollection) cfgFunc {
-	return func(u *User) error {
-		u.Roles = roles
+	return func(m *Member) error {
+		m.Roles = roles
+		return nil
+	}
+}
+
+func WithProfileImageURL(imageUrl string) cfgFunc {
+	return func(m *Member) error {
+		u, err := url.Parse(imageUrl)
+		if err != nil {
+			return ErrProfileImageURLInvalid
+		}
+
+		resp, err := http.Get(u.String())
+		if err != nil {
+			return err
+		}
+
+		if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+			return ErrProfileImageURLInaccessible
+		}
+
+		m.ProfileImageURL = u.String()
+
 		return nil
 	}
 }

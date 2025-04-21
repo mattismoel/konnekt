@@ -13,7 +13,7 @@ import (
 
 type Session struct {
 	ID        string
-	UserID    int64
+	MemberID  int64
 	ExpiresAt time.Time
 }
 
@@ -127,8 +127,8 @@ func (repo AuthRepository) RoleByName(ctx context.Context, name string) (auth.Ro
 	return dbRole.ToInternal(), nil
 }
 
-func userPermsissions(ctx context.Context, tx *sql.Tx, userID int64) (PermissionCollection, error) {
-	dbRoles, err := userRoles(ctx, tx, userID)
+func memberPermissions(ctx context.Context, tx *sql.Tx, memberID int64) (PermissionCollection, error) {
+	dbRoles, err := memberRoles(ctx, tx, memberID)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func userPermsissions(ctx context.Context, tx *sql.Tx, userID int64) (Permission
 	return perms, nil
 }
 
-func (repo AuthRepository) AddUserRoles(ctx context.Context, userID int64, roleIDs ...int64) error {
+func (repo AuthRepository) AddMemberRoles(ctx context.Context, memberID int64, roleIDs ...int64) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -156,7 +156,7 @@ func (repo AuthRepository) AddUserRoles(ctx context.Context, userID int64, roleI
 	defer tx.Rollback()
 
 	for _, roleID := range roleIDs {
-		err := associateUserWithRole(ctx, tx, userID, roleID)
+		err := associateMemberWithRole(ctx, tx, memberID, roleID)
 		if err != nil {
 			return err
 		}
@@ -179,7 +179,7 @@ func (repo AuthRepository) InsertSession(ctx context.Context, session auth.Sessi
 
 	dbSession := Session{
 		ID:        string(session.ID),
-		UserID:    session.UserID,
+		MemberID:  session.MemberID,
 		ExpiresAt: session.ExpiresAt,
 	}
 
@@ -232,7 +232,7 @@ func (repo AuthRepository) SetSessionExpiry(ctx context.Context, sessionID auth.
 	return nil
 }
 
-func (repo AuthRepository) DeleteUserSession(ctx context.Context, userID int64) error {
+func (repo AuthRepository) DeleteMemberSession(ctx context.Context, memberID int64) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -240,7 +240,7 @@ func (repo AuthRepository) DeleteUserSession(ctx context.Context, userID int64) 
 
 	defer tx.Rollback()
 
-	if err := deleteUserSession(ctx, tx, userID); err != nil {
+	if err := deleteMemberSession(ctx, tx, memberID); err != nil {
 		return err
 	}
 
@@ -252,7 +252,7 @@ func (repo AuthRepository) DeleteUserSession(ctx context.Context, userID int64) 
 
 }
 
-func (repo AuthRepository) UserRoles(ctx context.Context, userID int64) (auth.RoleCollection, error) {
+func (repo AuthRepository) MemberRoles(ctx context.Context, memberID int64) (auth.RoleCollection, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -260,7 +260,7 @@ func (repo AuthRepository) UserRoles(ctx context.Context, userID int64) (auth.Ro
 
 	defer tx.Rollback()
 
-	dbRoles, err := userRoles(ctx, tx, userID)
+	dbRoles, err := memberRoles(ctx, tx, memberID)
 	if err != nil {
 		return nil, err
 	}
@@ -390,14 +390,14 @@ func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (a
 	return collection, nil
 }
 
-func userRoles(ctx context.Context, tx *sql.Tx, userID int64) (RoleCollection, error) {
+func memberRoles(ctx context.Context, tx *sql.Tx, memberID int64) (RoleCollection, error) {
 	query := `
 	SELECT r.id, r.name, r.display_name, r.description
 	FROM role r
-	JOIN users_roles ur ON ur.role_id = r.id
-	WHERE ur.user_id = @user_id`
+	JOIN members_roles mr ON mr.role_id = r.id
+	WHERE mr.member_id = @member_id`
 
-	rows, err := tx.QueryContext(ctx, query, sql.Named("user_id", userID))
+	rows, err := tx.QueryContext(ctx, query, sql.Named("member_id", memberID))
 	if err != nil {
 		return nil, err
 	}
@@ -469,9 +469,9 @@ func rolePermissions(ctx context.Context, tx *sql.Tx, roleID int64) (PermissionC
 	return permissions, nil
 }
 
-func deleteUserSession(ctx context.Context, tx *sql.Tx, userID int64) error {
-	query := `DELETE FROM session WHERE user_id = @user_id`
-	_, err := tx.ExecContext(ctx, query, sql.Named("user_id", userID))
+func deleteMemberSession(ctx context.Context, tx *sql.Tx, memberID int64) error {
+	query := `DELETE FROM session WHERE member_id = @member_id`
+	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID))
 	if err != nil {
 		return err
 	}
@@ -481,12 +481,12 @@ func deleteUserSession(ctx context.Context, tx *sql.Tx, userID int64) error {
 
 func insertSession(ctx context.Context, tx *sql.Tx, session Session) error {
 	query := `
-	INSERT INTO session (id, user_id, expires_at)
-	VALUES (@id, @user_id, @expires_at)`
+	INSERT INTO session (id, member_id, expires_at)
+	VALUES (@id, @member_id, @expires_at)`
 
 	_, err := tx.ExecContext(ctx, query,
 		sql.Named("id", session.ID),
-		sql.Named("user_id", session.UserID),
+		sql.Named("member_id", session.MemberID),
 		sql.Named("expires_at", session.ExpiresAt),
 	)
 	if err != nil {
@@ -498,16 +498,16 @@ func insertSession(ctx context.Context, tx *sql.Tx, session Session) error {
 
 func sessionByID(ctx context.Context, tx *sql.Tx, sessionID string) (Session, error) {
 	query := `
-	SELECT user_id, expires_at 
+	SELECT member_id, expires_at 
 	FROM session 
 	WHERE id = @session_id`
 
-	var userID int64
+	var memberID int64
 	var expiresAt time.Time
 
 	err := tx.QueryRowContext(ctx, query,
 		sql.Named("session_id", sessionID),
-	).Scan(&userID, &expiresAt)
+	).Scan(&memberID, &expiresAt)
 
 	if err != nil {
 		return Session{}, err
@@ -515,7 +515,7 @@ func sessionByID(ctx context.Context, tx *sql.Tx, sessionID string) (Session, er
 
 	return Session{
 		ID:        sessionID,
-		UserID:    userID,
+		MemberID:  memberID,
 		ExpiresAt: expiresAt,
 	}, nil
 }
@@ -581,7 +581,7 @@ func listRoles(ctx context.Context, tx *sql.Tx, params QueryParams) (RoleCollect
 func (s Session) ToInternal() auth.Session {
 	return auth.Session{
 		ID:        auth.SessionID(s.ID),
-		UserID:    s.UserID,
+		MemberID:  s.MemberID,
 		ExpiresAt: s.ExpiresAt,
 	}
 }
@@ -645,10 +645,10 @@ func insertRole(ctx context.Context, tx *sql.Tx, r Role) (int64, error) {
 	return roleID, nil
 }
 
-func associateUserWithRole(ctx context.Context, tx *sql.Tx, userID int64, roleID int64) error {
-	query := `INSERT INTO users_roles (user_id, role_id) VALUES (@user_id, @role_id)`
+func associateMemberWithRole(ctx context.Context, tx *sql.Tx, memberID int64, roleID int64) error {
+	query := `INSERT INTO members_roles (member_id, role_id) VALUES (@member_id, @role_id)`
 
-	_, err := tx.ExecContext(ctx, query, sql.Named("user_id", userID), sql.Named("role_id", roleID))
+	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID), sql.Named("role_id", roleID))
 	if err != nil {
 		return err
 	}

@@ -5,15 +5,15 @@
 
 	type Props = {
 		events: Event[];
-		userPermissions: Permission[];
+		memberPermissions: Permission[];
 		onDelete: (id: number) => void;
 	};
 
-	let { events, userPermissions, onDelete }: Props = $props();
+	let { events, memberPermissions, onDelete }: Props = $props();
 </script>
 
 <ul class="space-y-2">
 	{#each events as event (event.id)}
-		<EventEntry {event} {userPermissions} onDelete={() => onDelete(event.id)} />
+		<EventEntry {event} {memberPermissions} onDelete={() => onDelete(event.id)} />
 	{/each}
 </ul>

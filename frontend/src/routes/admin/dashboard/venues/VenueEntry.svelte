@@ -14,12 +14,12 @@
 
 	type Props = {
 		initialValue?: Venue;
-		userPermissions: Permission[];
+		memberPermissions: Permission[];
 		onEdit: (form: z.infer<typeof venueForm>) => void;
 		onDelete: () => void;
 	};
 
-	let { initialValue, userPermissions, onEdit, onDelete }: Props = $props();
+	let { initialValue, memberPermissions, onEdit, onDelete }: Props = $props();
 
 	let showContextMenu = $state(false);
 
@@ -97,7 +97,7 @@
 		class="absolute top-1/2 right-4"
 	>
 		<ContextMenuEntry
-			disabled={!hasPermissions(userPermissions, ['delete:venue'])}
+			disabled={!hasPermissions(memberPermissions, ['delete:venue'])}
 			action={onDelete}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>

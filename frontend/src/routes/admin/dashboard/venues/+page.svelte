@@ -108,18 +108,18 @@
 				Overblik over alle venues, som er associerede med events for Konnekt.
 			</span>
 		</div>
-		<Button disabled={!hasPermissions(data.user.permissions, ['edit:venue'])}>
+		<Button disabled={!hasPermissions(data.member.permissions, ['edit:venue'])}>
 			<PlusIcon />Tilføj
 		</Button>
 	</div>
 
-	{#if hasPermissions(data.user.permissions, ['view:venue'])}
+	{#if hasPermissions(data.member.permissions, ['view:venue'])}
 		<section class="space-y-4">
 			<SearchBar bind:value={search} />
 			<ul>
 				{#each venues as venue (venue.id)}
 					<VenueEntry
-						userPermissions={data.user.permissions}
+						memberPermissions={data.member.permissions}
 						initialValue={venue}
 						onEdit={(form) => handleEditVenue(venue.id, form)}
 						onDelete={() => handleDeleteVenue(venue.id)}

@@ -24,12 +24,12 @@ export const roleSchema = z.object({
 
 export type Role = z.infer<typeof roleSchema>
 
-export const userRoles = async (fetchFn: typeof fetch, userId: number): Promise<Role[]> => {
+export const memberRoles = async (fetchFn: typeof fetch, memberId: number): Promise<Role[]> => {
 	const roles = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/auth/roles/${userId}`),
+		createUrl(`${PUBLIC_BACKEND_URL}/auth/roles/${memberId}`),
 		roleSchema.array(),
-		"Could not fetch user roles",
+		"Could not fetch member roles",
 	)
 
 	return roles
@@ -37,12 +37,12 @@ export const userRoles = async (fetchFn: typeof fetch, userId: number): Promise<
 
 
 /**
- * @description Checks whether or not a given user has all required input roles.
+ * @description Checks whether or not a given member has all required input roles.
  */
-export const hasAllRoles = (userRoles: Role[], roleNames: RoleType[]): boolean => {
-	return roleNames.every(role => userRoles.some(userRole => userRole.name === role))
+export const hasAllRoles = (roles: Role[], reqRoleNames: RoleType[]): boolean => {
+	return reqRoleNames.every(role => roles.some(r => r.name === role))
 }
 
-export const hasSomeRole = (userRoles: Role[], roleNames: RoleType[]): boolean => {
-	return roleNames.some(role => userRoles.some(userRole => userRole.name === role))
+export const hasSomeRole = (roles: Role[], reqRoleNames: RoleType[]): boolean => {
+	return reqRoleNames.some(role => roles.some(r => r.name === role))
 }

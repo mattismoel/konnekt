@@ -27,17 +27,17 @@ func (s Server) handleListPermissions() http.HandlerFunc {
 	}
 }
 
-func (s Server) handleListUserPermissions() http.HandlerFunc {
+func (s Server) handleListMemberPermissions() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
+		memberID, err := strconv.Atoi(chi.URLParam(r, "memberID"))
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		perms, err := s.authService.UserPermissions(ctx, int64(userID))
+		perms, err := s.authService.MemberPermissions(ctx, int64(memberID))
 		if err != nil {
 			writeError(w, err)
 			return

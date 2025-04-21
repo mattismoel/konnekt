@@ -41,17 +41,17 @@ export const permissionSchema = z.object({
 export type PermissionType = z.infer<typeof permissionTypes>
 export type Permission = z.infer<typeof permissionSchema>
 
-export const userPermissions = async (fetchFn: typeof fetch, userId: number): Promise<Permission[]> => {
+export const memberPermissions = async (fetchFn: typeof fetch, memberId: number): Promise<Permission[]> => {
 	const permissions = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/auth/permissions/${userId}`),
+		createUrl(`${PUBLIC_BACKEND_URL}/auth/permissions/${memberId}`),
 		permissionSchema.array(),
-		"Could not fetch user permissions",
+		"Could not fetch member permissions",
 	)
 
 	return permissions
 }
 
-export const hasPermissions = (userPermissions: Permission[], permNames: PermissionType[]): boolean => {
-	return permNames.every(perm => userPermissions.some(userPerm => userPerm.name === perm))
+export const hasPermissions = (permissions: Permission[], reqPermNames: PermissionType[]): boolean => {
+	return reqPermNames.every(perm => permissions.some(p => p.name === perm))
 }

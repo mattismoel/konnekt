@@ -16,14 +16,14 @@ func (s *Server) setupRoutes() {
 
 		r.Route("/roles", func(r chi.Router) {
 			r.Get("/", s.withPermissions(s.handleListRoles(), "view:role"))
-			r.Get("/{userID}", s.withPermissions(s.handleListUserRoles(), "view:role"))
+			r.Get("/{memberID}", s.withPermissions(s.handleListMemberRoles(), "view:role"))
 			r.Post("/", s.withPermissions(s.handleCreateRole(), "edit:role"))
 			r.Delete("/{roleID}", s.withPermissions(s.handleDeleteRole(), "delete:role"))
 		})
 
 		r.Route("/permissions", func(r chi.Router) {
 			r.Get("/", s.withPermissions(s.handleListPermissions(), "view:permission"))
-			r.Get("/{userID}", s.withPermissions(s.handleListUserPermissions(), "view:permission"))
+			r.Get("/{memberID}", s.withPermissions(s.handleListMemberPermissions(), "view:permission"))
 		})
 	})
 

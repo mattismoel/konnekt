@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
-	"github.com/mattismoel/konnekt/internal/domain/user"
+	"github.com/mattismoel/konnekt/internal/domain/member"
 )
 
 const (
@@ -15,10 +15,10 @@ const (
 )
 
 var (
-	ErrPasswordsNoMatch   = APIError{Message: "Passwords do not match", Status: http.StatusBadRequest}
-	ErrUserAlreadyExists  = APIError{Message: "User already exists", Status: http.StatusConflict}
-	ErrInvalidCredentials = APIError{Message: "User credentials are invalid", Status: http.StatusBadRequest}
-	ErrUnauthorized       = APIError{Message: "User unauthorized", Status: http.StatusUnauthorized}
+	ErrPasswordsNoMatch         = APIError{Message: "Passwords do not match", Status: http.StatusBadRequest}
+	ErrMemberAlreadyExists      = APIError{Message: "Member already exists", Status: http.StatusConflict}
+	ErrMemberInvalidCredentials = APIError{Message: "Member credentials are invalid", Status: http.StatusBadRequest}
+	ErrUnauthorized             = APIError{Message: "Member unauthorized", Status: http.StatusUnauthorized}
 )
 
 func (s Server) handleRegister() http.HandlerFunc {
@@ -48,8 +48,8 @@ func (s Server) handleRegister() http.HandlerFunc {
 
 		if err != nil {
 			switch {
-			case errors.Is(err, user.ErrAlreadyExists):
-				writeError(w, ErrUserAlreadyExists)
+			case errors.Is(err, member.ErrAlreadyExists):
+				writeError(w, ErrMemberAlreadyExists)
 			case errors.Is(err, auth.ErrPasswordsNoMatch):
 				writeError(w, ErrPasswordsNoMatch)
 			default:
@@ -82,10 +82,10 @@ func (s Server) handleLogin() http.HandlerFunc {
 		token, expiry, err := s.authService.Login(ctx, load.Email, []byte(load.Password))
 		if err != nil {
 			switch {
-			case errors.Is(err, user.ErrNotFound):
-				writeError(w, ErrInvalidCredentials)
+			case errors.Is(err, member.ErrNotFound):
+				writeError(w, ErrMemberInvalidCredentials)
 			case errors.Is(err, auth.ErrPasswordsNoMatch):
-				writeError(w, ErrInvalidCredentials)
+				writeError(w, ErrMemberInvalidCredentials)
 			default:
 				writeError(w, err)
 			}
@@ -155,7 +155,7 @@ func (s Server) handleGetSession() http.HandlerFunc {
 			return
 		}
 
-		user, err := s.userService.ByID(ctx, session.UserID)
+		member, err := s.memberService.ByID(ctx, session.MemberID)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -163,7 +163,7 @@ func (s Server) handleGetSession() http.HandlerFunc {
 
 		writeSessionCookie(w, token, newExpiry)
 
-		writeJSON(w, http.StatusOK, user)
+		writeJSON(w, http.StatusOK, member)
 	}
 }
 
