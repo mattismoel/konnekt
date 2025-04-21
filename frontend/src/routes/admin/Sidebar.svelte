@@ -22,12 +22,11 @@
 
 	type Props = {
 		user: User;
-		roles: Role[];
 		expanded: boolean;
 		onToggle: () => void;
 	};
 
-	let { user, roles, expanded, onToggle }: Props = $props();
+	let { user, expanded, onToggle }: Props = $props();
 </script>
 
 <aside
@@ -44,26 +43,26 @@
 	</div>
 	<section class="flex flex-1 flex-col gap-8">
 		<ul class="space-y-1">
-			{#if hasSomeRole(roles, ['admin', 'event-management'])}
+			{#if hasSomeRole(user.roles, ['admin', 'event-management'])}
 				{@render entry(EventIcon, '/admin/dashboard/events', 'Events')}
 			{/if}
-			{#if hasSomeRole(roles, ['admin', 'booking'])}
+			{#if hasSomeRole(user.roles, ['admin', 'booking'])}
 				{@render entry(ArtistIcon, '/admin/dashboard/artists', 'Kunstnere')}
 			{/if}
-			{#if hasSomeRole(roles, ['admin', 'event-management'])}
+			{#if hasSomeRole(user.roles, ['admin', 'event-management'])}
 				{@render entry(VenueIcon, '/admin/dashboard/venues', 'Venues')}
 			{/if}
-			{#if hasSomeRole(roles, ['admin', 'team-management'])}
+			{#if hasSomeRole(user.roles, ['admin', 'team-management'])}
 				{@render entry(MemberIcon, '/admin/dashboard/members', 'Medlemmer')}
 			{/if}
 			{@render entry(SettingsIcon, '/admin/dashboard/general', 'Generelt')}
 		</ul>
 	</section>
-	{@render userInformation(user, roles)}
+	{@render userInformation(user)}
 </aside>
 
-{#snippet userInformation(user: User, roles: Role[])}
-	{@const rolesString = roles.map((r) => r.displayName).join(', ')}
+{#snippet userInformation(user: User)}
+	{@const rolesString = user.roles.map((r) => r.displayName).join(', ')}
 	<div class="flex flex-col-reverse items-center justify-between gap-8 group-[.expanded]:flex-row">
 		<a href="/admin/dashboard/user/{user.id}" class="flex items-center gap-4">
 			<img

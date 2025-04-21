@@ -10,13 +10,15 @@
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import { goto } from '$app/navigation';
+	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
 
 	type Props = {
 		event: Event;
+		userPermissions: Permission[];
 		onDelete: () => void;
 	};
 
-	let { event, onDelete }: Props = $props();
+	let { event, userPermissions, onDelete }: Props = $props();
 
 	const fromDate = $derived(earliestConcert(event.concerts)?.from || new Date());
 	const toDate = $derived(latestConcert(event.concerts)?.to || new Date());
@@ -40,11 +42,7 @@
 			>{format(fromDate, 'HH:mm')} - {format(toDate, 'HH:mm')}</span
 		>
 	</a>
-	<button
-		bind:this={contextBtn}
-		onclick={() => (showContextMenu = !showContextMenu)}
-		class="text-text/50 hover:text-text"
-	>
+	<button onclick={() => (showContextMenu = !showContextMenu)} class="text-text/50 hover:text-text">
 		<MenuIcon />
 	</button>
 	<ContextMenu
@@ -52,9 +50,13 @@
 		onClose={() => (showContextMenu = false)}
 		class="absolute top-1/2 right-4"
 	>
-		<ContextMenuEntry action={() => goto(`/admin/events/edit?id=${event.id}`)}
-			>Redigér</ContextMenuEntry
+		<ContextMenuEntry
+			disabled={!hasPermissions(userPermissions, ['edit:event'])}
+			action={() => goto(`/admin/events/edit?id=${event.id}`)}>Redigér</ContextMenuEntry
 		>
-		<ContextMenuEntry action={onDelete}>Slet</ContextMenuEntry>
+		<ContextMenuEntry
+			disabled={!hasPermissions(userPermissions, ['delete:event'])}
+			action={onDelete}>Slet</ContextMenuEntry
+		>
 	</ContextMenu>
 </li>

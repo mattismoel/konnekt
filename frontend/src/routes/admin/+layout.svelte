@@ -9,7 +9,7 @@
 	import { MediaQuery } from 'svelte/reactivity';
 
 	let { children, data } = $props();
-	let { user, roles } = $derived(data);
+	let { user } = $derived(data);
 
 	let windowWidth = $state(0);
 
@@ -23,7 +23,6 @@
 <main class="bg-background flex min-h-svh w-screen">
 	<Sidebar
 		{user}
-		{roles}
 		expanded={sidebarExpanded}
 		onToggle={() => (sidebarExpanded = !sidebarExpanded)}
 	/>

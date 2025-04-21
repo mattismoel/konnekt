@@ -23,8 +23,6 @@
 		)
 	);
 
-	let listPreviousEvents = $state(false);
-
 	const handleCleanPreviousEvents = async () => {
 		let message = 'Er du sikker på, at du vil rydde alle tidligere events?\n\n';
 
@@ -85,7 +83,7 @@
 		</div>
 		<div class="flex gap-2">
 			<Button
-				disabled={!hasPermissions(data.permissions, ['edit:event'])}
+				disabled={!hasPermissions(data.user.permissions, ['edit:event'])}
 				onclick={() => goto(`/admin/events/edit`)}
 			>
 				<PlusIcon />Tilføj
@@ -94,16 +92,24 @@
 		</div>
 	</div>
 
-	{#if hasPermissions(data.permissions, ['view:event'])}
+	{#if hasPermissions(data.user.permissions, ['view:event'])}
 		<div class="space-y-8">
 			<SearchBar bind:value={search} />
 			{#if search.trim() !== ''}
 				<section>
-					<EventList onDelete={handleDeleteEvent} events={filteredEvents} />
+					<EventList
+						onDelete={handleDeleteEvent}
+						events={filteredEvents}
+						userPermissions={data.user.permissions}
+					/>
 				</section>
 			{:else}
 				<section>
-					<EventList onDelete={handleDeleteEvent} events={data.upcomingEvents} />
+					<EventList
+						onDelete={handleDeleteEvent}
+						events={data.upcomingEvents}
+						userPermissions={data.user.permissions}
+					/>
 				</section>
 			{/if}
 
@@ -111,7 +117,11 @@
 				<section>
 					<details>
 						<summary class="mb-4">Tidligere events ({data.previousEvents.length})</summary>
-						<EventList events={data.previousEvents} onDelete={handleDeleteEvent} />
+						<EventList
+							events={data.previousEvents}
+							onDelete={handleDeleteEvent}
+							userPermissions={data.user.permissions}
+						/>
 					</details>
 				</section>
 			{/if}
