@@ -64,3 +64,12 @@ func (srv MemberService) SetMemberProfilePicture(ctx context.Context, memberID i
 
 	return url, nil
 }
+
+func (srv MemberService) Approve(ctx context.Context, memberID int64) error {
+	err := srv.memberRepo.Approve(ctx, memberID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

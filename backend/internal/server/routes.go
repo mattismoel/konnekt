@@ -10,6 +10,7 @@ func (s *Server) setupRoutes() {
 
 	s.mux.Route("/members", func(r chi.Router) {
 		r.Get("/", s.withPermissions(s.handleListMembers(), "view:member", "view:role", "view:permission"))
+		r.Post("/{memberID}/approve", s.withPermissions(s.handleApproveMember(), "edit:member"))
 	})
 
 	s.mux.Route("/auth", func(r chi.Router) {
