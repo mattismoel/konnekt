@@ -24,12 +24,16 @@ type Role struct {
 	Description string
 }
 
+type RoleCollection []Role
+
 type Permission struct {
 	ID          int64
 	Name        string
 	DisplayName string
 	Description string
 }
+
+type PermissionCollection []Permission
 
 var _ auth.Repository = (*AuthRepository)(nil)
 
@@ -228,7 +232,7 @@ func (repo AuthRepository) DeleteUserSession(ctx context.Context, userID int64) 
 
 }
 
-func (repo AuthRepository) UserRoles(ctx context.Context, userID int64) ([]auth.Role, error) {
+func (repo AuthRepository) UserRoles(ctx context.Context, userID int64) (auth.RoleCollection, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -366,7 +370,7 @@ func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (a
 	return collection, nil
 }
 
-func userRoles(ctx context.Context, tx *sql.Tx, userID int64) ([]Role, error) {
+func userRoles(ctx context.Context, tx *sql.Tx, userID int64) (RoleCollection, error) {
 	query := `
 	SELECT r.id, r.name, r.display_name, r.description
 	FROM role r
@@ -380,7 +384,7 @@ func userRoles(ctx context.Context, tx *sql.Tx, userID int64) ([]Role, error) {
 
 	defer rows.Close()
 
-	roles := make([]Role, 0)
+	roles := make(RoleCollection, 0)
 
 	for rows.Next() {
 		var id int64
@@ -406,7 +410,7 @@ func userRoles(ctx context.Context, tx *sql.Tx, userID int64) ([]Role, error) {
 	return roles, nil
 }
 
-func rolePermissions(ctx context.Context, tx *sql.Tx, roleID int64) ([]Permission, error) {
+func rolePermissions(ctx context.Context, tx *sql.Tx, roleID int64) (PermissionCollection, error) {
 	query := `
 	SELECT p.id, p.name, p.display_name, p.description
 	FROM permission p
@@ -420,7 +424,7 @@ func rolePermissions(ctx context.Context, tx *sql.Tx, roleID int64) ([]Permissio
 
 	defer rows.Close()
 
-	permissions := make([]Permission, 0)
+	permissions := make(PermissionCollection, 0)
 
 	for rows.Next() {
 		var id int64
@@ -514,7 +518,7 @@ func setSessionExpiry(ctx context.Context, tx *sql.Tx, sessionID string, newExpi
 	return nil
 }
 
-func listRoles(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Role, error) {
+func listRoles(ctx context.Context, tx *sql.Tx, params QueryParams) (RoleCollection, error) {
 	q, err := NewQuery(`
 	SELECT DISTINCT id, name, description, display_name
 	FROM role`)
@@ -532,7 +536,7 @@ func listRoles(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Role, err
 
 	defer rows.Close()
 
-	roles := make([]Role, 0)
+	roles := make(RoleCollection, 0)
 
 	for rows.Next() {
 		var id int64
@@ -713,7 +717,7 @@ func deleteRole(ctx context.Context, tx *sql.Tx, roleID int64) error {
 	return nil
 }
 
-func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Permission, error) {
+func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (PermissionCollection, error) {
 	q, err := NewQuery(`SELECT id, name, display_name, description FROM permission`)
 	if err != nil {
 		return nil, err
@@ -728,7 +732,7 @@ func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Per
 
 	defer rows.Close()
 
-	permissions := make([]Permission, 0)
+	permissions := make(PermissionCollection, 0)
 
 	for rows.Next() {
 		var id int64
@@ -764,4 +768,24 @@ func permissionCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	}
 
 	return count, nil
+}
+
+func (pc PermissionCollection) ToInternal() auth.PermissionCollection {
+	perms := make(auth.PermissionCollection, 0)
+
+	for _, dbPerm := range pc {
+		perms = append(perms, dbPerm.ToInternal())
+	}
+
+	return perms
+}
+
+func (rc RoleCollection) ToInternal() auth.RoleCollection {
+	roles := make(auth.RoleCollection, 0)
+
+	for _, dbRole := range rc {
+		roles = append(roles, dbRole.ToInternal())
+	}
+
+	return roles
 }
