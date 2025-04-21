@@ -25,7 +25,7 @@
 
 	const addGenre = async () => {
 		try {
-			await createGenre(search);
+			await createGenre(fetch, search);
 			await invalidateAll();
 		} catch (e) {
 			if (e instanceof APIError) return error(e.status, e.message);

@@ -37,7 +37,7 @@
 	});
 
 	const handleEditVenue = async (id: number, form: z.infer<typeof venueForm>) => {
-		const { error } = await tryCatch(editVenue(id, form));
+		const { error } = await tryCatch(editVenue(fetch, id, form));
 		if (error) {
 			if (error instanceof APIError) {
 				toaster.addToast('Kunne ikke regigere venue', error.cause, 'error');
@@ -52,7 +52,7 @@
 	};
 
 	const handleAddVenue = async (form: z.infer<typeof venueForm>) => {
-		const { error } = await tryCatch(createVenue(form));
+		const { error } = await tryCatch(createVenue(fetch, form));
 		if (error) {
 			if (error instanceof APIError) {
 				toaster.addToast('Kunne ikke tilføje venue', error.cause, 'error');
@@ -73,7 +73,7 @@
 
 		if (!confirm(`Er sikker på, at du vil slette venue "${venue.name}"?`)) return;
 
-		const { error } = await tryCatch(deleteVenue(id));
+		const { error } = await tryCatch(deleteVenue(fetch, id));
 		if (error) {
 			if (error instanceof APIError) {
 				toaster.addToast('Kunne ikke slette venue', error.cause, 'error');
@@ -108,18 +108,18 @@
 				Overblik over alle venues, som er associerede med events for Konnekt.
 			</span>
 		</div>
-		<Button disabled={!hasPermissions(data.permissions, ['edit:venue'])}>
+		<Button disabled={!hasPermissions(data.user.permissions, ['edit:venue'])}>
 			<PlusIcon />Tilføj
 		</Button>
 	</div>
 
-	{#if hasPermissions(data.permissions, ['view:venue'])}
+	{#if hasPermissions(data.user.permissions, ['view:venue'])}
 		<section class="space-y-4">
 			<SearchBar bind:value={search} />
 			<ul>
 				{#each venues as venue (venue.id)}
 					<VenueEntry
-						userPermissions={data.permissions}
+						userPermissions={data.user.permissions}
 						initialValue={venue}
 						onEdit={(form) => handleEditVenue(venue.id, form)}
 						onDelete={() => handleDeleteVenue(venue.id)}
