@@ -127,6 +127,26 @@ func (repo AuthRepository) RoleByName(ctx context.Context, name string) (auth.Ro
 	return dbRole.ToInternal(), nil
 }
 
+func userPermsissions(ctx context.Context, tx *sql.Tx, userID int64) (PermissionCollection, error) {
+	dbRoles, err := userRoles(ctx, tx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	perms := make([]Permission, 0)
+
+	for _, dbRole := range dbRoles {
+		dbPerms, err := rolePermissions(ctx, tx, dbRole.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		perms = append(perms, dbPerms...)
+	}
+
+	return perms, nil
+}
+
 func (repo AuthRepository) AddUserRoles(ctx context.Context, userID int64, roleIDs ...int64) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
