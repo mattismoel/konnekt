@@ -310,12 +310,13 @@ func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte
 }
 
 func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollection, error) {
-	query, err := NewQuery(`
+	dbQuery, err := NewQuery(`
 		SELECT 
 			id, 
 			first_name, 
 			last_name, 
 			email, 
+			active,
 			password_hash
 		FROM member`)
 
@@ -323,15 +324,38 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 		return nil, err
 	}
 
-	if err := query.WithLimit(q.Limit); err != nil {
+	if err := dbQuery.WithLimit(q.Limit); err != nil {
 		return nil, err
 	}
 
-	if err := query.WithOffset(q.Offset); err != nil {
+	if err := dbQuery.WithOffset(q.Offset); err != nil {
 		return nil, err
 	}
 
-	queryStr, args := query.Build()
+	active := true
+
+	if filters, ok := q.Filters["active"]; ok {
+		for _, filter := range filters {
+			val := strings.ToUpper(filter.Value)
+			if val == "FALSE" {
+				active = false
+			} else if val == "TRUE" {
+				active = true
+			}
+		}
+	}
+
+	activeVal := "TRUE"
+	if !active {
+		activeVal = "FALSE"
+	}
+
+	err = dbQuery.AddFilter("active", query.Equal, activeVal)
+	if err != nil {
+		return nil, err
+	}
+
+	queryStr, args := dbQuery.Build()
 
 	fmt.Println(queryStr)
 
@@ -347,9 +371,10 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 	for rows.Next() {
 		var id int64
 		var firstName, lastName, email string
+		var active bool
 		var passwordhash []byte
 
-		err := rows.Scan(&id, &firstName, &lastName, &email, &passwordhash)
+		err := rows.Scan(&id, &firstName, &lastName, &email, &active, &passwordhash)
 		if err != nil {
 			return nil, err
 		}
@@ -358,6 +383,7 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 			ID:           id,
 			FirstName:    firstName,
 			LastName:     lastName,
+			Active:       active,
 			Email:        email,
 			PasswordHash: passwordhash,
 		})
@@ -390,6 +416,8 @@ func (u Member) ToInternal(roles []auth.Role, perms auth.PermissionCollection) m
 		LastName:     u.LastName,
 		Email:        u.Email,
 		PasswordHash: u.PasswordHash,
+
+		Active: u.Active,
 
 		Roles:       roles,
 		Permissions: perms,
