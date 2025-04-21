@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
@@ -13,6 +14,11 @@ import (
 const (
 	SESSION_LIFETIME       = 30 * 24 * time.Hour // 30 day expiry.
 	SESSION_REFRESH_BUFFER = 15 * 24 * time.Hour // 15 day refresh buffer.
+
+)
+
+var (
+	ErrMemberInactive = errors.New("Member is not active or needs approval")
 )
 
 type AuthService struct {
@@ -206,6 +212,10 @@ func (srv AuthService) validateMember(ctx context.Context, email string, passwor
 	m, err := srv.memberRepo.ByEmail(ctx, email)
 	if err != nil {
 		return member.Member{}, err
+	}
+
+	if !m.Active {
+		return member.Member{}, ErrMemberInactive
 	}
 
 	hash, err := srv.memberRepo.PasswordHash(ctx, m.ID)
