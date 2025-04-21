@@ -26,11 +26,12 @@ var (
 )
 
 type Member struct {
-	ID           int64        `json:"id"`
-	FirstName    string       `json:"firstName"`
-	LastName     string       `json:"lastName"`
-	Email        string       `json:"email"`
-	PasswordHash PasswordHash `json:"-"`
+	ID              int64        `json:"id"`
+	FirstName       string       `json:"firstName"`
+	LastName        string       `json:"lastName"`
+	Email           string       `json:"email"`
+	PasswordHash    PasswordHash `json:"-"`
+	Active bool `json:"active"`
 
 	Roles       auth.RoleCollection       `json:"roles"`
 	Permissions auth.PermissionCollection `json:"permissions"`
@@ -41,7 +42,11 @@ type Member struct {
 type cfgFunc func(m *Member) error
 
 func NewMember(cfgs ...cfgFunc) (Member, error) {
-	u := &Member{}
+	u := &Member{
+		Active:      false,
+		Roles:       make(auth.RoleCollection, 0),
+		Permissions: make(auth.PermissionCollection, 0),
+	}
 
 	for _, cfg := range cfgs {
 		if err := cfg(u); err != nil {

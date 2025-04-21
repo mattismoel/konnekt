@@ -12,6 +12,8 @@ export const memberSchema = z.object({
 	firstName: z.string(),
 	lastName: z.string(),
 
+	active: z.boolean(),
+
 	roles: roleSchema.array(),
 	permissions: permissionSchema.array(),
 })

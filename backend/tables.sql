@@ -5,6 +5,7 @@ CREATE TABLE member (
   last_name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   profile_picture_url TEXT
+  active BOOLEAN NOT NULL DEFAULT "FALSE"
 );
 
 CREATE TABLE session (
