@@ -19,6 +19,7 @@ type Member struct {
 	FirstName    string
 	LastName     string
 	PasswordHash []byte
+	Active       bool
 }
 
 type MemberCollection []Member
@@ -153,7 +154,6 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 		Records:    members,
 	}, nil
 }
-
 func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.Member, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -272,41 +272,31 @@ func insertMember(ctx context.Context, tx *sql.Tx, u Member) (int64, error) {
 }
 
 func memberByEmail(ctx context.Context, tx *sql.Tx, email string) (Member, error) {
-	query := `
-  SELECT id, first_name, last_name, password_hash FROM member 
-  WHERE email = @email`
+	query := "select id from member where email = @email"
 
 	var id int64
-	var firstName, lastName string
-	var passwordHash []byte
 
-	err := tx.QueryRowContext(ctx, query, sql.Named("email", email)).Scan(
-		&id, &firstName, &lastName, &passwordHash,
-	)
-
+	err := tx.QueryRowContext(ctx, query, sql.Named("email", email)).Scan(&id)
 	if err != nil {
 		return Member{}, err
 	}
 
-	return Member{
-		ID:           id,
-		Email:        email,
-		FirstName:    firstName,
-		LastName:     lastName,
-		PasswordHash: passwordHash,
-	}, nil
+	m, err := memberByID(ctx, tx, id)
+
+	return m, nil
 }
 
 func memberByID(ctx context.Context, tx *sql.Tx, memberID int64) (Member, error) {
 	query := `
-  SELECT email, first_name, last_name, password_hash FROM member 
+  SELECT email, first_name, last_name, active, password_hash FROM member 
   WHERE id = @member_id`
 
 	var email, firstName, lastName string
+	var active bool
 	var passwordHash []byte
 
 	err := tx.QueryRowContext(ctx, query, sql.Named("member_id", memberID)).Scan(
-		&email, &firstName, &lastName, &passwordHash,
+		&email, &firstName, &lastName, &active, &passwordHash,
 	)
 
 	if err != nil {
@@ -318,6 +308,7 @@ func memberByID(ctx context.Context, tx *sql.Tx, memberID int64) (Member, error)
 		Email:        email,
 		FirstName:    firstName,
 		LastName:     lastName,
+		Active:       active,
 		PasswordHash: passwordHash,
 	}, nil
 }
