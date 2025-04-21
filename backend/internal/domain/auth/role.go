@@ -19,6 +19,8 @@ type Role struct {
 	Description string `json:"description"`
 }
 
+type RoleCollection []Role
+
 type roleCfgFunc func(r *Role) error
 
 func NewRole(cfgs ...roleCfgFunc) (Role, error) {
