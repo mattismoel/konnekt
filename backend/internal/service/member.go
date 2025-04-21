@@ -73,3 +73,11 @@ func (srv MemberService) Approve(ctx context.Context, memberID int64) error {
 
 	return nil
 }
+
+func (srv MemberService) Delete(ctx context.Context, memberID int64) error {
+	err := srv.memberRepo.Delete(ctx, memberID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

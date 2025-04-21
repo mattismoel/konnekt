@@ -13,5 +13,6 @@ type Repository interface {
 	PasswordHash(ctx context.Context, memberID int64) (PasswordHash, error)
 	Insert(ctx context.Context, m Member) (int64, error)
 	Approve(ctx context.Context, memberID int64) error
+	Delete(ctx context.Context, memberID int64) error
 	SetProfilePictureURL(ctx context.Context, memberID int64, url string) error
 }

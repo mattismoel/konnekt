@@ -188,6 +188,32 @@ func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.
 	return m.ToInternal(memberRoles.ToInternal(), memberPerms.ToInternal()), nil
 }
 
+func (repo MemberRepository) Delete(ctx context.Context, memberID int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	if err := deleteMember(ctx, tx, memberID); err != nil {
+		return err
+	}
+
+	if err := deleteMemberRoles(ctx, tx, memberID); err != nil {
+		return err
+	}
+
+	if err := deleteMemberSession(ctx, tx, memberID); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
 func (repo MemberRepository) PasswordHash(ctx context.Context, memberID int64) (member.PasswordHash, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -396,6 +422,27 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 	return members, nil
 }
 
+func deleteMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
+	query := "DELETE FROM member WHERE id = @member_id"
+
+	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func deleteMemberRoles(ctx context.Context, tx *sql.Tx, memberID int64) error {
+	query := "DELETE FROM members_roles WHERE member_id = @member_id"
+
+	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func memberCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	var count int

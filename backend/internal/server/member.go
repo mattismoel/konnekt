@@ -48,3 +48,21 @@ func (s Server) handleApproveMember() http.HandlerFunc {
 		}
 	}
 }
+
+func (s Server) handleDeleteMember() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		memberID, err := strconv.Atoi(chi.URLParam(r, "memberID"))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		ctx := r.Context()
+
+		err = s.memberService.Delete(ctx, int64(memberID))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+	}
+}
