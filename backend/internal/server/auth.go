@@ -38,7 +38,7 @@ func (s Server) handleRegister() http.HandlerFunc {
 			return
 		}
 
-		token, expiry, err := s.authService.Register(r.Context(),
+		err := s.authService.Register(r.Context(),
 			load.Email,
 			[]byte(load.Password),
 			[]byte(load.PasswordConfirm),
@@ -57,8 +57,6 @@ func (s Server) handleRegister() http.HandlerFunc {
 			}
 			return
 		}
-
-		writeSessionCookie(w, token, expiry)
 	}
 }
 

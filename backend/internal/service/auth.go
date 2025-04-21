@@ -27,20 +27,26 @@ func NewAuthService(memberRepo member.Repository, authRepo auth.Repository) (*Au
 	}, nil
 }
 
-func (srv AuthService) Register(ctx context.Context, email string, password []byte, passwordConfirm []byte, firstName, lastName string) (auth.SessionToken, time.Time, error) {
+func (srv AuthService) Register(ctx context.Context, email string, password []byte, passwordConfirm []byte, firstName, lastName string) error {
 	// Return if member already exists.
 	_, err := srv.memberRepo.ByEmail(ctx, email)
 	if err == nil {
-		return "", time.Time{}, err
+		return err
 	}
 
-	if err := auth.DoPasswordsMatch(password, passwordConfirm); err != nil {
-		return "", time.Time{}, err
+	p := auth.Password(password)
+
+	if err := p.Validate(password); err != nil {
+		return err
+	}
+
+	if err := p.Matches(passwordConfirm); err != nil {
+		return err
 	}
 
 	hash, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 	if err != nil {
-		return "", time.Time{}, err
+		return err
 	}
 
 	u, err := member.NewMember(
@@ -51,29 +57,24 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 	)
 
 	if err != nil {
-		return "", time.Time{}, err
+		return err
 	}
 
 	memberID, err := srv.memberRepo.Insert(ctx, u)
 	if err != nil {
-		return "", time.Time{}, err
+		return err
 	}
 
 	role, err := srv.authRepo.RoleByName(ctx, "member")
 	if err != nil {
-		return "", time.Time{}, err
+		return err
 	}
 	err = srv.authRepo.AddMemberRoles(ctx, memberID, role.ID)
 	if err != nil {
-		return "", time.Time{}, err
+		return err
 	}
 
-	token, expiry, err := srv.createSession(ctx, memberID)
-	if err != nil {
-		return "", time.Time{}, err
-	}
-
-	return token, expiry, nil
+	return nil
 }
 
 func (srv AuthService) Login(ctx context.Context, email string, password []byte) (auth.SessionToken, time.Time, error) {
