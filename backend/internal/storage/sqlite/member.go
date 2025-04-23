@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
@@ -126,6 +125,31 @@ func (repo MemberRepository) SetProfilePictureURL(ctx context.Context, memberID 
 	return nil
 }
 
+func (repo MemberRepository) SetMemberTeams(ctx context.Context, memberID int64, teamIDs ...int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	if err := deleteMemberTeams(ctx, tx, memberID); err != nil {
+		return err
+	}
+
+	for _, teamID := range teamIDs {
+		if err := associateMemberWithTeam(ctx, tx, memberID, teamID); err != nil {
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query.ListResult[member.Member], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -180,6 +204,32 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 		Records:    members,
 	}, nil
 }
+
+func (repo MemberRepository) Update(ctx context.Context, memberID int64, m member.Member) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	err = updateMember(ctx, tx, memberID, Member{
+		FirstName: m.FirstName,
+		LastName:  m.LastName,
+		Email:     m.Email,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.Member, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -435,6 +485,46 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 	}
 
 	return members, nil
+}
+
+func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) error {
+	query := `
+		update member set
+		first_name = CASE 
+			WHEN @first_name = '' THEN first_name 
+			ELSE @first_name
+		END,
+		last_name = CASE 
+			WHEN @last_name = '' THEN last_name 
+			ELSE @last_name
+		END,
+		email = CASE 
+			WHEN @email = '' THEN email 
+			ELSE @email
+		END
+		WHERE id = @member_id`
+
+	res, err := tx.ExecContext(ctx, query,
+		sql.Named("first_name", m.FirstName),
+		sql.Named("last_name", m.LastName),
+		sql.Named("email", m.Email),
+		sql.Named("member_id", memberID),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected <= 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }
 
 func approveMember(ctx context.Context, tx *sql.Tx, memberID int64) error {

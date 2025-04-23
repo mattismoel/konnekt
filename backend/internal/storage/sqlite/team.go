@@ -172,6 +172,29 @@ func (repo TeamRepository) Delete(ctx context.Context, teamID int64) error {
 
 	return nil
 }
+
+func (repo TeamRepository) AddMemberTeams(ctx context.Context, memberID int64, teamIDs ...int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	for _, teamID := range teamIDs {
+		err := associateMemberWithTeam(ctx, tx, memberID, teamID)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo TeamRepository) MemberTeams(ctx context.Context, memberID int64) (team.TeamCollection, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {

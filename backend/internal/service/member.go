@@ -84,3 +84,32 @@ func (srv MemberService) Delete(ctx context.Context, memberID int64) error {
 	}
 	return nil
 }
+
+func (srv MemberService) Update(ctx context.Context, memberID int64, m member.Member) error {
+	if err := srv.memberRepo.Update(ctx, memberID, m); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (srv MemberService) SetMemberTeams(ctx context.Context, memberID int64, teamIDs ...int64) error {
+	teams := make(team.TeamCollection, 0)
+
+	// Check that all teams exist. If not return.
+	for _, teamID := range teamIDs {
+		team, err := srv.teamRepo.ByID(ctx, teamID)
+		if err != nil {
+			return err
+		}
+
+		teams = append(teams, team)
+	}
+
+	err := srv.memberRepo.SetMemberTeams(ctx, memberID, teamIDs...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

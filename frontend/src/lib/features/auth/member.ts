@@ -25,6 +25,25 @@ export const memberSchema = z.object({
 
 export type Member = z.infer<typeof memberSchema>
 
+export const editMemberForm = z.object({
+	firstName: z
+		.string()
+		.nonempty(),
+	lastName: z
+		.string()
+		.nonempty(),
+	email: z
+		.string()
+		.email(),
+})
+
+export const setMemberTeamsForm = z
+	.number()
+	.int()
+	.positive()
+	.array()
+	.nonempty()
+
 export const memberSession = async (fetchFn: typeof fetch) => {
 	const member = await requestAndParse(
 		fetchFn,
@@ -78,4 +97,26 @@ export const memberById = async (fetchFn: typeof fetch, memberId: number) => {
 	)
 
 	return member
+}
+
+export const editMember = async (fetchFn: typeof fetch, memberId: number, form: z.infer<typeof editMemberForm>) => {
+	await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}`),
+		undefined,
+		"Could not edit member",
+		{ bodySchema: editMemberForm, body: form },
+		"PUT"
+	)
+}
+
+export const setMemberTeams = async (fetchFn: typeof fetch, memberId: number, teamIds: number[]) => {
+	await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}/teams`),
+		undefined,
+		"Could not set member teams",
+		{ bodySchema: setMemberTeamsForm, body: teamIds },
+		"PUT"
+	)
 }
