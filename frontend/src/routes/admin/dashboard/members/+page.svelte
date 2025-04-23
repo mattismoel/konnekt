@@ -12,5 +12,9 @@
 			dermed deres tilladelser.</span
 		>
 	</div>
-	<MemberList members={data.members} pending={data.pending} />
+	<MemberList
+		members={data.members}
+		pending={data.pending}
+		memberPermissions={data.member.permissions}
+	/>
 </main>
