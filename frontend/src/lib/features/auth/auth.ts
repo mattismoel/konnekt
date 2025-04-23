@@ -37,7 +37,7 @@ export const loginForm = z.object({
 })
 
 export const login = async (fetchFn: typeof fetch, form: z.infer<typeof loginForm>) => {
-	const user = await requestAndParse(
+	const member = await requestAndParse(
 		fetchFn,
 		createUrl(`${PUBLIC_BACKEND_URL}/auth/login`),
 		memberSchema,
@@ -46,11 +46,11 @@ export const login = async (fetchFn: typeof fetch, form: z.infer<typeof loginFor
 		"POST",
 	)
 
-	return user
+	return member
 }
 
 export const register = async (fetchFn: typeof fetch, form: z.infer<typeof registerForm>) => {
-	const user = await requestAndParse(
+	const member = await requestAndParse(
 		fetchFn,
 		createUrl(`${PUBLIC_BACKEND_URL}/auth/register`),
 		memberSchema,
@@ -59,5 +59,5 @@ export const register = async (fetchFn: typeof fetch, form: z.infer<typeof regis
 		"POST",
 	)
 
-	return user
+	return member
 }
