@@ -43,19 +43,27 @@ type Member struct {
 type cfgFunc func(m *Member) error
 
 func NewMember(cfgs ...cfgFunc) (Member, error) {
-	u := &Member{
+	m := &Member{
 		Active:      false,
 		Teams:       make(team.TeamCollection, 0),
 		Permissions: make(auth.PermissionCollection, 0),
 	}
 
+	if err := m.WithCfgs(cfgs...); err != nil {
+		return Member{}, err
+	}
+
+	return *m, nil
+}
+
+func (m *Member) WithCfgs(cfgs ...cfgFunc) error {
 	for _, cfg := range cfgs {
-		if err := cfg(u); err != nil {
-			return Member{}, err
+		if err := cfg(m); err != nil {
+			return err
 		}
 	}
 
-	return *u, nil
+	return nil
 }
 
 func WithID(id int64) cfgFunc {
