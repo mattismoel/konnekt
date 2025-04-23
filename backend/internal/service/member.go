@@ -45,23 +45,13 @@ func (srv MemberService) List(ctx context.Context, q query.ListQuery) (query.Lis
 	return result, nil
 }
 
-func (srv MemberService) SetMemberProfilePicture(ctx context.Context, memberID int64, fileName string, r io.Reader) (string, error) {
+func (srv MemberService) UploadProfilePicture(ctx context.Context, fileName string, r io.Reader) (string, error) {
 	ext := path.Ext(fileName)
 
 	fileName = fmt.Sprintf("%s%s", uuid.NewString(), ext)
 
 	url, err := srv.objectStore.Upload(ctx, path.Join("/members", fileName), r)
 	if err != nil {
-		return "", err
-	}
-
-	err = srv.memberRepo.SetProfilePictureURL(ctx, memberID, url)
-	if err != nil {
-		err := srv.objectStore.Delete(ctx, path.Join("/members", fileName))
-		if err != nil {
-			return "", err
-		}
-
 		return "", err
 	}
 
