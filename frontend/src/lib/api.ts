@@ -62,6 +62,8 @@ export async function requestAndParse<TBody, TResponse>(
 	if (!res.ok) {
 		const err = apiErrorSchema.parse(await res.json())
 
+		console.dir(errorMsg + " " + err.message, { depth: Infinity })
+
 		throw new APIError(
 			res.status,
 			errorMsg || "Something went wrong...",
