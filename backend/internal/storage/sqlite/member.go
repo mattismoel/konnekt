@@ -15,12 +15,13 @@ import (
 var _ member.Repository = (*MemberRepository)(nil)
 
 type Member struct {
-	ID           int64
-	Email        string
-	FirstName    string
-	LastName     string
-	PasswordHash []byte
-	Active       bool
+	ID                int64
+	Email             string
+	FirstName         string
+	LastName          string
+	PasswordHash      []byte
+	Active            bool
+	ProfilePictureURL string
 }
 
 type MemberCollection []Member
@@ -44,11 +45,12 @@ func (repo MemberRepository) Insert(ctx context.Context, m member.Member) (int64
 	defer tx.Rollback()
 
 	memberID, err := insertMember(ctx, tx, Member{
-		ID:           m.ID,
-		Email:        m.Email,
-		FirstName:    m.FirstName,
-		LastName:     m.LastName,
-		PasswordHash: m.PasswordHash,
+		ID:                m.ID,
+		Email:             m.Email,
+		FirstName:         m.FirstName,
+		LastName:          m.LastName,
+		PasswordHash:      m.PasswordHash,
+		ProfilePictureURL: m.ProfilePictureURL,
 	})
 
 	if err != nil {
@@ -314,16 +316,17 @@ func (repo MemberRepository) PasswordHash(ctx context.Context, memberID int64) (
 	return ph, nil
 }
 
-func insertMember(ctx context.Context, tx *sql.Tx, u Member) (int64, error) {
+func insertMember(ctx context.Context, tx *sql.Tx, m Member) (int64, error) {
 	query := `
-	INSERT OR IGNORE INTO member (email, first_name, last_name, password_hash) 
-	VALUES (@email, @first_name, @last_name, @password_hash)`
+	INSERT OR IGNORE INTO member (email, first_name, last_name, password_hash, profile_picture_url) 
+	VALUES (@email, @first_name, @last_name, @password_hash, @profile_picture_url)`
 
 	res, err := tx.ExecContext(ctx, query,
-		sql.Named("email", u.Email),
-		sql.Named("first_name", u.FirstName),
-		sql.Named("last_name", u.LastName),
-		sql.Named("password_hash", u.PasswordHash),
+		sql.Named("email", m.Email),
+		sql.Named("first_name", m.FirstName),
+		sql.Named("last_name", m.LastName),
+		sql.Named("password_hash", m.PasswordHash),
+		sql.Named("profile_picture_url", m.ProfilePictureURL),
 	)
 
 	if err != nil {
@@ -364,15 +367,15 @@ func memberByEmail(ctx context.Context, tx *sql.Tx, email string) (Member, error
 
 func memberByID(ctx context.Context, tx *sql.Tx, memberID int64) (Member, error) {
 	query := `
-  SELECT email, first_name, last_name, active, password_hash FROM member 
+  SELECT email, first_name, last_name, active, password_hash, profile_picture_url FROM member 
   WHERE id = @member_id`
 
-	var email, firstName, lastName string
+	var email, firstName, lastName, profilePictureURL string
 	var active bool
 	var passwordHash []byte
 
 	err := tx.QueryRowContext(ctx, query, sql.Named("member_id", memberID)).Scan(
-		&email, &firstName, &lastName, &active, &passwordHash,
+		&email, &firstName, &lastName, &active, &passwordHash, &profilePictureURL,
 	)
 
 	if err != nil {
@@ -380,12 +383,13 @@ func memberByID(ctx context.Context, tx *sql.Tx, memberID int64) (Member, error)
 	}
 
 	return Member{
-		ID:           memberID,
-		Email:        email,
-		FirstName:    firstName,
-		LastName:     lastName,
-		Active:       active,
-		PasswordHash: passwordHash,
+		ID:                memberID,
+		Email:             email,
+		FirstName:         firstName,
+		LastName:          lastName,
+		ProfilePictureURL: profilePictureURL,
+		Active:            active,
+		PasswordHash:      passwordHash,
 	}, nil
 }
 
@@ -409,6 +413,7 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 			first_name, 
 			last_name, 
 			email, 
+			profile_picture_url,
 			active,
 			password_hash
 		FROM member`)
@@ -461,22 +466,23 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 
 	for rows.Next() {
 		var id int64
-		var firstName, lastName, email string
+		var firstName, lastName, email, profilePictureURL string
 		var active bool
 		var passwordhash []byte
 
-		err := rows.Scan(&id, &firstName, &lastName, &email, &active, &passwordhash)
+		err := rows.Scan(&id, &firstName, &lastName, &email, &profilePictureURL, &active, &passwordhash)
 		if err != nil {
 			return nil, err
 		}
 
 		members = append(members, Member{
-			ID:           id,
-			FirstName:    firstName,
-			LastName:     lastName,
-			Active:       active,
-			Email:        email,
-			PasswordHash: passwordhash,
+			ID:                id,
+			FirstName:         firstName,
+			LastName:          lastName,
+			ProfilePictureURL: profilePictureURL,
+			Active:            active,
+			Email:             email,
+			PasswordHash:      passwordhash,
 		})
 	}
 
@@ -581,15 +587,16 @@ func memberCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	return count, nil
 }
 
-func (u Member) ToInternal(teams []team.Team, perms auth.PermissionCollection) member.Member {
+func (m Member) ToInternal(teams []team.Team, perms auth.PermissionCollection) member.Member {
 	return member.Member{
-		ID:           u.ID,
-		FirstName:    u.FirstName,
-		LastName:     u.LastName,
-		Email:        u.Email,
-		PasswordHash: u.PasswordHash,
+		ID:                m.ID,
+		FirstName:         m.FirstName,
+		LastName:          m.LastName,
+		Email:             m.Email,
+		PasswordHash:      m.PasswordHash,
+		ProfilePictureURL: m.ProfilePictureURL,
 
-		Active: u.Active,
+		Active: m.Active,
 
 		Teams:       teams,
 		Permissions: perms,

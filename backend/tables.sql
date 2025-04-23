@@ -4,7 +4,7 @@ CREATE TABLE member (
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
-  profile_picture_url TEXT
+  profile_picture_url TEXT,
   active BOOLEAN NOT NULL DEFAULT "FALSE"
 );
 

@@ -27,17 +27,17 @@ var (
 )
 
 type Member struct {
-	ID              int64        `json:"id"`
-	FirstName       string       `json:"firstName"`
-	LastName        string       `json:"lastName"`
-	Email           string       `json:"email"`
-	PasswordHash    PasswordHash `json:"-"`
+	ID                int64        `json:"id"`
+	FirstName         string       `json:"firstName"`
+	LastName          string       `json:"lastName"`
+	Email             string       `json:"email"`
+	ProfilePictureURL string       `json:"profilePictureUrl"`
+	PasswordHash      PasswordHash `json:"-"`
+
 	Active bool `json:"active"`
 
 	Teams       team.TeamCollection       `json:"teams"`
 	Permissions auth.PermissionCollection `json:"permissions"`
-
-	ProfileImageURL string `json:"profileImageUrl"`
 }
 
 type cfgFunc func(m *Member) error
@@ -166,7 +166,7 @@ func WithProfileImageURL(imageUrl string) cfgFunc {
 			return ErrProfileImageURLInaccessible
 		}
 
-		m.ProfileImageURL = u.String()
+		m.ProfilePictureURL = u.String()
 
 		return nil
 	}
