@@ -19,7 +19,7 @@
 	onmouseleave={() => (mouseHovering = false)}
 	class:open
 	class={cn(
-		'z-50 hidden min-w-48 divide-y divide-zinc-900 rounded-md border border-zinc-900 bg-zinc-950 px-4 py-2 [.open]:block',
+		'absolute top-1/2 right-4 z-50 hidden min-w-48 divide-y divide-zinc-900 rounded-md border border-zinc-900 bg-zinc-950 px-4 py-2 [.open]:block',
 		rest.class
 	)}
 >
