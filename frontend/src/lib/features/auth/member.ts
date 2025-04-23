@@ -68,3 +68,14 @@ export const deleteMember = async (fetchFn: typeof fetch, memberId: number) => {
 		"DELETE"
 	)
 }
+
+export const memberById = async (fetchFn: typeof fetch, memberId: number) => {
+	const member = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}`),
+		memberSchema,
+		"Could not get member by ID"
+	)
+
+	return member
+}
