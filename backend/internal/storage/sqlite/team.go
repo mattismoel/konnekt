@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strconv"
 
 	"github.com/mattismoel/konnekt/internal/domain/team"
@@ -78,8 +77,6 @@ func (repo TeamRepository) List(ctx context.Context, q query.ListQuery) (query.L
 	}
 
 	defer tx.Rollback()
-
-	fmt.Printf("Q FILTERS: %+v\n", q.Filters)
 
 	dbTeams, err := listTeams(ctx, tx, QueryParams{
 		Offset:  q.Offset(),
@@ -253,7 +250,6 @@ func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollect
 		return nil, err
 	}
 
-
 	if filters, ok := params.Filters["id"]; ok {
 		for _, filter := range filters {
 			if err := q.AddFilter("id", filter.Cmp, filter.Value); err != nil {
@@ -262,9 +258,7 @@ func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollect
 		}
 	}
 
-
 	queryStr, args := q.Build()
-
 
 	rows, err := tx.QueryContext(ctx, queryStr, args...)
 	if err != nil {
