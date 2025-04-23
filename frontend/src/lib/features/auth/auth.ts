@@ -2,7 +2,7 @@ import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { requestAndParse } from "$lib/api";
 import { createUrl } from "$lib/url";
 import { z } from "zod";
-import { memberSchema } from "./member";
+import { memberSchema, uploadMemberProfilePicture } from "./member";
 
 const MINIMUM_PASSWORD_LENGTH = 8
 const MAXIMUM_PASSWORD_LENGTH = 24
@@ -22,7 +22,11 @@ export const registerForm = z.object({
 		.min(MINIMUM_PASSWORD_LENGTH)
 		.max(MAXIMUM_PASSWORD_LENGTH),
 	passwordConfirm:
-		z.string()
+		z.string(),
+	profilePictureUrl: z
+		.string()
+		.url()
+		.optional()
 })
 	.refine(({ password, passwordConfirm }) => passwordConfirm === password, {
 		message: "Adgangskoder skal være ens",
@@ -49,13 +53,24 @@ export const login = async (fetchFn: typeof fetch, form: z.infer<typeof loginFor
 	return member
 }
 
-export const register = async (fetchFn: typeof fetch, form: z.infer<typeof registerForm>) => {
+export const register = async (fetchFn: typeof fetch, form: z.infer<typeof registerForm>, profilePictureFile?: File | null) => {
+	let profilePictureUrl: string | undefined
+
+	if (profilePictureFile) {
+		profilePictureUrl = await uploadMemberProfilePicture(fetchFn, profilePictureFile)
+	}
+
 	const member = await requestAndParse(
 		fetchFn,
 		createUrl(`${PUBLIC_BACKEND_URL}/auth/register`),
 		memberSchema,
 		"Could not register member",
-		{ body: form, bodySchema: registerForm },
+		{
+			body: {
+				...form,
+				...(profilePictureUrl && { profilePictureUrl }),
+			}, bodySchema: registerForm
+		},
 		"POST",
 	)
 
