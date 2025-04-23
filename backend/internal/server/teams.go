@@ -66,3 +66,15 @@ func (s Server) handleCreateTeam() http.HandlerFunc {
 
 		team, err := s.teamService.Create(ctx, service.CreateTeam{
 			Name:        load.Name,
+			DisplayName: load.DisplayName,
+			Description: load.Description,
+		})
+
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, team)
+	}
+}
