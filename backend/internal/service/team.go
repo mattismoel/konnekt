@@ -45,6 +45,15 @@ func (ts TeamService) TeamPermissions(ctx context.Context, teamID int64) (auth.P
 	return perms, nil
 }
 
+func (ts TeamService) Delete(ctx context.Context, teamID int64) error {
+	err := ts.teamRepo.Delete(ctx, teamID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type CreateTeam struct {
 	Name        string
 	DisplayName string

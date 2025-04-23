@@ -78,3 +78,26 @@ func (s Server) handleCreateTeam() http.HandlerFunc {
 		writeJSON(w, http.StatusOK, team)
 	}
 }
+
+func (s Server) handleDeleteTeam() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		teamID, err := paramID("teamID", r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = s.teamService.Delete(ctx, teamID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+	}
+}
+
+func (s Server) handleTeamByID() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+	}
+}
