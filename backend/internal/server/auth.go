@@ -8,6 +8,7 @@ import (
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
 	"github.com/mattismoel/konnekt/internal/domain/member"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
 const (
@@ -23,11 +24,12 @@ var (
 
 func (s Server) handleRegister() http.HandlerFunc {
 	type RegisterLoad struct {
-		Email           string `json:"email"`
-		FirstName       string `json:"firstName"`
-		LastName        string `json:"lastName"`
-		Password        string `json:"password"`
-		PasswordConfirm string `json:"passwordConfirm"`
+		Email             string `json:"email"`
+		FirstName         string `json:"firstName"`
+		LastName          string `json:"lastName"`
+		Password          string `json:"password"`
+		PasswordConfirm   string `json:"passwordConfirm"`
+		ProfilePictureURL string `json:"profilePictureUrl"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -38,13 +40,14 @@ func (s Server) handleRegister() http.HandlerFunc {
 			return
 		}
 
-		err := s.authService.Register(r.Context(),
-			load.Email,
-			[]byte(load.Password),
-			[]byte(load.PasswordConfirm),
-			load.FirstName,
-			load.LastName,
-		)
+		err := s.authService.Register(r.Context(), service.RegisterLoad{
+			FirstName:         load.FirstName,
+			LastName:          load.LastName,
+			Email:             load.Email,
+			Password:          []byte(load.Password),
+			PasswordConfirm:   []byte(load.PasswordConfirm),
+			ProfilePictureURL: load.ProfilePictureURL,
+		})
 
 		if err != nil {
 			switch {

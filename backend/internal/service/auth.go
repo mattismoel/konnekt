@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
@@ -36,32 +37,39 @@ func NewAuthService(memberRepo member.Repository, authRepo auth.Repository, team
 	}, nil
 }
 
-func (srv AuthService) Register(ctx context.Context, email string, password []byte, passwordConfirm []byte, firstName, lastName string) error {
+type RegisterLoad struct {
+	Email             string
+	Password          auth.Password
+	PasswordConfirm   auth.Password
+	FirstName         string
+	LastName          string
+	ProfilePictureURL string
+}
+
+func (srv AuthService) Register(ctx context.Context, load RegisterLoad) error {
 	// Return if member already exists.
-	_, err := srv.memberRepo.ByEmail(ctx, email)
+	_, err := srv.memberRepo.ByEmail(ctx, load.Email)
 	if err == nil {
 		return err
 	}
 
-	p := auth.Password(password)
-
-	if err := p.Validate(password); err != nil {
+	if err := load.Password.Validate(); err != nil {
 		return err
 	}
 
-	if err := p.Matches(passwordConfirm); err != nil {
+	if err := load.Password.Matches(load.PasswordConfirm); err != nil {
 		return err
 	}
 
-	hash, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword(load.Password, bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	u, err := member.NewMember(
-		member.WithEmail(email),
-		member.WithFirstName(firstName),
-		member.WithLastName(lastName),
+	m, err := member.NewMember(
+		member.WithEmail(load.Email),
+		member.WithFirstName(load.FirstName),
+		member.WithLastName(load.LastName),
 		member.WithPasswordHash(hash),
 	)
 
@@ -69,7 +77,14 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 		return err
 	}
 
-	memberID, err := srv.memberRepo.Insert(ctx, u)
+	if strings.TrimSpace(load.ProfilePictureURL) != "" {
+		err := m.WithCfgs(member.WithProfileImageURL(load.ProfilePictureURL))
+		if err != nil {
+			return err
+		}
+	}
+
+	memberID, err := srv.memberRepo.Insert(ctx, m)
 	if err != nil {
 		return err
 	}
@@ -78,6 +93,7 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 	if err != nil {
 		return err
 	}
+
 	err = srv.teamRepo.AddMemberTeams(ctx, memberID, team.ID)
 	if err != nil {
 		return err
