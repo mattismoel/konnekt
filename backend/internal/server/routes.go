@@ -9,9 +9,28 @@ func (s *Server) setupRoutes() {
 	s.mux.Use(middleware.Logger)
 
 	s.mux.Route("/members", func(r chi.Router) {
-		r.Get("/", s.withPermissions(s.handleListMembers(), "view:member", "view:role", "view:permission"))
-		r.Post("/{memberID}/approve", s.withPermissions(s.handleApproveMember(), "edit:member"))
+		r.Get("/", s.withPermissions(s.handleListMembers(), "view:member", "view:team", "view:permission"))
+
+		r.Get("/{memberID}", s.withPermissions(s.handleMemberByID(), "view:member"))
+		r.Put("/{memberID}", s.withPermissions(s.handleUpdateMember(), "edit:member"))
 		r.Delete("/{memberID}", s.withPermissions(s.handleDeleteMember(), "delete:member"))
+
+		r.Get("/{memberID}/teams", s.withPermissions(s.handleListMemberTeams(), "view:team"))
+		r.Put("/{memberID}/teams", s.withPermissions(s.handleSetMemberTeams(), "view:team", "edit:member"))
+
+		r.Post("/{memberID}/approve", s.withPermissions(s.handleApproveMember(), "edit:member"))
+
+		// r.Post("/{memberID}/image", s.withPermissions(s.handleUploadMemberProfilePicture(), "edit:member"))
+		// r.Get("/{memberID}", s.withPermissions(s.handleListUser(), "view:user", "view:team", "view:permission"))
+	})
+
+	s.mux.Route("/teams", func(r chi.Router) {
+		r.Get("/", s.withPermissions(s.handleListTeams(), "view:team"))
+		r.Post("/", s.withPermissions(s.handleCreateTeam(), "edit:team"))
+
+		r.Get("/{teamID}", s.withPermissions(s.handleTeamByID(), "view:team"))
+		r.Delete("/{teamID}", s.withPermissions(s.handleDeleteTeam(), "delete:team"))
+
 	})
 
 	s.mux.Route("/auth", func(r chi.Router) {
@@ -20,25 +39,20 @@ func (s *Server) setupRoutes() {
 		r.Post("/log-out", s.handleLogOut())
 		r.Get("/session", s.handleGetSession())
 
-		r.Route("/roles", func(r chi.Router) {
-			r.Get("/", s.withPermissions(s.handleListRoles(), "view:role"))
-			r.Get("/{memberID}", s.withPermissions(s.handleListMemberRoles(), "view:role"))
-			r.Post("/", s.withPermissions(s.handleCreateRole(), "edit:role"))
-			r.Delete("/{roleID}", s.withPermissions(s.handleDeleteRole(), "delete:role"))
-		})
-
 		r.Route("/permissions", func(r chi.Router) {
-			r.Get("/", s.withPermissions(s.handleListPermissions(), "view:permission"))
-			r.Get("/{memberID}", s.withPermissions(s.handleListMemberPermissions(), "view:permission"))
+			r.Get("/{teamID}", s.withPermissions(s.handleListTeamPermissions(), "view:team", "view:permission"))
+			// r.Get("/", s.withPermissions(s.handleListPermissions(), "view:permission"))
+			// r.Get("/{memberID}", s.withPermissions(s.handleListMemberPermissions(), "view:permission"))
 		})
 	})
 
 	s.mux.Route("/events", func(r chi.Router) {
+		r.Get("/", s.handleListEvents())
+		r.Get("/{eventID}", s.handleEventByID())
+
 		r.Post("/", s.withPermissions(s.handleCreateEvent(), "edit:event"))
 		r.Put("/{eventID}", s.withPermissions(s.handleUpdateEvent(), "edit:event"))
 		r.Delete("/{eventID}", s.withPermissions(s.handleDeleteEvent(), "delete:event"))
-		r.Get("/", s.handleListEvents())
-		r.Get("/{eventID}", s.handleEventByID())
 		r.Post("/image", s.withPermissions(s.handleUploadEventImage(), "edit:event"))
 	})
 
