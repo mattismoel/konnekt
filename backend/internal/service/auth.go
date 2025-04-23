@@ -7,6 +7,7 @@ import (
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
 	"github.com/mattismoel/konnekt/internal/domain/member"
+	"github.com/mattismoel/konnekt/internal/domain/team"
 	"github.com/mattismoel/konnekt/internal/query"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -23,12 +24,14 @@ var (
 
 type AuthService struct {
 	memberRepo member.Repository
+	teamRepo   team.Repository
 	authRepo   auth.Repository
 }
 
-func NewAuthService(memberRepo member.Repository, authRepo auth.Repository) (*AuthService, error) {
+func NewAuthService(memberRepo member.Repository, authRepo auth.Repository, teamRepo team.Repository) (*AuthService, error) {
 	return &AuthService{
 		memberRepo: memberRepo,
+		teamRepo:   teamRepo,
 		authRepo:   authRepo,
 	}, nil
 }
@@ -71,11 +74,11 @@ func (srv AuthService) Register(ctx context.Context, email string, password []by
 		return err
 	}
 
-	role, err := srv.authRepo.RoleByName(ctx, "member")
+	team, err := srv.teamRepo.ByName(ctx, "member")
 	if err != nil {
 		return err
 	}
-	err = srv.authRepo.AddMemberRoles(ctx, memberID, role.ID)
+	err = srv.teamRepo.AddMemberTeams(ctx, memberID, team.ID)
 	if err != nil {
 		return err
 	}
@@ -166,41 +169,27 @@ func (srv AuthService) HasPermission(ctx context.Context, memberID int64, permNa
 	return nil
 }
 
-func (srv AuthService) MemberRoles(ctx context.Context, memberID int64) ([]auth.Role, error) {
-	_, err := srv.memberRepo.ByID(ctx, memberID)
-	if err != nil {
-		return nil, err
-	}
-
-	roles, err := srv.authRepo.MemberRoles(ctx, memberID)
-	if err != nil {
-		return nil, err
-	}
-
-	return roles, nil
-}
-
 func (srv AuthService) MemberPermissions(ctx context.Context, memberID int64) (auth.PermissionCollection, error) {
 	m, err := srv.memberRepo.ByID(ctx, memberID)
 	if err != nil {
 		return nil, err
 	}
 
-	memberRoles, err := srv.authRepo.MemberRoles(ctx, m.ID)
+	memberTeams, err := srv.teamRepo.MemberTeams(ctx, m.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	memberPerms := auth.PermissionCollection(make([]auth.Permission, 0))
 
-	for _, role := range memberRoles {
-		rolePerms, err := srv.authRepo.RolePermissions(ctx, role.ID)
+	for _, team := range memberTeams {
+		teamPerms, err := srv.authRepo.TeamPermissions(ctx, team.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		// Add the role perms to the members permissions.
-		memberPerms = append(memberPerms, rolePerms...)
+		// Add the team perms to the members permissions.
+		memberPerms = append(memberPerms, teamPerms...)
 	}
 
 	return memberPerms, nil
@@ -253,54 +242,6 @@ func (srv AuthService) createSession(ctx context.Context, memberID int64) (auth.
 	}
 
 	return token, session.ExpiresAt, nil
-}
-
-func (srv AuthService) ListRoles(ctx context.Context, q query.ListQuery) (query.ListResult[auth.Role], error) {
-	result, err := srv.authRepo.ListRoles(ctx, q)
-	if err != nil {
-		return query.ListResult[auth.Role]{}, err
-	}
-
-	return result, nil
-}
-
-type CreateRole struct {
-	Name        string
-	DisplayName string
-	Description string
-}
-
-func (srv AuthService) CreateRole(ctx context.Context, load CreateRole) (auth.Role, error) {
-	r, err := auth.NewRole(
-		auth.WithName(load.Name),
-		auth.WithDisplayName(load.DisplayName),
-		auth.WithDescription(load.Description),
-	)
-
-	if err != nil {
-		return auth.Role{}, err
-	}
-
-	roleID, err := srv.authRepo.InsertRole(ctx, r)
-	if err != nil {
-		return auth.Role{}, err
-	}
-
-	role, err := srv.authRepo.RoleByID(ctx, roleID)
-	if err != nil {
-		return auth.Role{}, err
-	}
-
-	return role, nil
-}
-
-func (srv AuthService) DeleteRole(ctx context.Context, roleID int64) error {
-	err := srv.authRepo.DeleteRole(ctx, roleID)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (srv AuthService) ListPermissions(ctx context.Context, q query.ListQuery) (query.ListResult[auth.Permission], error) {

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
+	"github.com/mattismoel/konnekt/internal/domain/team"
 )
 
 var (
@@ -33,7 +34,7 @@ type Member struct {
 	PasswordHash    PasswordHash `json:"-"`
 	Active bool `json:"active"`
 
-	Roles       auth.RoleCollection       `json:"roles"`
+	Teams       team.TeamCollection       `json:"teams"`
 	Permissions auth.PermissionCollection `json:"permissions"`
 
 	ProfileImageURL string `json:"profileImageUrl"`
@@ -44,7 +45,7 @@ type cfgFunc func(m *Member) error
 func NewMember(cfgs ...cfgFunc) (Member, error) {
 	u := &Member{
 		Active:      false,
-		Roles:       make(auth.RoleCollection, 0),
+		Teams:       make(team.TeamCollection, 0),
 		Permissions: make(auth.PermissionCollection, 0),
 	}
 
@@ -134,9 +135,9 @@ func WithPermissions(perms auth.PermissionCollection) cfgFunc {
 	}
 }
 
-func WithRoles(roles auth.RoleCollection) cfgFunc {
+func WithTeams(teams team.TeamCollection) cfgFunc {
 	return func(m *Member) error {
-		m.Roles = roles
+		m.Teams = teams
 		return nil
 	}
 }

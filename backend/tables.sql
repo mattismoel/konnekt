@@ -14,17 +14,17 @@ CREATE TABLE session (
   expires_at TIMESTAMP NOT NULL
 );
 
-CREATE TABLE role (
+CREATE TABLE team (
   id INTEGER PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL,
   description TEXT
 );
 
-CREATE TABLE members_roles (
+CREATE TABLE members_teams (
   member_id INTEGER NOT NULL,
-  role_id INTEGER NOT NULL,
-  PRIMARY KEY (member_id, role_id)
+  team_id INTEGER NOT NULL,
+  PRIMARY KEY (member_id, team_id)
 );
 
 CREATE TABLE permission (
@@ -34,10 +34,10 @@ CREATE TABLE permission (
   description TEXT
 );
 
-CREATE TABLE roles_permissions (
-  role_id INTEGER NOT NULL,
+CREATE TABLE teams_permissions (
+  team_id INTEGER NOT NULL,
   permission_id INTEGER NOT NULL,
-  PRIMARY KEY (role_id, permission_id)
+  PRIMARY KEY (team_id, permission_id)
 );
 
 CREATE TABLE event (

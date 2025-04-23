@@ -9,6 +9,7 @@ import (
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
 	"github.com/mattismoel/konnekt/internal/domain/member"
+	"github.com/mattismoel/konnekt/internal/domain/team"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
@@ -84,7 +85,7 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 		}
 	}
 
-	memberRoles, err := memberRoles(ctx, tx, memberID)
+	memberTeams, err := memberTeams(ctx, tx, memberID)
 	if err != nil {
 		return member.Member{}, err
 	}
@@ -98,7 +99,7 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 		return member.Member{}, err
 	}
 
-	return m.ToInternal(memberRoles.ToInternal(), memeberPerms.ToInternal()), nil
+	return m.ToInternal(memberTeams.ToInternal(), memeberPerms.ToInternal()), nil
 }
 
 func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error {
@@ -147,7 +148,7 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 	members := make([]member.Member, 0)
 
 	for _, dbMember := range dbMembers {
-		memberRoles, err := memberRoles(ctx, tx, dbMember.ID)
+		memberTeams, err := memberTeams(ctx, tx, dbMember.ID)
 		if err != nil {
 			return query.ListResult[member.Member]{}, err
 		}
@@ -157,9 +158,9 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 			return query.ListResult[member.Member]{}, err
 		}
 
-		roles, perms := memberRoles.ToInternal(), memberPerms.ToInternal()
+		teams, perms := memberTeams.ToInternal(), memberPerms.ToInternal()
 
-		members = append(members, dbMember.ToInternal(roles, perms))
+		members = append(members, dbMember.ToInternal(teams, perms))
 	}
 
 	totalCount, err := memberCount(ctx, tx)
@@ -196,7 +197,7 @@ func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.
 		return member.Member{}, err
 	}
 
-	memberRoles, err := memberRoles(ctx, tx, m.ID)
+	memberTeams, err := memberTeams(ctx, tx, m.ID)
 	if err != nil {
 		return member.Member{}, err
 	}
@@ -210,7 +211,7 @@ func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.
 		return member.Member{}, err
 	}
 
-	return m.ToInternal(memberRoles.ToInternal(), memberPerms.ToInternal()), nil
+	return m.ToInternal(memberTeams.ToInternal(), memberPerms.ToInternal()), nil
 }
 
 func (repo MemberRepository) Delete(ctx context.Context, memberID int64) error {
@@ -225,7 +226,7 @@ func (repo MemberRepository) Delete(ctx context.Context, memberID int64) error {
 		return err
 	}
 
-	if err := deleteMemberRoles(ctx, tx, memberID); err != nil {
+	if err := deleteMemberTeams(ctx, tx, memberID); err != nil {
 		return err
 	}
 
@@ -399,8 +400,6 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 
 	queryStr, args := dbQuery.Build()
 
-	fmt.Println(queryStr)
-
 	rows, err := tx.QueryContext(ctx, queryStr, args...)
 	if err != nil {
 		return nil, err
@@ -469,8 +468,8 @@ func deleteMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
 	return nil
 }
 
-func deleteMemberRoles(ctx context.Context, tx *sql.Tx, memberID int64) error {
-	query := "DELETE FROM members_roles WHERE member_id = @member_id"
+func deleteMemberTeams(ctx context.Context, tx *sql.Tx, memberID int64) error {
+	query := "DELETE FROM members_teams WHERE member_id = @member_id"
 
 	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID))
 	if err != nil {
@@ -492,7 +491,7 @@ func memberCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	return count, nil
 }
 
-func (u Member) ToInternal(roles []auth.Role, perms auth.PermissionCollection) member.Member {
+func (u Member) ToInternal(teams []team.Team, perms auth.PermissionCollection) member.Member {
 	return member.Member{
 		ID:           u.ID,
 		FirstName:    u.FirstName,
@@ -502,7 +501,7 @@ func (u Member) ToInternal(roles []auth.Role, perms auth.PermissionCollection) m
 
 		Active: u.Active,
 
-		Roles:       roles,
+		Teams:       teams,
 		Permissions: perms,
 	}
 }

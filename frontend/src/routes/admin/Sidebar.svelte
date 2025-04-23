@@ -3,7 +3,6 @@
 
 	import { cn } from '$lib/clsx';
 
-	import { hasSomeRole } from '$lib/features/auth/role';
 	import { type Member } from '$lib/features/auth/member';
 
 	import Logo from '$lib/assets/Logo.svelte';
@@ -19,6 +18,7 @@
 	import CollapseIcon from '~icons/mdi/arrow-collapse-left';
 	import { type Component } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { hasSomeTeam } from '$lib/features/auth/team';
 
 	type Props = {
 		member: Member;
@@ -43,16 +43,16 @@
 	</div>
 	<section class="flex flex-1 flex-col gap-8">
 		<ul class="space-y-1">
-			{#if hasSomeRole(member.roles, ['admin', 'event-management'])}
+			{#if hasSomeTeam(member.teams, ['admin', 'event-management'])}
 				{@render entry(EventIcon, '/admin/dashboard/events', 'Events')}
 			{/if}
-			{#if hasSomeRole(member.roles, ['admin', 'booking'])}
+			{#if hasSomeTeam(member.teams, ['admin', 'booking'])}
 				{@render entry(ArtistIcon, '/admin/dashboard/artists', 'Kunstnere')}
 			{/if}
-			{#if hasSomeRole(member.roles, ['admin', 'event-management'])}
+			{#if hasSomeTeam(member.teams, ['admin', 'event-management'])}
 				{@render entry(VenueIcon, '/admin/dashboard/venues', 'Venues')}
 			{/if}
-			{#if hasSomeRole(member.roles, ['admin', 'team-management'])}
+			{#if hasSomeTeam(member.teams, ['admin', 'team-management'])}
 				{@render entry(MemberIcon, '/admin/dashboard/members', 'Medlemmer')}
 			{/if}
 			{@render entry(SettingsIcon, '/admin/dashboard/general', 'Generelt')}
@@ -62,7 +62,7 @@
 </aside>
 
 {#snippet memberInformation(member: Member)}
-	{@const rolesString = member.roles.map((r) => r.displayName).join(', ')}
+	{@const teamsString = member.teams.map((t) => t.displayName).join(', ')}
 	<div class="flex flex-col-reverse items-center justify-between gap-8 group-[.expanded]:flex-row">
 		<a href="/admin/dashboard/member/{member.id}" class="flex items-center gap-4">
 			<img
@@ -72,7 +72,7 @@
 			/>
 			<div class="hidden group-[.expanded]:block">
 				<span>{member.firstName} {member.lastName}</span>
-				<span class="text-text/50 line-clamp-1" title={rolesString}>{rolesString}</span>
+				<span class="text-text/50 line-clamp-1" title={teamsString}>{teamsString}</span>
 			</div>
 		</a>
 		<button type="button" title="Log ud">

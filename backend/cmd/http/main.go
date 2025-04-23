@@ -68,7 +68,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	authService, err := service.NewAuthService(memberRepo, authRepo)
+	teamRepo, err := sqlite.NewTeamRepository(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	authService, err := service.NewAuthService(memberRepo, authRepo, teamRepo)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,7 +83,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	memberService, err := service.NewMemberService(memberRepo, s3Store)
+	memberService, err := service.NewMemberService(memberRepo, teamRepo, s3Store)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,7 +100,10 @@ func main() {
 
 	venueService := service.NewVenueService(venueRepo)
 
+	teamService := service.NewTeamService(teamRepo, authRepo)
+
 	srv, err := server.New(
+		server.WithTeamService(teamService),
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithCORSOrigins(*frontendURL),
 		server.WithAuthService(authService),

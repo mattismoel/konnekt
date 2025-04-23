@@ -22,6 +22,7 @@ type Server struct {
 	addr string
 
 	authService   *service.AuthService
+	teamService   *service.TeamService
 	eventService  *service.EventService
 	artistService *service.ArtistService
 	memberService *service.MemberService
@@ -54,6 +55,13 @@ func WithCORSOrigins(allowedOrigins ...string) CfgFunc {
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
 		}))
 
+		return nil
+	}
+}
+
+func WithTeamService(teamService *service.TeamService) CfgFunc {
+	return func(s *Server) error {
+		s.teamService = teamService
 		return nil
 	}
 }

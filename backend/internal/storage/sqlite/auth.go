@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strconv"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
@@ -16,15 +15,6 @@ type Session struct {
 	MemberID  int64
 	ExpiresAt time.Time
 }
-
-type Role struct {
-	ID          int64
-	Name        string
-	DisplayName string
-	Description string
-}
-
-type RoleCollection []Role
 
 type Permission struct {
 	ID          int64
@@ -47,96 +37,16 @@ func NewAuthRepository(db *sql.DB) (*AuthRepository, error) {
 	}, nil
 }
 
-func (repo AuthRepository) InsertRole(ctx context.Context, r auth.Role) (int64, error) {
-	tx, err := repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return 0, err
-	}
-
-	defer tx.Rollback()
-
-	roleID, err := insertRole(ctx, tx, Role{
-		Name:        r.Name,
-		DisplayName: r.DisplayName,
-		Description: r.Description,
-	})
-
-	if err := tx.Commit(); err != nil {
-		return 0, err
-	}
-
-	return roleID, nil
-}
-
-func (repo AuthRepository) DeleteRole(ctx context.Context, roleID int64) error {
-	tx, err := repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	defer tx.Rollback()
-
-	if err := deleteRole(ctx, tx, roleID); err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (repo AuthRepository) RoleByID(ctx context.Context, id int64) (auth.Role, error) {
-	tx, err := repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return auth.Role{}, err
-	}
-
-	defer tx.Rollback()
-
-	dbRole, err := roleByID(ctx, tx, id)
-	if err != nil {
-		return auth.Role{}, err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return auth.Role{}, err
-	}
-
-	return dbRole.ToInternal(), nil
-}
-
-func (repo AuthRepository) RoleByName(ctx context.Context, name string) (auth.Role, error) {
-	tx, err := repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return auth.Role{}, err
-	}
-
-	defer tx.Rollback()
-
-	dbRole, err := roleByName(ctx, tx, name)
-	if err != nil {
-		return auth.Role{}, err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return auth.Role{}, err
-	}
-
-	return dbRole.ToInternal(), nil
-}
-
 func memberPermissions(ctx context.Context, tx *sql.Tx, memberID int64) (PermissionCollection, error) {
-	dbRoles, err := memberRoles(ctx, tx, memberID)
+	dbTeams, err := memberTeams(ctx, tx, memberID)
 	if err != nil {
 		return nil, err
 	}
 
 	perms := make([]Permission, 0)
 
-	for _, dbRole := range dbRoles {
-		dbPerms, err := rolePermissions(ctx, tx, dbRole.ID)
+	for _, dbTeam := range dbTeams {
+		dbPerms, err := teamPermissions(ctx, tx, dbTeam.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -145,28 +55,6 @@ func memberPermissions(ctx context.Context, tx *sql.Tx, memberID int64) (Permiss
 	}
 
 	return perms, nil
-}
-
-func (repo AuthRepository) AddMemberRoles(ctx context.Context, memberID int64, roleIDs ...int64) error {
-	tx, err := repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-
-	defer tx.Rollback()
-
-	for _, roleID := range roleIDs {
-		err := associateMemberWithRole(ctx, tx, memberID, roleID)
-		if err != nil {
-			return err
-		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (repo AuthRepository) InsertSession(ctx context.Context, session auth.Session) error {
@@ -252,75 +140,6 @@ func (repo AuthRepository) DeleteMemberSession(ctx context.Context, memberID int
 
 }
 
-func (repo AuthRepository) MemberRoles(ctx context.Context, memberID int64) (auth.RoleCollection, error) {
-	tx, err := repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	defer tx.Rollback()
-
-	dbRoles, err := memberRoles(ctx, tx, memberID)
-	if err != nil {
-		return nil, err
-	}
-
-	roles := make([]auth.Role, 0)
-
-	for _, dbRole := range dbRoles {
-		roles = append(roles, dbRole.ToInternal())
-	}
-
-	if err := tx.Commit(); err != nil {
-		return nil, err
-	}
-
-	return roles, nil
-}
-
-func (repo AuthRepository) ListRoles(ctx context.Context, q query.ListQuery) (query.ListResult[auth.Role], error) {
-	roles := []auth.Role{}
-
-	tx, err := repo.db.BeginTx(ctx, nil)
-	if err != nil {
-		return query.ListResult[auth.Role]{}, err
-	}
-
-	defer tx.Rollback()
-
-	dbRoles, err := listRoles(ctx, tx, QueryParams{
-		Offset:  q.Offset(),
-		Limit:   q.Limit,
-		OrderBy: q.OrderBy,
-		Filters: q.Filters,
-	})
-
-	if err != nil {
-		return query.ListResult[auth.Role]{}, err
-	}
-
-	totalCount, err := roleCount(ctx, tx)
-	if err != nil {
-		return query.ListResult[auth.Role]{}, err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return query.ListResult[auth.Role]{}, err
-	}
-
-	for _, dbRole := range dbRoles {
-		roles = append(roles, dbRole.ToInternal())
-	}
-
-	return query.ListResult[auth.Role]{
-		Records:    roles,
-		Page:       q.Page,
-		PerPage:    q.PerPage,
-		TotalCount: totalCount,
-		PageCount:  q.PageCount(totalCount),
-	}, nil
-}
-
 func (repo AuthRepository) ListPermissions(ctx context.Context, q query.ListQuery) (query.ListResult[auth.Permission], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -363,7 +182,7 @@ func (repo AuthRepository) ListPermissions(ctx context.Context, q query.ListQuer
 	}, nil
 }
 
-func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (auth.PermissionCollection, error) {
+func (repo AuthRepository) TeamPermissions(ctx context.Context, teamID int64) (auth.PermissionCollection, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -371,7 +190,7 @@ func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (a
 
 	defer tx.Rollback()
 
-	dbPermissions, err := rolePermissions(ctx, tx, roleID)
+	dbPermissions, err := teamPermissions(ctx, tx, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -388,85 +207,6 @@ func (repo AuthRepository) RolePermissions(ctx context.Context, roleID int64) (a
 	}
 
 	return collection, nil
-}
-
-func memberRoles(ctx context.Context, tx *sql.Tx, memberID int64) (RoleCollection, error) {
-	query := `
-	SELECT r.id, r.name, r.display_name, r.description
-	FROM role r
-	JOIN members_roles mr ON mr.role_id = r.id
-	WHERE mr.member_id = @member_id`
-
-	rows, err := tx.QueryContext(ctx, query, sql.Named("member_id", memberID))
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	roles := make(RoleCollection, 0)
-
-	for rows.Next() {
-		var id int64
-		var name, displayName, description string
-
-		err := rows.Scan(&id, &name, &displayName, &description)
-		if err != nil {
-			return nil, err
-		}
-
-		roles = append(roles, Role{
-			ID:          id,
-			Name:        name,
-			DisplayName: displayName,
-			Description: description,
-		})
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return roles, nil
-}
-
-func rolePermissions(ctx context.Context, tx *sql.Tx, roleID int64) (PermissionCollection, error) {
-	query := `
-	SELECT p.id, p.name, p.display_name, p.description
-	FROM permission p
-	JOIN roles_permissions rp on rp.permission_id = p.id
-	WHERE rp.role_id = @role_id`
-
-	rows, err := tx.QueryContext(ctx, query, sql.Named("role_id", roleID))
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	permissions := make(PermissionCollection, 0)
-
-	for rows.Next() {
-		var id int64
-		var name, displayName, description string
-
-		if err := rows.Scan(&id, &name, &displayName, &description); err != nil {
-			return nil, err
-		}
-
-		permissions = append(permissions, Permission{
-			ID:          id,
-			Name:        name,
-			DisplayName: displayName,
-			Description: description,
-		})
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return permissions, nil
 }
 
 func deleteMemberSession(ctx context.Context, tx *sql.Tx, memberID int64) error {
@@ -538,46 +278,6 @@ func setSessionExpiry(ctx context.Context, tx *sql.Tx, sessionID string, newExpi
 	return nil
 }
 
-func listRoles(ctx context.Context, tx *sql.Tx, params QueryParams) (RoleCollection, error) {
-	q, err := NewQuery(`
-	SELECT DISTINCT id, name, description, display_name
-	FROM role`)
-
-	if err != nil {
-		return nil, err
-	}
-
-	queryStr, args := q.Build()
-
-	rows, err := tx.QueryContext(ctx, queryStr, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	roles := make(RoleCollection, 0)
-
-	for rows.Next() {
-		var id int64
-		var name, description, displayName string
-
-		err := rows.Scan(&id, &name, &description, &displayName)
-		if err != nil {
-			return nil, err
-		}
-
-		roles = append(roles, Role{
-			ID:          id,
-			Name:        name,
-			Description: description,
-			DisplayName: displayName,
-		})
-	}
-
-	return roles, nil
-}
-
 func (s Session) ToInternal() auth.Session {
 	return auth.Session{
 		ID:        auth.SessionID(s.ID),
@@ -593,148 +293,6 @@ func (p Permission) ToInternal() auth.Permission {
 		DisplayName: p.DisplayName,
 		Description: p.Description,
 	}
-}
-
-func (r Role) ToInternal() auth.Role {
-	return auth.Role{
-		ID:          r.ID,
-		Name:        r.Name,
-		DisplayName: r.DisplayName,
-		Description: r.Description,
-	}
-}
-
-func roleCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	q, err := NewQuery("SELECT COUNT(*) FROM role")
-	if err != nil {
-		return 0, err
-	}
-
-	queryStr, args := q.Build()
-
-	var count int
-
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
-}
-
-func insertRole(ctx context.Context, tx *sql.Tx, r Role) (int64, error) {
-	query := `
-	INSERT INTO role (name, display_name, description) 
-	VALUES (@name, @display_name, @description)`
-
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("name", r.Name),
-		sql.Named("display_name", r.DisplayName),
-		sql.Named("description", r.Description),
-	)
-
-	if err != nil {
-		return 0, err
-	}
-
-	roleID, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return roleID, nil
-}
-
-func associateMemberWithRole(ctx context.Context, tx *sql.Tx, memberID int64, roleID int64) error {
-	query := `INSERT INTO members_roles (member_id, role_id) VALUES (@member_id, @role_id)`
-
-	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID), sql.Named("role_id", roleID))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func roleByID(ctx context.Context, tx *sql.Tx, id int64) (Role, error) {
-	q, err := NewQuery("SELECT name, display_name, description FROM role")
-	if err != nil {
-		return Role{}, err
-	}
-
-	if err := q.AddFilter("id", query.Equal, strconv.Itoa(int(id))); err != nil {
-		return Role{}, err
-	}
-
-	queryStr, args := q.Build()
-
-	var name, displayName, description string
-
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(
-		&name, &displayName, &description,
-	)
-
-	if err != nil {
-		return Role{}, err
-	}
-
-	return Role{
-		ID:          id,
-		Name:        name,
-		DisplayName: displayName,
-		Description: description,
-	}, nil
-}
-
-func roleByName(ctx context.Context, tx *sql.Tx, name string) (Role, error) {
-	q, err := NewQuery("SELECT id, display_name, description FROM role")
-	if err != nil {
-		return Role{}, err
-	}
-
-	if err := q.AddFilter("name", query.Equal, name); err != nil {
-		return Role{}, err
-	}
-
-	queryStr, args := q.Build()
-
-	var id int64
-	var displayName, description string
-
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(
-		&id, &displayName, &description,
-	)
-
-	if err != nil {
-		return Role{}, err
-	}
-
-	return Role{
-		ID:          id,
-		Name:        name,
-		DisplayName: displayName,
-		Description: description,
-	}, nil
-}
-
-func deleteRole(ctx context.Context, tx *sql.Tx, roleID int64) error {
-	query := "DELETE FROM role WHERE id = @role_id"
-
-	res, err := tx.ExecContext(ctx, query, sql.Named("role_id", roleID))
-	if err != nil {
-		return err
-	}
-
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rowsAffected <= 0 {
-		return ErrNotFound
-	}
-
-	return nil
 }
 
 func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (PermissionCollection, error) {
@@ -778,6 +336,45 @@ func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (Permi
 	return permissions, nil
 }
 
+func teamPermissions(ctx context.Context, tx *sql.Tx, teamID int64) (PermissionCollection, error) {
+	query := `
+	SELECT p.id, p.name, p.display_name, p.description
+	FROM permission p
+	JOIN teams_permissions tp on tp.permission_id = p.id
+	WHERE tp.team_id = @team_id`
+
+	rows, err := tx.QueryContext(ctx, query, sql.Named("team_id", teamID))
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	permissions := make(PermissionCollection, 0)
+
+	for rows.Next() {
+		var id int64
+		var name, displayName, description string
+
+		if err := rows.Scan(&id, &name, &displayName, &description); err != nil {
+			return nil, err
+		}
+
+		permissions = append(permissions, Permission{
+			ID:          id,
+			Name:        name,
+			DisplayName: displayName,
+			Description: description,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return permissions, nil
+}
+
 func permissionCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	query := "SELECT COUNT(*) FROM permission"
 
@@ -798,14 +395,4 @@ func (pc PermissionCollection) ToInternal() auth.PermissionCollection {
 	}
 
 	return perms
-}
-
-func (rc RoleCollection) ToInternal() auth.RoleCollection {
-	roles := make(auth.RoleCollection, 0)
-
-	for _, dbRole := range rc {
-		roles = append(roles, dbRole.ToInternal())
-	}
-
-	return roles
 }

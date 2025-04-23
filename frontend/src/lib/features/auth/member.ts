@@ -3,8 +3,8 @@ import { requestAndParse } from "$lib/api"
 import { createListResult } from "$lib/query"
 import { createUrl, type Query } from "$lib/url"
 import { z } from "zod"
-import { roleSchema } from "./role"
 import { permissionSchema } from "./permission"
+import { teamSchema } from "./team"
 
 export const memberSchema = z.object({
 	id: z.number().positive(),
@@ -19,7 +19,7 @@ export const memberSchema = z.object({
 
 	active: z.boolean(),
 
-	roles: roleSchema.array(),
+	teams: teamSchema.array(),
 	permissions: permissionSchema.array(),
 })
 

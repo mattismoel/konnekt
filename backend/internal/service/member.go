@@ -8,18 +8,21 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/member"
+	"github.com/mattismoel/konnekt/internal/domain/team"
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type MemberService struct {
 	memberRepo  member.Repository
+	teamRepo    team.Repository
 	objectStore object.Store
 }
 
-func NewMemberService(memberRepo member.Repository, objectStore object.Store) (*MemberService, error) {
+func NewMemberService(memberRepo member.Repository, teamRepo team.Repository, objectStore object.Store) (*MemberService, error) {
 	return &MemberService{
 		memberRepo:  memberRepo,
+		teamRepo:    teamRepo,
 		objectStore: objectStore,
 	}, nil
 }
