@@ -29,8 +29,8 @@ func (p1 Password) Matches(p2 Password) error {
 }
 
 // Checks whether a Password is valid for use.
-func (p Password) Validate(b []byte) error {
-	passLength := utf8.RuneCount(b)
+func (p Password) Validate() error {
+	passLength := utf8.RuneCount(p)
 
 	if passLength < MINIMUM_PASSWORD_LENGTH {
 		return ErrPasswordTooShort
