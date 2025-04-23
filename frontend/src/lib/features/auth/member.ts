@@ -1,5 +1,5 @@
 import { PUBLIC_BACKEND_URL } from "$env/static/public"
-import { requestAndParse } from "$lib/api"
+import { APIError, apiErrorSchema, requestAndParse } from "$lib/api"
 import { createListResult } from "$lib/query"
 import { createUrl, type Query } from "$lib/url"
 import { z } from "zod"
@@ -119,4 +119,25 @@ export const setMemberTeams = async (fetchFn: typeof fetch, memberId: number, te
 		{ bodySchema: setMemberTeamsForm, body: teamIds },
 		"PUT"
 	)
+}
+
+export const uploadMemberProfilePicture = async (fetchFn: typeof fetch, file: File): Promise<string> => {
+	const formData = new FormData()
+
+	formData.append("file", file)
+
+	const res = await fetchFn(`${PUBLIC_BACKEND_URL}/members/picture`, {
+		body: formData,
+		method: "POST",
+		credentials: "include",
+	})
+
+	if (!res.ok) {
+		const err = apiErrorSchema.parse(await res.json())
+		throw new APIError(res.status, "Could not upload member profile picture", err.message)
+	}
+
+	const url = await res.text()
+
+	return url
 }
