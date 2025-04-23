@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/domain/auth"
 	"github.com/mattismoel/konnekt/internal/domain/member"
 )
@@ -193,7 +191,7 @@ func clearSessionCookie(w http.ResponseWriter) {
 
 func (s Server) handleListTeamPermissions() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		teamID, err := strconv.Atoi(chi.URLParam(r, "teamID"))
+		teamID, err := paramID("teamID", r)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -201,7 +199,7 @@ func (s Server) handleListTeamPermissions() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		perms, err := s.teamService.TeamPermissions(ctx, int64(teamID))
+		perms, err := s.teamService.TeamPermissions(ctx, teamID)
 		if err != nil {
 			writeError(w, err)
 			return

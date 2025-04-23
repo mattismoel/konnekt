@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/service"
 )
@@ -40,13 +38,13 @@ func (s Server) handleEventByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
+		eventID, err := paramID("eventID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		e, err := s.eventService.ByID(ctx, int64(eventID))
+		e, err := s.eventService.ByID(ctx, eventID)
 		if err != nil {
 			switch {
 			case errors.Is(err, event.ErrNoExist):
@@ -130,7 +128,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
+		eventID, err := paramID("eventID", r)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -156,7 +154,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 			})
 		}
 
-		e, err := s.eventService.Update(ctx, int64(eventID), service.UpdateEvent{
+		e, err := s.eventService.Update(ctx, eventID, service.UpdateEvent{
 			Title:       load.Title,
 			Description: load.Description,
 			TicketURL:   load.TicketURL,
@@ -200,13 +198,13 @@ func (s Server) handleDeleteEvent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
+		eventID, err := paramID("eventID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		err = s.eventService.Delete(ctx, int64(eventID))
+		err = s.eventService.Delete(ctx, eventID)
 		if err != nil {
 			writeError(w, err)
 			return

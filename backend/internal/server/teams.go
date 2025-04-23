@@ -3,9 +3,6 @@ package server
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
-
-	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -33,13 +30,13 @@ func (s Server) handleListMemberTeams() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		memberID, err := strconv.Atoi(chi.URLParam(r, "memberID"))
+		memberID, err := paramID("memberID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		teams, err := s.teamService.MemberTeams(ctx, int64(memberID))
+		teams, err := s.teamService.MemberTeams(ctx, memberID)
 		if err != nil {
 			writeError(w, err)
 			return

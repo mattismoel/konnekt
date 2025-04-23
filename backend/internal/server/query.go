@@ -3,10 +3,12 @@ package server
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
@@ -156,4 +158,13 @@ func parsePerPage(vals url.Values) int {
 func parseLimit(vals url.Values) int {
 	limit, _ := strconv.Atoi(vals.Get("limit"))
 	return limit
+}
+
+func paramID(name string, r *http.Request) (int64, error) {
+	id, err := strconv.Atoi(chi.URLParam(r, name))
+	if err != nil {
+		return 0, err
+	}
+
+	return int64(id), nil
 }

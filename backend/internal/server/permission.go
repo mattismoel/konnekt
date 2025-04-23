@@ -2,9 +2,6 @@ package server
 
 import (
 	"net/http"
-	"strconv"
-
-	"github.com/go-chi/chi/v5"
 )
 
 func (s Server) handleListPermissions() http.HandlerFunc {
@@ -31,13 +28,13 @@ func (s Server) handleListMemberPermissions() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		memberID, err := strconv.Atoi(chi.URLParam(r, "memberID"))
+		memberID, err := paramID("memberID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		perms, err := s.authService.MemberPermissions(ctx, int64(memberID))
+		perms, err := s.authService.MemberPermissions(ctx, memberID)
 		if err != nil {
 			writeError(w, err)
 			return

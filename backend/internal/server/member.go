@@ -3,9 +3,7 @@ package server
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/domain/member"
 )
 
@@ -35,7 +33,7 @@ func (s Server) handleListMembers() http.HandlerFunc {
 
 func (s Server) handleApproveMember() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		memberID, err := strconv.Atoi(chi.URLParam(r, "memberID"))
+		memberID, err := paramID("memberID", r)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -43,7 +41,7 @@ func (s Server) handleApproveMember() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		err = s.memberService.Approve(ctx, int64(memberID))
+		err = s.memberService.Approve(ctx, memberID)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -53,7 +51,7 @@ func (s Server) handleApproveMember() http.HandlerFunc {
 
 func (s Server) handleDeleteMember() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		memberID, err := strconv.Atoi(chi.URLParam(r, "memberID"))
+		memberID, err := paramID("memberID", r)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -61,7 +59,7 @@ func (s Server) handleDeleteMember() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		err = s.memberService.Delete(ctx, int64(memberID))
+		err = s.memberService.Delete(ctx, memberID)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -71,7 +69,7 @@ func (s Server) handleDeleteMember() http.HandlerFunc {
 
 func (s Server) handleMemberByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		memberID, err := strconv.Atoi(chi.URLParam(r, "memberID"))
+		memberID, err := paramID("memberID", r)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -79,7 +77,7 @@ func (s Server) handleMemberByID() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		m, err := s.memberService.ByID(ctx, int64(memberID))
+		m, err := s.memberService.ByID(ctx, memberID)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -102,14 +100,14 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		memberID, err := strconv.Atoi(chi.URLParam(r, "memberID"))
+		memberID, err := paramID("memberID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
 		// Return if member does not exist.
-		_, err = s.memberService.ByID(ctx, int64(memberID))
+		_, err = s.memberService.ByID(ctx, memberID)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -134,7 +132,7 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 			return
 		}
 
-		if err := s.memberService.Update(ctx, int64(memberID), m); err != nil {
+		if err := s.memberService.Update(ctx, memberID, m); err != nil {
 			writeError(w, err)
 			return
 		}
