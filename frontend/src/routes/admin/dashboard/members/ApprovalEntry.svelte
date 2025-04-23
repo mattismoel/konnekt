@@ -38,7 +38,11 @@
 
 <ListEntry class="gap-4">
 	<div class="flex flex-1 items-center gap-4">
-		<img src={member.profilePictureUrl || Avatar} alt="Profil" class="h-8 w-8 rounded-full" />
+		<img
+			src={member.profilePictureUrl || Avatar}
+			alt="Profil"
+			class="h-8 w-8 rounded-full object-cover"
+		/>
 		<span class="line-clamp-1">{member.firstName} {member.lastName} </span>
 	</div>
 	<MemberStatusIndicator status="non-approved" class="hidden md:block" />
