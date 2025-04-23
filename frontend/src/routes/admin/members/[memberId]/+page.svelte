@@ -5,6 +5,7 @@
 	import MemberStatusIndicator from '$lib/components/MemberStatusIndicator.svelte';
 	import MemberForm from './MemberForm.svelte';
 	import MemberTeamsForm from './MemberTeamsForm.svelte';
+	import ProfilePictureSelector from '$lib/components/ProfilePictureSelector.svelte';
 
 	let { data } = $props();
 </script>
@@ -22,11 +23,7 @@
 
 	<header class="flex flex-col items-center gap-8 md:flex-row">
 		<form action="" class="">
-			<img
-				src={data.member.profilePictureUrl || AvatarImage}
-				alt="Profil"
-				class="h-20 w-20 rounded-full"
-			/>
+			<ProfilePictureSelector file={null} imageUrl={data.member.profilePictureUrl} />
 		</form>
 		<div class="flex flex-col items-center space-y-4 md:items-start">
 			<div class="flex flex-col items-center space-y-1 md:items-start">
