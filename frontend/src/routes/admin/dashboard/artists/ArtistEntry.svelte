@@ -5,6 +5,7 @@
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import MenuIcon from '~icons/mdi/dots-vertical';
+	import ListEntry from '$lib/components/ListEntry.svelte';
 
 	type Props = {
 		artist: Artist;
@@ -17,12 +18,9 @@
 	let showContextMenu = $state(false);
 </script>
 
-<li class="relative flex">
-	<a
-		href="/admin/artists/edit/{artist.id}"
-		class="flex flex-1 items-center rounded-sm border border-transparent px-4 py-2 hover:border-zinc-800 hover:bg-zinc-900"
-	>
-		<span class="flex-1 font-medium">{artist.name}</span>
+<ListEntry>
+	<a href="/admin/artists/edit/{artist.id}">
+		<span>{artist.name}</span>
 	</a>
 	<button onclick={() => (showContextMenu = true)} class="rounded-md p-2 hover:bg-zinc-900">
 		<MenuIcon />
@@ -41,4 +39,4 @@
 			action={() => goto(`/admin/artists/edit?id=${artist.id}`)}>Redigér</ContextMenuEntry
 		>
 	</ContextMenu>
-</li>
+</ListEntry>
