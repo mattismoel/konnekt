@@ -1,4 +1,5 @@
 <script lang="ts">
+	import List from '$lib/components/List.svelte';
 	import type { Permission } from '$lib/features/auth/permission';
 	import type { Event } from '$lib/features/event/event';
 	import EventEntry from './EventEntry.svelte';
@@ -12,8 +13,8 @@
 	let { events, memberPermissions, onDelete }: Props = $props();
 </script>
 
-<ul class="space-y-2">
+<List>
 	{#each events as event (event.id)}
 		<EventEntry {event} {memberPermissions} onDelete={() => onDelete(event.id)} />
 	{/each}
-</ul>
+</List>

@@ -3,14 +3,15 @@
 
 	import type { Event } from '$lib/features/event/event';
 
-	import { earliestConcert, latestConcert } from '$lib/features/concert/concert';
-	import { format, isBefore, startOfYesterday } from 'date-fns';
+	import { earliestConcert } from '$lib/features/concert/concert';
+	import { format, isBefore, startOfToday } from 'date-fns';
 
-	import MenuIcon from '~icons/mdi/dots-vertical';
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import { goto } from '$app/navigation';
 	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
+	import ListEntry from '$lib/components/ListEntry.svelte';
+	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
 
 	type Props = {
 		event: Event;
@@ -20,31 +21,32 @@
 
 	let { event, memberPermissions, onDelete }: Props = $props();
 
-	const fromDate = $derived(earliestConcert(event.concerts)?.from || new Date());
-	const toDate = $derived(latestConcert(event.concerts)?.to || new Date());
-
 	let showContextMenu = $state(false);
+
+	let artists = $derived(event.concerts.map((concert) => concert.artist));
+
+	const fromDate = $derived(earliestConcert(event.concerts)?.from || new Date());
+	let expired = $derived(isBefore(fromDate, startOfToday()));
 </script>
 
-<li
-	class:expired={isBefore(fromDate, startOfYesterday())}
-	class="group relative flex rounded-md border border-zinc-900 px-4 py-2 hover:border-zinc-800 hover:bg-zinc-900"
->
-	<a class="flex flex-1 items-center gap-4" href="/admin/events/edit?id={event.id}">
-		<span
-			class="group-[.expired]:text-text/50 flex-1 font-medium group-[.expired]:italic group-[.expired]:line-through"
-			>{event.title}</span
-		>
-		<span class="text-text/50 line-clamp-1 hidden flex-1 md:inline"
-			>{format(fromDate, DATE_FORMAT)}</span
-		>
-		<span class="text-text/50 line-clamp-1 hidden flex-1 md:inline"
-			>{format(fromDate, 'HH:mm')} - {format(toDate, 'HH:mm')}</span
-		>
+<ListEntry class={`group ${expired ? 'expired' : ''}`}>
+	<a href="/admin/events/edit/{event.id}">
+		<div class="flex flex-1 flex-col">
+			<span class="line-clamp-1 group-[.expired]:line-through">{event.title}</span>
+			<span class="text-text/50">{format(fromDate, DATE_FORMAT)}</span>
+		</div>
+		<span class="text-text/50 hidden sm:block">
+			{#if artists.length > 2}
+				{artists
+					.slice(0, 2)
+					.map((artist) => artist.name)
+					.join(', ')} (+{artists.length - 2} mere)
+			{:else}
+				{artists.map((artist) => artist.name).join(', ')}
+			{/if}
+		</span>
 	</a>
-	<button onclick={() => (showContextMenu = !showContextMenu)} class="text-text/50 hover:text-text">
-		<MenuIcon />
-	</button>
+	<ContextMenuButton onclick={() => (showContextMenu = true)} />
 	<ContextMenu
 		open={showContextMenu}
 		onClose={() => (showContextMenu = false)}
@@ -59,4 +61,4 @@
 			action={onDelete}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>
-</li>
+</ListEntry>
