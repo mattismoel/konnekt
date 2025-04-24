@@ -69,7 +69,7 @@
 			<img
 				src={member.profilePictureUrl || AvatarImage}
 				alt=""
-				class="aspect-square h-full w-10 rounded-full"
+				class="aspect-square h-full w-10 rounded-full object-cover"
 			/>
 			<div class="hidden group-[.expanded]:block">
 				<span>{member.firstName} {member.lastName}</span>
