@@ -19,7 +19,7 @@
 </script>
 
 <ListEntry>
-	<a href="/admin/artists/edit/{artist.id}">
+	<a href="/admin/artists/edit/{artist.id}" class="flex w-full flex-col">
 		<span>{artist.name}</span>
 		<span class="text-text/50">{artist.genres.map((genre) => genre.name).join(', ')}</span>
 	</a>
