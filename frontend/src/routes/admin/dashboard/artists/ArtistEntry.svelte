@@ -21,6 +21,7 @@
 <ListEntry>
 	<a href="/admin/artists/edit/{artist.id}">
 		<span>{artist.name}</span>
+		<span class="text-text/50">{artist.genres.map((genre) => genre.name).join(', ')}</span>
 	</a>
 	<button onclick={() => (showContextMenu = true)} class="rounded-md p-2 hover:bg-zinc-900">
 		<MenuIcon />
