@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AvatarImage from '$lib/assets/avatar.png';
 	import { page } from '$app/state';
 
 	import { cn } from '$lib/clsx';
@@ -66,7 +67,7 @@
 	<div class="flex flex-col-reverse items-center justify-between gap-8 group-[.expanded]:flex-row">
 		<a href="/admin/dashboard/member/{member.id}" class="flex items-center gap-4">
 			<img
-				src="https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+				src={member.profilePictureUrl || AvatarImage}
 				alt=""
 				class="aspect-square h-full w-10 rounded-full"
 			/>
