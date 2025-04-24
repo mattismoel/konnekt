@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/clsx';
 	import type { HTMLAttributes } from 'svelte/elements';
-	import Fader from './ui/Fader.svelte';
+	import Fader from './Fader.svelte';
 
 	type Props = HTMLAttributes<HTMLDivElement> & {
 		title?: string;

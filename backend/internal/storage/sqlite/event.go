@@ -44,7 +44,6 @@ func NewEventRepository(db *sql.DB) (*EventRepository, error) {
 		db: db,
 	}, nil
 }
-
 func (repo EventRepository) ByID(ctx context.Context, eventID int64) (event.Event, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -176,6 +175,29 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 	return nil
 }
 
+func (repo EventRepository) Delete(ctx context.Context, eventID int64) error {
+	tx, err := repo.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	if err := deleteEventConcerts(ctx, tx, eventID); err != nil {
+		return err
+	}
+
+	if err := deleteEvent(ctx, tx, eventID); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (repo EventRepository) SetImageURL(ctx context.Context, eventID int64, coverImageURL string) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -200,10 +222,11 @@ type EventQueryParams struct {
 	QueryParams
 	From      time.Time
 	To        time.Time
+	ID        int64
 	ArtistIDs []int64
 }
 
-func (repo EventRepository) List(ctx context.Context, q event.Query) (query.ListResult[event.Event], error) {
+func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.ListResult[event.Event], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return query.ListResult[event.Event]{}, err
@@ -213,13 +236,11 @@ func (repo EventRepository) List(ctx context.Context, q event.Query) (query.List
 
 	dbEvents, err := listEvents(ctx, tx, EventQueryParams{
 		QueryParams: QueryParams{
-			Offset: q.Offset(),
-			Limit:  q.Limit,
-		},
-		From:      q.From,
-		To:        q.To,
-		ArtistIDs: q.ArtistIDs,
-	},
+			Offset:  q.Offset(),
+			Limit:   q.Limit,
+			Filters: q.Filters,
+			OrderBy: q.OrderBy,
+		}},
 	)
 
 	if err != nil {
@@ -306,7 +327,7 @@ func eventCount(ctx context.Context, tx *sql.Tx) (int, error) {
 }
 
 func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {
-	query, err := NewQuery(`
+	q, err := NewQuery(`
     SELECT DISTINCT
 		e.id,
 		e.title,
@@ -321,31 +342,75 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 		return nil, err
 	}
 
-	err = query.WithOffset(params.Offset)
+	err = q.WithOffset(params.Offset)
 	if err != nil {
 		return nil, err
 	}
 
-	err = query.WithLimit(params.Limit)
+	err = q.WithLimit(params.Limit)
 	if err != nil {
 		return nil, err
 	}
 
-	if !params.From.IsZero() {
-		err = query.AddFilter("c.from_date >= ?", params.From.Format(time.RFC3339))
-	}
-
-	if !params.To.IsZero() {
-		query.AddFilter("c.to_date <= ?", params.To.Format(time.RFC3339))
-	}
-
-	if len(params.ArtistIDs) > 0 {
-		for _, artistID := range params.ArtistIDs {
-			query.AddFilter("c.artist_id = ?", artistID)
+	if order, ok := params.OrderBy["from_date"]; ok {
+		err := q.WithOrdering(map[string]query.Order{"c.from_date": order})
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := q.WithOrdering(map[string]query.Order{"c.from_date": query.OrderAscending})
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	queryString, args := query.Build()
+	if filters, ok := params.Filters["title"]; ok {
+		for _, f := range filters {
+			err := q.AddFilter("title", f.Cmp, f.Value)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if filters, ok := params.Filters["from_date"]; ok {
+		for _, f := range filters {
+			err = q.AddFilter("from_date", f.Cmp, f.Value)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if filters, ok := params.Filters["to_date"]; ok {
+		for _, f := range filters {
+			err = q.AddFilter("from_date", f.Cmp, f.Value)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if filters, ok := params.Filters["id"]; ok {
+		for _, f := range filters {
+			err = q.AddFilter("e.id", f.Cmp, f.Value)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+	}
+
+	if filters, ok := params.Filters["artist_id"]; ok {
+		for _, f := range filters {
+			err = q.AddFilter("c.artist_id", f.Cmp, f.Value)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	queryString, args := q.Build()
 
 	rows, err := tx.QueryContext(ctx, queryString, args...)
 	if err != nil {
@@ -455,6 +520,26 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 	}
 
 	rowsAffected, err := res.RowsAffected()
+	if rowsAffected <= 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
+func deleteEvent(ctx context.Context, tx *sql.Tx, eventID int64) error {
+	query := "DELETE FROM event WHERE id = @event_id"
+
+	res, err := tx.ExecContext(ctx, query, sql.Named("event_id", eventID))
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
 	if rowsAffected <= 0 {
 		return ErrNotFound
 	}

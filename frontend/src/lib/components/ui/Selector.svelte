@@ -8,23 +8,22 @@
 	};
 
 	type Props = HTMLSelectAttributes & {
-		selected?: string;
 		entries: Entry[];
-		onChange: (value: string) => void;
+		value: string;
 	};
 
-	let { entries, selected, onChange, ...rest }: Props = $props();
+	let { entries, value = $bindable(), ...rest }: Props = $props();
 
 	let selectElement: HTMLSelectElement;
 
 	$effect(() => {
-		selectElement.value = selected || entries[0].value;
+		selectElement.value = value || entries[0].value;
 	});
 </script>
 
 <select
-	onchange={(e) => onChange(e.currentTarget.value)}
 	bind:this={selectElement}
+	bind:value
 	{...rest}
 	class={cn('rounded-sm border border-zinc-900 bg-zinc-950', rest.class)}
 >

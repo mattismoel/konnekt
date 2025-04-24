@@ -22,9 +22,10 @@ type Server struct {
 	addr string
 
 	authService   *service.AuthService
+	teamService   *service.TeamService
 	eventService  *service.EventService
 	artistService *service.ArtistService
-	userService   *service.UserService
+	memberService *service.MemberService
 	venueService  *service.VenueService
 }
 
@@ -58,6 +59,13 @@ func WithCORSOrigins(allowedOrigins ...string) CfgFunc {
 	}
 }
 
+func WithTeamService(teamService *service.TeamService) CfgFunc {
+	return func(s *Server) error {
+		s.teamService = teamService
+		return nil
+	}
+}
+
 func WithAuthService(authService *service.AuthService) CfgFunc {
 	return func(s *Server) error {
 		s.authService = authService
@@ -79,9 +87,9 @@ func WithArtistService(artistService *service.ArtistService) CfgFunc {
 	}
 }
 
-func WithUserService(userService *service.UserService) CfgFunc {
+func WithMemberService(memberService *service.MemberService) CfgFunc {
 	return func(s *Server) error {
-		s.userService = userService
+		s.memberService = memberService
 		return nil
 	}
 }

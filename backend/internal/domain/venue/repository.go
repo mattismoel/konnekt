@@ -8,6 +8,7 @@ import (
 
 type Repository interface {
 	Insert(ctx context.Context, v Venue) (int64, error)
+	Update(ctx context.Context, id int64, v Venue) error
 	ByID(ctx context.Context, venueID int64) (Venue, error)
 	List(ctx context.Context, q Query) (query.ListResult[Venue], error)
 	Delete(ctx context.Context, venueID int64) error

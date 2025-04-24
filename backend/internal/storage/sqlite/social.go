@@ -3,6 +3,9 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"strconv"
+
+	"github.com/mattismoel/konnekt/internal/query"
 )
 
 type Social struct {
@@ -39,17 +42,17 @@ func deleteArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64) error 
 		return err
 	}
 
-	query, err := NewQuery("DELETE FROM artists_socials")
+	q, err := NewQuery("DELETE FROM artists_socials")
 	if err != nil {
 		return err
 	}
 
-	err = query.AddFilter("artist_id = ?", artistID)
+	err = q.AddFilter("artist_id", query.Equal, strconv.Itoa(int(artistID)))
 	if err != nil {
 		return err
 	}
 
-	queryStr, args := query.Build()
+	queryStr, args := q.Build()
 
 	_, err = tx.ExecContext(ctx, queryStr, args...)
 	if err != nil {

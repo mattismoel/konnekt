@@ -50,7 +50,12 @@ func (repo ArtistRepository) List(ctx context.Context, q artist.Query) (query.Li
 
 	artists := make([]artist.Artist, 0)
 
-	dbArtists, err := listArtists(ctx, tx)
+	dbArtists, err := listArtists(ctx, tx, QueryParams{
+		Offset:  q.Offset(),
+		Limit:   q.Limit,
+		OrderBy: q.OrderBy,
+		Filters: q.Filters,
+	})
 	if err != nil {
 		return query.ListResult[artist.Artist]{}, err
 	}
@@ -296,10 +301,27 @@ func (repo ArtistRepository) Delete(ctx context.Context, artistID int64) error {
 	return nil
 }
 
-func listArtists(ctx context.Context, tx *sql.Tx) ([]Artist, error) {
-	query := `SELECT id, name, description, preview_url, image_url FROM artist a`
+func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist, error) {
+	q, err := NewQuery(`SELECT id, name, description, preview_url, image_url FROM artist a`)
+	if err != nil {
+		return nil, err
+	}
 
-	rows, err := tx.QueryContext(ctx, query)
+	if err := q.WithOrdering(params.OrderBy); err != nil {
+		return nil, err
+	}
+
+	if err := q.WithOffset(params.Offset); err != nil {
+		return nil, err
+	}
+
+	if err := q.WithLimit(params.Limit); err != nil {
+		return nil, err
+	}
+
+	queryStr, args := q.Build()
+
+	rows, err := tx.QueryContext(ctx, queryStr, args...)
 	if err != nil {
 		return nil, err
 	}

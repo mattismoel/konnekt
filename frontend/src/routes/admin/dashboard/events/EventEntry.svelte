@@ -1,34 +1,83 @@
 <script lang="ts">
-	import type { Event } from '$lib/event';
+	import { DATE_FORMAT } from '$lib/time';
 
-	import { earliestConcert, latestConcert } from '$lib/concert';
-	import { formatDateStr } from '$lib/time';
-	import { format } from 'date-fns';
+	import { deleteEvent, type Event } from '$lib/features/event/event';
 
-	import TrashIcon from '~icons/mdi/trash';
+	import { earliestConcert } from '$lib/features/concert/concert';
+	import { format, isBefore, startOfToday } from 'date-fns';
+
+	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
+	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
+	import ListEntry from '$lib/components/ui/ListEntry.svelte';
+	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
+	import { toaster } from '$lib/toaster.svelte';
+	import { APIError } from '$lib/api';
 
 	type Props = {
 		event: Event;
+		memberPermissions: Permission[];
 	};
 
-	let { event }: Props = $props();
+	let { event, memberPermissions }: Props = $props();
+
+	let showContextMenu = $state(false);
+
+	let artists = $derived(event.concerts.map((concert) => concert.artist));
 
 	const fromDate = $derived(earliestConcert(event.concerts)?.from || new Date());
-	const toDate = $derived(latestConcert(event.concerts)?.to || new Date());
+	let expired = $derived(isBefore(fromDate, startOfToday()));
+
+	const handleDeleteEvent = async () => {
+		if (!confirm(`Vil du slette ${event.title}?`)) return;
+
+		try {
+			await deleteEvent(fetch, event.id);
+			toaster.addToast('Event slettet');
+			await invalidateAll();
+		} catch (e) {
+			if (e instanceof APIError) {
+				toaster.addToast('Kunne ikke slette event', e.cause, 'error');
+				return;
+			}
+
+			toaster.addToast('Kunne ikke slette event', 'Noget gik galt...', 'error');
+			return;
+		}
+	};
 </script>
 
-<a
-	class="flex items-center gap-4 rounded-md border border-transparent p-2 hover:border-zinc-800 hover:bg-zinc-900"
-	href="/admin/events/edit?id={event.id}"
->
-	<span class="flex-1">{event.title}</span>
-	<span class="line-clamp-1 flex-1 text-zinc-500"
-		>{formatDateStr(fromDate)}, {format(fromDate, 'HH:mm')}</span
+<ListEntry class={`group ${expired ? 'expired' : ''}`}>
+	<a href="/admin/events/edit/{event.id}">
+		<div class="flex flex-1 flex-col">
+			<span class="line-clamp-1 group-[.expired]:line-through">{event.title}</span>
+			<span class="text-text/50">{format(fromDate, DATE_FORMAT)}</span>
+		</div>
+		<span class="text-text/50 hidden sm:block">
+			{#if artists.length > 2}
+				{artists
+					.slice(0, 2)
+					.map((artist) => artist.name)
+					.join(', ')} (+{artists.length - 2} mere)
+			{:else}
+				{artists.map((artist) => artist.name).join(', ')}
+			{/if}
+		</span>
+	</a>
+	<ContextMenuButton onclick={() => (showContextMenu = true)} />
+	<ContextMenu
+		open={showContextMenu}
+		onClose={() => (showContextMenu = false)}
+		class="absolute top-1/2 right-4"
 	>
-	<span class="line-clamp-1 flex-1 text-zinc-500"
-		>{formatDateStr(toDate)}, {format(toDate, 'HH:mm')}</span
-	>
-	<button class="text-zinc-400 hover:text-red-500">
-		<TrashIcon />
-	</button>
-</a>
+		<ContextMenuEntry
+			disabled={!hasPermissions(memberPermissions, ['edit:event'])}
+			action={() => goto(`/admin/events/edit?id=${event.id}`)}>Redigér</ContextMenuEntry
+		>
+		<ContextMenuEntry
+			disabled={!hasPermissions(memberPermissions, ['delete:event'])}
+			action={handleDeleteEvent}>Slet</ContextMenuEntry
+		>
+	</ContextMenu>
+</ListEntry>

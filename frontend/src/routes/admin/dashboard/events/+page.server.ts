@@ -1,17 +1,9 @@
+import { listPreviousEvents, listUpcomingEvents } from "$lib/features/event/event";
 import type { PageServerLoad } from "./$types";
-import { startOfToday } from "date-fns";
-import { listEvents } from "$lib/event";
 
-const UPCOMING_EVENTS_LIMIT: number = 5
+export const load: PageServerLoad = async ({ fetch }) => {
+  const { records: upcomingEvents } = await listUpcomingEvents(fetch)
+  const { records: previousEvents } = await listPreviousEvents(fetch)
 
-export const load: PageServerLoad = async () => {
-  const upcomingEventsResult = await listEvents(new URLSearchParams({
-    filter: `from=${startOfToday().toISOString()}`,
-    limit: UPCOMING_EVENTS_LIMIT.toString(),
-    order: `date,asc`
-  }))
-
-  return {
-    upcomingEvents: upcomingEventsResult.records,
-  }
+  return { upcomingEvents, previousEvents }
 }

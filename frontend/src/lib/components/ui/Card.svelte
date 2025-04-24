@@ -5,7 +5,7 @@
 	let { children, ...rest }: HTMLAttributes<HTMLDivElement> = $props();
 </script>
 
-<div class={cn('rounded-md border border-zinc-800 bg-zinc-900 p-8', rest.class)}>
+<div class={cn('rounded-md border border-zinc-800 bg-zinc-900 p-4 sm:p-6 md:p-8', rest.class)}>
 	{#if children}
 		{@render children()}
 	{/if}

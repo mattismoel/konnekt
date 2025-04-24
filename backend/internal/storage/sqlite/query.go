@@ -3,7 +3,10 @@ package sqlite
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
+
+	"github.com/mattismoel/konnekt/internal/query"
 )
 
 var (
@@ -16,16 +19,23 @@ type QueryParams struct {
 	Offset int
 	// The limit of which to apply to the query.
 	Limit int
+	// The orderings to apply to the query.
+	OrderBy map[string]query.Order
+	// The filters to apply to the query.
+	Filters query.FilterCollection
 }
 
 // A SQLite query builder instance.
 type Query struct {
 	baseQuery string
 	args      []any
-	filters   map[string]any
+	orderMap  map[string]query.Order
+	filters   query.FilterCollection
 	offset    int
 	limit     int
 }
+
+type QueryString string
 
 // Builds a new query.
 //
@@ -49,9 +59,10 @@ func NewQuery(baseQuery string) (Query, error) {
 	}
 
 	return Query{
-		baseQuery: strings.TrimSpace(baseQuery + "\n" + "WHERE 1=1"),
+		baseQuery: strings.TrimSpace(baseQuery + "\n"),
 		args:      make([]any, 0),
-		filters:   make(map[string]any),
+		filters:   make(query.FilterCollection),
+		orderMap:  make(map[string]query.Order),
 	}, nil
 }
 
@@ -77,6 +88,26 @@ func (q *Query) WithOffset(offset int) error {
 	return nil
 }
 
+func (q *Query) WithOrdering(orderMap map[string]query.Order) error {
+	if orderMap == nil {
+		return errors.New("The passed order map must not be nil")
+	}
+
+	for key, order := range orderMap {
+		if strings.ToUpper(string(order)) != "ASC" && strings.ToUpper(string(order)) != "DESC" {
+			return errors.New("Order must be 'ASC' or 'DESC' (case-insensitive)")
+		}
+
+		if strings.TrimSpace(key) == "" {
+			return errors.New("The ordering property must not be empty")
+		}
+	}
+
+	q.orderMap = orderMap
+
+	return nil
+}
+
 // Applies filters to the query. The filter key is the filter string, e.g.
 //
 // a = ?
@@ -85,12 +116,9 @@ func (q *Query) WithOffset(offset int) error {
 // a <= ?
 //
 // The filter value is the value to replace the placeholder '?' with.
-func (q *Query) WithFilters(filters map[string]any) error {
-	for filterString, value := range filters {
-		err := q.AddFilter(filterString, value)
-		if err != nil {
-			return err
-		}
+func (q *Query) WithFilters(fc query.FilterCollection) error {
+	for key, filters := range fc {
+		q.filters.Add(key, filters...)
 	}
 
 	return nil
@@ -102,12 +130,13 @@ func (q *Query) WithFilters(filters map[string]any) error {
 //
 // The value is the value of which to replace the placeholder '?' with when
 // the query is built with Query.Build().
-func (q *Query) AddFilter(filterString string, value any) error {
-	if !isValidFilterString(filterString) {
-		return ErrInvalidFilterString
+func (q *Query) AddFilter(key string, cmp query.Comparator, value string) error {
+	f, err := query.NewFilter(cmp, value)
+	if err != nil {
+		return err
 	}
 
-	q.filters[filterString] = value
+	q.filters.Add(key, f)
 
 	return nil
 }
@@ -130,26 +159,71 @@ func (q *Query) AddLine(s string) {
 //
 //	db.QueryContext(ctx, queryString, args...)
 func (q Query) Build() (string, []any) {
-	if len(q.filters) > 0 {
-		for filterString, value := range q.filters {
-			q.AddLine("AND " + filterString)
-			q.args = append(q.args, value)
-		}
-	}
-
-	if q.limit > 0 {
-		q.AddLine("LIMIT @limit")
-		q.args = append(q.args, sql.Named("limit", q.limit))
-	}
-
-	if q.offset >= 0 && q.limit > 0 {
-		q.AddLine("OFFSET @offset")
-		q.args = append(q.args, sql.Named("offset", q.offset))
-	}
+	q.addFilterString()
+	q.addOrderingString()
+	q.addLimitString()
+	q.addOffsetString()
 
 	return q.baseQuery, q.args
 }
 
-func isValidFilterString(s string) bool {
-	return strings.ContainsRune(s, '?')
+// Converts an internal type of map[string]query.Order to an SQLite
+// representable map of type map[string]string.
+func OrderingMapFromInternal(m map[string]query.Order) map[string]string {
+	orderMap := make(map[string]string)
+
+	for key, order := range m {
+		orderMap[key] = string(order)
+	}
+
+	return orderMap
+}
+
+func (q *Query) addFilterString() {
+	if len(q.filters) <= 0 {
+		return
+	}
+
+	q.AddLine("WHERE 1=1")
+
+	if len(q.filters) > 0 {
+		for key, filters := range q.filters {
+			for _, f := range filters {
+				filterStr := fmt.Sprintf("%s %s ?", key, string(f.Cmp))
+				q.AddLine("AND " + filterStr)
+				q.args = append(q.args, f.Value)
+			}
+		}
+	}
+}
+
+func (q *Query) addLimitString() {
+	if q.limit <= 0 {
+		return
+	}
+
+	q.AddLine("LIMIT @limit")
+	q.args = append(q.args, sql.Named("limit", q.limit))
+}
+
+func (q *Query) addOffsetString() {
+	if q.offset < 0 || q.limit <= 0 {
+		return
+	}
+
+	q.AddLine("OFFSET @offset")
+	q.args = append(q.args, sql.Named("offset", q.offset))
+}
+
+func (q *Query) addOrderingString() {
+	if len(q.orderMap) <= 0 {
+		return
+	}
+
+	clauses := []string{}
+	for key, order := range q.orderMap {
+		clauses = append(clauses, fmt.Sprintf("%s %s", key, order))
+	}
+
+	q.AddLine("ORDER BY " + strings.Join(clauses, ", "))
 }

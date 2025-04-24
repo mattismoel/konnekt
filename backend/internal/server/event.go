@@ -4,13 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/domain/event"
-	"github.com/mattismoel/konnekt/internal/query"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -20,62 +16,12 @@ var (
 
 func (s Server) handleListEvents() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := NewListQueryFromRequest(r)
-
-		fromStr, toStr := r.URL.Query().Get("from"), r.URL.Query().Get("to")
-		from, _ := time.Parse(time.RFC3339, fromStr)
-		to, _ := time.Parse(time.RFC3339, toStr)
-
-		artistIds := make([]int64, 0)
-		artistIdsStr := r.URL.Query().Get("artistIds")
-
-		if artistIdsStr != "" {
-			artistIdsStrs := strings.SplitSeq(r.URL.Query().Get("artistIds"), ",")
-
-			for artistIdStr := range artistIdsStrs {
-				id, err := strconv.Atoi(artistIdStr)
-				if err != nil {
-					writeError(w, err)
-					return
-				}
-
-				artistIds = append(artistIds, int64(id))
-			}
-		}
-
 		ctx := r.Context()
 
-		query, err := event.NewQuery(
-			event.WithPagination(query.NewListQuery(q.Page, q.PerPage, q.Limit)),
-		)
-
+		query, err := NewListQueryFromURL(r.URL.Query())
 		if err != nil {
 			writeError(w, err)
 			return
-		}
-
-		if !from.IsZero() {
-			err := query.WithCfgs(event.WithFromDate(from))
-			if err != nil {
-				writeError(w, err)
-				return
-			}
-		}
-
-		if !to.IsZero() {
-			err := query.WithCfgs(event.WithToDate(to))
-			if err != nil {
-				writeError(w, err)
-				return
-			}
-		}
-
-		if len(artistIds) > 0 {
-			err := query.WithCfgs(event.WithArtistIDs(artistIds...))
-			if err != nil {
-				writeError(w, err)
-				return
-			}
 		}
 
 		result, err := s.eventService.List(ctx, query)
@@ -92,13 +38,13 @@ func (s Server) handleEventByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
+		eventID, err := paramID("eventID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		e, err := s.eventService.ByID(ctx, int64(eventID))
+		e, err := s.eventService.ByID(ctx, eventID)
 		if err != nil {
 			switch {
 			case errors.Is(err, event.ErrNoExist):
@@ -182,7 +128,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
+		eventID, err := paramID("eventID", r)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -208,7 +154,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 			})
 		}
 
-		e, err := s.eventService.Update(ctx, int64(eventID), service.UpdateEvent{
+		e, err := s.eventService.Update(ctx, eventID, service.UpdateEvent{
 			Title:       load.Title,
 			Description: load.Description,
 			TicketURL:   load.TicketURL,
@@ -245,5 +191,23 @@ func (s Server) handleUploadEventImage() http.HandlerFunc {
 		}
 
 		writeText(w, http.StatusOK, url)
+	}
+}
+
+func (s Server) handleDeleteEvent() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		eventID, err := paramID("eventID", r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = s.eventService.Delete(ctx, eventID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
 	}
 }
