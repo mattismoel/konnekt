@@ -2,7 +2,7 @@
 	import { cn } from '$lib/clsx';
 	import Selector from '$lib/components/ui/Selector.svelte';
 	import { COUNTRIES_MAP } from '$lib/features/venue/countries';
-	import type { Venue, venueForm } from '$lib/features/venue/venue';
+	import { deleteVenue, editVenue, type Venue, type venueForm } from '$lib/features/venue/venue';
 	import type { z } from 'zod';
 
 	import CheckIcon from '~icons/mdi/check';
@@ -11,20 +11,22 @@
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
+	import ListEntry from '$lib/components/ui/ListEntry.svelte';
+	import { toaster } from '$lib/toaster.svelte';
+	import { invalidateAll } from '$app/navigation';
+	import { APIError } from '$lib/api';
 
 	type Props = {
-		initialValue?: Venue;
+		venue: Venue;
 		memberPermissions: Permission[];
-		onEdit: (form: z.infer<typeof venueForm>) => void;
-		onDelete: () => void;
 	};
 
-	let { initialValue, memberPermissions, onEdit, onDelete }: Props = $props();
+	let { venue, memberPermissions }: Props = $props();
 
 	let showContextMenu = $state(false);
 
 	let form = $state<z.infer<typeof venueForm>>({
-		...(initialValue || {
+		...(venue || {
 			name: '',
 			city: '',
 			countryCode: ''
@@ -32,13 +34,47 @@
 	});
 
 	let isEdited = $derived(
-		form.name !== initialValue?.name ||
-			form.city !== initialValue?.city ||
-			form.countryCode !== initialValue?.countryCode
+		form.name !== venue?.name ||
+			form.city !== venue?.city ||
+			form.countryCode !== venue?.countryCode
 	);
 
 	const resetForm = () => {
-		form = { ...(initialValue || { name: '', city: '', countryCode: '' }) };
+		form = { ...(venue || { name: '', city: '', countryCode: '' }) };
+	};
+
+	const handleEditVenue = async () => {
+		try {
+			await editVenue(fetch, venue.id, form);
+			toaster.addToast('Venue redigeret');
+			await invalidateAll();
+		} catch (e) {
+			if (e instanceof APIError) {
+				toaster.addToast('Kunne ikke regigere venue', e.cause, 'error');
+				return;
+			}
+
+			toaster.addToast('Kunne ikke redigere venue', 'Noget gik galt...', 'error');
+			return;
+		}
+	};
+
+	const handleDeleteVenue = async () => {
+		if (!confirm(`Er sikker på, at du vil slette venue "${venue.name}"?`)) return;
+
+		try {
+			await deleteVenue(fetch, venue.id);
+			toaster.addToast('Venue slettet');
+			await invalidateAll();
+		} catch (e) {
+			if (e instanceof APIError) {
+				toaster.addToast('Kunne ikke slette venue', e.cause, 'error');
+				return;
+			}
+
+			toaster.addToast('Kunne ikke slette venue', 'Noget gik galt...', 'error');
+			return;
+		}
 	};
 </script>
 
@@ -48,7 +84,7 @@
 	}}
 />
 
-<li
+<ListEntry
 	class={cn(
 		'group relative flex items-center gap-8 rounded-md border border-transparent p-2 hover:border-zinc-800 hover:bg-zinc-900',
 		{
@@ -59,20 +95,20 @@
 	<input
 		bind:value={form.name}
 		class={cn('w-full rounded-sm border-transparent bg-transparent font-semibold', {
-			italic: form.name !== initialValue?.name
+			italic: form.name !== venue?.name
 		})}
 	/>
 	<input
 		bind:value={form.city}
 		class={cn('text-text/50 hidden w-full rounded-sm border-transparent bg-transparent lg:inline', {
-			italic: form.city !== initialValue?.city
+			italic: form.city !== venue?.city
 		})}
 	/>
 	<Selector
 		class={cn(
 			'text-text/50 hidden border-transparent bg-transparent group-hover:border-zinc-800 lg:inline',
 			{
-				italic: form.countryCode !== initialValue?.countryCode
+				italic: form.countryCode !== venue?.countryCode
 			}
 		)}
 		entries={Array.from(COUNTRIES_MAP).map(([key, val]) => ({ name: val, value: key }))}
@@ -84,7 +120,7 @@
 				<button onclick={resetForm} class="hover:text-red-400">
 					<XIcon />
 				</button>
-				<button onclick={() => onEdit(form)} class="hover:text-green-400"><CheckIcon /></button>
+				<button onclick={handleEditVenue} class="hover:text-green-400"><CheckIcon /></button>
 			</div>
 		{/if}
 	</div>
@@ -98,7 +134,7 @@
 	>
 		<ContextMenuEntry
 			disabled={!hasPermissions(memberPermissions, ['delete:venue'])}
-			action={onDelete}>Slet</ContextMenuEntry
+			action={handleDeleteVenue}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>
-</li>
+</ListEntry>
