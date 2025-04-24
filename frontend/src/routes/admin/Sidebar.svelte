@@ -64,6 +64,7 @@
 
 {#snippet memberInformation(member: Member)}
 	{@const teamsString = member.teams.map((t) => t.displayName).join(', ')}
+
 	<div class="flex flex-col-reverse items-center justify-between gap-8 group-[.expanded]:flex-row">
 		<a href="/admin/dashboard/member/{member.id}" class="flex items-center gap-4">
 			<img
@@ -72,7 +73,7 @@
 				class="aspect-square h-full w-10 rounded-full object-cover"
 			/>
 			<div class="hidden group-[.expanded]:block">
-				<span>{member.firstName} {member.lastName}</span>
+				<span class="line-clamp-1">{member.firstName} {member.lastName}</span>
 				<span class="text-text/50 line-clamp-1" title={teamsString}>{teamsString}</span>
 			</div>
 		</a>
