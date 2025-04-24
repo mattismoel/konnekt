@@ -19,7 +19,7 @@
 
 <li class="relative flex">
 	<a
-		href="/admin/artists/edit?id={artist.id}"
+		href="/admin/artists/edit/{artist.id}"
 		class="flex flex-1 items-center rounded-sm border border-transparent px-4 py-2 hover:border-zinc-800 hover:bg-zinc-900"
 	>
 		<span class="flex-1 font-medium">{artist.name}</span>

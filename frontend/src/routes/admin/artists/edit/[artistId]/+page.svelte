@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { toaster } from '$lib/toaster.svelte.js';
 	import { ZodError, type z } from 'zod';
-	import ArtistForm from '../ArtistForm.svelte';
 	import { updateArtist, type editArtistForm } from '$lib/features/artist/artist';
 	import { goto } from '$app/navigation';
+	import ArtistForm from '../../ArtistForm.svelte';
 
 	let { data } = $props();
 
