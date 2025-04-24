@@ -10,6 +10,7 @@ import YouTubeIcon from "~icons/mdi/youtube"
 
 const iconMap = new Map<string, Component>([
 	["spotify.com", SpotifyIcon],
+	["open.spotify.com", SpotifyIcon],
 	["instagram.com", InstagramIcon],
 	["music.apple.com", AppleIcon],
 	["facebook.com", FacebookIcon],
