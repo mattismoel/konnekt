@@ -1,25 +1,26 @@
 <script lang="ts">
 	import { DATE_FORMAT } from '$lib/time';
 
-	import type { Event } from '$lib/features/event/event';
+	import { deleteEvent, type Event } from '$lib/features/event/event';
 
 	import { earliestConcert } from '$lib/features/concert/concert';
 	import { format, isBefore, startOfToday } from 'date-fns';
 
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
+	import { toaster } from '$lib/toaster.svelte';
+	import { APIError } from '$lib/api';
 
 	type Props = {
 		event: Event;
 		memberPermissions: Permission[];
-		onDelete: () => void;
 	};
 
-	let { event, memberPermissions, onDelete }: Props = $props();
+	let { event, memberPermissions }: Props = $props();
 
 	let showContextMenu = $state(false);
 
@@ -27,6 +28,24 @@
 
 	const fromDate = $derived(earliestConcert(event.concerts)?.from || new Date());
 	let expired = $derived(isBefore(fromDate, startOfToday()));
+
+	const handleDeleteEvent = async () => {
+		if (!confirm(`Vil du slette ${event.title}?`)) return;
+
+		try {
+			await deleteEvent(fetch, event.id);
+			toaster.addToast('Event slettet');
+			await invalidateAll();
+		} catch (e) {
+			if (e instanceof APIError) {
+				toaster.addToast('Kunne ikke slette event', e.cause, 'error');
+				return;
+			}
+
+			toaster.addToast('Kunne ikke slette event', 'Noget gik galt...', 'error');
+			return;
+		}
+	};
 </script>
 
 <ListEntry class={`group ${expired ? 'expired' : ''}`}>
@@ -58,7 +77,7 @@
 		>
 		<ContextMenuEntry
 			disabled={!hasPermissions(memberPermissions, ['delete:event'])}
-			action={onDelete}>Slet</ContextMenuEntry
+			action={handleDeleteEvent}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>
 </ListEntry>
