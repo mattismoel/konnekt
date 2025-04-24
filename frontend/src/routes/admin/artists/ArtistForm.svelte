@@ -77,6 +77,7 @@
 		if (form.socials.some((social) => social === socialUrl)) return;
 
 		form.socials = [...form.socials, socialUrl];
+		socialUrl = '';
 	};
 
 	const submit = (e: SubmitEvent) => {
