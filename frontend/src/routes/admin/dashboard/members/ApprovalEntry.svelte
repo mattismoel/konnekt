@@ -24,7 +24,6 @@
 		}
 	};
 
-	// TODO: Implement...
 	const disapprove = async () => {
 		try {
 			await deleteMember(fetch, member.id);
