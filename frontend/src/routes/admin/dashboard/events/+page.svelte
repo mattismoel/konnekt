@@ -84,7 +84,7 @@
 		<div class="flex gap-2">
 			<Button
 				disabled={!hasPermissions(data.member.permissions, ['edit:event'])}
-				onclick={() => goto(`/admin/events/edit`)}
+				onclick={() => goto(`/admin/events/create`)}
 			>
 				<PlusIcon />Tilføj
 			</Button>
