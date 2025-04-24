@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { APIError } from '$lib/api';
+	import List from '$lib/components/List.svelte';
 	import { deleteArtist, type Artist } from '$lib/features/artist/artist';
 	import type { Permission } from '$lib/features/auth/permission';
 	import { toaster } from '$lib/toaster.svelte';
@@ -32,8 +33,8 @@
 	};
 </script>
 
-<ul>
+<List>
 	{#each artists as artist (artist.id)}
 		<ArtistEntry {artist} {memberPermissions} onDelete={() => handleDeleteArtist(artist.id)} />
 	{/each}
-</ul>
+</List>
