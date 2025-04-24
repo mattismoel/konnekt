@@ -32,12 +32,12 @@
 		class="absolute top-1/2 right-4"
 	>
 		<ContextMenuEntry
-			disabled={!hasPermissions(memberPermissions, ['delete:artist'])}
-			action={onDelete}>Slet</ContextMenuEntry
+			disabled={!hasPermissions(memberPermissions, ['edit:artist'])}
+			action={() => goto(`/admin/artists/edit/${artist.id}`)}>Redigér</ContextMenuEntry
 		>
 		<ContextMenuEntry
-			disabled={!hasPermissions(memberPermissions, ['edit:artist'])}
-			action={() => goto(`/admin/artists/edit?id=${artist.id}`)}>Redigér</ContextMenuEntry
+			disabled={!hasPermissions(memberPermissions, ['delete:artist'])}
+			action={onDelete}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>
 </ListEntry>
