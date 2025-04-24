@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { ZodError, type z } from 'zod';
-	import EventForm from '../EventForm.svelte';
 	import { goto } from '$app/navigation';
 	import { toaster } from '$lib/toaster.svelte';
 
 	import { updateEvent, type editEventForm } from '$lib/features/event/event';
+	import EventForm from '../../EventForm.svelte';
 
 	let { data } = $props();
 	let loading = $state(false);
