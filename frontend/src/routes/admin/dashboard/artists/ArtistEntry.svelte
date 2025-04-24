@@ -5,7 +5,7 @@
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import MenuIcon from '~icons/mdi/dots-vertical';
-	import ListEntry from '$lib/components/ListEntry.svelte';
+	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 
 	type Props = {
 		artist: Artist;

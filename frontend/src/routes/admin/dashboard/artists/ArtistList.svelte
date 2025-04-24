@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { APIError } from '$lib/api';
-	import List from '$lib/components/List.svelte';
+	import List from '$lib/components/ui/List.svelte';
 	import { deleteArtist, type Artist } from '$lib/features/artist/artist';
 	import type { Permission } from '$lib/features/auth/permission';
 	import { toaster } from '$lib/toaster.svelte';

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import AvatarImage from '$lib/assets/avatar.png';
-	import ListEntry from '$lib/components/ListEntry.svelte';
+	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import MemberStatusIndicator from '$lib/components/MemberStatusIndicator.svelte';
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';

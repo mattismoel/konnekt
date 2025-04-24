@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/assets/avatar.png';
-	import ListEntry from '$lib/components/ListEntry.svelte';
+	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import MemberStatusIndicator from '$lib/components/MemberStatusIndicator.svelte';
 	import { approveMember, deleteMember, type Member } from '$lib/features/auth/member';
 	import { toaster } from '$lib/toaster.svelte';

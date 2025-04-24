@@ -10,7 +10,7 @@
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import { goto } from '$app/navigation';
 	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
-	import ListEntry from '$lib/components/ListEntry.svelte';
+	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
 
 	type Props = {
