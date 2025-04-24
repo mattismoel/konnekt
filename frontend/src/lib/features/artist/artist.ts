@@ -141,7 +141,10 @@ export const uploadArtistImage = async (file: File, init?: RequestInit): Promise
 export const listArtists = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Artist>> => {
 	const result = requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/artists`, query),
+		createUrl(`${PUBLIC_BACKEND_URL}/artists`, {
+			orderBy: new Map([["name", "ASC"]]),
+			...query,
+		}),
 		createListResult(artistSchema)
 	)
 
