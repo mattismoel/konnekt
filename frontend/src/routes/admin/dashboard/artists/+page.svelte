@@ -47,7 +47,7 @@
 		</div>
 		<Button
 			disabled={!hasPermissions(data.member.permissions, ['edit:artist'])}
-			onclick={() => goto('/admin/artists/edit')}
+			onclick={() => goto('/admin/artists/create')}
 		>
 			<PlusIcon />Tilføj
 		</Button>
