@@ -4,11 +4,14 @@ import { createListResult, type ListResult } from "$lib/query";
 import { createUrl, type Query } from "$lib/url";
 import { z } from "zod";
 
-export const venueForm = z.object({
+const venueForm = z.object({
 	name: z.string().nonempty(),
 	city: z.string().nonempty(),
 	countryCode: z.string().nonempty(),
 })
+
+export const createVenueForm = venueForm;
+export const editVenueForm = venueForm;
 
 export const venueSchema = z.object({
 	id: z.number().positive(),
@@ -33,7 +36,7 @@ export const listVenues = async (fetchFn: typeof fetch, query?: Query): Promise<
 	return venues
 }
 
-export const createVenue = async (fetchFn: typeof fetch, form: z.infer<typeof venueForm>) => {
+export const createVenue = async (fetchFn: typeof fetch, form: z.infer<typeof createVenueForm>) => {
 	const venue = requestAndParse(
 		fetchFn,
 		createUrl(`${PUBLIC_BACKEND_URL}/venues`),
