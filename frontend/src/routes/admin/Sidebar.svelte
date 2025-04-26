@@ -33,7 +33,7 @@
 <aside
 	class:expanded
 	class={cn(
-		'group w-sidenav-sm [.expanded]:w-sidenav-lg group fixed z-50 flex h-full flex-col items-center gap-y-8 border-r border-zinc-900 p-8 px-0 [.expanded]:items-stretch [.expanded]:px-8'
+		'group w-sidenav-sm [.expanded]:w-sidenav-lg group fixed z-50  hidden h-full flex-col items-center gap-y-8 border-r border-zinc-900 p-8 px-0 md:flex [.expanded]:items-stretch [.expanded]:px-8'
 	)}
 >
 	<div class="flex items-baseline justify-between">

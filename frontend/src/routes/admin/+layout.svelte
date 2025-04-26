@@ -27,9 +27,9 @@
 		onToggle={() => (sidebarExpanded = !sidebarExpanded)}
 	/>
 	<div
-		class={cn('grid-cols grid flex-1', {
-			'pl-sidenav-lg': sidebarExpanded,
-			'pl-sidenav-sm': !sidebarExpanded
+		class={cn('grid flex-1 grid-cols-1 overflow-hidden pl-0', {
+			'md:pl-sidenav-lg': sidebarExpanded,
+			'md:pl-sidenav-sm': !sidebarExpanded
 		})}
 	>
 		{@render children()}
