@@ -67,6 +67,8 @@ func (s *Server) setupRoutes() {
 
 	s.mux.Route("/venues", func(r chi.Router) {
 		r.Get("/", s.withPermissions(s.handleListVenues(), "view:venue"))
+		r.Get("/{venueID}", s.withPermissions(s.handleVenueByID(), "view:venue"))
+
 		r.Post("/", s.withPermissions(s.handleCreateVenue(), "edit:venue"))
 		r.Put("/{venueID}", s.withPermissions(s.handleUpdateVenue(), "edit:venue"))
 		r.Delete("/{venueID}", s.withPermissions(s.handleDeleteVenue(), "delete:venue"))

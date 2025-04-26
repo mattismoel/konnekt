@@ -76,3 +76,12 @@ func (s VenueService) Update(ctx context.Context, id int64, load UpdateVenue) (v
 
 	return updatedVenue, nil
 }
+
+func (s VenueService) ByID(ctx context.Context, venueID int64) (venue.Venue, error) {
+	v, err := s.venueRepo.ByID(ctx, venueID)
+	if err != nil {
+		return venue.Venue{}, err
+	}
+
+	return v, nil
+}

@@ -69,3 +69,14 @@ export const editVenue = async (fetchFn: typeof fetch, id: number, form: z.infer
 
 	return venue
 }
+
+export const venueById = async (fetchFn: typeof fetch, venueId: number) => {
+	const venue = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/venues/${venueId}`),
+		venueSchema,
+		"Could not get venue by ID"
+	)
+
+	return venue
+}
