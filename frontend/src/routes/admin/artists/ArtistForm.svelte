@@ -122,9 +122,11 @@
 			>
 				<PlusIcon />Tilføj
 			</button>
-			{#each selectedGenres as genre (genre.id)}
-				<Pill>{genre.name}</Pill>
-			{/each}
+			<ul class="flex flex-wrap gap-2">
+				{#each selectedGenres as genre (genre.id)}
+					<Pill>{genre.name}</Pill>
+				{/each}
+			</ul>
 		</div>
 		<FieldError errors={formError?.flatten().fieldErrors['genreIds']} />
 		<GenreSelectorModal
