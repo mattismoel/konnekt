@@ -36,9 +36,9 @@
 <form onsubmit={(e) => handleSubmit(e)} class="max-w-xl space-y-8">
 	<h1 class="mb-8 text-4xl font-bold">
 		{#if venue}
-			Lav venue
-		{:else}
 			Redigér venue
+		{:else}
+			Lav venue
 		{/if}
 	</h1>
 
