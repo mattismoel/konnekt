@@ -8,6 +8,7 @@
 	import DashboardLayout from '../DashboardLayout.svelte';
 	import DashboardHeader from '../DashboardHeader.svelte';
 	import HeaderActions from '../HeaderActions.svelte';
+	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 
@@ -24,7 +25,10 @@
 		description="Overblik over alle venues, som er associerede med events for Konnekt."
 	>
 		<HeaderActions>
-			<Button disabled={!hasPermissions(data.member.permissions, ['edit:venue'])}>
+			<Button
+				onclick={() => goto('/admin/venues/create')}
+				disabled={!hasPermissions(data.member.permissions, ['edit:venue'])}
+			>
 				<PlusIcon />Tilføj
 			</Button>
 		</HeaderActions>
