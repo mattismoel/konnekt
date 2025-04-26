@@ -15,6 +15,7 @@
 	import { toaster } from '$lib/toaster.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { APIError } from '$lib/api';
+	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
 
 	type Props = {
 		venue: Venue;
@@ -22,9 +23,7 @@
 	};
 
 	let { venue, memberPermissions }: Props = $props();
-
 	let showContextMenu = $state(false);
-
 	let form = $state<z.infer<typeof venueForm>>({
 		...(venue || {
 			name: '',
@@ -84,49 +83,15 @@
 	}}
 />
 
-<ListEntry
-	class={cn(
-		'group relative flex items-center gap-8 rounded-md border border-transparent p-2 hover:border-zinc-800 hover:bg-zinc-900',
-		{
-			'border-green-800 bg-green-950 hover:border-green-800 hover:bg-green-950': isEdited
-		}
-	)}
->
-	<input
-		bind:value={form.name}
-		class={cn('w-full rounded-sm border-transparent bg-transparent font-semibold', {
-			italic: form.name !== venue?.name
-		})}
-	/>
-	<input
-		bind:value={form.city}
-		class={cn('text-text/50 hidden w-full rounded-sm border-transparent bg-transparent lg:inline', {
-			italic: form.city !== venue?.city
-		})}
-	/>
-	<Selector
-		class={cn(
-			'text-text/50 hidden border-transparent bg-transparent group-hover:border-zinc-800 lg:inline',
-			{
-				italic: form.countryCode !== venue?.countryCode
-			}
-		)}
-		entries={Array.from(COUNTRIES_MAP).map(([key, val]) => ({ name: val, value: key }))}
-		bind:value={form.countryCode}
-	/>
-	<div class="text-text/50 flex w-full justify-end gap-8">
-		{#if isEdited}
-			<div class="flex gap-4">
-				<button onclick={resetForm} class="hover:text-red-400">
-					<XIcon />
-				</button>
-				<button onclick={handleEditVenue} class="hover:text-green-400"><CheckIcon /></button>
-			</div>
-		{/if}
-	</div>
-	<button onclick={() => (showContextMenu = true)}>
-		<MenuIcon />
-	</button>
+<ListEntry class="">
+	<a href="/admin/venues/edit/{venue.id}" class="w-full">
+		<div class="flex flex-col">
+			<span>{venue.name}</span>
+			<span class="text-text/50">{venue.city}, {venue.countryCode}</span>
+		</div>
+	</a>
+
+	<ContextMenuButton onclick={() => (showContextMenu = true)} />
 	<ContextMenu
 		open={showContextMenu}
 		onClose={() => (showContextMenu = false)}
