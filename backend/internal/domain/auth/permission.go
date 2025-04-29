@@ -10,10 +10,10 @@ var (
 )
 
 type Permission struct {
-	ID          int64
-	Name        string
-	DisplayName string
-	Description string
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	DisplayName string `json:"displayName"`
+	Description string `json:"description"`
 }
 
 type PermissionCollection []Permission

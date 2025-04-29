@@ -1,47 +1,63 @@
 <script lang="ts">
-	import Card from '$lib/components/ui/Card.svelte';
-	import Table from '$lib/components/ui/table/Table.svelte';
-	import TableBody from '$lib/components/ui/table/TableBody.svelte';
-	import TableCell from '$lib/components/ui/table/TableCell.svelte';
-	import TableHead from '$lib/components/ui/table/TableHead.svelte';
-	import TableHeader from '$lib/components/ui/table/TableHeader.svelte';
-	import TableRow from '$lib/components/ui/table/TableRow.svelte';
-	import { earliestConcert, latestConcert } from '$lib/concert';
-	import { format } from 'date-fns';
-	import EventEntry from './EventEntry.svelte';
 	import PlusIcon from '~icons/mdi/plus';
-	import { DATE_FORMAT, DATETIME_FORMAT } from '$lib/time';
 	import Button from '$lib/components/ui/Button.svelte';
 
-	import TrashIcon from '~icons/mdi/trash';
-	import EditIcon from '~icons/mdi/edit';
-	import { goto } from '$app/navigation';
-	import SearchBar from '$lib/components/ui/SearchBar.svelte';
+
+	import SearchBar from '$lib/components/SearchBar.svelte';
+	import { hasPermissions } from '$lib/features/auth/permission';
+	import EventList from './EventList.svelte';
+	import DashboardLayout from '../DashboardLayout.svelte';
+	import DashboardHeader from '../DashboardHeader.svelte';
+	import HeaderActions from '../HeaderActions.svelte';
 
 	let { data } = $props();
 
 	let search = $state('');
 
-	let upcomingEvents = $derived(
-		data.upcomingEvents.filter((v) => v.title.toLowerCase().includes(search.toLowerCase()))
+	let filteredEvents = $derived(
+		[...data.previousEvents, ...data.upcomingEvents].filter((event) =>
+			event.title.toLowerCase().includes(search.toLowerCase())
+		)
 	);
+
+
 </script>
 
-<Card class="space-y-8">
-	<div>
-		<div class="flex justify-between">
-			<h1 class="font-heading mb-4 text-4xl font-bold">Kommende events</h1>
-			<Button onclick={() => goto(`/admin/events/edit`)}><PlusIcon />Tilføj</Button>
-		</div>
-		<p class="text-text/50">Overblik over alle events.</p>
-	</div>
+<DashboardLayout>
+	<DashboardHeader title="Events" description="Overblik over alle events.">
+		<HeaderActions>
+			<Button
+				disabled={!hasPermissions(data.member.permissions, ['edit:event'])}
+				onclick={() => goto(`/admin/events/create`)}
+			>
+				<PlusIcon />Tilføj
+			</Button>
+		</HeaderActions>
+	</DashboardHeader>
 
-	<section class="space-y-4">
-		<SearchBar bind:value={search} />
-		<ul>
-			{#each upcomingEvents as event (event.id)}
-				<EventEntry {event} />
-			{/each}
-		</ul>
-	</section>
-</Card>
+	{#if hasPermissions(data.member.permissions, ['view:event'])}
+		<div class="space-y-8">
+			<SearchBar bind:value={search} />
+			{#if search.trim() !== ''}
+				<section>
+					<EventList events={filteredEvents} memberPermissions={data.member.permissions} />
+				</section>
+			{:else}
+				<section>
+					<EventList events={data.upcomingEvents} memberPermissions={data.member.permissions} />
+				</section>
+			{/if}
+
+			{#if data.previousEvents.length > 0}
+				<section>
+					<details>
+						<summary class="mb-4">Tidligere events ({data.previousEvents.length})</summary>
+						<EventList events={data.previousEvents} memberPermissions={data.member.permissions} />
+					</details>
+				</section>
+			{/if}
+		</div>
+	{:else}
+		<span>Du har ikke tilladelse til at se denne side...</span>
+	{/if}
+</DashboardLayout>

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"image"
 	"io"
 	"net/url"
 	"path"
@@ -16,6 +17,8 @@ import (
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
 )
+
+const EVENT_COVER_IMAGE_WIDTH_PX = 4096
 
 type EventService struct {
 	eventRepo   event.Repository
@@ -209,12 +212,17 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	return updatedEvent, nil
 }
 
-func (s EventService) UploadImage(ctx context.Context, fileName string, r io.Reader) (string, error) {
-	ext := path.Ext(fileName)
+func (s EventService) UploadImage(ctx context.Context, r io.Reader) (string, error) {
+	img, _, err := image.Decode(r)
 
-	fileName = fmt.Sprintf("%s%s", uuid.NewString(), ext)
+	resizedImage, err := resizeImage(img, EVENT_COVER_IMAGE_WIDTH_PX, 0)
+	if err != nil {
+		return "", nil
+	}
 
-	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), r)
+	fileName := fmt.Sprintf("%s.jpeg", uuid.NewString())
+
+	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), resizedImage)
 	if err != nil {
 		return "", err
 	}
@@ -229,4 +237,28 @@ func (s EventService) List(ctx context.Context, q query.ListQuery) (query.ListRe
 	}
 
 	return result, nil
+}
+
+func (s EventService) Delete(ctx context.Context, eventID int64) error {
+	e, err := s.eventRepo.ByID(ctx, eventID)
+	if err != nil {
+		return err
+	}
+
+	url, err := url.Parse(e.ImageURL)
+	if err != nil {
+		return err
+	}
+
+	err = s.objectStore.Delete(ctx, url.Path)
+	if err != nil {
+		return err
+	}
+
+	err = s.eventRepo.Delete(ctx, eventID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

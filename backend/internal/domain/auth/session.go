@@ -19,16 +19,16 @@ type SessionID string
 
 type Session struct {
 	ID        SessionID
-	UserID    int64
+	MemberID  int64
 	ExpiresAt time.Time
 }
 
-func NewSession(token SessionToken, userID int64, lifetime time.Duration) Session {
+func NewSession(token SessionToken, memberID int64, lifetime time.Duration) Session {
 	expiry := time.Now().Add(lifetime)
 
 	return Session{
 		ID:        token.SessionID(),
-		UserID:    userID,
+		MemberID:  memberID,
 		ExpiresAt: expiry,
 	}
 }

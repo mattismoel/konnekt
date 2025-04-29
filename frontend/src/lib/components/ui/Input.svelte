@@ -31,7 +31,7 @@
 			onfocus={() => (focused = true)}
 			onblur={() => (focused = false)}
 			{...rest}
-			class="bg-background w-full rounded-sm border border-zinc-900 px-4 py-2"
+			class="bg-background disabled:text-text/50 w-full rounded-sm border border-zinc-900 px-4 py-2"
 		/>
 	</div>
 	<FieldError {errors} />

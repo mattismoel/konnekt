@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
-	"github.com/mattismoel/konnekt/internal/domain/user"
+	"github.com/mattismoel/konnekt/internal/domain/member"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
 const (
@@ -15,19 +16,20 @@ const (
 )
 
 var (
-	ErrPasswordsNoMatch   = APIError{Message: "Passwords do not match", Status: http.StatusBadRequest}
-	ErrUserAlreadyExists  = APIError{Message: "User already exists", Status: http.StatusConflict}
-	ErrInvalidCredentials = APIError{Message: "User credentials are invalid", Status: http.StatusBadRequest}
-	ErrUnauthorized       = APIError{Message: "User unauthorized", Status: http.StatusUnauthorized}
+	ErrPasswordsNoMatch         = APIError{Message: "Passwords do not match", Status: http.StatusBadRequest}
+	ErrMemberAlreadyExists      = APIError{Message: "Member already exists", Status: http.StatusConflict}
+	ErrMemberInvalidCredentials = APIError{Message: "Member credentials are invalid", Status: http.StatusBadRequest}
+	ErrUnauthorized             = APIError{Message: "Member unauthorized", Status: http.StatusUnauthorized}
 )
 
 func (s Server) handleRegister() http.HandlerFunc {
 	type RegisterLoad struct {
-		Email           string `json:"email"`
-		FirstName       string `json:"firstName"`
-		LastName        string `json:"lastName"`
-		Password        string `json:"password"`
-		PasswordConfirm string `json:"passwordConfirm"`
+		Email             string `json:"email"`
+		FirstName         string `json:"firstName"`
+		LastName          string `json:"lastName"`
+		Password          string `json:"password"`
+		PasswordConfirm   string `json:"passwordConfirm"`
+		ProfilePictureURL string `json:"profilePictureUrl"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -38,18 +40,19 @@ func (s Server) handleRegister() http.HandlerFunc {
 			return
 		}
 
-		token, expiry, err := s.authService.Register(r.Context(),
-			load.Email,
-			[]byte(load.Password),
-			[]byte(load.PasswordConfirm),
-			load.FirstName,
-			load.LastName,
-		)
+		err := s.authService.Register(r.Context(), service.RegisterLoad{
+			FirstName:         load.FirstName,
+			LastName:          load.LastName,
+			Email:             load.Email,
+			Password:          []byte(load.Password),
+			PasswordConfirm:   []byte(load.PasswordConfirm),
+			ProfilePictureURL: load.ProfilePictureURL,
+		})
 
 		if err != nil {
 			switch {
-			case errors.Is(err, user.ErrAlreadyExists):
-				writeError(w, ErrUserAlreadyExists)
+			case errors.Is(err, member.ErrAlreadyExists):
+				writeError(w, ErrMemberAlreadyExists)
 			case errors.Is(err, auth.ErrPasswordsNoMatch):
 				writeError(w, ErrPasswordsNoMatch)
 			default:
@@ -57,8 +60,6 @@ func (s Server) handleRegister() http.HandlerFunc {
 			}
 			return
 		}
-
-		writeSessionCookie(w, token, expiry)
 	}
 }
 
@@ -82,10 +83,10 @@ func (s Server) handleLogin() http.HandlerFunc {
 		token, expiry, err := s.authService.Login(ctx, load.Email, []byte(load.Password))
 		if err != nil {
 			switch {
-			case errors.Is(err, user.ErrNotFound):
-				writeError(w, ErrInvalidCredentials)
+			case errors.Is(err, member.ErrNotFound):
+				writeError(w, ErrMemberInvalidCredentials)
 			case errors.Is(err, auth.ErrPasswordsNoMatch):
-				writeError(w, ErrInvalidCredentials)
+				writeError(w, ErrMemberInvalidCredentials)
 			default:
 				writeError(w, err)
 			}
@@ -155,7 +156,7 @@ func (s Server) handleGetSession() http.HandlerFunc {
 			return
 		}
 
-		user, err := s.userService.ByID(ctx, session.UserID)
+		member, err := s.memberService.ByID(ctx, session.MemberID)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -163,7 +164,7 @@ func (s Server) handleGetSession() http.HandlerFunc {
 
 		writeSessionCookie(w, token, newExpiry)
 
-		writeJSON(w, http.StatusOK, user)
+		writeJSON(w, http.StatusOK, member)
 	}
 }
 
@@ -189,4 +190,27 @@ func clearSessionCookie(w http.ResponseWriter) {
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	})
+}
+
+func (s Server) handleListTeamPermissions() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		teamID, err := paramID("teamID", r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		ctx := r.Context()
+
+		perms, err := s.teamService.TeamPermissions(ctx, teamID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if err := writeJSON(w, http.StatusOK, perms); err != nil {
+			writeError(w, err)
+			return
+		}
+	}
 }

@@ -1,36 +1,19 @@
-import type { Handle } from "@sveltejs/kit";
-
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
-
-import { roleSchema } from "$lib/auth";
-import { userSchema } from "$lib/user";
+import { cleanUrl } from "$lib/url";
+import { redirect, type Handle, type HandleFetch } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-	let res = await fetch(`${PUBLIC_BACKEND_URL}/auth/session`, {
-		credentials: "include",
-		headers: event.request.headers
-	})
-
-	if (!res.ok) {
-		event.locals.user = null
-	} else {
-		event.locals.user = userSchema.parse(await res.json())
+	if (cleanUrl(event.url.pathname) === "/admin/dashboard") {
+		redirect(302, "/admin/dashboard/events")
 	}
 
-	res = await fetch(`${PUBLIC_BACKEND_URL}/auth/roles/${event.locals.user?.id}`, {
-		credentials: "include",
-		headers: event.request.headers
+	return await resolve(event)
+}
+
+export const handleFetch: HandleFetch = async ({ request, fetch }) => {
+	return fetch(request, {
+		headers: {
+			"Content-Type": "application/json",
+			...request.headers
+		}
 	})
-
-	if (!res.ok) {
-		event.locals.roles = []
-	} else {
-		event.locals.roles = roleSchema.array().parse(await res.json())
-	}
-
-	console.log(event.locals.user, event.locals.roles)
-
-	const response = await resolve(event)
-
-	return response
 }

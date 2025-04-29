@@ -119,3 +119,26 @@ func (s Server) handleUpdateVenue() http.HandlerFunc {
 		writeJSON(w, http.StatusOK, venue)
 	}
 }
+
+func (s Server) handleVenueByID() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		venueID, err := paramID("venueID", r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		ctx := r.Context()
+
+		v, err := s.venueService.ByID(ctx, venueID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if err := writeJSON(w, http.StatusOK, v); err != nil {
+			writeError(w, err)
+			return
+		}
+	}
+}

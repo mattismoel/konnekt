@@ -1,28 +1,30 @@
-CREATE TABLE user (
+CREATE TABLE member (
   id INTEGER PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  password_hash TEXT NOT NULL
+  password_hash TEXT NOT NULL,
+  profile_picture_url TEXT,
+  active BOOLEAN NOT NULL DEFAULT "FALSE"
 );
 
 CREATE TABLE session (
   id TEXT PRIMARY KEY,
-  user_id INTEGER NOT NULL,
+  member_id INTEGER NOT NULL,
   expires_at TIMESTAMP NOT NULL
 );
 
-CREATE TABLE role (
+CREATE TABLE team (
   id INTEGER PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL,
   description TEXT
 );
 
-CREATE TABLE users_roles (
-  user_id INTEGER NOT NULL,
-  role_id INTEGER NOT NULL,
-  PRIMARY KEY (user_id, role_id)
+CREATE TABLE members_teams (
+  member_id INTEGER NOT NULL,
+  team_id INTEGER NOT NULL,
+  PRIMARY KEY (member_id, team_id)
 );
 
 CREATE TABLE permission (
@@ -32,10 +34,10 @@ CREATE TABLE permission (
   description TEXT
 );
 
-CREATE TABLE roles_permissions (
-  role_id INTEGER NOT NULL,
+CREATE TABLE teams_permissions (
+  team_id INTEGER NOT NULL,
   permission_id INTEGER NOT NULL,
-  PRIMARY KEY (role_id, permission_id)
+  PRIMARY KEY (team_id, permission_id)
 );
 
 CREATE TABLE event (

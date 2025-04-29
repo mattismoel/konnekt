@@ -6,13 +6,14 @@
 		variant?: 'primary' | 'secondary' | 'dangerous' | 'ghost';
 	};
 
-	let { children, class: className, variant = 'primary', ...rest }: Props = $props();
+	let { children, variant = 'primary', ...rest }: Props = $props();
 </script>
 
 <button
 	type="button"
+	{...rest}
 	class={cn(
-		`flex h-min w-fit items-center justify-center gap-1 rounded-sm px-6 py-2 font-medium text-zinc-950`,
+		`flex h-min w-fit items-center justify-center gap-3 rounded-sm px-6 py-2 font-medium text-zinc-950 disabled:opacity-50`,
 		{
 			'bg-zinc-100 text-zinc-950 hover:bg-zinc-300': variant === 'primary',
 			'border border-zinc-100 text-zinc-100 transition-colors hover:bg-zinc-100 hover:text-zinc-950':
@@ -21,9 +22,8 @@
 				variant === 'dangerous',
 			'border border-zinc-900 font-normal text-zinc-500 hover:bg-zinc-900': variant === 'ghost'
 		},
-		className
+		rest.class
 	)}
-	{...rest}
 >
 	{#if children}
 		{@render children()}

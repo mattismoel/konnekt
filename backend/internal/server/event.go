@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/service"
 )
+
+const COVER_IMAGE_WIDTH = 2048
 
 var (
 	ErrEventNoExist = APIError{Message: "Event does not exist", Status: http.StatusNotFound}
@@ -40,13 +40,13 @@ func (s Server) handleEventByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
+		eventID, err := paramID("eventID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		e, err := s.eventService.ByID(ctx, int64(eventID))
+		e, err := s.eventService.ByID(ctx, eventID)
 		if err != nil {
 			switch {
 			case errors.Is(err, event.ErrNoExist):
@@ -130,7 +130,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		eventID, err := strconv.Atoi(chi.URLParam(r, "eventID"))
+		eventID, err := paramID("eventID", r)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -156,7 +156,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 			})
 		}
 
-		e, err := s.eventService.Update(ctx, int64(eventID), service.UpdateEvent{
+		e, err := s.eventService.Update(ctx, eventID, service.UpdateEvent{
 			Title:       load.Title,
 			Description: load.Description,
 			TicketURL:   load.TicketURL,
@@ -176,7 +176,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 
 func (s Server) handleUploadEventImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		file, fileHeader, err := r.FormFile("image")
+		file, _, err := r.FormFile("image")
 		if err != nil {
 			writeError(w, err)
 			return
@@ -186,12 +186,30 @@ func (s Server) handleUploadEventImage() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		url, err := s.eventService.UploadImage(ctx, fileHeader.Filename, file)
+		url, err := s.eventService.UploadImage(ctx, file)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
 		writeText(w, http.StatusOK, url)
+	}
+}
+
+func (s Server) handleDeleteEvent() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		eventID, err := paramID("eventID", r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = s.eventService.Delete(ctx, eventID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
 	}
 }

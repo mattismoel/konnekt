@@ -47,7 +47,8 @@ func TestDoPasswordsMatch(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			err := auth.DoPasswordsMatch(tt.p1, tt.p2)
+			p := auth.Password(tt.p1)
+			err := p.Matches(tt.p2)
 			if !errors.Is(err, tt.err) {
 				t.Fatal("want %w, got %w", tt.err, err)
 			}

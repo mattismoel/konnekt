@@ -3,9 +3,6 @@ package server
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
-
-	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/service"
 )
@@ -37,13 +34,13 @@ func (s Server) handleGetArtistByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		artistID, err := strconv.Atoi(chi.URLParam(r, "artistID"))
+		artistID, err := paramID("artistID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		artist, err := s.artistService.ByID(ctx, int64(artistID))
+		artist, err := s.artistService.ByID(ctx, artistID)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -119,13 +116,13 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		artistID, err := strconv.Atoi(chi.URLParam(r, "artistID"))
+		artistID, err := paramID("artistID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		a, err := s.artistService.Update(ctx, int64(artistID), service.UpdateArtist{
+		a, err := s.artistService.Update(ctx, artistID, service.UpdateArtist{
 			Name:        load.Name,
 			Description: load.Description,
 			PreviewURL:  load.PreviewURL,
@@ -139,7 +136,7 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 			return
 		}
 
-		err = a.WithCfgs(artist.WithID(int64(artistID)))
+		err = a.WithCfgs(artist.WithID(artistID))
 		if err != nil {
 			writeError(w, err)
 			return
@@ -175,13 +172,13 @@ func (s Server) handleDeleteArtist() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		artistID, err := strconv.Atoi(chi.URLParam(r, "artistID"))
+		artistID, err := paramID("artistID", r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		err = s.artistService.Delete(ctx, int64(artistID))
+		err = s.artistService.Delete(ctx, artistID)
 		if err != nil {
 			writeError(w, err)
 			return

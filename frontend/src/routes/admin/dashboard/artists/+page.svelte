@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
-	import SearchBar from '$lib/components/ui/SearchBar.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 	import PlusIcon from '~icons/mdi/plus';
-	import ArtistEntry from './ArtistEntry.svelte';
+	import { hasPermissions } from '$lib/features/auth/permission';
+	import ArtistList from './ArtistList.svelte';
+	import DashboardLayout from '../DashboardLayout.svelte';
+	import DashboardHeader from '../DashboardHeader.svelte';
+	import HeaderActions from '../HeaderActions.svelte';
 
 	let { data } = $props();
 
@@ -15,21 +18,51 @@
 	);
 </script>
 
-<Card class="space-y-8">
-	<div>
-		<div class="flex justify-between">
-			<h1 class="font-heading mb-4 text-4xl font-bold">Kunstnere</h1>
-			<Button onclick={() => goto('/admin/artists/edit')}><PlusIcon />Tilføj</Button>
-		</div>
-		<p class="text-text/50">Overblik over alle kunstnere, som er associerede med events.</p>
-	</div>
+<DashboardLayout>
+	<DashboardHeader
+		title="Kunstnere"
+		description="Overblik over alle kunstnere, som er associerede med events."
+	>
+		<HeaderActions>
+			<Button
+				disabled={!hasPermissions(data.member.permissions, ['edit:artist'])}
+				onclick={() => goto('/admin/artists/create')}
+			>
+				<PlusIcon />Tilføj
+			</Button>
+		</HeaderActions>
+	</DashboardHeader>
 
-	<section class="space-y-8">
-		<SearchBar bind:value={search} />
-		<ul>
-			{#each artists as artist (artist.id)}
-				<ArtistEntry {artist} />
-			{/each}
-		</ul>
-	</section>
-</Card>
+	{#if hasPermissions(data.member.permissions, ['view:artist'])}
+		<section class="space-y-4">
+			<SearchBar bind:value={search} />
+			<ArtistList {artists} memberPermissions={data.member.permissions} />
+		</section>
+	{:else}
+		<span>Du har ikke tilladelse til at se kunstnere...</span>
+	{/if}
+</DashboardLayout>
+
+<!-- <main class="space-y-8 px-8 py-16 md:px-16"> -->
+<!-- 	<div class="flex flex-col justify-between gap-8 md:flex-row"> -->
+<!-- 		<div class=""> -->
+<!-- 			<h1 class="font-heading mb-4 text-4xl font-bold">Kunstnere</h1> -->
+<!-- 			<p class="text-text/50">Overblik over alle kunstnere, som er associerede med events.</p> -->
+<!-- 		</div> -->
+<!-- 		<Button -->
+<!-- 			disabled={!hasPermissions(data.member.permissions, ['edit:artist'])} -->
+<!-- 			onclick={() => goto('/admin/artists/create')} -->
+<!-- 		> -->
+<!-- 			<PlusIcon />Tilføj -->
+<!-- 		</Button> -->
+<!-- 	</div> -->
+<!---->
+<!-- 	{#if hasPermissions(data.member.permissions, ['view:artist'])} -->
+<!-- 		<section class="space-y-8"> -->
+<!-- 			<SearchBar bind:value={search} /> -->
+<!-- 		</section> -->
+<!-- 		<ArtistList {artists} memberPermissions={data.member.permissions} /> -->
+<!-- 	{:else} -->
+<!-- 		<span>Du har ikke tilladelse til at se kunstnere...</span> -->
+<!-- 	{/if} -->
+<!-- </main> -->
