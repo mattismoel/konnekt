@@ -4,30 +4,41 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"image"
 	"io"
+	"net/url"
 	"path"
-	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
+	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
+const ARTIST_IMAGE_WIDTH_PX = 4096
+
 var (
-	AllowedImageFiletypes   = []string{".png", ".jpeg", ".jpg"}
+	AllowedImageFiletypes = []string{".png", ".jpeg", ".jpg"}
+)
+
+var (
 	ErrInvalidImageFiletype = errors.New(fmt.Sprintf("Image file must be of format %s", strings.Join(AllowedImageFiletypes, ", ")))
+	ErrArtistInEvent        = errors.New("Artist must not be part of an event to be deleted")
 )
 
 type ArtistService struct {
 	artistRepo  artist.Repository
+	eventRepo   event.Repository
 	objectStore object.Store
 }
 
-func NewArtistService(artistRepo artist.Repository, objectStore object.Store) (*ArtistService, error) {
+func NewArtistService(artistRepo artist.Repository, eventRepo event.Repository, objectStore object.Store) (*ArtistService, error) {
 	return &ArtistService{
 		artistRepo:  artistRepo,
+		eventRepo:   eventRepo,
 		objectStore: objectStore,
 	}, nil
 }
@@ -68,16 +79,20 @@ func (s ArtistService) List(ctx context.Context, q artist.Query) (query.ListResu
 	return result, nil
 }
 
-func (s ArtistService) SetImage(ctx context.Context, artistID int64, fileName string, file io.ReadCloser) (string, error) {
-	fileExtension := path.Ext(fileName)
+func (s ArtistService) SetImage(ctx context.Context, artistID int64, r io.Reader) (string, error) {
+	fileName := fmt.Sprintf("%s.jpeg", uuid.NewString())
 
-	if !slices.Contains(AllowedImageFiletypes, fileExtension) {
-		return "", ErrInvalidImageFiletype
+	img, _, err := image.Decode(r)
+	if err != nil {
+		return "", err
 	}
 
-	fileKey := fmt.Sprintf("artists/images/%s%s", uuid.NewString(), fileExtension)
+	resizedImage, err := resizeImage(img, ARTIST_IMAGE_WIDTH_PX, 0)
+	if err != nil {
+		return "", err
+	}
 
-	url, err := s.objectStore.Upload(ctx, fileKey, file)
+	url, err := s.objectStore.Upload(ctx, path.Join("artists/", fileName), resizedImage)
 	if err != nil {
 		return "", err
 	}
@@ -182,6 +197,22 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 
 func (s ArtistService) Delete(ctx context.Context, artistID int64) error {
 	err := s.artistRepo.Delete(ctx, artistID)
+	a, err := s.artistRepo.ByID(ctx, artistID)
+	if err != nil {
+		return err
+	}
+
+	url, err := url.Parse(a.ImageURL)
+	if err != nil {
+		return err
+	}
+
+	err = s.objectStore.Delete(ctx, url.Path)
+	if err != nil {
+		return err
+	}
+
+	err = s.artistRepo.Delete(ctx, artistID)
 	if err != nil {
 		return err
 	}
@@ -218,4 +249,22 @@ func (s ArtistService) UploadImage(ctx context.Context, fileName string, r io.Re
 	}
 
 	return url, nil
+}
+
+func (s ArtistService) ArtistEvents(ctx context.Context, artistID int64) (query.ListResult[event.Event], error) {
+	artistFilter, err := query.NewFilter(query.Equal, strconv.Itoa(int(artistID)))
+	if err != nil {
+		return query.ListResult[event.Event]{}, err
+	}
+
+	q, err := query.NewListQuery(query.WithFilters(query.FilterCollection{
+		"artist_id": []query.Filter{artistFilter},
+	}))
+
+	result, err := s.eventRepo.List(ctx, q)
+	if err != nil {
+		return query.ListResult[event.Event]{}, err
+	}
+
+	return result, nil
 }

@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"image"
 	"io"
+	"net/url"
 	"path"
 
 	"github.com/google/uuid"
@@ -12,6 +14,8 @@ import (
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
 )
+
+const PROFILE_PICTURE_WIDTH_PX = 512
 
 type MemberService struct {
 	memberRepo  member.Repository
@@ -45,12 +49,20 @@ func (srv MemberService) List(ctx context.Context, q query.ListQuery) (query.Lis
 	return result, nil
 }
 
-func (srv MemberService) UploadProfilePicture(ctx context.Context, fileName string, r io.Reader) (string, error) {
-	ext := path.Ext(fileName)
+func (srv MemberService) UploadProfilePicture(ctx context.Context, r io.Reader) (string, error) {
+	img, _, err := image.Decode(r)
+	if err != nil {
+		return "", err
+	}
 
-	fileName = fmt.Sprintf("%s%s", uuid.NewString(), ext)
+	resizedImage, err := resizeImage(img, PROFILE_PICTURE_WIDTH_PX, 0)
+	if err != nil {
+		return "", err
+	}
 
-	url, err := srv.objectStore.Upload(ctx, path.Join("/members", fileName), r)
+	fileName := fmt.Sprintf("%s.jpeg", uuid.NewString())
+
+	url, err := srv.objectStore.Upload(ctx, path.Join("/members", fileName), resizedImage)
 	if err != nil {
 		return "", err
 	}
@@ -68,10 +80,26 @@ func (srv MemberService) Approve(ctx context.Context, memberID int64) error {
 }
 
 func (srv MemberService) Delete(ctx context.Context, memberID int64) error {
-	err := srv.memberRepo.Delete(ctx, memberID)
+	m, err := srv.memberRepo.ByID(ctx, memberID)
 	if err != nil {
 		return err
 	}
+
+	url, err := url.Parse(m.ProfilePictureURL)
+	if err != nil {
+		return err
+	}
+
+	err = srv.objectStore.Delete(ctx, url.Path)
+	if err != nil {
+		return err
+	}
+
+	err = srv.memberRepo.Delete(ctx, memberID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

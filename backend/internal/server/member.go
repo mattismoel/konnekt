@@ -168,7 +168,7 @@ func (srv Server) handleSetMemberTeams() http.HandlerFunc {
 
 func (srv Server) handleUploadMemberProfilePicture() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		file, fileHeader, err := r.FormFile("file")
+		file, _, err := r.FormFile("file")
 		if err != nil {
 			writeError(w, err)
 			return
@@ -178,7 +178,8 @@ func (srv Server) handleUploadMemberProfilePicture() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		profilePictureUrl, err := srv.memberService.UploadProfilePicture(ctx, fileHeader.Filename, file)
+		profilePictureUrl, err := srv.memberService.UploadProfilePicture(ctx, file)
+
 		if err != nil {
 			writeError(w, err)
 			return
