@@ -37,7 +37,7 @@ export const listVenues = async (fetchFn: typeof fetch, query?: Query): Promise<
 }
 
 export const createVenue = async (fetchFn: typeof fetch, form: z.infer<typeof createVenueForm>) => {
-	const venue = requestAndParse(
+	const venue = await requestAndParse(
 		fetchFn,
 		createUrl(`${PUBLIC_BACKEND_URL}/venues`),
 		venueSchema,
