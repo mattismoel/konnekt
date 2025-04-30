@@ -1,10 +1,14 @@
 package service
 
 import (
+	"fmt"
 	"image"
 	"image/jpeg"
+	_ "image/png"
 	"io"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/nfnt/resize"
 )
 
@@ -21,4 +25,10 @@ func resizeImage(img image.Image, width, height uint) (io.Reader, error) {
 	}()
 
 	return pr, nil
+}
+
+func createRandomImageFileName(extension string) string {
+	extension = strings.TrimPrefix(extension, ".")
+
+	return fmt.Sprintf("%s.%s", uuid.NewString(), extension)
 }
