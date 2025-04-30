@@ -59,7 +59,7 @@ export async function requestAndParse<TBody, TResponse>(
 			: undefined
 	})
 
-	if (!res.ok) {
+	if (!isResponseSuccessful(res)) {
 		const err = apiErrorSchema.parse(await res.json())
 
 		console.dir(errorMsg + " " + err.message, { depth: Infinity })
@@ -71,9 +71,13 @@ export async function requestAndParse<TBody, TResponse>(
 		)
 	}
 
-	if (!resSchema) return
+	if (resSchema === undefined) return
 
 	const data = resSchema.parse(await res.json())
 
 	return data
+}
+
+const isResponseSuccessful = (res: Response): boolean => {
+	return (res.status >= 200 && res.status < 300)
 }
