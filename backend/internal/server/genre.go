@@ -26,5 +26,7 @@ func (s Server) handleCreateGenre() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusCreated)
 	}
 }
