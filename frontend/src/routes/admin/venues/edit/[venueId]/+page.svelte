@@ -16,7 +16,7 @@
 			await editVenue(fetch, data.venue.id, form);
 			toaster.addToast('Venue redigeret.');
 			await invalidateAll();
-			await goto('/admin/dashboard/venues');
+			await goto('/admin/venues');
 		} catch (e) {
 			if (e instanceof ZodError) {
 				errors = e.flatten();

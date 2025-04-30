@@ -16,7 +16,7 @@
 			loading = true;
 			await updateEvent(fetch, form, data.event.id);
 			toaster.addToast('Event opdateret');
-			goto('/admin/dashboard/events');
+			goto('/admin/events');
 			loading = false;
 		} catch (e) {
 			if (e instanceof ZodError) {

@@ -15,7 +15,7 @@
 			loading = true;
 			await createEvent(fetch, form);
 			toaster.addToast('Event skabt', 'Event blev skabt fejlfrit');
-			goto('/admin/dashboard/events');
+			goto('/admin/events');
 			loading = false;
 		} catch (e) {
 			if (e instanceof ZodError) {

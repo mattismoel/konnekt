@@ -12,7 +12,7 @@
 			await createVenue(fetch, form);
 			toaster.addToast('Venue skabt.');
 			await invalidateAll();
-			await goto('/admin/dashboard/venues');
+			await goto('/admin/venues');
 		} catch (e) {
 			if (e instanceof ZodError) {
 				errors = e.flatten();

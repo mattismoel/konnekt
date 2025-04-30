@@ -45,18 +45,18 @@
 	<section class="flex flex-1 flex-col gap-8">
 		<ul class="space-y-1">
 			{#if hasSomeTeam(member.teams, ['admin', 'event-management'])}
-				{@render entry(EventIcon, '/admin/dashboard/events', 'Events')}
+				{@render entry(EventIcon, '/admin/events', 'Events')}
 			{/if}
 			{#if hasSomeTeam(member.teams, ['admin', 'booking'])}
-				{@render entry(ArtistIcon, '/admin/dashboard/artists', 'Kunstnere')}
+				{@render entry(ArtistIcon, '/admin/artists', 'Kunstnere')}
 			{/if}
 			{#if hasSomeTeam(member.teams, ['admin', 'event-management'])}
-				{@render entry(VenueIcon, '/admin/dashboard/venues', 'Venues')}
+				{@render entry(VenueIcon, '/admin/venues', 'Venues')}
 			{/if}
 			{#if hasSomeTeam(member.teams, ['admin', 'team-management'])}
-				{@render entry(MemberIcon, '/admin/dashboard/members', 'Medlemmer')}
+				{@render entry(MemberIcon, '/admin/members', 'Medlemmer')}
 			{/if}
-			{@render entry(SettingsIcon, '/admin/dashboard/general', 'Generelt')}
+			{@render entry(SettingsIcon, '/admin/general', 'Generelt')}
 		</ul>
 	</section>
 	{@render memberInformation(member)}
@@ -66,7 +66,7 @@
 	{@const teamsString = member.teams.map((t) => t.displayName).join(', ')}
 
 	<div class="flex flex-col-reverse items-center justify-between gap-8 group-[.expanded]:flex-row">
-		<a href="/admin/dashboard/member/{member.id}" class="flex items-center gap-4">
+		<a href="/admin/members/{member.id}" class="flex items-center gap-4">
 			<img
 				src={member.profilePictureUrl || AvatarImage}
 				alt=""

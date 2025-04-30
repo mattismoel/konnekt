@@ -20,7 +20,7 @@
 			throw new Error('Could not login');
 		}
 
-		goto('/admin/dashboard/events');
+		goto('/admin/events');
 	};
 </script>
 
