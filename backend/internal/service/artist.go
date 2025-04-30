@@ -238,12 +238,20 @@ func (s ArtistService) CreateGenre(ctx context.Context, name string) (int64, err
 	return genreID, nil
 }
 
-func (s ArtistService) UploadImage(ctx context.Context, fileName string, r io.Reader) (string, error) {
-	ext := path.Ext(fileName)
+func (s ArtistService) UploadImage(ctx context.Context, r io.Reader) (string, error) {
+	img, _, err := image.Decode(r)
+	if err != nil {
+		return "", err
+	}
 
-	fileName = fmt.Sprintf("%s%s", uuid.NewString(), ext)
+	resizedImage, err := resizeImage(img, ARTIST_IMAGE_WIDTH_PX, 0)
+	if err != nil {
+		return "", err
+	}
 
-	url, err := s.objectStore.Upload(ctx, path.Join("/artists", fileName), r)
+	fileName := fmt.Sprintf("%s.jpeg", uuid.NewString())
+
+	url, err := s.objectStore.Upload(ctx, path.Join("/artists", fileName), resizedImage)
 	if err != nil {
 		return "", err
 	}
