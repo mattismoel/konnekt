@@ -211,5 +211,7 @@ func (s Server) handleDeleteEvent() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
