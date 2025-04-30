@@ -60,6 +60,8 @@ func (s Server) handleRegister() http.HandlerFunc {
 			}
 			return
 		}
+
+		w.WriteHeader(http.StatusCreated)
 	}
 }
 
@@ -94,6 +96,7 @@ func (s Server) handleLogin() http.HandlerFunc {
 		}
 
 		writeSessionCookie(w, token, expiry)
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -124,6 +127,7 @@ func (s Server) handleLogOut() http.HandlerFunc {
 		}
 
 		clearSessionCookie(w)
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
