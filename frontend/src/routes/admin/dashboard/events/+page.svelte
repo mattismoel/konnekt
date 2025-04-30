@@ -2,7 +2,7 @@
 	import PlusIcon from '~icons/mdi/plus';
 	import Button from '$lib/components/ui/Button.svelte';
 
-
+	import { goto } from '$app/navigation';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { hasPermissions } from '$lib/features/auth/permission';
 	import EventList from './EventList.svelte';
@@ -19,8 +19,6 @@
 			event.title.toLowerCase().includes(search.toLowerCase())
 		)
 	);
-
-
 </script>
 
 <DashboardLayout>
