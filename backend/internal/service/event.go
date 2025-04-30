@@ -175,7 +175,16 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 
 	// If there is a cover image URL update, set it.
 	if strings.TrimSpace(load.ImageURL) != "" {
+		url, err := url.Parse(prevEvent.ImageURL)
 		if err != nil {
+			return event.Event{}, err
+		}
+
+		if err := s.objectStore.Delete(ctx, url.Path); err != nil {
+			return event.Event{}, err
+		}
+
+		if err := e.WithCfgs(event.WithImageURL(load.ImageURL)); err != nil {
 			return event.Event{}, err
 		}
 	}
@@ -187,19 +196,6 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	err = s.eventRepo.Update(ctx, eventID, *e)
 	if err != nil {
 		return event.Event{}, err
-	}
-
-	// Delete previous cover image, if a new one was set.
-	if load.ImageURL != "" {
-		url, err := url.Parse(prevEvent.ImageURL)
-		if err != nil {
-			return event.Event{}, err
-		}
-
-		err = s.objectStore.Delete(ctx, url.Path)
-		if err != nil {
-			return event.Event{}, err
-		}
 	}
 
 	updatedEvent, err := s.eventRepo.ByID(ctx, eventID)
