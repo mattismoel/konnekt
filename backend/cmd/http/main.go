@@ -93,7 +93,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	artistService, err := service.NewArtistService(artistRepo, s3Store)
+	artistService, err := service.NewArtistService(artistRepo, eventRepo, s3Store)
 	if err != nil {
 		log.Fatal(err)
 	}
