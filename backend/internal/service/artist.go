@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/object"
@@ -77,32 +76,6 @@ func (s ArtistService) List(ctx context.Context, q artist.Query) (query.ListResu
 	}
 
 	return result, nil
-}
-
-func (s ArtistService) SetImage(ctx context.Context, artistID int64, r io.Reader) (string, error) {
-	fileName := fmt.Sprintf("%s.jpeg", uuid.NewString())
-
-	img, _, err := image.Decode(r)
-	if err != nil {
-		return "", err
-	}
-
-	resizedImage, err := resizeImage(img, ARTIST_IMAGE_WIDTH_PX, 0)
-	if err != nil {
-		return "", err
-	}
-
-	url, err := s.objectStore.Upload(ctx, path.Join("artists/", fileName), resizedImage)
-	if err != nil {
-		return "", err
-	}
-
-	err = s.artistRepo.SetImageURL(ctx, artistID, url)
-	if err != nil {
-		return "", err
-	}
-
-	return url, nil
 }
 
 func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, error) {
