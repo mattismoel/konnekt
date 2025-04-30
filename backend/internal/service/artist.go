@@ -121,6 +121,11 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 }
 
 func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateArtist) (artist.Artist, error) {
+	prevArtist, err := s.ByID(ctx, artistID)
+	if err != nil {
+		return artist.Artist{}, err
+	}
+
 	socials := make([]artist.Social, 0)
 	for _, social := range load.Socials {
 		s, err := artist.NewSocial(social)
@@ -154,8 +159,18 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 	}
 
 	if strings.TrimSpace(load.ImageURL) != "" {
-		err := a.WithCfgs(artist.WithImageURL(load.ImageURL))
+		// Delete previous artist image from object store.
+		url, err := url.Parse(prevArtist.ImageURL)
 		if err != nil {
+			return artist.Artist{}, err
+		}
+
+		if err := s.objectStore.Delete(ctx, url.Path); err != nil {
+			return artist.Artist{}, err
+		}
+
+		// Set the new artist image url.
+		if err := a.WithCfgs(artist.WithImageURL(load.ImageURL)); err != nil {
 			return artist.Artist{}, err
 		}
 	}
