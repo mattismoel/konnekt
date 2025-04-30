@@ -50,13 +50,24 @@ func (s Server) handleCreateVenue() http.HandlerFunc {
 			return
 		}
 
-		_, err = s.venueService.Create(ctx, service.CreateVenue{
+		venueID, err := s.venueService.Create(ctx, service.CreateVenue{
 			Name:        load.Name,
 			CountryCode: load.CountryCode,
 			City:        load.City,
 		})
 
 		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		venue, err := s.venueService.ByID(ctx, venueID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if err := writeJSON(w, http.StatusCreated, venue); err != nil {
 			writeError(w, err)
 			return
 		}
