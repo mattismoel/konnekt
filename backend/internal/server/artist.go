@@ -183,6 +183,8 @@ func (s Server) handleDeleteArtist() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
