@@ -2,14 +2,12 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"image"
 	"io"
 	"net/url"
 	"path"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
@@ -215,14 +213,23 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 func (s EventService) UploadImage(ctx context.Context, r io.Reader) (string, error) {
 	img, _, err := image.Decode(r)
 
-	resizedImage, err := resizeImage(img, EVENT_COVER_IMAGE_WIDTH_PX, 0)
-	if err != nil {
-		return "", nil
+	fileName := createRandomImageFileName("jpeg")
+
+	if img.Bounds().Max.X > EVENT_COVER_IMAGE_WIDTH_PX {
+		resizedImage, err := resizeImage(img, EVENT_COVER_IMAGE_WIDTH_PX, 0)
+		if err != nil {
+			return "", nil
+		}
+
+		url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), resizedImage)
+		if err != nil {
+			return "", err
+		}
+
+		return url, nil
 	}
 
-	fileName := fmt.Sprintf("%s.jpeg", uuid.NewString())
-
-	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), resizedImage)
+	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), r)
 	if err != nil {
 		return "", err
 	}
