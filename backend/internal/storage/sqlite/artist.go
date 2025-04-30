@@ -319,6 +319,14 @@ func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist,
 		return nil, err
 	}
 
+	if filters, ok := params.Filters["artist_id"]; ok {
+		for _, f := range filters {
+			if err := q.AddFilter("artist_id", query.Equal, f.Value); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	queryStr, args := q.Build()
 
 	rows, err := tx.QueryContext(ctx, queryStr, args...)
