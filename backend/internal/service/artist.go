@@ -184,7 +184,15 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 }
 
 func (s ArtistService) Delete(ctx context.Context, artistID int64) error {
-	err := s.artistRepo.Delete(ctx, artistID)
+	artistEventsResult, err := s.ArtistEvents(ctx, artistID)
+	if err != nil {
+		return err
+	}
+
+	if len(artistEventsResult.Records) > 0 {
+		return ErrArtistInEvent
+	}
+
 	a, err := s.artistRepo.ByID(ctx, artistID)
 	if err != nil {
 		return err
