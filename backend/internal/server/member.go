@@ -46,6 +46,8 @@ func (s Server) handleApproveMember() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -64,6 +66,8 @@ func (s Server) handleDeleteMember() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -136,6 +140,8 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -189,5 +195,7 @@ func (srv Server) handleUploadMemberProfilePicture() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
