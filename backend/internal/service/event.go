@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -173,8 +174,7 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	)
 
 	// If there is a cover image URL update, set it.
-	if load.ImageURL != "" {
-		err := e.WithCfgs(event.WithImageURL(load.ImageURL))
+	if strings.TrimSpace(load.ImageURL) != "" {
 		if err != nil {
 			return event.Event{}, err
 		}
