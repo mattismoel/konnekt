@@ -18,7 +18,7 @@ import (
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
-const ARTIST_IMAGE_WIDTH_PX = 4096
+const ARTIST_IMAGE_WIDTH_PX = 2048
 
 var (
 	AllowedImageFiletypes = []string{".png", ".jpeg", ".jpg"}
