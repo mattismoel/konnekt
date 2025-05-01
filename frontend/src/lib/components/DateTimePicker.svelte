@@ -19,4 +19,4 @@
 	};
 </script>
 
-<Input nonEmpty type="datetime-local" value={dateString} onchange={handleChange} {...rest} />
+<Input type="datetime-local" value={dateString} onchange={handleChange} {...rest} />
