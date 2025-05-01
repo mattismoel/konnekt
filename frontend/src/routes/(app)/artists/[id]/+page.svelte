@@ -57,7 +57,7 @@
 
 			{#if events.length > 0}
 				<section>
-					<h1 class="font-heading mb-8 text-2xl font-bold">Kommende events.</h1>
+					<h1 class="font-heading mb-8 text-2xl font-bold">Oplev {artist.name} her</h1>
 					<Caroussel>
 						{#each events as event (event.id)}
 							<EventCard {event} />
