@@ -5,7 +5,7 @@
 	import { toaster } from '$lib/toaster.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 
-	let errors = $state<z.typeToFlattenedError<typeof createVenueForm>>();
+	let errors = $state<z.inferFlattenedErrors<typeof createVenueForm>>();
 
 	const handleSubmit = async (form: z.infer<typeof createVenueForm>) => {
 		try {

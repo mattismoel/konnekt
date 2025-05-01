@@ -7,7 +7,7 @@
 
 	let { data } = $props();
 
-	let errors = $state<z.typeToFlattenedError<typeof editVenueForm>>();
+	let errors = $state<z.inferFlattenedErrors<typeof editVenueForm>>();
 
 	$inspect(data.venue);
 
