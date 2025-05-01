@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LandingImage from '$lib/assets/landing.jpg';
+	import LandingVideo from '$lib/assets/landing.mp4';
 	import Caroussel from '$lib/components/Caroussel.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
 	import LogoScroller from '$lib/components/LogoScroller.svelte';
@@ -25,11 +25,15 @@
 			class="pointer-events-none absolute top-0 left-0 isolate -z-10 h-full w-full overflow-hidden"
 		>
 			<GlowCursor />
-			<img
-				src={LandingImage}
-				alt=""
+			<video
+				loop
+				muted
+				autoplay
+				src={LandingVideo}
 				class="pointer-events-none fixed top-0 left-0 z-0 h-full w-full object-cover brightness-50"
-			/>
+			>
+				<track kind="captions" />
+			</video>
 		</div>
 		<section class="flex max-w-lg flex-col gap-8">
 			<h2 class="font-heading text-5xl">For et stærkere <b>fynsk musisk vækstlag</b></h2>
