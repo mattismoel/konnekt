@@ -90,7 +90,7 @@
 				</form>
 				{#if !active}
 					<form action="/events/{event.id}">
-						<Button type="submit" variant="secondary" class="w-full">Læs mere</Button>
+						<Button type="submit" variant="outline" class="w-full">Læs mere</Button>
 					</form>
 				{/if}
 			</div>
