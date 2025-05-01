@@ -16,7 +16,7 @@
 		'flex h-min w-fit items-center justify-center gap-3 rounded-sm px-5 py-2 font-medium text-zinc-950 disabled:opacity-50',
 		{
 			'bg-zinc-100 text-zinc-950 hover:bg-zinc-300': variant === 'primary',
-			'border border-zinc-100 text-zinc-100 transition-colors hover:bg-zinc-100 hover:text-zinc-950':
+			'text-text/85 hover:text-text border border-zinc-100/75 transition-colors hover:border-zinc-100/30 hover:bg-zinc-100/30':
 				variant === 'secondary',
 			'border border-red-900 bg-red-950 text-red-400 hover:border-red-800 hover:bg-red-900 hover:text-red-300':
 				variant === 'dangerous',
