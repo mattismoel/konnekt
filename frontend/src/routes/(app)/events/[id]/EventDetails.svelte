@@ -39,6 +39,8 @@
 			})
 	);
 
+	let genresString = $derived(genres.map((genre) => genre.name).join(', '));
+
 	const locationUrl = $derived(
 		new URL(
 			`https://www.google.com/maps/search/?` +
@@ -50,35 +52,39 @@
 	);
 </script>
 
-<section class="relative h-[calc((100vh/4)*3)] overflow-hidden">
+<div class="relative isolate flex h-[calc((100svh/4)*3)] items-end overflow-hidden pb-16">
 	<img
-		src={event?.imageUrl}
-		alt={event?.title}
-		class="absolute top-0 left-0 h-full w-full object-cover brightness-75"
+		src={event.imageUrl}
+		alt="Event cover"
+		class="absolute top-0 left-0 -z-10 h-full w-full object-cover brightness-85"
 	/>
-	<Fader direction="up" class="absolute z-10 h-[512px] from-zinc-950 md:h-96" />
-	<GlowCursor class="z-0" />
-	<div class="px-auto absolute bottom-0 left-0 z-20 flex w-full flex-col gap-y-2 px-12 pb-12">
-		<span class="mb-1 font-medium">{prefix}</span>
-		<h1 class="font-heading mb-4 w-full text-6xl font-bold md:text-9xl">{event?.title}</h1>
-		<div class="flex w-full flex-col items-end gap-8 md:flex-row">
-			<!-- DETAILS -->
-			<section class="w-full space-y-1 text-zinc-300">
-				<div class="flex items-center gap-2">
-					<CalendarIcon />
-					<time>{format(fromDate || new Date(), DATE_FORMAT)}</time>
-				</div>
-				<a href={locationUrl.toString()} class="flex items-center gap-2">
+
+	<Fader class="absolute -z-10 h-1/2" direction="up" />
+
+	<div class="px-auto flex w-full flex-col">
+		<h1 class="mb-8 text-7xl font-bold">{event.title}</h1>
+
+		<div class="text-text/85 flex">
+			<div class="flex flex-1 flex-col gap-1">
+				{#if fromDate}
+					<div class="flex items-center gap-4">
+						<CalendarIcon />
+						<span>{format(fromDate, DATE_FORMAT)}</span>
+					</div>
+				{/if}
+				<div class="flex items-center gap-4">
 					<MapIcon />
-					<address class="not-italic">{event.venue.name}, {event.venue.city}</address>
-				</a>
-				<div class="flex items-center gap-2">
-					<MusicIcon />
-					<span>{genres.map(({ name }) => name).join(', ')}</span>
+					<a href={locationUrl.toString()}
+						>{event.venue.name}, {event.venue.city} ({event.venue.countryCode})</a
+					>
 				</div>
-			</section>
-			<!-- CTA -->
-			<section class="w-full space-y-2 md:w-96">
+				<div class="flex items-center gap-4">
+					<MusicIcon />
+					<span>{genresString}</span>
+				</div>
+			</div>
+
+			<div class="flex flex-col justify-end gap-2">
 				<form action={event.ticketUrl}>
 					<Button type="submit" class="w-full"><TicketIcon />Køb billet</Button>
 				</form>
@@ -87,7 +93,7 @@
 						<Button type="submit" variant="secondary" class="w-full">Læs mere</Button>
 					</form>
 				{/if}
-			</section>
+			</div>
 		</div>
 	</div>
-</section>
+</div>
