@@ -22,7 +22,8 @@
 				variant === 'outline',
 			'border border-red-900 bg-red-950 text-red-400 hover:border-red-800 hover:bg-red-900 hover:text-red-300':
 				variant === 'dangerous',
-			'border border-zinc-900 font-normal text-zinc-500 hover:bg-zinc-900': variant === 'ghost'
+			'text-text/75 hover:text-text border border-zinc-900 font-normal hover:bg-zinc-900':
+				variant === 'ghost'
 		},
 		rest.class
 	)}
