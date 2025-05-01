@@ -7,7 +7,6 @@
 	import type { Genre } from '$lib/features/artist/genre';
 
 	import Input from '$lib/components/ui/Input.svelte';
-	import FieldError from '$lib/components/ui/FieldError.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ImagePreview from '$lib/components/ImagePreview.svelte';
 	import Pill from '$lib/components/Pill.svelte';
@@ -20,6 +19,7 @@
 
 	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import FormField from '$lib/components/ui/FormField.svelte';
 
 	type Props = {
 		artist?: Artist;
@@ -99,15 +99,14 @@
 		<ImagePreview src={imageUrl} onChange={updateImage} />
 		<div class="space-y-8">
 			<div class="space-y-1">
-				<Input
-					placeholder="Kunstnernavn"
-					bind:value={form.name}
-					errors={formError?.flatten().fieldErrors['name']}
-				/>
+				<FormField errors={formError?.flatten().fieldErrors['name']}>
+					<Input placeholder="Kunstnernavn" bind:value={form.name} />
+				</FormField>
 			</div>
 			<div class="space-y-1">
-				<TipTapEditor bind:value={form.description} />
-				<FieldError errors={formError?.flatten().fieldErrors['description']} />
+				<FormField errors={formError?.flatten().fieldErrors['description']}>
+					<TipTapEditor bind:value={form.description} />
+				</FormField>
 			</div>
 		</div>
 	</div>
@@ -128,13 +127,14 @@
 				{/each}
 			</ul>
 		</div>
-		<FieldError errors={formError?.flatten().fieldErrors['genreIds']} />
-		<GenreSelectorModal
-			{genres}
-			show={showGenreModal}
-			onClose={() => (showGenreModal = false)}
-			onChange={(selected) => (form.genreIds = selected.map((genre) => genre.id))}
-		/>
+		<FormField errors={formError?.flatten().fieldErrors['genreIds']}>
+			<GenreSelectorModal
+				{genres}
+				show={showGenreModal}
+				onClose={() => (showGenreModal = false)}
+				onChange={(selected) => (form.genreIds = selected.map((genre) => genre.id))}
+			/>
+		</FormField>
 	</div>
 
 	<div class="flex flex-col">
@@ -150,7 +150,9 @@
 	<div class="flex flex-col">
 		<h1 class="font-heading mb-4 text-2xl font-bold">Sociale medier</h1>
 		<div class="mb-4 flex w-full gap-2">
-			<Input type="text" placeholder="URL" bind:value={socialUrl} class="flex-1" />
+			<FormField errors={formError?.flatten().fieldErrors['socials']}>
+				<Input type="text" placeholder="URL" bind:value={socialUrl} class="flex-1" />
+			</FormField>
 			<Button type="button" onclick={addSocial}><PlusIcon />Tilføj</Button>
 		</div>
 		<div class="space-y-2">
@@ -163,7 +165,6 @@
 				/>
 			{/each}
 		</div>
-		<FieldError errors={formError?.flatten().fieldErrors['socials']} />
 	</div>
 	<Button type="submit">
 		{#if loading}

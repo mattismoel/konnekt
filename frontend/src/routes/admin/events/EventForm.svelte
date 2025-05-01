@@ -13,13 +13,13 @@
 	import ConcertsList from './ConcertsList.svelte';
 	import PublishIcon from '~icons/mdi/upload';
 
-	import FieldError from '$lib/components/ui/FieldError.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Selector from '$lib/components/ui/Selector.svelte';
 	import ImagePreview from '$lib/components/ImagePreview.svelte';
 	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import FormField from '$lib/components/ui/FormField.svelte';
 
 	type Props = {
 		venues: Venue[];
@@ -96,8 +96,9 @@
 	<!-- COVER IMAGE -->
 	<section>
 		<h2 class="mb-8 text-2xl font-semibold">Coverbillede</h2>
-		<ImagePreview src={imageUrl} onChange={(file) => (form.image = file)} />
-		<FieldError errors={errors?.fieldErrors.image} />
+		<FormField errors={errors?.fieldErrors.image}>
+			<ImagePreview src={imageUrl} onChange={(file) => (form.image = file)} />
+		</FormField>
 	</section>
 
 	<!-- GENERAL -->
@@ -105,45 +106,42 @@
 		<h2 class="mb-8 text-2xl font-semibold">Generelt</h2>
 
 		<div class="space-y-4">
-			<Input
-				placeholder="Eventtitel"
-				bind:value={form.title}
-				class="flex-1"
-				errors={errors?.fieldErrors.title}
-			/>
+			<FormField errors={errors?.fieldErrors.title}>
+				<Input placeholder="Eventtitel" bind:value={form.title} class="flex-1" />
+			</FormField>
+
 			<div class="flex w-full gap-4">
-				<Input
-					placeholder="Billet-URL"
-					class="flex-1"
-					bind:value={form.ticketUrl}
-					errors={errors?.fieldErrors.ticketUrl}
-				/>
-				<div>
+				<FormField errors={errors?.fieldErrors.ticketUrl}>
+					<Input placeholder="Billet-URL" class="flex-1" bind:value={form.ticketUrl} />
+				</FormField>
+
+				<FormField errors={errors?.fieldErrors.venueId}>
 					<Selector
 						class="h-min"
 						bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
 						entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
 					/>
-					<FieldError errors={errors?.fieldErrors.venueId} />
-				</div>
+				</FormField>
 			</div>
 		</div>
 	</section>
 
 	<!-- EVENT DESCRIPTION -->
 	<section>
-		<h2 class="mb-8 text-2xl font-semibold">Eventbeskrivelse</h2>
+		<h2 class="mb-4 text-2xl font-semibold">Eventbeskrivelse</h2>
 		<div>
-			<TipTapEditor bind:value={form.description} />
-			<FieldError errors={errors?.fieldErrors.description} />
+			<FormField errors={errors?.fieldErrors.description}>
+				<TipTapEditor bind:value={form.description} />
+			</FormField>
 		</div>
 	</section>
 
 	<!-- CONCERTS -->
 	<section>
-		<h2 class="mb-8 text-2xl font-semibold">Koncerter</h2>
-		<ConcertsList {concerts} {artists} onAdd={addConcert} onDelete={deleteConcert} />
-		<FieldError errors={errors?.fieldErrors.concerts} />
+		<h2 class="mb-4 text-2xl font-semibold">Koncerter</h2>
+		<FormField errors={errors?.fieldErrors.concerts}>
+			<ConcertsList {concerts} {artists} onAdd={addConcert} onDelete={deleteConcert} />
+		</FormField>
 	</section>
 
 	<div class="flex flex-col gap-2 md:flex-row">

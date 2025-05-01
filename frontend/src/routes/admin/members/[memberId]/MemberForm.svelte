@@ -6,6 +6,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { toaster } from '$lib/toaster.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import FormField from '$lib/components/ui/FormField.svelte';
 
 	type Props = {
 		member: Member;
@@ -47,28 +48,23 @@
 	};
 </script>
 
-<form onsubmit={handleSubmit}>
-	<h1 class="mb-8 text-2xl font-bold">Generelt.</h1>
-	<div class="flex gap-4">
-		<Input
-			placeholder="Fornavn"
-			bind:value={form.firstName}
-			disabled={!isCurrentMember}
-			errors={errors?.fieldErrors.firstName}
-		/>
-		<Input
-			placeholder="Efternavn"
-			bind:value={form.lastName}
-			disabled={!isCurrentMember}
-			errors={errors?.fieldErrors.lastName}
-		/>
+<form onsubmit={handleSubmit} class="flex flex-col gap-8">
+	<h1 class="text-2xl font-bold">Generelt.</h1>
+
+	<div class="flex flex-col gap-4">
+		<div class="flex gap-4">
+			<FormField errors={errors?.fieldErrors.firstName}>
+				<Input placeholder="Fornavn" bind:value={form.firstName} disabled={!isCurrentMember} />
+			</FormField>
+			<FormField errors={errors?.fieldErrors.lastName}>
+				<Input placeholder="Efternavn" bind:value={form.lastName} disabled={!isCurrentMember} />
+			</FormField>
+		</div>
+
+		<FormField errors={errors?.fieldErrors.email}>
+			<Input type="email" placeholder="Email" bind:value={form.email} disabled={!isCurrentMember} />
+		</FormField>
 	</div>
-	<Input
-		type="email"
-		placeholder="Email"
-		bind:value={form.email}
-		disabled={!isCurrentMember}
-		errors={errors?.fieldErrors.email}
-	/>
+
 	<Button type="submit" disabled={!hasChanged || !isCurrentMember}>Opdatér</Button>
 </form>

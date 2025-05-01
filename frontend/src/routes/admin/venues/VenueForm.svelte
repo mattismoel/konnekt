@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/Button.svelte';
-	import FieldError from '$lib/components/ui/FieldError.svelte';
+	import FormField from '$lib/components/ui/FormField.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Selector from '$lib/components/ui/Selector.svelte';
 	import { COUNTRIES_MAP } from '$lib/features/venue/countries';
@@ -43,21 +43,22 @@
 	</h1>
 
 	<div class="flex flex-col gap-4">
-		<Input placeholder="Venuenavn" bind:value={form.name} errors={errors?.fieldErrors.name} />
+		<FormField errors={errors?.fieldErrors.name}>
+			<Input placeholder="Venuenavn" bind:value={form.name} />
+		</FormField>
+
 		<div class="flex gap-4">
-			<Input
-				placeholder="By"
-				class="flex-1"
-				bind:value={form.city}
-				errors={errors?.fieldErrors.city}
-			/>
+			<FormField errors={errors?.fieldErrors.city}>
+				<Input placeholder="By" class="flex-1" bind:value={form.city} />
+			</FormField>
 			<div>
-				<Selector
-					class="h-min w-min"
-					entries={Array.from(COUNTRIES_MAP).map(([key, val]) => ({ name: val, value: key }))}
-					bind:value={form.countryCode}
-				/>
-				<FieldError errors={errors?.fieldErrors.countryCode} />
+				<FormField errors={errors?.fieldErrors.countryCode}>
+					<Selector
+						class="h-min w-min"
+						entries={Array.from(COUNTRIES_MAP).map(([key, val]) => ({ name: val, value: key }))}
+						bind:value={form.countryCode}
+					/>
+				</FormField>
 			</div>
 		</div>
 	</div>
