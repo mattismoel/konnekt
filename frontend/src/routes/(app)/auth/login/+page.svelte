@@ -3,7 +3,7 @@
 	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 
 	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import * as Card from '$lib/components/ui/card/index';
 	import Input from '$lib/components/ui/Input.svelte';
 
 	let email = $state('');
@@ -25,17 +25,23 @@
 </script>
 
 <main class="flex h-svh items-center justify-center">
-	<Card class="max-w-96">
-		<form class="flex w-full flex-col gap-8" onsubmit={handleLogin}>
-			<section>
-				<h1 class="font-heading mb-4 text-2xl font-bold">Login</h1>
-				<p class="text-text/50">Her kan du logge ind som medlem på Konnekts dashboard.</p>
-			</section>
-			<section class="flex flex-col gap-4">
-				<Input type="email" bind:value={email} placeholder="Email" />
-				<Input type="password" bind:value={password} placeholder="Adgangskode" />
-			</section>
-			<Button class="w-full" type="submit">Login</Button>
-		</form>
-	</Card>
+	<form onsubmit={handleLogin}>
+		<Card.Root class="max-w-96">
+			<Card.Header>
+				<Card.Title>Login</Card.Title>
+				<Card.Description>Her kan du logge ind som medlem på Konnekts dashboard.</Card.Description>
+			</Card.Header>
+
+			<Card.Content>
+				<section class="flex flex-col gap-4">
+					<Input type="email" bind:value={email} placeholder="Email" />
+					<Input type="password" bind:value={password} placeholder="Adgangskode" />
+				</section>
+			</Card.Content>
+
+			<Card.Footer>
+				<Button class="w-full" type="submit">Login</Button>
+			</Card.Footer>
+		</Card.Root>
+	</form>
 </main>
