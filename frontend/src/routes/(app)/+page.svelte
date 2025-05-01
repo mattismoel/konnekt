@@ -43,7 +43,7 @@
 			</p>
 			<div class="flex w-full flex-col-reverse gap-4 sm:flex-row">
 				<form action="/om-os">
-					<Button type="submit" variant="secondary" class="w-full sm:w-fit">Læs mere</Button>
+					<Button type="submit" variant="outline" class="w-full sm:w-fit">Læs mere</Button>
 				</form>
 				<form action="/events">
 					<Button type="submit" class="group w-full items-center gap-2 sm:w-fit">
