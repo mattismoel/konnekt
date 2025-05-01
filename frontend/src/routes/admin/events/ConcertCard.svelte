@@ -29,8 +29,8 @@
 	};
 </script>
 
-<Card class="relative flex-1 space-y-4 last-of-type:mb-8">
-	<div class="space-y-8">
+<Card class="relative flex flex-1 flex-col gap-4 last-of-type:mb-8">
+	<div class="flex flex-col gap-8">
 		<div class="flex items-center justify-between">
 			<h3 class="text-xl font-semibold">#{idx}</h3>
 			<button type="button" class="hover:text-text text-zinc-500" onclick={onDelete}
