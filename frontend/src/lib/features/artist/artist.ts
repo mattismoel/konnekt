@@ -4,6 +4,8 @@ import { genreSchema } from "./genre";
 import { APIError, apiErrorSchema, requestAndParse } from "$lib/api";
 import { createUrl, type Query } from "$lib/url";
 import { createListResult, type ListResult } from "$lib/query";
+import { removeDuplicates } from "$lib/array";
+import type { Event } from "../event/event";
 
 export const artistSchema = z.object({
 	id: z.number().positive(),
@@ -173,5 +175,11 @@ export const deleteArtist = async (fetchFn: typeof fetch, id: number) => {
 		"Could not delete artist",
 		undefined,
 		"DELETE"
+	)
+}
+
+export const eventsArtists = (events: Event[]): Artist[] => {
+	return removeDuplicates(
+		events.flatMap(({ concerts }) => concerts).map(({ artist }) => artist)
 	)
 }
