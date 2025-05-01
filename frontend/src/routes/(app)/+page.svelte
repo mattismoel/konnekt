@@ -43,10 +43,10 @@
 			</p>
 			<div class="flex w-full flex-col-reverse gap-4 sm:flex-row">
 				<form action="/om-os">
-					<Button type="submit" variant="secondary" class="h-16 w-full sm:w-fit">Læs mere</Button>
+					<Button type="submit" variant="secondary" class="w-full sm:w-fit">Læs mere</Button>
 				</form>
 				<form action="/events">
-					<Button type="submit" class="group h-16 w-full items-center gap-2 sm:w-fit">
+					<Button type="submit" class="group w-full items-center gap-2 sm:w-fit">
 						Se events
 						<RightArrowIcon class="transition-transform group-hover:translate-x-2" />
 					</Button>
