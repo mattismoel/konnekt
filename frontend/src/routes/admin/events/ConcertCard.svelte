@@ -46,9 +46,13 @@
 					name: a.name,
 					value: a.id.toString()
 				}))}
-			/>
-			<Button variant="primary" onclick={() => goto('/admin/artists/edit')}>
-				<PlusIcon />Ny
+			></Selector>
+			<Button
+				onclick={() => goto('/admin/artists/create')}
+				title="Tilføj ny kunstner"
+				variant="ghost"
+			>
+				<PlusIcon></PlusIcon>Lav&nbsp;ny
 			</Button>
 		</div>
 		<div class="flex items-center gap-4">
