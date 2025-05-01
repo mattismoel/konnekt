@@ -4,12 +4,11 @@
 	import { formatISO } from 'date-fns';
 
 	type Props = Omit<HTMLInputAttributes, 'defaultValue'> & {
-		label: string;
 		defaultValue: Date;
 		onChange: (newDate: Date) => void;
 	};
 
-	let { label, defaultValue, onChange, ...rest }: Props = $props();
+	let { defaultValue, onChange, ...rest }: Props = $props();
 
 	let dateString = $state(formatISO(defaultValue).slice(0, 16));
 
@@ -20,11 +19,4 @@
 	};
 </script>
 
-<Input
-	nonEmpty
-	type="datetime-local"
-	value={dateString}
-	onchange={handleChange}
-	{label}
-	{...rest}
-/>
+<Input nonEmpty type="datetime-local" value={dateString} onchange={handleChange} {...rest} />

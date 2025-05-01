@@ -31,9 +31,9 @@
 				<h1 class="font-heading mb-4 text-2xl font-bold">Login</h1>
 				<p class="text-text/50">Her kan du logge ind som medlem på Konnekts dashboard.</p>
 			</section>
-			<section>
-				<Input type="email" bind:value={email} label="Email" />
-				<Input type="password" bind:value={password} label="Adgangskode" />
+			<section class="flex flex-col gap-4">
+				<Input type="email" bind:value={email} placeholder="Email" />
+				<Input type="password" bind:value={password} placeholder="Adgangskode" />
 			</section>
 			<Button class="w-full" type="submit">Login</Button>
 		</form>

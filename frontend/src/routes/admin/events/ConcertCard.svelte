@@ -58,13 +58,13 @@
 		<div class="flex items-center gap-4">
 			<DateTimePicker
 				class="w-full"
-				label="Fra"
+				placeholder="Fra"
 				defaultValue={concert.from}
 				onChange={(d) => (concert.from = d)}
 			/>
 			<DateTimePicker
 				class="w-full"
-				label="Til"
+				placeholder="Til"
 				defaultValue={concert.to}
 				onChange={(d) => (concert.to = d)}
 			/>

@@ -103,26 +103,29 @@
 	<!-- GENERAL -->
 	<section>
 		<h2 class="mb-8 text-2xl font-semibold">Generelt</h2>
-		<Input
-			label="Eventtitel"
-			bind:value={form.title}
-			class="flex-1"
-			errors={errors?.fieldErrors.title}
-		/>
-		<div class="flex w-full gap-4">
+
+		<div class="space-y-4">
 			<Input
-				label="Billet-URL"
+				placeholder="Eventtitel"
+				bind:value={form.title}
 				class="flex-1"
-				bind:value={form.ticketUrl}
-				errors={errors?.fieldErrors.ticketUrl}
+				errors={errors?.fieldErrors.title}
 			/>
-			<div>
-				<Selector
-					class="h-min"
-					bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
-					entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
+			<div class="flex w-full gap-4">
+				<Input
+					placeholder="Billet-URL"
+					class="flex-1"
+					bind:value={form.ticketUrl}
+					errors={errors?.fieldErrors.ticketUrl}
 				/>
-				<FieldError errors={errors?.fieldErrors.venueId} />
+				<div>
+					<Selector
+						class="h-min"
+						bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
+						entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
+					/>
+					<FieldError errors={errors?.fieldErrors.venueId} />
+				</div>
 			</div>
 		</div>
 	</section>
@@ -144,7 +147,7 @@
 	</section>
 
 	<div class="flex flex-col gap-2 md:flex-row">
-		<Button variant="ghost" class="w-full md:max-w-64">Preview</Button>
+		<Button variant="secondary" class="w-full md:max-w-64">Preview</Button>
 		<Button type="submit" class="w-full md:max-w-64">
 			{#if loading}
 				<Spinner />

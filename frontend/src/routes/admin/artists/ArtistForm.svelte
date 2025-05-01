@@ -100,7 +100,7 @@
 		<div class="space-y-8">
 			<div class="space-y-1">
 				<Input
-					label="Kunstnernavn"
+					placeholder="Kunstnernavn"
 					bind:value={form.name}
 					errors={formError?.flatten().fieldErrors['name']}
 				/>
@@ -140,7 +140,7 @@
 	<div class="flex flex-col">
 		<h1 class="font-heading mb-8 text-2xl font-bold">Spotify Preview</h1>
 		<div class="space-y-4">
-			<Input label="Preview URL" bind:value={form.previewUrl} />
+			<Input placeholder="Preview-URL" bind:value={form.previewUrl} />
 			{#if trackId}
 				<SpotifyPreview {trackId} />
 			{/if}
@@ -150,7 +150,7 @@
 	<div class="flex flex-col">
 		<h1 class="font-heading mb-4 text-2xl font-bold">Sociale medier</h1>
 		<div class="mb-4 flex w-full gap-2">
-			<Input type="text" label="URL" bind:value={socialUrl} class="flex-1" />
+			<Input type="text" placeholder="URL" bind:value={socialUrl} class="flex-1" />
 			<Button type="button" onclick={addSocial}><PlusIcon />Tilføj</Button>
 		</div>
 		<div class="space-y-2">

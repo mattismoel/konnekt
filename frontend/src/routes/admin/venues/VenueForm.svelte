@@ -33,8 +33,8 @@
 	};
 </script>
 
-<form onsubmit={(e) => handleSubmit(e)} class="max-w-xl space-y-8">
-	<h1 class="mb-8 text-4xl font-bold">
+<form onsubmit={(e) => handleSubmit(e)} class="flex max-w-lg flex-col gap-8">
+	<h1 class="text-4xl font-bold">
 		{#if venue}
 			Redigér venue
 		{:else}
@@ -43,9 +43,14 @@
 	</h1>
 
 	<div class="flex flex-col gap-4">
-		<Input label="Navn" bind:value={form.name} errors={errors?.fieldErrors.name} />
+		<Input placeholder="Venuenavn" bind:value={form.name} errors={errors?.fieldErrors.name} />
 		<div class="flex gap-4">
-			<Input label="By" class="flex-1" bind:value={form.city} errors={errors?.fieldErrors.city} />
+			<Input
+				placeholder="By"
+				class="flex-1"
+				bind:value={form.city}
+				errors={errors?.fieldErrors.city}
+			/>
 			<div>
 				<Selector
 					class="h-min w-min"

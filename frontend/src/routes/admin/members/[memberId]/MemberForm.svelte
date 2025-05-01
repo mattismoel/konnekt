@@ -51,13 +51,13 @@
 	<h1 class="mb-8 text-2xl font-bold">Generelt.</h1>
 	<div class="flex gap-4">
 		<Input
-			label="Fornavn"
+			placeholder="Fornavn"
 			bind:value={form.firstName}
 			disabled={!isCurrentMember}
 			errors={errors?.fieldErrors.firstName}
 		/>
 		<Input
-			label="Efternavn"
+			placeholder="Efternavn"
 			bind:value={form.lastName}
 			disabled={!isCurrentMember}
 			errors={errors?.fieldErrors.lastName}
@@ -65,7 +65,7 @@
 	</div>
 	<Input
 		type="email"
-		label="Email"
+		placeholder="Email"
 		bind:value={form.email}
 		disabled={!isCurrentMember}
 		errors={errors?.fieldErrors.email}
