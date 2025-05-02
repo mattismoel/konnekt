@@ -8,7 +8,6 @@
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Fader from '$lib/components/Fader.svelte';
-	import GlowCursor from '$lib/components/GlowCursor.svelte';
 
 	import TicketIcon from '~icons/mdi/ticket-confirmation-outline';
 	import MapIcon from '~icons/mdi/map-marker';
@@ -21,7 +20,7 @@
 		prefix?: string;
 	};
 
-	let { event, active, prefix }: Props = $props();
+	let { event, active }: Props = $props();
 	let fromDate = $derived(earliestConcert(event.concerts)?.from);
 
 	let artists = $derived(event.concerts.map(({ artist }) => artist));
