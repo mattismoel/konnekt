@@ -144,16 +144,13 @@
 		</FormField>
 	</section>
 
-	<div class="flex flex-col gap-2 md:flex-row">
-		<Button variant="secondary" class="w-full md:max-w-64">Preview</Button>
-		<Button type="submit" class="w-full md:max-w-64">
-			{#if loading}
-				<Spinner />
-				Offentligører...
-			{:else}
-				<PublishIcon />
-				Offentliggør
-			{/if}
-		</Button>
-	</div>
+	<Button type="submit" class="w-full md:max-w-64">
+		{#if loading}
+			<Spinner />
+			Offentligører...
+		{:else}
+			<PublishIcon />
+			Offentliggør
+		{/if}
+	</Button>
 </form>
