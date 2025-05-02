@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { cn } from '$lib/clsx';
 
 	import Logo from '$lib/assets/Logo.svelte';
 
@@ -21,17 +20,13 @@
 <svelte:window onscroll={(e) => (scrollY = e.currentTarget.scrollY)} />
 
 <nav
-	class={cn(
-		'h-nav border-[] fixed z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 px-8 outline outline-transparent transition-colors duration-500',
-		{
-			'from-zinc-950 to-zinc-950 outline-zinc-800': scrollY > 0
-		}
-	)}
+	class:scrolled={scrollY > 0}
+	class="h-nav fixed z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 px-8 outline outline-transparent transition-colors duration-500 [.scrolled]:from-zinc-950 [.scrolled]:to-zinc-950 [.scrolled]:outline-zinc-800"
 >
 	<a href="/">
 		<Logo class="h-4" />
 	</a>
-	<ul class="*:hover:text-text hidden items-center gap-6 text-lg text-zinc-50 sm:flex">
+	<ul class="hidden items-center gap-6 text-lg text-zinc-50 sm:flex">
 		{#each entries as entry}
 			{@render navEntry(entry)}
 		{/each}
