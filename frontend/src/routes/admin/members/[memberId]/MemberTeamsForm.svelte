@@ -75,8 +75,7 @@
 		<TeamsSelectorModal
 			{teams}
 			selected={selected || []}
-			show={isModalOpen}
-			onClose={() => (isModalOpen = false)}
+			bind:show={isModalOpen}
 			onChange={(newTeams) => (selected = newTeams)}
 		/>
 	</form>

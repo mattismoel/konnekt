@@ -3,7 +3,6 @@
 	import * as Modal from '$lib/components/ui/modal/index';
 	import SelectorEntry from './ui/SelectorEntry.svelte';
 	import Button from './ui/Button.svelte';
-	import { Description } from './ui/card';
 	import SearchBar from './SearchBar.svelte';
 
 	type Props = {
@@ -12,11 +11,10 @@
 		selected: Team[];
 
 		show: boolean;
-		onClose: () => void;
 		onChange: (selected: Team[]) => void;
 	};
 
-	let { teams, selected = $bindable([]), show, onChange, onClose }: Props = $props();
+	let { teams, selected = $bindable([]), show = $bindable(), onChange }: Props = $props();
 	let search = $state('');
 
 	const select = (id: number) => {
@@ -33,8 +31,8 @@
 	};
 </script>
 
-<Modal.Root {show}>
-	<Modal.Header {onClose}>
+<Modal.Root bind:show>
+	<Modal.Header onClose={() => (show = false)}>
 		<Modal.Title>Vælg medlemsteams...</Modal.Title>
 		<Modal.Description
 			>Her kan du vælge de teams, som medlemmet er del af, og dermed hvilke rettigheder det har.</Modal.Description
@@ -54,6 +52,6 @@
 		</div>
 	</Modal.Content>
 	<Modal.Footer>
-		<Button onclick={onClose}>Vælg</Button>
+		<Button onclick={() => (show = false)}>Vælg</Button>
 	</Modal.Footer>
 </Modal.Root>

@@ -130,8 +130,7 @@
 		<FormField errors={formError?.flatten().fieldErrors['genreIds']}>
 			<GenreSelectorModal
 				{genres}
-				show={showGenreModal}
-				onClose={() => (showGenreModal = false)}
+				bind:show={showGenreModal}
 				onChange={(selected) => (form.genreIds = selected.map((genre) => genre.id))}
 			/>
 		</FormField>

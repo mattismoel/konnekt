@@ -11,11 +11,10 @@
 	type Props = {
 		genres: Genre[];
 		show: boolean;
-		onClose: () => void;
 		onChange: (selected: Genre[]) => void;
 	};
 
-	let { genres, show, onClose, onChange }: Props = $props();
+	let { genres, show = $bindable(), onChange }: Props = $props();
 
 	let search = $state('');
 	let selected = $state<Genre[]>([]);
@@ -41,8 +40,8 @@
 	};
 </script>
 
-<Modal.Root {show}>
-	<Modal.Header {onClose}>
+<Modal.Root bind:show>
+	<Modal.Header onClose={() => (show = false)}>
 		<Modal.Title>Vælg genrer...</Modal.Title>
 		<Modal.Description>Her kan du vælge de genrer, som kunstneren associeres med.</Modal.Description
 		>
@@ -72,6 +71,6 @@
 		</div>
 	</Modal.Content>
 	<Modal.Footer>
-		<Button type="button" onclick={onClose}>Vælg</Button>
+		<Button type="button" onclick={() => (show = false)}>Vælg</Button>
 	</Modal.Footer>
 </Modal.Root>
