@@ -27,7 +27,10 @@
 		clearInterval(timeout);
 	};
 
-	$effect(() => beginAutoDisplay());
+	$effect(() => {
+		beginAutoDisplay();
+		return () => endAutoDisplay();
+	});
 </script>
 
 <main class="px-auto h-svh pt-32">
