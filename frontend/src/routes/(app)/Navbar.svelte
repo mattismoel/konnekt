@@ -39,11 +39,14 @@
 </nav>
 
 {#snippet navEntry({ href, name }: Entry)}
-	<li
-		class={cn('text-text/75 hover:text-text transition-colors', {
-			'text-text font-medium': page.url.pathname === href
-		})}
-	>
-		<a {href}>{name}</a>
+	<li>
+		<a
+			{href}
+			title={name}
+			class:is-current={page.url.pathname === href}
+			class="hover:text-text text-text/75 [.is-current]:text-text transition-colors before:invisible before:block before:h-0 before:overflow-hidden before:font-medium before:content-[attr(title)] [.is-current]:font-medium"
+		>
+			{name}
+		</a>
 	</li>
 {/snippet}
