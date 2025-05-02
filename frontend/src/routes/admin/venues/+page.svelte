@@ -8,7 +8,6 @@
 	import DashboardLayout from '../DashboardLayout.svelte';
 	import DashboardHeader from '../DashboardHeader.svelte';
 	import HeaderActions from '../HeaderActions.svelte';
-	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 
@@ -26,7 +25,7 @@
 	>
 		<HeaderActions>
 			<Button
-				onclick={() => goto('/admin/venues/create')}
+				href="/admin/venues/create"
 				disabled={!hasPermissions(data.member.permissions, ['edit:venue'])}
 			>
 				<PlusIcon />Tilføj

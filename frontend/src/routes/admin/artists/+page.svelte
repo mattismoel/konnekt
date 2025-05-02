@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import Button from '$lib/components/ui/Button.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import PlusIcon from '~icons/mdi/plus';
@@ -25,8 +24,8 @@
 	>
 		<HeaderActions>
 			<Button
+				href="/admin/artists/create"
 				disabled={!hasPermissions(data.member.permissions, ['edit:artist'])}
-				onclick={() => goto('/admin/artists/create')}
 			>
 				<PlusIcon />Tilføj
 			</Button>

@@ -2,7 +2,6 @@
 	import PlusIcon from '~icons/mdi/plus';
 	import Button from '$lib/components/ui/Button.svelte';
 
-	import { goto } from '$app/navigation';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { hasPermissions } from '$lib/features/auth/permission';
 	import EventList from './EventList.svelte';
@@ -25,8 +24,8 @@
 	<DashboardHeader title="Events" description="Overblik over alle events.">
 		<HeaderActions>
 			<Button
+				href="/admin/events/create"
 				disabled={!hasPermissions(data.member.permissions, ['edit:event'])}
-				onclick={() => goto(`/admin/events/create`)}
 			>
 				<PlusIcon />Tilføj
 			</Button>

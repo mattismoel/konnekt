@@ -62,11 +62,7 @@
 					value: a.id.toString()
 				}))}
 			></Selector>
-			<Button
-				onclick={() => goto('/admin/artists/create')}
-				title="Tilføj ny kunstner"
-				variant="ghost"
-			>
+			<Button href="/admin/artists/create" title="Tilføj ny kunstner" variant="ghost">
 				<PlusIcon></PlusIcon>Lav&nbsp;ny
 			</Button>
 		</div>

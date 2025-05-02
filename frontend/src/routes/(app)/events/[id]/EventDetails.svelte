@@ -85,13 +85,9 @@
 			</div>
 
 			<div class="flex flex-col justify-end gap-2">
-				<form action={event.ticketUrl}>
-					<Button type="submit" class="w-full"><TicketIcon />Køb billet</Button>
-				</form>
+				<Button href={event.ticketUrl} class="w-full"><TicketIcon />Køb billet</Button>
 				{#if !active}
-					<form action="/events/{event.id}">
-						<Button type="submit" variant="outline" class="w-full">Læs mere</Button>
-					</form>
+					<Button href="/events/{event.id}" variant="outline" class="w-full">Læs mere</Button>
 				{/if}
 			</div>
 		</div>
