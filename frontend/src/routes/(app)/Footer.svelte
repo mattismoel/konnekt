@@ -6,7 +6,7 @@
 	<div class="mb-8 grid w-full grid-cols-1 gap-8 sm:grid-cols-2">
 		<!-- NAVIGATION -->
 		<div class="flex-1">
-			<h3 class="font-heading mb-2 font-bold">Find rundt.</h3>
+			<h3 class="font-heading mb-2 font-bold">Find rundt</h3>
 			<ul class="text-text/50">
 				<li><a href="/">Hjem</a></li>
 				<li><a href="/events">Events</a></li>
