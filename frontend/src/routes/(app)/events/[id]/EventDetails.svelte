@@ -55,7 +55,7 @@
 	<img
 		src={event.imageUrl}
 		alt="Event cover"
-		class="absolute top-0 left-0 -z-10 h-full w-full object-cover brightness-85"
+		class="absolute top-0 left-0 -z-10 h-full w-full object-cover brightness-50"
 	/>
 
 	<Fader class="absolute -z-10 h-1/2" direction="up" />
