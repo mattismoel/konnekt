@@ -26,7 +26,14 @@
 
 	type Props = AnchorElement | ButtonElement;
 
-	let { href, type, disabled = false, variant = 'primary', children, ...rest }: Props = $props();
+	let {
+		href,
+		type = 'button',
+		disabled = false,
+		variant = 'primary',
+		children,
+		...rest
+	}: Props = $props();
 
 	const baseClasses =
 		'flex h-min w-fit items-center justify-center gap-3 rounded-sm px-3 py-2 font-medium text-zinc-950 transition-colors disabled:opacity-50';
@@ -58,6 +65,7 @@
 	aria-disabled={href ? disabled : undefined}
 	role={href && disabled ? 'link' : undefined}
 	tabindex={href && disabled ? -1 : 0}
+	{...rest}
 	class={cn(baseClasses, variantClasses.get(variant), rest.class)}
 >
 	{@render children?.()}
