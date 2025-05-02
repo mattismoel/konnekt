@@ -5,10 +5,7 @@
 	import { error } from '@sveltejs/kit';
 	import { invalidateAll } from '$app/navigation';
 	import { createGenre, type Genre } from '$lib/features/artist/genre';
-	import Modal from './ui/modal/Modal.svelte';
-	import ModalHeader from './ui/modal/ModalHeader.svelte';
-	import ModalContent from './ui/modal/ModalContent.svelte';
-	import ModalFooter from './ui/modal/ModalFooter.svelte';
+	import * as Modal from '$lib/components/ui/modal/index';
 	import { APIError } from '$lib/api';
 
 	type Props = {
@@ -44,9 +41,14 @@
 	};
 </script>
 
-<Modal {show}>
-	<ModalHeader label="Vælg genrer..." {onClose} />
-	<ModalContent class="text-text space-y-4">
+<Modal.Root {show}>
+	<Modal.Header {onClose}>
+		<Modal.Title>Vælg genrer...</Modal.Title>
+		<Modal.Description>Her kan du vælge de genrer, som kunstneren associeres med.</Modal.Description
+		>
+	</Modal.Header>
+
+	<Modal.Content class="text-text space-y-4">
 		<div class="flex gap-2">
 			<input
 				type="text"
@@ -68,8 +70,8 @@
 				/>
 			{/each}
 		</div>
-	</ModalContent>
-	<ModalFooter>
+	</Modal.Content>
+	<Modal.Footer>
 		<Button type="button" onclick={onClose}>Vælg</Button>
-	</ModalFooter>
-</Modal>
+	</Modal.Footer>
+</Modal.Root>

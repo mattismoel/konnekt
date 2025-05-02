@@ -5,6 +5,6 @@
 	let { children, ...rest }: HTMLAttributes<HTMLDivElement> = $props();
 </script>
 
-<div class={cn('max-h-64 w-full overflow-y-scroll bg-zinc-900 p-4', rest.class)}>
+<div class={cn('max-h-64 w-full overflow-y-scroll bg-zinc-950 p-6', rest.class)}>
 	{@render children?.()}
 </div>

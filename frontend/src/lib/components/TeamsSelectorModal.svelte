@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { Team } from '$lib/features/auth/team';
-	import Modal from './ui/modal/Modal.svelte';
-	import ModalContent from './ui/modal/ModalContent.svelte';
-	import ModalFooter from './ui/modal/ModalFooter.svelte';
-	import ModalHeader from './ui/modal/ModalHeader.svelte';
+	import * as Modal from '$lib/components/ui/modal/index';
 	import SelectorEntry from './ui/SelectorEntry.svelte';
+	import Button from './ui/Button.svelte';
+	import { Description } from './ui/card';
+	import SearchBar from './SearchBar.svelte';
 
 	type Props = {
 		teams: Team[];
@@ -33,21 +33,16 @@
 	};
 </script>
 
-<Modal {show}>
-	<ModalHeader label="Vælg medlemsteams..." {onClose} />
-	<ModalContent class="text-text space-y-4">
-		<div class="flex gap-2">
-			<input
-				type="text"
-				placeholder="Søg..."
-				bind:value={search}
-				class="rounded-md border border-zinc-800 bg-zinc-900"
-			/>
-			<!-- <Button type="button" onclick={addGenre}> -->
-			<!-- 	<AddIcon />Tilføj -->
-			<!-- </Button> -->
-		</div>
-		<div class="space-y-1">
+<Modal.Root {show}>
+	<Modal.Header {onClose}>
+		<Modal.Title>Vælg medlemsteams...</Modal.Title>
+		<Modal.Description
+			>Her kan du vælge de teams, som medlemmet er del af, og dermed hvilke rettigheder det har.</Modal.Description
+		>
+	</Modal.Header>
+	<Modal.Content class="flex flex-col gap-4">
+		<SearchBar bind:value={search} />
+		<div class="flex flex-col gap-2">
 			{#each teams as team (team.id)}
 				<SelectorEntry
 					selected={selected.some((t) => t.id === team.id)}
@@ -57,6 +52,8 @@
 				/>
 			{/each}
 		</div>
-	</ModalContent>
-	<ModalFooter>Hey</ModalFooter>
-</Modal>
+	</Modal.Content>
+	<Modal.Footer>
+		<Button onclick={onClose}>Vælg</Button>
+	</Modal.Footer>
+</Modal.Root>
