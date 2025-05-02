@@ -51,7 +51,7 @@
 	);
 </script>
 
-<div class="relative isolate flex h-[calc((100svh/4)*3)] items-end overflow-hidden pb-16">
+<div class="relative isolate flex h-[calc((100svh/4)*3)] items-end overflow-hidden pb-8 sm:pb-16">
 	<img
 		src={event.imageUrl}
 		alt="Event cover"
