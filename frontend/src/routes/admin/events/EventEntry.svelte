@@ -73,8 +73,10 @@
 	>
 		<ContextMenuEntry
 			disabled={!hasPermissions(memberPermissions, ['edit:event'])}
-			action={() => goto(`/admin/events/edit?id=${event.id}`)}>Redigér</ContextMenuEntry
+			href="/admin/events/edit/{event.id}"
 		>
+			Redigér
+		</ContextMenuEntry>
 		<ContextMenuEntry
 			disabled={!hasPermissions(memberPermissions, ['delete:event'])}
 			action={handleDeleteEvent}>Slet</ContextMenuEntry

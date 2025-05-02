@@ -55,7 +55,7 @@
 	<ContextMenuButton onclick={() => (isContextMenuOpen = true)} />
 	<ContextMenu open={isContextMenuOpen} onClose={() => (isContextMenuOpen = false)}>
 		<ContextMenuEntry
-			action={() => goto(`/admin/members/${member.id}`)}
+			href="/admin/members/{member.id}"
 			disabled={!hasPermissions(memberPermissions, ['edit:member'])}
 		>
 			Redigér

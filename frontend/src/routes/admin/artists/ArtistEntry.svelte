@@ -33,8 +33,10 @@
 	>
 		<ContextMenuEntry
 			disabled={!hasPermissions(memberPermissions, ['edit:artist'])}
-			action={() => goto(`/admin/artists/edit/${artist.id}`)}>Redigér</ContextMenuEntry
+			href="admin/artists/edit/{artist.id}"
 		>
+			Redigér
+		</ContextMenuEntry>
 		<ContextMenuEntry
 			disabled={!hasPermissions(memberPermissions, ['delete:artist'])}
 			action={onDelete}>Slet</ContextMenuEntry

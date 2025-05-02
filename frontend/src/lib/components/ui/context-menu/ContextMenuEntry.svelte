@@ -1,16 +1,24 @@
 <script lang="ts">
+	import { cn } from '$lib/clsx';
 	import type { HTMLAttributes } from 'svelte/elements';
 
 	type Props = HTMLAttributes<HTMLLIElement> & {
-		action: () => void;
 		disabled: boolean;
-	};
+	} & ({ action?: undefined; href: string } | { action: () => void; href?: undefined });
 
-	let { action, disabled, children }: Props = $props();
+	let { action, href, disabled, children, ...rest }: Props = $props();
 </script>
 
-<li class="text-text/85 hover:text-text py-2">
-	<button {disabled} onclick={action} class="disabled:text-text/50 w-full text-left">
+<li class={cn('text-text/85 hover:text-text py-2', rest.class)}>
+	<svelte:element
+		this={href ? 'a' : 'button'}
+		type={href ? undefined : 'button'}
+		href={href && !disabled ? href : undefined}
+		aria-disabled={href ? disabled : undefined}
+		role={href && disabled ? 'link' : undefined}
+		tabindex={href && disabled ? -1 : 0}
+		class="disabled:text-text/50 w-full text-left"
+	>
 		{@render children?.()}
-	</button>
+	</svelte:element>
 </li>
