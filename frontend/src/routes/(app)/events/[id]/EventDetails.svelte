@@ -68,18 +68,18 @@
 				{#if fromDate}
 					<div class="flex items-center gap-4">
 						<CalendarIcon />
-						<span>{format(fromDate, DATE_FORMAT)}</span>
+						<span class="line-clamp-1">{format(fromDate, DATE_FORMAT)}</span>
 					</div>
 				{/if}
 				<div class="flex items-center gap-4">
 					<MapIcon />
-					<a href={locationUrl.toString()}
+					<a class="line-clamp-1" href={locationUrl.toString()}
 						>{event.venue.name}, {event.venue.city} ({event.venue.countryCode})</a
 					>
 				</div>
 				<div class="flex items-center gap-4">
 					<MusicIcon />
-					<span>{genresString}</span>
+					<span class="line-clamp-1">{genresString}</span>
 				</div>
 			</div>
 
