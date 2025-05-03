@@ -40,7 +40,7 @@
 	};
 </script>
 
-<Modal.Root bind:show>
+<Modal.Root bind:show class="max-w-lg">
 	<Modal.Header onClose={() => (show = false)}>
 		<Modal.Title>Vælg genrer...</Modal.Title>
 		<Modal.Description>Her kan du vælge de genrer, som kunstneren associeres med.</Modal.Description
@@ -55,8 +55,8 @@
 				bind:value={search}
 				class="w-full rounded-md border border-zinc-800 bg-zinc-900"
 			/>
-			<Button type="button" onclick={addGenre}>
-				<PlusIcon />Tilføj
+			<Button variant="secondary" type="button" onclick={addGenre}>
+				<PlusIcon />Lav
 			</Button>
 		</div>
 		<div class="space-y-1">
