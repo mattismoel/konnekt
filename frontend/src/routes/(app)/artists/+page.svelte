@@ -45,7 +45,7 @@
 	{/each}
 	<div class="space-y-16">
 		<section class="flex flex-col">
-			<h1 class="font-heading mb-4 text-5xl font-bold md:text-7xl">Kunstnere.</h1>
+			<h1 class="font-heading mb-4 text-5xl font-bold md:text-7xl">Kunstnere</h1>
 			<span class="text-text/75">
 				Her kan du se alle kunstnere, som medvirker i kommende events.
 			</span>
