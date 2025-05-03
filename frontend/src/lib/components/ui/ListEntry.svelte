@@ -10,7 +10,7 @@
 <li
 	{...rest}
 	class={cn(
-		'relative flex items-center justify-between gap-4 rounded-sm border border-transparent p-3 hover:border-zinc-800 hover:bg-zinc-900',
+		'relative flex items-center justify-between gap-4 rounded-sm border border-zinc-900 p-3 hover:border-zinc-800 hover:bg-zinc-900 sm:border-transparent',
 		rest.class
 	)}
 >
