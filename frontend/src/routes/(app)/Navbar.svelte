@@ -21,7 +21,7 @@
 
 <nav
 	class:scrolled={scrollY > 0}
-	class="h-nav fixed z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 px-8 outline outline-transparent transition-colors duration-500 [.scrolled]:from-zinc-950 [.scrolled]:to-zinc-950 [.scrolled]:outline-zinc-800"
+	class="h-nav px-auto fixed z-50 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 outline outline-transparent transition-colors duration-500 [.scrolled]:from-zinc-950 [.scrolled]:to-zinc-950 [.scrolled]:outline-zinc-800"
 >
 	<a href="/">
 		<Logo class="h-4" />
