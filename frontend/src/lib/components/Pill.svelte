@@ -8,7 +8,7 @@
 		size?: Size;
 	};
 
-	let { size = 'sm', children, ...rest }: Props = $props();
+	let { size = 'base', children, ...rest }: Props = $props();
 </script>
 
 <li
