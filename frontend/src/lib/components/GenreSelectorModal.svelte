@@ -51,7 +51,7 @@
 		<div class="flex gap-2">
 			<input
 				type="text"
-				placeholder="Søg..."
+				placeholder="Genrenavn"
 				bind:value={search}
 				class="rounded-md border border-zinc-800 bg-zinc-900"
 			/>
