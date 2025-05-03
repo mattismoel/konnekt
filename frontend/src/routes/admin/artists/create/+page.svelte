@@ -22,7 +22,7 @@
 				toaster.addToast('Kunne ikke skabe kunstner', 'Ugyldig kunstnerdata', 'error');
 				errors = e.flatten();
 				loading = false;
-				return;
+				throw e;
 			}
 
 			toaster.addToast('Kunne ikke skabe kunstner', 'Noget gik galt...', 'error');
