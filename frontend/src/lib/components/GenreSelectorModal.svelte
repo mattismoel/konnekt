@@ -53,7 +53,7 @@
 				type="text"
 				placeholder="Genrenavn"
 				bind:value={search}
-				class="rounded-md border border-zinc-800 bg-zinc-900"
+				class="w-full rounded-md border border-zinc-800 bg-zinc-900"
 			/>
 			<Button type="button" onclick={addGenre}>
 				<PlusIcon />Tilføj
