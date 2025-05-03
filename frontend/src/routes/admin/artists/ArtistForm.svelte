@@ -12,7 +12,6 @@
 	import Pill from '$lib/components/Pill.svelte';
 	import GenreSelectorModal from '$lib/components/GenreSelectorModal.svelte';
 	import SpotifyPreview from '$lib/components/SpotifyPreview.svelte';
-	import SocialEntry from './SocialEntry.svelte';
 
 	import PublishIcon from '~icons/mdi/upload';
 	import PlusIcon from '~icons/mdi/add';
@@ -20,6 +19,7 @@
 	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import FormField from '$lib/components/ui/FormField.svelte';
+	import SocialList from './SocialList.svelte';
 
 	type Props = {
 		artist?: Artist;
@@ -157,16 +157,7 @@
 			</FormField>
 			<Button type="button" onclick={addSocial}><PlusIcon />Tilføj</Button>
 		</div>
-		<div class="space-y-2">
-			{#each form.socials as url (url)}
-				<SocialEntry
-					{url}
-					onChange={(newUrl) =>
-						(form.socials = form.socials.map((social) => (social === url ? newUrl : social)))}
-					onDelete={() => (form.socials = form.socials.filter((social) => social !== url))}
-				/>
-			{/each}
-		</div>
+		<SocialList bind:socials={form.socials} />
 	</div>
 	<Button type="submit">
 		{#if loading}
