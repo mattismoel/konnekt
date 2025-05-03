@@ -3,7 +3,7 @@
 
 	type Props = HTMLInputAttributes;
 
-	let { value = $bindable(''), ...rest }: Props = $props();
+	let { value = $bindable(), ...rest }: Props = $props();
 </script>
 
 <input
