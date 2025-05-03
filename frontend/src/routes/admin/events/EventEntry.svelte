@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DATE_FORMAT } from '$lib/time';
+	import { DATETIME_FORMAT } from '$lib/time';
 
 	import { deleteEvent, type Event } from '$lib/features/event/event';
 
@@ -14,6 +14,8 @@
 	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
 	import { toaster } from '$lib/toaster.svelte';
 	import { APIError } from '$lib/api';
+
+	import LocationIcon from '~icons/mdi/location';
 
 	type Props = {
 		event: Event;
@@ -49,12 +51,11 @@
 </script>
 
 <ListEntry class={`group ${expired ? 'expired' : ''}`}>
-	<a href="/admin/events/edit/{event.id}">
-		<div class="flex flex-1 flex-col">
-			<span class="line-clamp-1 group-[.expired]:line-through">{event.title}</span>
-			<span class="text-text/50">{format(fromDate, DATE_FORMAT)}</span>
-		</div>
-		<span class="text-text/50 hidden sm:block">
+	<a title="Redigér event" href="/admin/events/edit/{event.id}" class="flex w-full flex-col">
+		<span class="line-clamp-1 group-[.expired]:line-through">{event.title}</span>
+		<span class="text-text/50 line-clamp-1">{format(fromDate, DATETIME_FORMAT)}</span>
+		<span class="text-text/50 line-clamp-1 md:hidden">{event.venue.name}</span>
+		<span class="text-text/50 line-clamp-1 hidden md:block">
 			{#if artists.length > 2}
 				{artists
 					.slice(0, 2)
@@ -64,6 +65,14 @@
 				{artists.map((artist) => artist.name).join(', ')}
 			{/if}
 		</span>
+	</a>
+	<a
+		title="Redigér venue"
+		href="/admin/venues/edit/{event.venue.id}"
+		class="text-text/50 hover:text-text hidden w-full items-center gap-2 hover:underline md:flex"
+	>
+		<LocationIcon />
+		<span class="whitespace-nowrap">{event.venue.name}</span>
 	</a>
 	<ContextMenuButton onclick={() => (showContextMenu = true)} />
 	<ContextMenu
