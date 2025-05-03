@@ -1,6 +1,5 @@
 <script lang="ts">
-	import SearchBar from '$lib/components/SearchBar.svelte';
-	import List from '$lib/components/ui/List.svelte';
+	import SearchList from '$lib/components/SearchList.svelte';
 	import type { Permission } from '$lib/features/auth/permission';
 	import type { Event } from '$lib/features/event/event';
 	import EventEntry from './EventEntry.svelte';
@@ -22,21 +21,15 @@
 	);
 </script>
 
-<div class="space-y-8">
-	<SearchBar bind:value={search} />
-
+<SearchList bind:search>
 	{#if search}
-		<List>
-			{#each filteredEvents as event (event.id)}
-				<EventEntry {event} {memberPermissions} />
-			{/each}
-		</List>
+		{#each filteredEvents as event (event.id)}
+			<EventEntry {event} {memberPermissions} />
+		{/each}
 	{:else}
-		<List>
-			{#each upcomingEvents as event (event.id)}
-				<EventEntry {event} {memberPermissions} />
-			{/each}
-		</List>
+		{#each upcomingEvents as event (event.id)}
+			<EventEntry {event} {memberPermissions} />
+		{/each}
 		<details>
 			<summary class="mb-4">Tidligere events ({previousEvents.length})</summary>
 			{#each previousEvents as event (event.id)}
@@ -44,4 +37,4 @@
 			{/each}
 		</details>
 	{/if}
-</div>
+</SearchList>
