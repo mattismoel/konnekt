@@ -51,7 +51,7 @@
 		>
 	</Card.Header>
 
-	<Card.Content class="gap-4">
+	<Card.Content class="gap-8">
 		<div class="flex w-full gap-4">
 			<Selector
 				value={concert.artistID.toString()}
@@ -66,7 +66,7 @@
 				<PlusIcon></PlusIcon>Lav&nbsp;ny
 			</Button>
 		</div>
-		<div class="flex items-center gap-4">
+		<div class="flex flex-col items-center gap-4 sm:flex-row">
 			<DateTimePicker
 				class="w-full"
 				placeholder="Fra"
