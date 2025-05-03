@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { cn } from '$lib/clsx';
-	import type { HTMLAttributes } from 'svelte/elements';
+	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	type Props = HTMLAttributes<HTMLInputElement> & {
+	type Props = HTMLInputAttributes & {
 		onChange: (files: FileList | null) => void;
 	};
 
