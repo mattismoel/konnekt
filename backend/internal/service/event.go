@@ -15,6 +15,7 @@ import (
 	"github.com/mattismoel/konnekt/internal/domain/venue"
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
+	"github.com/nfnt/resize"
 )
 
 const EVENT_COVER_IMAGE_WIDTH_PX = 4096
@@ -212,20 +213,16 @@ func (s EventService) UploadImage(ctx context.Context, r io.Reader) (string, err
 	fileName := createRandomImageFileName("jpeg")
 
 	if img.Bounds().Max.X > EVENT_COVER_IMAGE_WIDTH_PX {
-		resizedImage, err := resizeImage(img, EVENT_COVER_IMAGE_WIDTH_PX, 0)
-		if err != nil {
-			return "", nil
-		}
+		img = resize.Resize(EVENT_COVER_IMAGE_WIDTH_PX, 0, img, resize.Lanczos2)
 
-		url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), resizedImage)
-		if err != nil {
-			return "", err
-		}
-
-		return url, nil
 	}
 
-	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), r)
+	formattedImg, err := formatJPEG(img)
+	if err != nil {
+		return "", err
+	}
+
+	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), formattedImg)
 	if err != nil {
 		return "", err
 	}

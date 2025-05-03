@@ -9,16 +9,13 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/nfnt/resize"
 )
 
-func resizeImage(img image.Image, width, height uint) (io.Reader, error) {
-	resizedImage := resize.Resize(width, height, img, resize.Lanczos2)
-
+func formatJPEG(img image.Image) (io.Reader, error) {
 	pr, pw := io.Pipe()
 	go func() {
 		defer pw.Close()
-		err := jpeg.Encode(pw, resizedImage, &jpeg.Options{Quality: jpeg.DefaultQuality})
+		err := jpeg.Encode(pw, img, &jpeg.Options{Quality: jpeg.DefaultQuality})
 		if err != nil {
 			pw.CloseWithError(err)
 		}

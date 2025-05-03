@@ -13,6 +13,7 @@ import (
 	"github.com/mattismoel/konnekt/internal/domain/team"
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
+	"github.com/nfnt/resize"
 )
 
 const PROFILE_PICTURE_WIDTH_PX = 512
@@ -55,14 +56,18 @@ func (srv MemberService) UploadProfilePicture(ctx context.Context, r io.Reader) 
 		return "", err
 	}
 
-	resizedImage, err := resizeImage(img, PROFILE_PICTURE_WIDTH_PX, 0)
+	if img.Bounds().Max.X > PROFILE_PICTURE_WIDTH_PX {
+		img = resize.Resize(PROFILE_PICTURE_WIDTH_PX, 0, img, resize.Lanczos2)
+	}
+
+	formatedImg, err := formatJPEG(img)
 	if err != nil {
 		return "", err
 	}
 
 	fileName := fmt.Sprintf("%s.jpeg", uuid.NewString())
 
-	url, err := srv.objectStore.Upload(ctx, path.Join("/members", fileName), resizedImage)
+	url, err := srv.objectStore.Upload(ctx, path.Join("/members", fileName), formatedImg)
 	if err != nil {
 		return "", err
 	}

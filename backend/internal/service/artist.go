@@ -15,6 +15,10 @@ import (
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
+	"github.com/nfnt/resize"
+
+	_ "image/jpeg"
+	_ "image/png"
 )
 
 const ARTIST_IMAGE_WIDTH_PX = 2048
@@ -256,20 +260,15 @@ func (s ArtistService) UploadImage(ctx context.Context, r io.Reader) (string, er
 
 	// Resize if too high resolution.
 	if img.Bounds().Max.X > ARTIST_IMAGE_WIDTH_PX {
-		resizedImage, err := resizeImage(img, ARTIST_IMAGE_WIDTH_PX, 0)
-		if err != nil {
-			return "", err
-		}
-
-		url, err := s.objectStore.Upload(ctx, path.Join("/artists", fileName), resizedImage)
-		if err != nil {
-			return "", err
-		}
-
-		return url, nil
+		img = resize.Resize(ARTIST_IMAGE_WIDTH_PX, 0, img, resize.Lanczos2)
 	}
 
-	url, err := s.objectStore.Upload(ctx, path.Join("/artists", fileName), r)
+	formattedImg, err := formatJPEG(img)
+	if err != nil {
+		return "", err
+	}
+
+	url, err := s.objectStore.Upload(ctx, path.Join("/artists", fileName), formattedImg)
 	if err != nil {
 		return "", err
 	}
