@@ -1,12 +1,14 @@
 <script lang="ts">
-	import type { HTMLImgAttributes } from 'svelte/elements';
+	import type { HTMLImgAttributes, HTMLInputAttributes } from 'svelte/elements';
 	import FilePicker from './FilePicker.svelte';
 
-	type Props = HTMLImgAttributes & {
+	type Props = {
 		onChange: (file: File) => void;
+		src: HTMLImgAttributes['src'];
+		accept: HTMLInputAttributes['accept'];
 	};
 
-	let { src, onChange, ...rest }: Props = $props();
+	let { src, accept, onChange, ...rest }: Props = $props();
 
 	let url = $state(src);
 
@@ -22,6 +24,7 @@
 	<div class="absolute h-full w-full bg-gradient-to-t from-black/50"></div>
 	<img {...rest} src={url} class="h-full w-full rounded-md border border-zinc-900 object-cover" />
 	<FilePicker
+		{accept}
 		onChange={(files) => updateImage(files?.[0] || null)}
 		class="absolute bottom-4 left-4"
 	/>

@@ -97,7 +97,11 @@
 	<section>
 		<h2 class="mb-8 text-2xl font-semibold">Coverbillede</h2>
 		<FormField errors={errors?.fieldErrors.image}>
-			<ImagePreview src={imageUrl} onChange={(file) => (form.image = file)} />
+			<ImagePreview
+				accept="image/jpeg,image/png"
+				src={imageUrl}
+				onChange={(file) => (form.image = file)}
+			/>
 		</FormField>
 	</section>
 
