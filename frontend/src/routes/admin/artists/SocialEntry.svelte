@@ -21,7 +21,7 @@
 		<Icon class="text-lg" />
 		<input
 			type="text"
-			class="flex-1 rounded-sm border-transparent bg-zinc-950 hover:border-zinc-800"
+			class="w-full rounded-sm border-transparent bg-zinc-950 hover:border-zinc-800"
 			value={url}
 			onchange={(e) => onChange(e.currentTarget.value)}
 		/>
