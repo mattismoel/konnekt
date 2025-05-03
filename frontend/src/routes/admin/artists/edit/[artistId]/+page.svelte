@@ -33,7 +33,7 @@
 	};
 </script>
 
-<main class="flex min-h-svh justify-center p-16">
+<main class="px-8 py-16 md:px-16">
 	<ArtistForm
 		{loading}
 		{errors}
