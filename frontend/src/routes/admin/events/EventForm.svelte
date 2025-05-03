@@ -12,6 +12,7 @@
 
 	import ConcertsList from './ConcertsList.svelte';
 	import PublishIcon from '~icons/mdi/upload';
+	import AddIcon from '~icons/mdi/add';
 
 	import Input from '$lib/components/ui/Input.svelte';
 	import Selector from '$lib/components/ui/Selector.svelte';
@@ -120,11 +121,16 @@
 				</FormField>
 
 				<FormField errors={errors?.fieldErrors.venueId}>
-					<Selector
-						class="h-min"
-						bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
-						entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
-					/>
+					<div class="flex gap-4">
+						<Selector
+							class="w-full"
+							bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
+							entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
+						/>
+						<Button target="__blank" variant="secondary" href="/admin/venues/create"
+							><AddIcon />Ny</Button
+						>
+					</div>
 				</FormField>
 			</div>
 		</div>
