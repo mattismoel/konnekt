@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { z, ZodError } from 'zod';
+	import type { z } from 'zod';
 
 	import { createArtistForm, editArtistForm, type Artist } from '$lib/features/artist/artist';
 	import { trackIdFromUrl } from '$lib/features/artist/spotify';
@@ -34,7 +34,7 @@
 		onSubmit: (form: z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>) => void;
 	};
 
-	let { artist, genres, loading, onSubmit }: Props = $props();
+	let { artist, genres, loading, errors, onSubmit }: Props = $props();
 
 	let form = $state<z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>>(
 		artist
@@ -60,7 +60,6 @@
 	let selectedGenres = $derived(genres.filter((genre) => form.genreIds.includes(genre.id)));
 
 	let showGenreModal = $state(false);
-	let formError = $state<ZodError | null>(null);
 
 	let imageUrl = $derived(form.image ? URL.createObjectURL(form.image) : artist?.imageUrl || '');
 
@@ -96,15 +95,17 @@
 		{/if}
 	</h1>
 	<div class="space-y-8">
-		<ImagePreview src={imageUrl} onChange={updateImage} />
+		<FormField errors={errors?.fieldErrors.image}>
+			<ImagePreview accept="image/jpeg,image/png" src={imageUrl} onChange={updateImage} />
+		</FormField>
 		<div class="space-y-8">
 			<div class="space-y-1">
-				<FormField errors={formError?.flatten().fieldErrors['name']}>
+				<FormField errors={errors?.fieldErrors.name}>
 					<Input placeholder="Kunstnernavn" bind:value={form.name} />
 				</FormField>
 			</div>
 			<div class="space-y-1">
-				<FormField errors={formError?.flatten().fieldErrors['description']}>
+				<FormField errors={errors?.fieldErrors.description}>
 					<TipTapEditor bind:value={form.description} />
 				</FormField>
 			</div>
@@ -127,7 +128,7 @@
 				{/each}
 			</ul>
 		</div>
-		<FormField errors={formError?.flatten().fieldErrors['genreIds']}>
+		<FormField errors={errors?.fieldErrors.genreIds}>
 			<GenreSelectorModal
 				{genres}
 				bind:show={showGenreModal}
@@ -139,17 +140,19 @@
 	<div class="flex flex-col">
 		<h1 class="font-heading mb-8 text-2xl font-bold">Spotify Preview</h1>
 		<div class="space-y-4">
-			<Input placeholder="Preview-URL" bind:value={form.previewUrl} />
-			{#if trackId}
-				<SpotifyPreview {trackId} />
-			{/if}
+			<FormField errors={errors?.fieldErrors.previewUrl}>
+				<Input placeholder="Preview-URL" bind:value={form.previewUrl} />
+				{#if trackId}
+					<SpotifyPreview {trackId} />
+				{/if}
+			</FormField>
 		</div>
 	</div>
 
 	<div class="flex flex-col">
 		<h1 class="font-heading mb-4 text-2xl font-bold">Sociale medier</h1>
 		<div class="mb-4 flex w-full gap-2">
-			<FormField errors={formError?.flatten().fieldErrors['socials']}>
+			<FormField errors={errors?.fieldErrors.socials}>
 				<Input type="text" placeholder="URL" bind:value={socialUrl} class="flex-1" />
 			</FormField>
 			<Button type="button" onclick={addSocial}><PlusIcon />Tilføj</Button>
