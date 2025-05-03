@@ -8,7 +8,7 @@
 
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
@@ -79,7 +79,7 @@
 		</ContextMenuEntry>
 		<ContextMenuEntry
 			disabled={!hasPermissions(memberPermissions, ['delete:event'])}
-			action={handleDeleteEvent}>Slet</ContextMenuEntry
+			onclick={handleDeleteEvent}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>
 </ListEntry>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import AvatarImage from '$lib/assets/avatar.png';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import MemberStatusIndicator from '$lib/components/MemberStatusIndicator.svelte';
@@ -61,7 +61,7 @@
 			Redigér
 		</ContextMenuEntry>
 		<ContextMenuEntry
-			action={handleDeleteMember}
+			onclick={handleDeleteMember}
 			disabled={!hasPermissions(memberPermissions, ['delete:member'])}
 		>
 			Slet

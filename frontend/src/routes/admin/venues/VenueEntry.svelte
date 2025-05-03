@@ -53,7 +53,11 @@
 	>
 		<ContextMenuEntry
 			disabled={!hasPermissions(memberPermissions, ['delete:venue'])}
-			action={handleDeleteVenue}>Slet</ContextMenuEntry
+			href="/admin/venues/edit/{venue.id}">Redigér</ContextMenuEntry
+		>
+		<ContextMenuEntry
+			disabled={!hasPermissions(memberPermissions, ['delete:venue'])}
+			onclick={handleDeleteVenue}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>
 </ListEntry>

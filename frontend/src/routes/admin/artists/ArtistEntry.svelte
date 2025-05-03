@@ -1,21 +1,40 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import type { Artist } from '$lib/features/artist/artist';
+	import { invalidateAll } from '$app/navigation';
+	import { deleteArtist, type Artist } from '$lib/features/artist/artist';
 	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import MenuIcon from '~icons/mdi/dots-vertical';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
+	import { toaster } from '$lib/toaster.svelte';
+	import { APIError } from '$lib/api';
 
 	type Props = {
 		artist: Artist;
-		onDelete: () => void;
 		memberPermissions: Permission[];
 	};
 
-	let { artist, memberPermissions, onDelete }: Props = $props();
+	let { artist, memberPermissions }: Props = $props();
 
 	let showContextMenu = $state(false);
+
+	const handleDelete = async () => {
+		if (!confirm(`Er du sikke på, at du vil slette ${artist.name}?`)) return;
+
+		try {
+			await deleteArtist(fetch, artist.id);
+			toaster.addToast('Kunstner slettet');
+			await invalidateAll();
+		} catch (e) {
+			if (e instanceof APIError) {
+				toaster.addToast('Kunne ikke slette kunstner', e.cause, 'error');
+				throw e;
+			}
+
+			toaster.addToast('Kunne ikke slette kunstner', 'Noget gik galt...', 'error');
+			throw e;
+		}
+	};
 </script>
 
 <ListEntry>
@@ -38,8 +57,10 @@
 			Redigér
 		</ContextMenuEntry>
 		<ContextMenuEntry
+			onclick={handleDelete}
 			disabled={!hasPermissions(memberPermissions, ['delete:artist'])}
-			action={onDelete}>Slet</ContextMenuEntry
 		>
+			Slet
+		</ContextMenuEntry>
 	</ContextMenu>
 </ListEntry>
