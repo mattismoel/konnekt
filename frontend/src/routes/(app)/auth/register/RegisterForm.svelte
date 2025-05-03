@@ -4,7 +4,6 @@
 	import * as Card from '$lib/components/ui/card/index';
 	import Input from '$lib/components/ui/Input.svelte';
 	import { register, type registerForm } from '$lib/features/auth/auth';
-	import { uploadMemberProfilePicture } from '$lib/features/auth/member';
 	import type { z } from 'zod';
 
 	const form = $state<z.infer<typeof registerForm>>({
@@ -17,8 +16,6 @@
 	});
 
 	let profilePictureFile = $state<File | null>(null);
-
-	$inspect(profilePictureFile);
 
 	const submit = async (e: SubmitEvent) => {
 		e.preventDefault();

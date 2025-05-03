@@ -9,8 +9,6 @@
 
 	let errors = $state<z.inferFlattenedErrors<typeof editVenueForm>>();
 
-	$inspect(data.venue);
-
 	const handleSubmit = async (form: z.infer<typeof editVenueForm>) => {
 		try {
 			await editVenue(fetch, data.venue.id, form);
