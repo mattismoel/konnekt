@@ -33,27 +33,11 @@
 	</DashboardHeader>
 
 	{#if hasPermissions(data.member.permissions, ['view:event'])}
-		<div class="space-y-8">
-			<SearchBar bind:value={search} />
-			{#if search.trim() !== ''}
-				<section>
-					<EventList events={filteredEvents} memberPermissions={data.member.permissions} />
-				</section>
-			{:else}
-				<section>
-					<EventList events={data.upcomingEvents} memberPermissions={data.member.permissions} />
-				</section>
-			{/if}
-
-			{#if data.previousEvents.length > 0}
-				<section>
-					<details>
-						<summary class="mb-4">Tidligere events ({data.previousEvents.length})</summary>
-						<EventList events={data.previousEvents} memberPermissions={data.member.permissions} />
-					</details>
-				</section>
-			{/if}
-		</div>
+		<EventList
+			previousEvents={data.previousEvents}
+			upcomingEvents={data.upcomingEvents}
+			memberPermissions={data.member.permissions}
+		/>
 	{:else}
 		<span>Du har ikke tilladelse til at se denne side...</span>
 	{/if}
