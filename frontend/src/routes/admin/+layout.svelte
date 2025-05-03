@@ -1,12 +1,12 @@
 <script lang="ts">
 	import '../../app.css';
 
-	import { cn } from '$lib/clsx';
 	import { toaster } from '$lib/toaster.svelte';
 
 	import Toast from '$lib/components/Toast.svelte';
 	import Sidebar from './Sidebar.svelte';
 	import { MediaQuery } from 'svelte/reactivity';
+	import Navbar from './Navbar.svelte';
 
 	let { children, data } = $props();
 	let { member } = $derived(data);
@@ -20,18 +20,14 @@
 
 <svelte:window bind:innerWidth={windowWidth} />
 
-<main class="bg-background flex min-h-svh w-screen">
+<main class="bg-background flex min-h-svh w-screen flex-col">
+	<Navbar onSidebarOpen={() => (sidebarExpanded = true)} />
 	<Sidebar
 		{member}
 		expanded={sidebarExpanded}
 		onToggle={() => (sidebarExpanded = !sidebarExpanded)}
 	/>
-	<div
-		class={cn('grid flex-1 grid-cols-1 overflow-hidden pl-0', {
-			'md:pl-sidenav-lg': sidebarExpanded,
-			'md:pl-sidenav-sm': !sidebarExpanded
-		})}
-	>
+	<div class="grid flex-1 grid-cols-1 overflow-hidden">
 		{@render children()}
 	</div>
 	<div class="fixed right-4 bottom-4 z-50 flex flex-col gap-2">
