@@ -52,7 +52,7 @@
 	>
 		<ContextMenuEntry
 			disabled={!hasPermissions(memberPermissions, ['edit:artist'])}
-			href="admin/artists/edit/{artist.id}"
+			href="/admin/artists/edit/{artist.id}"
 		>
 			Redigér
 		</ContextMenuEntry>
