@@ -133,13 +133,7 @@
 					</div>
 				</FormField>
 			</div>
-		</div>
-	</section>
-
-	<!-- EVENT DESCRIPTION -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Eventbeskrivelse</h2>
-		<div>
+			<!-- EVENT DESCRIPTION -->
 			<FormField errors={errors?.fieldErrors.description}>
 				<TipTapEditor bind:value={form.description} />
 			</FormField>
