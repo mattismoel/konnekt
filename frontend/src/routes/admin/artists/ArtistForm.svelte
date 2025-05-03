@@ -41,7 +41,7 @@
 			? {
 					name: artist.name,
 					description: artist.description,
-					previewUrl: artist.previewUrl,
+					previewUrl: artist.previewUrl || '',
 					genreIds: artist.genres.map((genre) => genre.id),
 					image: null,
 					socials: artist.socials
@@ -64,7 +64,7 @@
 
 	let imageUrl = $derived(form.image ? URL.createObjectURL(form.image) : artist?.imageUrl || '');
 
-	let trackId = $derived(artist?.previewUrl ? trackIdFromUrl(form.previewUrl) : '');
+	let trackId = $derived(form.previewUrl ? trackIdFromUrl(form.previewUrl) : undefined);
 
 	const updateImage = (file: File | null) => {
 		if (!file) return;

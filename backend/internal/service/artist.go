@@ -102,7 +102,6 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 	a, err := artist.NewArtist(
 		artist.WithName(load.Name),
 		artist.WithDescription(load.Description),
-		artist.WithPreviewURL(load.PreviewURL),
 		artist.WithImageURL(load.ImageURL),
 		artist.WithGenres(genres...),
 		artist.WithSocials(socials...),
@@ -110,6 +109,13 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 
 	if err != nil {
 		return 0, err
+	}
+
+	if strings.TrimSpace(load.PreviewURL) != "" {
+		err := a.WithCfgs(artist.WithPreviewURL(load.PreviewURL))
+		if err != nil {
+			return 0, err
+		}
 	}
 
 	artistID, err := s.artistRepo.Insert(ctx, *a)
@@ -149,13 +155,19 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 	a, err := artist.NewArtist(
 		artist.WithName(load.Name),
 		artist.WithDescription(load.Description),
-		artist.WithPreviewURL(load.PreviewURL),
 		artist.WithGenres(genres...),
 		artist.WithSocials(socials...),
 	)
 
 	if err != nil {
 		return artist.Artist{}, err
+	}
+
+	if strings.TrimSpace(load.PreviewURL) != "" {
+		err := a.WithCfgs(artist.WithPreviewURL(load.PreviewURL))
+		if err != nil {
+			return artist.Artist{}, err
+		}
 	}
 
 	if strings.TrimSpace(load.ImageURL) != "" {

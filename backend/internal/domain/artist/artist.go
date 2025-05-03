@@ -25,7 +25,7 @@ type Artist struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	ImageURL    string   `json:"imageUrl"`
-	PreviewURL  string   `json:"previewUrl"`
+	PreviewURL  string   `json:"previewUrl,omitempty"`
 	Genres      []Genre  `json:"genres"`
 	Socials     []Social `json:"socials"`
 }

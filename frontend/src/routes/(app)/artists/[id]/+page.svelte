@@ -10,7 +10,7 @@
 	let { data } = $props();
 	let { artist, events } = $derived(data);
 
-	let trackId = $derived(trackIdFromUrl(artist.previewUrl));
+	let trackId = $derived( artist.previewUrl ? trackIdFromUrl(artist.previewUrl) : undefined);
 
 	let contentScrollPosY = $state(0);
 </script>

@@ -14,7 +14,7 @@ export const artistSchema = z.object({
 	description: z.string(),
 	genres: genreSchema.array(),
 	socials: z.string().url().array(),
-	previewUrl: z.string().url(),
+	previewUrl: z.string().url().optional(),
 })
 
 export type Artist = z.infer<typeof artistSchema>
@@ -26,14 +26,16 @@ const artistForm = z.object({
 	description: z
 		.string()
 		.nonempty({ message: "Kunstnerbeskreivelse skal være defineret" }),
-	previewUrl: z
+	previewUrl: z.union([z.literal(""), z
 		.string()
-		.url({ message: "URL skal være gyldigt" })
+		.url({ message: "Spotify preview-URL skal være et gyldigt URL" })
 		.refine(url => {
+			if (!url) return true
 			let { hostname } = new URL(url);
 			hostname = hostname.replace(/^www\./, '');
 			return hostname === "open.spotify.com"
 		}, { message: "Preview URL skal være fra Spotify" }),
+	]),
 	genreIds: z.number()
 		.positive()
 		.array()
