@@ -64,7 +64,7 @@
 		<h1 class="mb-8 text-7xl font-bold">{event.title}</h1>
 
 		<div class="text-text/85 flex flex-col gap-8 sm:flex-row">
-			<div class="flex flex-1 flex-col gap-1">
+			<div class="flex flex-1 flex-col gap-2">
 				{#if fromDate}
 					<div class="flex items-center gap-4">
 						<CalendarIcon />
