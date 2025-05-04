@@ -86,7 +86,7 @@
 	};
 </script>
 
-<form class="w-full max-w-3xl space-y-16" onsubmit={submit}>
+<form class="w-full space-y-16" onsubmit={submit}>
 	<h1 class="font-heading mb-8 text-4xl font-bold">
 		{#if artist}
 			Redigér kunstner
