@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { deleteVenue, type Venue } from '$lib/features/venue/venue';
 
-	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
-	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
+	import * as ContextMenu from '$lib/components/ui/context-menu/index';
 	import { hasPermissions } from '$lib/features/auth/permission';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import { toaster } from '$lib/toaster.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { APIError } from '$lib/api';
-	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
 	import { authStore } from '$lib/auth.svelte';
 
 	type Props = {
@@ -45,19 +43,19 @@
 		</div>
 	</a>
 
-	<ContextMenuButton onclick={() => (showContextMenu = true)} />
-	<ContextMenu
-		open={showContextMenu}
-		onClose={() => (showContextMenu = false)}
-		class="absolute top-1/2 right-4"
-	>
-		<ContextMenuEntry
+	<ContextMenu.Button onclick={() => (showContextMenu = true)} />
+	<ContextMenu.Root bind:show={showContextMenu} class="absolute top-1/2 right-4">
+		<ContextMenu.Entry
 			disabled={!hasPermissions(authStore.permissions, ['delete:venue'])}
-			href="/admin/venues/edit/{venue.id}">Redigér</ContextMenuEntry
+			href="/admin/venues/edit/{venue.id}"
 		>
-		<ContextMenuEntry
+			Redigér
+		</ContextMenu.Entry>
+		<ContextMenu.Entry
 			disabled={!hasPermissions(authStore.permissions, ['delete:venue'])}
-			onclick={handleDeleteVenue}>Slet</ContextMenuEntry
+			onclick={handleDeleteVenue}
 		>
-	</ContextMenu>
+			Slet
+		</ContextMenu.Entry>
+	</ContextMenu.Root>
 </ListEntry>

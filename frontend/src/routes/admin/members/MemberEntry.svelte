@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import * as ContextMenu from '$lib/components/ui/context-menu/index';
 	import AvatarImage from '$lib/assets/avatar.png';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import MemberStatusIndicator from '$lib/components/MemberStatusIndicator.svelte';
-	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
-	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
-	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import { deleteMember, type Member } from '$lib/features/auth/member';
-	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
+	import { hasPermissions } from '$lib/features/auth/permission';
 	import { toaster } from '$lib/toaster.svelte';
 	import { authStore } from '$lib/auth.svelte';
 
@@ -52,19 +50,19 @@
 		status={member.active ? 'approved' : 'non-approved'}
 		class="hidden md:flex"
 	/>
-	<ContextMenuButton onclick={() => (isContextMenuOpen = true)} />
-	<ContextMenu open={isContextMenuOpen} onClose={() => (isContextMenuOpen = false)}>
-		<ContextMenuEntry
+	<ContextMenu.Button onclick={() => (isContextMenuOpen = true)} />
+	<ContextMenu.Root bind:show={isContextMenuOpen}>
+		<ContextMenu.Entry
 			href="/admin/members/{member.id}"
 			disabled={!hasPermissions(authStore.permissions, ['edit:member'])}
 		>
 			Redigér
-		</ContextMenuEntry>
-		<ContextMenuEntry
+		</ContextMenu.Entry>
+		<ContextMenu.Entry
 			onclick={handleDeleteMember}
 			disabled={!hasPermissions(authStore.permissions, ['delete:member'])}
 		>
 			Slet
-		</ContextMenuEntry>
-	</ContextMenu>
+		</ContextMenu.Entry>
+	</ContextMenu.Root>
 </ListEntry>

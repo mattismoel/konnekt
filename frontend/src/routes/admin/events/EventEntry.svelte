@@ -6,12 +6,10 @@
 	import { earliestConcert } from '$lib/features/concert/concert';
 	import { format, isBefore, startOfToday } from 'date-fns';
 
-	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
-	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
+	import * as ContextMenu from '$lib/components/ui/context-menu/index';
 	import { invalidateAll } from '$app/navigation';
 	import { hasPermissions } from '$lib/features/auth/permission';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
-	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
 	import { toaster } from '$lib/toaster.svelte';
 	import { APIError } from '$lib/api';
 
@@ -74,21 +72,19 @@
 		<LocationIcon />
 		<span class="whitespace-nowrap">{event.venue.name}</span>
 	</a>
-	<ContextMenuButton onclick={() => (showContextMenu = true)} />
-	<ContextMenu
-		open={showContextMenu}
-		onClose={() => (showContextMenu = false)}
-		class="absolute top-1/2 right-4"
-	>
-		<ContextMenuEntry
+	<ContextMenu.Button onclick={() => (showContextMenu = true)} />
+	<ContextMenu.Root bind:show={showContextMenu} class="absolute top-1/2 right-4">
+		<ContextMenu.Entry
 			disabled={!hasPermissions(authStore.permissions, ['edit:event'])}
 			href="/admin/events/edit/{event.id}"
 		>
 			Redigér
-		</ContextMenuEntry>
-		<ContextMenuEntry
+		</ContextMenu.Entry>
+		<ContextMenu.Entry
 			disabled={!hasPermissions(authStore.permissions, ['delete:event'])}
-			onclick={handleDeleteEvent}>Slet</ContextMenuEntry
+			onclick={handleDeleteEvent}
 		>
-	</ContextMenu>
+			Slet
+		</ContextMenu.Entry>
+	</ContextMenu.Root>
 </ListEntry>
