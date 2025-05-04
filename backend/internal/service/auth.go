@@ -78,7 +78,7 @@ func (srv AuthService) Register(ctx context.Context, load RegisterLoad) error {
 	}
 
 	if strings.TrimSpace(load.ProfilePictureURL) != "" {
-		err := m.WithCfgs(member.WithProfileImageURL(load.ProfilePictureURL))
+		err := m.WithCfgs(member.WithProfilePictureURL(load.ProfilePictureURL))
 		if err != nil {
 			return err
 		}

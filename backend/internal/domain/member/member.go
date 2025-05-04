@@ -150,7 +150,7 @@ func WithTeams(teams team.TeamCollection) cfgFunc {
 	}
 }
 
-func WithProfileImageURL(imageUrl string) cfgFunc {
+func WithProfilePictureURL(imageUrl string) cfgFunc {
 	return func(m *Member) error {
 		u, err := url.Parse(imageUrl)
 		if err != nil {
