@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/mattismoel/konnekt/internal/domain/member"
 )
@@ -96,12 +97,14 @@ func (s Server) handleMemberByID() http.HandlerFunc {
 
 func (s Server) handleUpdateMember() http.HandlerFunc {
 	type UpdateMemberLoad struct {
-		Email     string `json:"email"`
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
+		Email             string `json:"email"`
+		FirstName         string `json:"firstName"`
+		LastName          string `json:"lastName"`
+		ProfilePictureURL string `json:"profilePictureUrl"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		ctx := r.Context()
 
 		memberID, err := paramID("memberID", r)
@@ -125,6 +128,7 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 			return
 		}
 
+
 		m, err := member.NewMember(
 			member.WithEmail(load.Email),
 			member.WithFirstName(load.FirstName),
@@ -134,6 +138,14 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 		if err != nil {
 			writeError(w, err)
 			return
+		}
+
+		if strings.TrimSpace(load.ProfilePictureURL) != "" {
+			err := m.WithCfgs(member.WithProfilePictureURL(load.ProfilePictureURL))
+			if err != nil {
+				writeError(w, err)
+				return
+			}
 		}
 
 		if err := s.memberService.Update(ctx, memberID, m); err != nil {
