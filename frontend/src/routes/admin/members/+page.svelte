@@ -12,6 +12,7 @@
 		description="Her kan du administrere alle medlemmer af foreningen, herunder deres roller i foreningen, og
 			dermed deres tilladelser."
 	></DashboardHeader>
+
 	<MemberList
 		members={data.members}
 		pending={data.pending}

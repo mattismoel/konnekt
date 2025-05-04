@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { hasPermissions } from '$lib/features/auth/permission';
-	import AvatarImage from '$lib/assets/avatar.png';
 
 	import MemberStatusIndicator from '$lib/components/MemberStatusIndicator.svelte';
 	import MemberForm from './MemberForm.svelte';

@@ -2,7 +2,6 @@
 	import PlusIcon from '~icons/mdi/plus';
 	import Button from '$lib/components/ui/Button.svelte';
 
-	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { hasPermissions } from '$lib/features/auth/permission';
 	import EventList from './EventList.svelte';
 	import DashboardLayout from '../DashboardLayout.svelte';
@@ -10,14 +9,6 @@
 	import HeaderActions from '../HeaderActions.svelte';
 
 	let { data } = $props();
-
-	let search = $state('');
-
-	let filteredEvents = $derived(
-		[...data.previousEvents, ...data.upcomingEvents].filter((event) =>
-			event.title.toLowerCase().includes(search.toLowerCase())
-		)
-	);
 </script>
 
 <DashboardLayout>
