@@ -53,6 +53,17 @@ export const login = async (fetchFn: typeof fetch, form: z.infer<typeof loginFor
 	return member
 }
 
+export const logOut = async (fetchFn: typeof fetch) => {
+	await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/auth/log-out`),
+		undefined,
+		"Could not log out user",
+		undefined,
+		"POST"
+	)
+}
+
 export const register = async (fetchFn: typeof fetch, form: z.infer<typeof registerForm>, profilePictureFile?: File | null) => {
 	let profilePictureUrl: string | undefined
 
