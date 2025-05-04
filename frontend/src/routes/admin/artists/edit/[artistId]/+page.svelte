@@ -33,7 +33,7 @@
 	};
 </script>
 
-<main class="px-8 py-16 md:px-16">
+<main class="px-auto">
 	<ArtistForm
 		{loading}
 		{errors}
