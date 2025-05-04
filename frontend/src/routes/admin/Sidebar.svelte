@@ -24,10 +24,9 @@
 	type Props = {
 		member: Member;
 		expanded: boolean;
-		onToggle: () => void;
 	};
 
-	let { member, expanded, onToggle }: Props = $props();
+	let { member, expanded = $bindable(false) }: Props = $props();
 
 	// TODO: Implement sign out functionality.
 	const handleSignOut = () => {
@@ -44,7 +43,7 @@
 	<!-- LOGO SECTION -->
 	<div class="flex items-center justify-between">
 		<Logo class="h-5" />
-		<Button onclick={onToggle} variant="ghost" class="h-12 w-12">
+		<Button onclick={() => (expanded = false)} variant="ghost" class="h-12 w-12">
 			<CollapseIcon class="rotate-180 group-[.expanded]:rotate-0" />
 		</Button>
 	</div>
