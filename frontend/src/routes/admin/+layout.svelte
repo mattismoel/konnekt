@@ -6,18 +6,33 @@
 	import Toast from '$lib/components/Toast.svelte';
 	import Sidebar from './Sidebar.svelte';
 	import * as Navbar from '$lib/components/navbar/index';
-	import { beforeNavigate } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import Logo from '$lib/assets/Logo.svelte';
 	import MenuIcon from '~icons/mdi/menu';
 	import { authStore } from '$lib/auth.svelte';
+	import * as ContextMenu from '$lib/components/ui/context-menu/index';
+	import { logOut } from '$lib/features/auth/auth';
+	import { APIError } from '$lib/api';
 
-	let { children, data } = $props();
+	let { children } = $props();
 
 	let sidebarExpanded = $state(false);
+	let userContextMenuOpen = $state(false);
 
 	beforeNavigate(() => {
 		sidebarExpanded = false;
 	});
+
+	const handleLogOut = async () => {
+		try {
+			await logOut(fetch);
+			await goto('/');
+		} catch (e) {
+			if (e instanceof APIError) {
+				toaster.addToast('Kunne ikke logge ud...', e.cause, 'error');
+			}
+		}
+	};
 </script>
 
 <div class="bg-background flex min-h-svh w-screen flex-col">
@@ -40,13 +55,19 @@
 				<Navbar.RouteEntry pathname="/admin/members" name="Medlemmer" />
 			</Navbar.RouteList>
 
-			<a href="/admin/members/{data.member.id}" class="group">
+			<button class="group" onclick={() => (userContextMenuOpen = !userContextMenuOpen)}>
 				<img
-					src={data.member.profilePictureUrl}
+					src={authStore.member?.profilePictureUrl}
 					alt="Profile"
 					class="h-8 w-8 rounded-full object-cover outline outline-zinc-700 group-hover:outline-2"
 				/>
-			</a>
+				<ContextMenu.Root bind:show={userContextMenuOpen}>
+					<ContextMenu.Entry disabled={false} href="/admin/members/{authStore.member?.id}">
+						Redigér
+					</ContextMenu.Entry>
+					<ContextMenu.Entry disabled={false} onclick={handleLogOut}>Log ud</ContextMenu.Entry>
+				</ContextMenu.Root>
+			</button>
 		</Navbar.Content>
 	</Navbar.Root>
 	<Sidebar bind:expanded={sidebarExpanded} />
