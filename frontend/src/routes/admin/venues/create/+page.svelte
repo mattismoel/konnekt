@@ -23,6 +23,6 @@
 	};
 </script>
 
-<main class="px-auto flex items-center justify-center">
+<main class="px-auto flex items-center justify-center py-16">
 	<VenueForm {errors} onSubmit={handleSubmit} />
 </main>

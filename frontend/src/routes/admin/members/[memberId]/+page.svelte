@@ -9,7 +9,7 @@
 	let { data } = $props();
 </script>
 
-<main class="space-y-16 px-4 py-16 sm:px-16">
+<main class="px-auto space-y-16 py-16">
 	{@render header()}
 	<MemberForm member={data.member} currentMember={data.currentMember} teams={data.teams} />
 	{#if hasPermissions(data.currentMember.permissions, ['edit:member'])}
