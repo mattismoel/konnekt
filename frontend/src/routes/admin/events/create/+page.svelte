@@ -30,7 +30,7 @@
 	};
 </script>
 
-<main class="px-auto py-16">
+<main class="px-auto py-16 pt-32">
 	<EventForm
 		{loading}
 		venues={data.venues}

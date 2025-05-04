@@ -9,7 +9,7 @@
 	let { data } = $props();
 </script>
 
-<main class="px-auto space-y-16 py-16">
+<main class="px-auto space-y-16 py-16 pt-32">
 	<MemberForm member={data.member} teams={data.teams} />
 	{#if hasPermissions(data.currentMember.permissions, ['edit:member'])}
 		<MemberTeamsForm member={data.member} teams={data.teams} defaultSelected={data.member.teams} />

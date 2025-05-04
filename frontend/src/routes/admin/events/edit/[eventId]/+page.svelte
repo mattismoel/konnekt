@@ -32,7 +32,7 @@
 	};
 </script>
 
-<main class="px-auto py-16">
+<main class="px-auto py-16 pt-32">
 	<h1 class="mb-8 text-4xl font-bold">Redigér event</h1>
 	<EventForm
 		{loading}

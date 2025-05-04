@@ -32,6 +32,6 @@
 	};
 </script>
 
-<main class="px-auto py-16">
+<main class="px-auto py-16 pt-32">
 	<ArtistForm {loading} genres={data.genres} onSubmit={handleSubmit} {errors} />
 </main>
