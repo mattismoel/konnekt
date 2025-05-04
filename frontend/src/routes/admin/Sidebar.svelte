@@ -20,6 +20,7 @@
 	import { type Component } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { hasSomeTeam } from '$lib/features/auth/team';
+	import { clickOutside } from '$lib/hooks/click-outside.svelte';
 
 	type Props = {
 		member: Member;
@@ -34,10 +35,17 @@
 	};
 </script>
 
+<div
+	class:expanded
+	class="pointer-events-none absolute top-0 left-0 z-40 h-svh w-screen bg-black opacity-0 transition-opacity [.expanded]:opacity-50"
+></div>
+
 <aside
+	use:clickOutside
+	onclickoutside={() => (expanded = false)}
 	class:expanded
 	class={cn(
-		'group w-sidenav-lg fixed z-50 flex h-full -translate-x-full flex-col gap-y-8 border-r border-zinc-900 bg-zinc-950 p-8 transition-transform duration-100 [.expanded]:translate-x-0'
+		'group w-sidenav-lg fixed z-50 flex h-full -translate-x-full flex-col gap-y-8 border-r border-zinc-900 bg-zinc-950 p-8 transition-transform duration-200 ease-in-out  [.expanded]:translate-x-0 '
 	)}
 >
 	<!-- LOGO SECTION -->
