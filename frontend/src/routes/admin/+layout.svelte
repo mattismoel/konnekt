@@ -5,34 +5,56 @@
 
 	import Toast from '$lib/components/Toast.svelte';
 	import Sidebar from './Sidebar.svelte';
-	import { MediaQuery } from 'svelte/reactivity';
-	import Navbar from './Navbar.svelte';
+	import * as Navbar from '$lib/components/navbar/index';
+	import { beforeNavigate } from '$app/navigation';
+	import Logo from '$lib/assets/Logo.svelte';
+	import MenuIcon from '~icons/mdi/menu';
 
 	let { children, data } = $props();
-	let { member } = $derived(data);
 
-	let windowWidth = $state(0);
+	let sidebarExpanded = $state(false);
 
-	const large = new MediaQuery('min-width: 768px');
-
-	let sidebarExpanded = $derived(large.current);
+	beforeNavigate(() => {
+		sidebarExpanded = false;
+	});
 </script>
 
-<svelte:window bind:innerWidth={windowWidth} />
+<div class="bg-background flex min-h-svh w-screen flex-col">
+	<Navbar.Root>
+		<Navbar.Header>
+			<button
+				onclick={() => (sidebarExpanded = true)}
+				class="text-text/75 hover:text-text text-xl md:hidden"><MenuIcon /></button
+			>
+			<a href="/">
+				<Logo class="h-4" />
+			</a>
+		</Navbar.Header>
 
-<main class="bg-background flex min-h-svh w-screen flex-col">
-	<Navbar onSidebarOpen={() => (sidebarExpanded = true)} />
-	<Sidebar
-		{member}
-		expanded={sidebarExpanded}
-		onToggle={() => (sidebarExpanded = !sidebarExpanded)}
-	/>
-	<div class="grid flex-1 grid-cols-1 overflow-hidden">
-		{@render children()}
-	</div>
+		<Navbar.Content>
+			<Navbar.RouteList>
+				<Navbar.RouteEntry pathname="/admin/events" name="Events" />
+				<Navbar.RouteEntry pathname="/admin/artists" name="Kunstnere" />
+				<Navbar.RouteEntry pathname="/admin/venues" name="Venues" />
+				<Navbar.RouteEntry pathname="/admin/members" name="Medlemmer" />
+			</Navbar.RouteList>
+
+			<a href="/admin/members/{data.member.id}" class="group">
+				<img
+					src={data.member.profilePictureUrl}
+					alt="Profile"
+					class="h-8 w-8 rounded-full object-cover outline outline-zinc-700 group-hover:outline-2"
+				/>
+			</a>
+		</Navbar.Content>
+	</Navbar.Root>
+	<Sidebar member={data.member} bind:expanded={sidebarExpanded} />
+
+	{@render children()}
+
 	<div class="fixed right-4 bottom-4 z-50 flex flex-col gap-2">
 		{#each toaster.toasts as toast (toast.id)}
 			<Toast {toast} onDelete={() => toaster.removeToast(toast.id)} />
 		{/each}
 	</div>
-</main>
+</div>
