@@ -51,9 +51,22 @@
 		</section>
 		<Fader direction="up" class="absolute h-64 from-black/75" />
 	</section>
-	<section class="px-auto space-y-16 bg-zinc-950 py-16">
+
+	<section class="bg-zinc-950">
+		<!-- EVENTS -->
+		{#if events.length > 0}
+			<section class="px-auto py-16">
+				<h1 class="font-heading mb-8 text-2xl font-bold">Kommende events</h1>
+				<Caroussel>
+					{#each events as event (event.id)}
+						<EventCard {event} />
+					{/each}
+				</Caroussel>
+			</section>
+		{/if}
+
 		<!-- ABOUT -->
-		<section class="space-y-8 py-16">
+		<section class="px-auto space-y-8 py-16">
 			<!-- MISSION STATEMENT -->
 			<section>
 				<h1 class="font-heading mb-8 text-2xl font-bold">Vores mission</h1>
@@ -90,18 +103,6 @@
 					/>
 				</div>
 			</section>
-		</section>
-
-		<!-- EVENTS -->
-		<section>
-			{#if events.length > 0}
-				<h1 class="font-heading mb-8 text-2xl font-bold">Kommende events</h1>
-				<Caroussel>
-					{#each events as event (event.id)}
-						<EventCard {event} />
-					{/each}
-				</Caroussel>
-			{/if}
 		</section>
 	</section>
 </div>
