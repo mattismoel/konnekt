@@ -13,9 +13,5 @@
 			dermed deres tilladelser."
 	></DashboardHeader>
 
-	<MemberList
-		members={data.members}
-		pending={data.pending}
-		memberPermissions={data.member.permissions}
-	/>
+	<MemberList members={data.members} pending={data.pending} />
 </DashboardLayout>

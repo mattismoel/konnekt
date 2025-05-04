@@ -7,6 +7,7 @@
 	import DashboardHeader from '../DashboardHeader.svelte';
 	import HeaderActions from '../HeaderActions.svelte';
 	import VenueList from './VenueList.svelte';
+	import { authStore } from '$lib/auth.svelte';
 
 	let { data } = $props();
 </script>
@@ -19,15 +20,15 @@
 		<HeaderActions>
 			<Button
 				href="/admin/venues/create"
-				disabled={!hasPermissions(data.member.permissions, ['edit:venue'])}
+				disabled={!hasPermissions(authStore.permissions, ['edit:venue'])}
 			>
 				<PlusIcon />Tilføj
 			</Button>
 		</HeaderActions>
 	</DashboardHeader>
 
-	{#if hasPermissions(data.member.permissions, ['view:venue'])}
-		<VenueList venues={data.venues} memberPermissions={data.member.permissions} />
+	{#if hasPermissions(authStore.permissions, ['view:venue'])}
+		<VenueList venues={data.venues} />
 	{:else}
 		<span>Du har ikke tilladelse til at se venues...</span>
 	{/if}

@@ -1,20 +1,20 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import { deleteArtist, type Artist } from '$lib/features/artist/artist';
-	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
+	import { hasPermissions } from '$lib/features/auth/permission';
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import MenuIcon from '~icons/mdi/dots-vertical';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import { toaster } from '$lib/toaster.svelte';
 	import { APIError } from '$lib/api';
+	import { authStore } from '$lib/auth.svelte';
 
 	type Props = {
 		artist: Artist;
-		memberPermissions: Permission[];
 	};
 
-	let { artist, memberPermissions }: Props = $props();
+	let { artist }: Props = $props();
 
 	let showContextMenu = $state(false);
 
@@ -51,14 +51,14 @@
 		class="absolute top-1/2 right-4"
 	>
 		<ContextMenuEntry
-			disabled={!hasPermissions(memberPermissions, ['edit:artist'])}
+			disabled={!hasPermissions(authStore.permissions, ['edit:artist'])}
 			href="/admin/artists/edit/{artist.id}"
 		>
 			Redigér
 		</ContextMenuEntry>
 		<ContextMenuEntry
 			onclick={handleDelete}
-			disabled={!hasPermissions(memberPermissions, ['delete:artist'])}
+			disabled={!hasPermissions(authStore.permissions, ['delete:artist'])}
 		>
 			Slet
 		</ContextMenuEntry>

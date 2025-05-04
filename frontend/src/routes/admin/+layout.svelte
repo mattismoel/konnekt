@@ -9,6 +9,7 @@
 	import { beforeNavigate } from '$app/navigation';
 	import Logo from '$lib/assets/Logo.svelte';
 	import MenuIcon from '~icons/mdi/menu';
+	import { authStore } from '$lib/auth.svelte';
 
 	let { children, data } = $props();
 
@@ -48,7 +49,7 @@
 			</a>
 		</Navbar.Content>
 	</Navbar.Root>
-	<Sidebar member={data.member} bind:expanded={sidebarExpanded} />
+	<Sidebar bind:expanded={sidebarExpanded} />
 
 	{@render children()}
 

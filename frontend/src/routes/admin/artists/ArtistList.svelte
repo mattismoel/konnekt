@@ -7,10 +7,9 @@
 	type Props = {
 		artists: Artist[];
 		upcomingArtists: Artist[];
-		memberPermissions: Permission[];
 	};
 
-	let { artists, upcomingArtists, memberPermissions }: Props = $props();
+	let { artists, upcomingArtists }: Props = $props();
 
 	let search = $state('');
 
@@ -22,17 +21,17 @@
 <SearchList bind:search>
 	{#if search}
 		{#each filteredArtists as artist (artist.id)}
-			<ArtistEntry {artist} {memberPermissions} />
+			<ArtistEntry {artist} />
 		{/each}
 	{:else}
 		{#each upcomingArtists as artist (artist.id)}
-			<ArtistEntry {artist} {memberPermissions} />
+			<ArtistEntry {artist} />
 		{/each}
 
 		<details>
 			<summary class="mb-4">Alle kunstnere</summary>
 			{#each artists as artist (artist.id)}
-				<ArtistEntry {artist} {memberPermissions} />
+				<ArtistEntry {artist} />
 			{/each}
 		</details>
 	{/if}

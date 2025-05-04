@@ -3,19 +3,19 @@
 
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
-	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
+	import { hasPermissions } from '$lib/features/auth/permission';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import { toaster } from '$lib/toaster.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { APIError } from '$lib/api';
 	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
+	import { authStore } from '$lib/auth.svelte';
 
 	type Props = {
 		venue: Venue;
-		memberPermissions: Permission[];
 	};
 
-	let { venue, memberPermissions }: Props = $props();
+	let { venue }: Props = $props();
 	let showContextMenu = $state(false);
 
 	const handleDeleteVenue = async () => {
@@ -52,11 +52,11 @@
 		class="absolute top-1/2 right-4"
 	>
 		<ContextMenuEntry
-			disabled={!hasPermissions(memberPermissions, ['delete:venue'])}
+			disabled={!hasPermissions(authStore.permissions, ['delete:venue'])}
 			href="/admin/venues/edit/{venue.id}">Redigér</ContextMenuEntry
 		>
 		<ContextMenuEntry
-			disabled={!hasPermissions(memberPermissions, ['delete:venue'])}
+			disabled={!hasPermissions(authStore.permissions, ['delete:venue'])}
 			onclick={handleDeleteVenue}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>

@@ -9,13 +9,13 @@
 	import { deleteMember, type Member } from '$lib/features/auth/member';
 	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
 	import { toaster } from '$lib/toaster.svelte';
+	import { authStore } from '$lib/auth.svelte';
 
 	type Props = {
 		member: Member;
-		memberPermissions: Permission[];
 	};
 
-	let { member, memberPermissions }: Props = $props();
+	let { member }: Props = $props();
 
 	let isContextMenuOpen = $state(false);
 
@@ -56,13 +56,13 @@
 	<ContextMenu open={isContextMenuOpen} onClose={() => (isContextMenuOpen = false)}>
 		<ContextMenuEntry
 			href="/admin/members/{member.id}"
-			disabled={!hasPermissions(memberPermissions, ['edit:member'])}
+			disabled={!hasPermissions(authStore.permissions, ['edit:member'])}
 		>
 			Redigér
 		</ContextMenuEntry>
 		<ContextMenuEntry
 			onclick={handleDeleteMember}
-			disabled={!hasPermissions(memberPermissions, ['delete:member'])}
+			disabled={!hasPermissions(authStore.permissions, ['delete:member'])}
 		>
 			Slet
 		</ContextMenuEntry>

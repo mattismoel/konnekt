@@ -21,13 +21,13 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import { hasSomeTeam } from '$lib/features/auth/team';
 	import { clickOutside } from '$lib/hooks/click-outside.svelte';
+	import { authStore } from '$lib/auth.svelte';
 
 	type Props = {
-		member: Member;
 		expanded: boolean;
 	};
 
-	let { member, expanded = $bindable(false) }: Props = $props();
+	let { expanded = $bindable(false) }: Props = $props();
 
 	// TODO: Implement sign out functionality.
 	const handleSignOut = () => {
@@ -57,21 +57,23 @@
 	</div>
 
 	<ul class="flex flex-1 flex-col gap-2">
-		{#if hasSomeTeam(member.teams, ['admin', 'event-management'])}
+		{#if hasSomeTeam(authStore.teams, ['admin', 'event-management'])}
 			{@render entry(EventIcon, '/admin/events', 'Events')}
 		{/if}
-		{#if hasSomeTeam(member.teams, ['admin', 'booking'])}
+		{#if hasSomeTeam(authStore.teams, ['admin', 'booking'])}
 			{@render entry(ArtistIcon, '/admin/artists', 'Kunstnere')}
 		{/if}
-		{#if hasSomeTeam(member.teams, ['admin', 'event-management'])}
+		{#if hasSomeTeam(authStore.teams, ['admin', 'event-management'])}
 			{@render entry(VenueIcon, '/admin/venues', 'Venues')}
 		{/if}
-		{#if hasSomeTeam(member.teams, ['admin', 'team-management'])}
+		{#if hasSomeTeam(authStore.teams, ['admin', 'team-management'])}
 			{@render entry(MemberIcon, '/admin/members', 'Medlemmer')}
 		{/if}
 		{@render entry(SettingsIcon, '/admin/general', 'Generelt')}
 	</ul>
-	{@render memberInformation(member)}
+	{#if authStore.member}
+		{@render memberInformation(authStore.member)}
+	{/if}
 </aside>
 
 {#snippet memberInformation(member: Member)}

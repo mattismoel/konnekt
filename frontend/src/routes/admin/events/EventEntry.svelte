@@ -9,20 +9,20 @@
 	import ContextMenu from '$lib/components/ui/context-menu/ContextMenu.svelte';
 	import ContextMenuEntry from '$lib/components/ui/context-menu/ContextMenuEntry.svelte';
 	import { invalidateAll } from '$app/navigation';
-	import { hasPermissions, type Permission } from '$lib/features/auth/permission';
+	import { hasPermissions } from '$lib/features/auth/permission';
 	import ListEntry from '$lib/components/ui/ListEntry.svelte';
 	import ContextMenuButton from '$lib/components/ui/context-menu/ContextMenuButton.svelte';
 	import { toaster } from '$lib/toaster.svelte';
 	import { APIError } from '$lib/api';
 
 	import LocationIcon from '~icons/mdi/location';
+	import { authStore } from '$lib/auth.svelte';
 
 	type Props = {
 		event: Event;
-		memberPermissions: Permission[];
 	};
 
-	let { event, memberPermissions }: Props = $props();
+	let { event }: Props = $props();
 
 	let showContextMenu = $state(false);
 
@@ -81,13 +81,13 @@
 		class="absolute top-1/2 right-4"
 	>
 		<ContextMenuEntry
-			disabled={!hasPermissions(memberPermissions, ['edit:event'])}
+			disabled={!hasPermissions(authStore.permissions, ['edit:event'])}
 			href="/admin/events/edit/{event.id}"
 		>
 			Redigér
 		</ContextMenuEntry>
 		<ContextMenuEntry
-			disabled={!hasPermissions(memberPermissions, ['delete:event'])}
+			disabled={!hasPermissions(authStore.permissions, ['delete:event'])}
 			onclick={handleDeleteEvent}>Slet</ContextMenuEntry
 		>
 	</ContextMenu>

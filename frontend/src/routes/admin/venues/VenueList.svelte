@@ -6,10 +6,9 @@
 
 	type Props = {
 		venues: Venue[];
-		memberPermissions: Permission[];
 	};
 
-	let { venues, memberPermissions }: Props = $props();
+	let { venues }: Props = $props();
 
 	let search = $state('');
 
@@ -20,6 +19,6 @@
 
 <SearchList bind:search>
 	{#each filteredVenues as venue (venue.id)}
-		<VenueEntry {venue} {memberPermissions} />
+		<VenueEntry {venue} />
 	{/each}
 </SearchList>

@@ -8,11 +8,9 @@
 	type Props = {
 		members: Member[];
 		pending: Member[];
-
-		memberPermissions: Permission[];
 	};
 
-	let { members, pending, memberPermissions }: Props = $props();
+	let { members, pending }: Props = $props();
 </script>
 
 <div class="space-y-8">
@@ -31,7 +29,7 @@
 		<h1 class="mb-4">Medlemmer</h1>
 		<List class="space-y-2">
 			{#each members as member (member.id)}
-				<MemberEntry {member} {memberPermissions} />
+				<MemberEntry {member} />
 			{/each}
 		</List>
 	</section>
