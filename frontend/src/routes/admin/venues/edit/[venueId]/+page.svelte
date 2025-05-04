@@ -25,6 +25,6 @@
 	};
 </script>
 
-<main class="px-auto flex items-center justify-center py-16 pt-32">
+<main class="flex items-center justify-center">
 	<VenueForm venue={data.venue} {errors} onSubmit={handleSubmit} />
 </main>

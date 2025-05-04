@@ -3,29 +3,28 @@
 	import PlusIcon from '~icons/mdi/plus';
 	import { hasPermissions } from '$lib/features/auth/permission';
 	import ArtistList from './ArtistList.svelte';
-	import DashboardLayout from '../DashboardLayout.svelte';
-	import DashboardHeader from '../DashboardHeader.svelte';
-	import HeaderActions from '../HeaderActions.svelte';
+	import * as AdminHeader from '$lib/components/admin-header/index';
 	import { authStore } from '$lib/auth.svelte';
 
 	let { data } = $props();
 </script>
 
-<DashboardLayout>
-	<DashboardHeader
-		title="Kunstnere"
-		description="Overblik over alle kunstnere, som er associerede med events."
+<AdminHeader.Root>
+	<AdminHeader.Title>Kunstnere</AdminHeader.Title>
+	<AdminHeader.Description
+		>Overblik over alle kunstnere, som er associerede med events.</AdminHeader.Description
 	>
-		<HeaderActions>
-			<Button
-				href="/admin/artists/create"
-				disabled={!hasPermissions(authStore.permissions, ['edit:artist'])}
-			>
-				<PlusIcon />Tilføj
-			</Button>
-		</HeaderActions>
-	</DashboardHeader>
+	<AdminHeader.Actions>
+		<Button
+			href="/admin/artists/create"
+			disabled={!hasPermissions(authStore.permissions, ['edit:artist'])}
+		>
+			<PlusIcon />Tilføj
+		</Button>
+	</AdminHeader.Actions>
+</AdminHeader.Root>
 
+<main class="pt-16">
 	{#if hasPermissions(authStore.permissions, ['view:artist'])}
 		<section class="space-y-4">
 			<ArtistList artists={data.artists} upcomingArtists={data.upcomingArtists} />
@@ -33,4 +32,4 @@
 	{:else}
 		<span>Du har ikke tilladelse til at se kunstnere...</span>
 	{/if}
-</DashboardLayout>
+</main>

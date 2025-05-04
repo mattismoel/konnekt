@@ -72,7 +72,9 @@
 	</Navbar.Root>
 	<Sidebar bind:expanded={sidebarExpanded} />
 
-	{@render children()}
+	<div class="px-auto py-16 pt-32">
+		{@render children()}
+	</div>
 
 	<div class="fixed right-4 bottom-4 z-50 flex flex-col gap-2">
 		{#each toaster.toasts as toast (toast.id)}

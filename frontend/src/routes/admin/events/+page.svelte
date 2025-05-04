@@ -4,29 +4,29 @@
 
 	import { hasPermissions } from '$lib/features/auth/permission';
 	import EventList from './EventList.svelte';
-	import DashboardLayout from '../DashboardLayout.svelte';
-	import DashboardHeader from '../DashboardHeader.svelte';
-	import HeaderActions from '../HeaderActions.svelte';
 	import { authStore } from '$lib/auth.svelte';
+	import * as AdminHeader from '$lib/components/admin-header/index';
 
 	let { data } = $props();
 </script>
 
-<DashboardLayout>
-	<DashboardHeader title="Events" description="Overblik over alle events.">
-		<HeaderActions>
-			<Button
-				href="/admin/events/create"
-				disabled={!hasPermissions(authStore.permissions, ['edit:event'])}
-			>
-				<PlusIcon />Tilføj
-			</Button>
-		</HeaderActions>
-	</DashboardHeader>
+<AdminHeader.Root>
+	<AdminHeader.Title>Events</AdminHeader.Title>
+	<AdminHeader.Description>Overblik over alle events.</AdminHeader.Description>
+	<AdminHeader.Actions>
+		<Button
+			href="/admin/events/create"
+			disabled={!hasPermissions(authStore.permissions, ['edit:event'])}
+		>
+			<PlusIcon />Tilføj
+		</Button>
+	</AdminHeader.Actions>
+</AdminHeader.Root>
 
+<main class="pt-16">
 	{#if hasPermissions(authStore.permissions, ['view:event'])}
 		<EventList previousEvents={data.previousEvents} upcomingEvents={data.upcomingEvents} />
 	{:else}
 		<span>Du har ikke tilladelse til at se denne side...</span>
 	{/if}
-</DashboardLayout>
+</main>
