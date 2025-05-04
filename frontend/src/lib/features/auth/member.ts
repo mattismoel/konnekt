@@ -25,7 +25,7 @@ export const memberSchema = z.object({
 
 export type Member = z.infer<typeof memberSchema>
 
-export const editMemberForm = z.object({
+export const memberForm = z.object({
 	firstName: z
 		.string()
 		.nonempty(),
@@ -36,6 +36,13 @@ export const editMemberForm = z.object({
 		.string()
 		.email(),
 })
+
+export const editMemberForm = memberForm
+	.extend({ image: z.instanceof(File).nullable() })
+
+const editMemberSchema = editMemberForm
+	.omit({ image: true })
+	.extend({ profilePictureUrl: z.string().url().optional() })
 
 export const setMemberTeamsForm = z
 	.number()
@@ -100,14 +107,23 @@ export const memberById = async (fetchFn: typeof fetch, memberId: number) => {
 }
 
 export const editMember = async (fetchFn: typeof fetch, memberId: number, form: z.infer<typeof editMemberForm>) => {
-	await requestAndParse(
+	const { data, success, error } = editMemberForm.safeParse(form)
+	if (!success) throw error
+
+	const { image, ...rest } = data;
+
+	const profilePictureUrl = image ? await uploadMemberProfilePicture(fetchFn, image) : undefined
+
+	const member = requestAndParse(
 		fetchFn,
 		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}`),
-		undefined,
-		"Could not edit member",
-		{ bodySchema: editMemberForm, body: form },
+		memberSchema,
+		"Could not update artist",
+		{ bodySchema: editMemberSchema, body: { ...rest, profilePictureUrl } },
 		"PUT"
 	)
+
+	return member
 }
 
 export const setMemberTeams = async (fetchFn: typeof fetch, memberId: number, teamIds: number[]) => {

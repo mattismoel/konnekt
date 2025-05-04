@@ -7,20 +7,23 @@
 	import { toaster } from '$lib/toaster.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import FormField from '$lib/components/ui/FormField.svelte';
+	import { authStore } from '$lib/auth.svelte';
+	import ProfilePictureSelector from '$lib/components/ProfilePictureSelector.svelte';
+	import MemberStatusIndicator from '$lib/components/MemberStatusIndicator.svelte';
 
 	type Props = {
 		member: Member;
-		currentMember: Member;
 		teams: Team[];
 	};
 
-	let { member, currentMember }: Props = $props();
+	let { member }: Props = $props();
 
 	let errors = $state<z.typeToFlattenedError<z.infer<typeof editMemberForm>>>();
 
-	let isCurrentMember = $derived(currentMember.id === member.id);
+	let isCurrentMember = $derived(authStore.member?.id === member.id);
 
 	let form = $state<z.infer<typeof editMemberForm>>({
+		image: null,
 		email: member.email,
 		firstName: member.firstName,
 		lastName: member.lastName
@@ -29,7 +32,8 @@
 	let hasChanged = $derived(
 		form.email !== member.email ||
 			form.firstName !== member.firstName ||
-			form.lastName !== member.lastName
+			form.lastName !== member.lastName ||
+			form.image !== null
 	);
 
 	const handleSubmit = async (e: SubmitEvent) => {
@@ -43,12 +47,27 @@
 			if (e instanceof ZodError) {
 				errors = e.flatten();
 			}
+			console.error(e);
 			toaster.addToast('Kunne ikke opdatere medlem', 'Noget gik galt', 'error');
 		}
 	};
+
+	let fullName = $derived(`${member.firstName} ${member.lastName}`);
 </script>
 
 <form onsubmit={handleSubmit} class="flex flex-col gap-8">
+	<div class="flex flex-col items-center gap-8 md:flex-row">
+		<ProfilePictureSelector bind:file={form.image} imageUrl={member.profilePictureUrl} />
+		<div class="flex flex-col items-center space-y-4 md:items-start">
+			<div class="flex flex-col items-center space-y-1 md:items-start">
+				<h1 class="text-2xl font-semibold">{fullName}</h1>
+				<span class="text-text/50 text-center md:text-left"
+					>{member.teams.map(({ displayName }) => displayName).join(', ')}</span
+				>
+			</div>
+			<MemberStatusIndicator status={member.active ? 'approved' : 'non-approved'} />
+		</div>
+	</div>
 	<h1 class="text-2xl font-bold">Generelt.</h1>
 
 	<div class="flex flex-col gap-4">
