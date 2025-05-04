@@ -153,7 +153,15 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
+		updatedMember, err := s.memberService.ByID(ctx, memberID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if err := writeJSON(w, http.StatusOK, updatedMember); err != nil {
+			writeError(w, err)
+		}
 	}
 }
 
