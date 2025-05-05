@@ -54,8 +54,8 @@
 	<Card.Content class="gap-8">
 		<div class="flex w-full gap-4">
 			<Selector
-				value={concert.artistID.toString()}
 				placeholder="Vælg kunstner..."
+				value={concert.artistID > 0 ? concert.artistID.toString() : null}
 				onchange={(e) => selectArtist(parseInt(e.currentTarget.value))}
 				class="w-full"
 				entries={artists.map((a) => ({
