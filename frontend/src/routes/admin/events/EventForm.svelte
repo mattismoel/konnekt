@@ -82,7 +82,7 @@
 
 		const id = crypto.randomUUID();
 
-		concerts.set(id, { from, to, artistID: 1 });
+		concerts.set(id, { from, to, artistID: artists.at(0)?.id || 0 });
 	};
 
 	const handleSubmit = (e: SubmitEvent) => {
