@@ -3,7 +3,7 @@
 
 	import * as ContextMenu from '$lib/components/ui/context-menu/index';
 	import { hasPermissions } from '$lib/features/auth/permission';
-	import ListEntry from '$lib/components/ui/ListEntry.svelte';
+	import * as List from '$lib/components/ui/list/index';
 	import { toaster } from '$lib/toaster.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import { APIError } from '$lib/api';
@@ -35,15 +35,16 @@
 	};
 </script>
 
-<ListEntry class="">
-	<a href="/admin/venues/edit/{venue.id}" class="w-full">
-		<div class="flex flex-col">
-			<span>{venue.name}</span>
-			<span class="text-text/50">{venue.city}, {venue.countryCode}</span>
-		</div>
-	</a>
+<List.Entry>
+	<List.Section href="/admin/venues/edit/{venue.id}">
+		<span>{venue.name}</span>
+		<span class="text-text/50">{venue.city}, {venue.countryCode}</span>
+	</List.Section>
 
-	<ContextMenu.Button onclick={() => (showContextMenu = true)} />
+	<List.Section expand={false}>
+		<ContextMenu.Button onclick={() => (showContextMenu = true)} />
+	</List.Section>
+
 	<ContextMenu.Root bind:show={showContextMenu} class="absolute top-1/2 right-4">
 		<ContextMenu.Entry
 			disabled={!hasPermissions(authStore.permissions, ['delete:venue'])}
@@ -58,4 +59,4 @@
 			Slet
 		</ContextMenu.Entry>
 	</ContextMenu.Root>
-</ListEntry>
+</List.Entry>

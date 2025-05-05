@@ -3,7 +3,7 @@
 	import { deleteArtist, type Artist } from '$lib/features/artist/artist';
 	import { hasPermissions } from '$lib/features/auth/permission';
 	import * as ContextMenu from '$lib/components/ui/context-menu';
-	import ListEntry from '$lib/components/ui/ListEntry.svelte';
+	import * as List from '$lib/components/ui/list/index';
 	import { toaster } from '$lib/toaster.svelte';
 	import { APIError } from '$lib/api';
 	import { authStore } from '$lib/auth.svelte';
@@ -35,12 +35,14 @@
 	};
 </script>
 
-<ListEntry>
-	<a href="/admin/artists/edit/{artist.id}" class="flex w-full flex-col">
+<List.Entry>
+	<List.Section href="/admin/artists/edit/{artist.id}">
 		<span>{artist.name}</span>
 		<span class="text-text/50">{artist.genres.map((genre) => genre.name).join(', ')}</span>
-	</a>
-	<ContextMenu.Button onclick={() => (showContextMenu = true)} />
+	</List.Section>
+	<List.Section expand={false}>
+		<ContextMenu.Button onclick={() => (showContextMenu = true)} />
+	</List.Section>
 	<ContextMenu.Root bind:show={showContextMenu} class="absolute top-1/2 right-4">
 		<ContextMenu.Entry
 			disabled={!hasPermissions(authStore.permissions, ['edit:artist'])}
@@ -55,4 +57,4 @@
 			Slet
 		</ContextMenu.Entry>
 	</ContextMenu.Root>
-</ListEntry>
+</List.Entry>

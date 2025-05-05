@@ -2,7 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import * as ContextMenu from '$lib/components/ui/context-menu/index';
 	import AvatarImage from '$lib/assets/avatar.png';
-	import ListEntry from '$lib/components/ui/ListEntry.svelte';
+	import * as List from '$lib/components/ui/list/index';
 	import MemberStatusIndicator from '$lib/components/MemberStatusIndicator.svelte';
 	import { deleteMember, type Member } from '$lib/features/auth/member';
 	import { hasPermissions } from '$lib/features/auth/permission';
@@ -37,20 +37,24 @@
 	};
 </script>
 
-<ListEntry class="relative">
-	<div class="flex flex-1 items-center gap-4">
+<List.Entry class="relative">
+	<List.Section href="/admin/members/{member.id}" class="flex-row items-center gap-4">
 		<img
 			src={member.profilePictureUrl || AvatarImage}
 			alt="Profil"
 			class="h-8 w-8 rounded-full object-cover"
 		/>
 		<span class="line-clamp-1">{member.firstName} {member.lastName}</span>
-	</div>
-	<MemberStatusIndicator
-		status={member.active ? 'approved' : 'non-approved'}
-		class="hidden md:flex"
-	/>
-	<ContextMenu.Button onclick={() => (isContextMenuOpen = true)} />
+	</List.Section>
+
+	<List.Section class="flex-row items-center gap-4" expand={false}>
+		<MemberStatusIndicator
+			status={member.active ? 'approved' : 'non-approved'}
+			class="hidden md:flex"
+		/>
+		<ContextMenu.Button onclick={() => (isContextMenuOpen = true)} />
+	</List.Section>
+
 	<ContextMenu.Root bind:show={isContextMenuOpen}>
 		<ContextMenu.Entry
 			href="/admin/members/{member.id}"
@@ -65,4 +69,4 @@
 			Slet
 		</ContextMenu.Entry>
 	</ContextMenu.Root>
-</ListEntry>
+</List.Entry>

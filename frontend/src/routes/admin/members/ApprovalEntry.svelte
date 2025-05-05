@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import Avatar from '$lib/assets/avatar.png';
-	import ListEntry from '$lib/components/ui/ListEntry.svelte';
+	import * as List from '$lib/components/ui/list/index';
 	import MemberStatusIndicator from '$lib/components/MemberStatusIndicator.svelte';
 	import { approveMember, deleteMember, type Member } from '$lib/features/auth/member';
 	import { toaster } from '$lib/toaster.svelte';
@@ -35,18 +35,23 @@
 	};
 </script>
 
-<ListEntry class="gap-4">
-	<div class="flex flex-1 items-center gap-4">
-		<img
-			src={member.profilePictureUrl || Avatar}
-			alt="Profil"
-			class="h-8 w-8 rounded-full object-cover"
-		/>
-		<span class="line-clamp-1">{member.firstName} {member.lastName} </span>
-	</div>
-	<MemberStatusIndicator status="non-approved" class="hidden md:block" />
-	<div class="text-text/75">
-		<button class="p-1 hover:text-green-500" onclick={approve}><ApproveIcon /></button>
-		<button class="p-1 hover:text-red-500" onclick={disapprove}><DisapproveIcon /></button>
-	</div>
-</ListEntry>
+<List.Entry class="gap-4">
+	<List.Section href="/admin/members/{member.id}">
+		<div class="flex flex-1 items-center gap-4">
+			<img
+				src={member.profilePictureUrl || Avatar}
+				alt="Profil"
+				class="h-8 w-8 rounded-full object-cover"
+			/>
+			<span class="line-clamp-1">{member.firstName} {member.lastName} </span>
+		</div>
+	</List.Section>
+
+	<List.Section expand={false} class="flex-row gap-6">
+		<MemberStatusIndicator status="non-approved" class="hidden md:block" />
+		<div class="text-text/75 flex gap-2">
+			<button class="p-1 hover:text-green-500" onclick={approve}><ApproveIcon /></button>
+			<button class="p-1 hover:text-red-500" onclick={disapprove}><DisapproveIcon /></button>
+		</div>
+	</List.Section>
+</List.Entry>

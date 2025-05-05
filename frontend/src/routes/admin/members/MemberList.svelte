@@ -1,5 +1,5 @@
 <script lang="ts">
-	import List from '$lib/components/ui/List.svelte';
+	import { List } from '$lib/components/ui/list/index';
 	import type { Member } from '$lib/features/auth/member';
 	import type { Permission } from '$lib/features/auth/permission';
 	import ApprovalEntry from './ApprovalEntry.svelte';

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { WithChildren } from '$lib/types';
 	import SearchBar from './SearchBar.svelte';
-	import List from './ui/List.svelte';
+	import { List } from './ui/list/index';
 
 	type Props = WithChildren<{
 		search: string;

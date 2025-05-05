@@ -9,7 +9,7 @@
 	import * as ContextMenu from '$lib/components/ui/context-menu/index';
 	import { invalidateAll } from '$app/navigation';
 	import { hasPermissions } from '$lib/features/auth/permission';
-	import ListEntry from '$lib/components/ui/ListEntry.svelte';
+	import * as List from '$lib/components/ui/list/index';
 	import { toaster } from '$lib/toaster.svelte';
 	import { APIError } from '$lib/api';
 
@@ -48,8 +48,8 @@
 	};
 </script>
 
-<ListEntry class={`group ${expired ? 'expired' : ''}`}>
-	<a title="Redigér event" href="/admin/events/edit/{event.id}" class="flex w-full flex-col">
+<List.Entry title="Redigér event" class={`group ${expired ? 'expired' : ''}`}>
+	<List.Section href="/admin/events/edit/{event.id}">
 		<span class="line-clamp-1 group-[.expired]:line-through">{event.title}</span>
 		<span class="text-text/50 line-clamp-1">{format(fromDate, DATETIME_FORMAT)}</span>
 		<span class="text-text/50 line-clamp-1 md:hidden">{event.venue.name}</span>
@@ -63,16 +63,20 @@
 				{artists.map((artist) => artist.name).join(', ')}
 			{/if}
 		</span>
-	</a>
-	<a
-		title="Redigér venue"
-		href="/admin/venues/edit/{event.venue.id}"
-		class="text-text/50 hover:text-text hidden w-full items-center gap-2 hover:underline md:flex"
-	>
-		<LocationIcon />
-		<span class="whitespace-nowrap">{event.venue.name}</span>
-	</a>
-	<ContextMenu.Button onclick={() => (showContextMenu = true)} />
+	</List.Section>
+	<List.Section href="/admin/venues/edit/{event.venue.id}" class="group/venue">
+		<span
+			class="text-text/50 group-hover/venue:text-text hidden w-full items-center gap-2 group-hover/venue:underline md:flex"
+		>
+			<LocationIcon />
+			<span class="whitespace-nowrap">{event.venue.name}</span>
+		</span>
+	</List.Section>
+
+	<List.Section expand={false}>
+		<ContextMenu.Button onclick={() => (showContextMenu = true)} />
+	</List.Section>
+
 	<ContextMenu.Root bind:show={showContextMenu} class="absolute top-1/2 right-4">
 		<ContextMenu.Entry
 			disabled={!hasPermissions(authStore.permissions, ['edit:event'])}
@@ -87,4 +91,4 @@
 			Slet
 		</ContextMenu.Entry>
 	</ContextMenu.Root>
-</ListEntry>
+</List.Entry>
