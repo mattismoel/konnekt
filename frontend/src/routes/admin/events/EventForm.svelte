@@ -12,6 +12,7 @@
 
 	import ConcertsList from './ConcertsList.svelte';
 	import PublishIcon from '~icons/mdi/upload';
+	import RefreshIcon from '~icons/mdi/refresh';
 	import AddIcon from '~icons/mdi/add';
 
 	import Input from '$lib/components/ui/Input.svelte';
@@ -21,6 +22,7 @@
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import FormField from '$lib/components/ui/FormField.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	type Props = {
 		venues: Venue[];
@@ -127,8 +129,18 @@
 							bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
 							entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
 						/>
-						<Button target="__blank" variant="secondary" href="/admin/venues/create"
-							><AddIcon />Ny</Button
+						<Button
+							title="Lav nyt venue"
+							class="aspect-square h-full"
+							target="__blank"
+							variant="primary"
+							href="/admin/venues/create"><AddIcon /></Button
+						>
+						<Button
+							title="Opdatér venueliste"
+							variant="secondary"
+							class="aspect-square h-full"
+							onclick={async () => await invalidateAll()}><RefreshIcon /></Button
 						>
 					</div>
 				</FormField>
