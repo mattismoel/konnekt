@@ -12,8 +12,6 @@ export const load: PageServerLoad = async ({ fetch }) => {
 
   const upcomingArtists = eventsArtists(upcomingEvents)
 
-  console.log(upcomingArtists.length)
-
   if (!hasSomeTeam(member.teams, ["admin", "event-management"])) {
     return redirect(302, "/auth/login")
   }
