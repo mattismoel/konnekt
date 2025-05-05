@@ -53,7 +53,7 @@
 	</Card.Header>
 
 	<Card.Content class="gap-8">
-		<div class="flex w-full gap-4">
+		<div class="flex w-full gap-2">
 			<Selector
 				placeholder="Vælg kunstner..."
 				value={concert.artistID > 0 ? concert.artistID.toString() : null}

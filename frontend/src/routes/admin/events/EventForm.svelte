@@ -123,7 +123,7 @@
 				</FormField>
 
 				<FormField errors={errors?.fieldErrors.venueId}>
-					<div class="flex gap-4">
+					<div class="flex gap-2">
 						<Selector
 							class="w-full"
 							placeholder="Vælg venue..."
