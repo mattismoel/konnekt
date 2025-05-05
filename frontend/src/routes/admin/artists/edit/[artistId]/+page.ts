@@ -1,4 +1,4 @@
-import type { PageServerLoad } from "./$types";
+import type { PageLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
 
 import { artistById } from "$lib/features/artist/artist";
@@ -6,7 +6,7 @@ import { listGenres } from "$lib/features/artist/genre";
 import { hasPermissions } from "$lib/features/auth/permission";
 import { memberSession } from "$lib/features/auth/member";
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageLoad = async ({ params, fetch }) => {
   const member = await memberSession(fetch)
 
   if (!hasPermissions(member.permissions, ["view:artist", "edit:artist"])) {

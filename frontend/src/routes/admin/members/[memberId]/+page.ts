@@ -2,9 +2,9 @@ import { memberById, memberSession } from "$lib/features/auth/member";
 import { hasPermissions } from "$lib/features/auth/permission";
 import { redirect } from "@sveltejs/kit";
 import { listTeams } from "$lib/features/auth/team";
-import type { PageServerLoad } from "./$types";
+import type { PageLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ fetch, params }) => {
+export const load: PageLoad = async ({ fetch, params }) => {
 	const currentMember = await memberSession(fetch)
 	const member = await memberById(fetch, parseInt(params.memberId))
 
