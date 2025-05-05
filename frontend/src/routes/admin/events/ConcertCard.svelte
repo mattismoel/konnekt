@@ -11,7 +11,8 @@
 
 	import PlusIcon from '~icons/mdi/plus';
 	import CloseIcon from '~icons/mdi/close';
-	import { goto } from '$app/navigation';
+	import RefreshIcon from '~icons/mdi/refresh';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	type Props = {
 		artists: Artist[];
@@ -63,9 +64,24 @@
 					value: a.id.toString()
 				}))}
 			></Selector>
-			<Button href="/admin/artists/create" title="Tilføj ny kunstner" variant="ghost">
-				<PlusIcon></PlusIcon>Lav&nbsp;ny
+			<Button
+				type="button"
+				title="Opdatér kunstnerliste"
+				onclick={async () => await invalidateAll()}
+				variant="ghost"
+				class="aspect-square h-full"
+			>
+				<RefreshIcon />
 			</Button>
+			<Button
+				title="Tilføj ny kunstner"
+				href="/admin/artists/create"
+				target="__blank"
+				variant="primary"
+				class="aspect-square h-full"
+			>
+				<PlusIcon></PlusIcon></Button
+			>
 		</div>
 		<div class="flex flex-col items-center gap-4 sm:flex-row">
 			<DateTimePicker
