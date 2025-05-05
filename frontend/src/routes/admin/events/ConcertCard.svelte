@@ -5,13 +5,14 @@
 	import type { Artist } from '$lib/features/artist/artist';
 
 	import Button from '$lib/components/ui/Button.svelte';
-	import Card from '$lib/components/ui/Card.svelte';
+	import * as Card from '$lib/components/ui/card/index';
 	import Selector from '$lib/components/ui/Selector.svelte';
 	import DateTimePicker from '$lib/components/DateTimePicker.svelte';
 
 	import PlusIcon from '~icons/mdi/plus';
 	import CloseIcon from '~icons/mdi/close';
-	import { goto } from '$app/navigation';
+	import RefreshIcon from '~icons/mdi/refresh';
+	import { goto, invalidateAll } from '$app/navigation';
 
 	type Props = {
 		artists: Artist[];
@@ -27,43 +28,74 @@
 	const selectArtist = (artistId: number) => {
 		concert.artistID = artistId;
 	};
+
+	const handleDelete = () => {
+		const artist = artists.find((a) => a.id === concert.artistID);
+
+		if (!artist) return;
+
+		if (!confirm(`Er du sikker på, at du vil slette koncerten med ${artist.name}?`)) {
+			return;
+		}
+
+		onDelete();
+	};
 </script>
 
-<Card class="relative flex-1 space-y-4 last-of-type:mb-8">
-	<div class="space-y-8">
-		<div class="flex items-center justify-between">
-			<h3 class="text-xl font-semibold">#{idx}</h3>
-			<button type="button" class="hover:text-text text-zinc-500" onclick={onDelete}
-				><CloseIcon /></button
-			>
-		</div>
-		<div class="flex w-full gap-4">
+<Card.Root class="relative flex flex-1 flex-col">
+	<Card.Header>
+		<Card.Title>#{idx + 1}</Card.Title>
+		<button
+			type="button"
+			class="text-text/50 hover:text-text absolute top-6 right-6"
+			onclick={handleDelete}><CloseIcon /></button
+		>
+	</Card.Header>
+
+	<Card.Content class="gap-8">
+		<div class="flex w-full gap-2">
 			<Selector
-				value={concert.artistID.toString()}
+				placeholder="Vælg kunstner..."
+				value={concert.artistID > 0 ? concert.artistID.toString() : null}
 				onchange={(e) => selectArtist(parseInt(e.currentTarget.value))}
 				class="w-full"
 				entries={artists.map((a) => ({
 					name: a.name,
 					value: a.id.toString()
 				}))}
-			/>
-			<Button variant="primary" onclick={() => goto('/admin/artists/edit')}>
-				<PlusIcon />Ny
+			></Selector>
+			<Button
+				type="button"
+				title="Opdatér kunstnerliste"
+				onclick={async () => await invalidateAll()}
+				variant="ghost"
+				class="aspect-square h-full"
+			>
+				<RefreshIcon />
 			</Button>
+			<Button
+				title="Tilføj ny kunstner"
+				href="/admin/artists/create"
+				target="__blank"
+				variant="primary"
+				class="aspect-square h-full"
+			>
+				<PlusIcon></PlusIcon></Button
+			>
 		</div>
-		<div class="flex items-center gap-4">
+		<div class="flex flex-col items-center gap-4 sm:flex-row">
 			<DateTimePicker
 				class="w-full"
-				label="Fra"
+				placeholder="Fra"
 				defaultValue={concert.from}
 				onChange={(d) => (concert.from = d)}
 			/>
 			<DateTimePicker
 				class="w-full"
-				label="Til"
+				placeholder="Til"
 				defaultValue={concert.to}
 				onChange={(d) => (concert.to = d)}
 			/>
 		</div>
-	</div>
-</Card>
+	</Card.Content>
+</Card.Root>

@@ -16,7 +16,7 @@
 			loading = true;
 			await updateEvent(fetch, form, data.event.id);
 			toaster.addToast('Event opdateret');
-			goto('/admin/dashboard/events');
+			goto('/admin/events');
 			loading = false;
 		} catch (e) {
 			if (e instanceof ZodError) {
@@ -32,7 +32,7 @@
 	};
 </script>
 
-<main class="px-8 py-16 md:px-16">
+<main>
 	<h1 class="mb-8 text-4xl font-bold">Redigér event</h1>
 	<EventForm
 		{loading}

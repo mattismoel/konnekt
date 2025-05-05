@@ -34,7 +34,7 @@ export const COUNTRIES_MAP = new Map<CountryCode, string>([
 	["CN", "China"],
 	["CX", "Christmas Island"],
 	["CO", "Colombia"],
-	["CD", "Congo ()"],
+	["CD", "Congo"],
 	["CR", "Costa Rica"],
 	["HR", "Croatia"],
 	["CU", "Cuba"],
@@ -43,7 +43,7 @@ export const COUNTRIES_MAP = new Map<CountryCode, string>([
 	["DK", "Denmark"],
 	["DJ", "Djibouti"],
 	["DM", "Dominica"],
-	["DO", "Dominican Republic (the)"],
+	["DO", "Dominican Republic"],
 	["EC", "Ecuador"],
 	["EG", "Egypt"],
 	["SV", "El Salvador"],
@@ -125,7 +125,7 @@ export const COUNTRIES_MAP = new Map<CountryCode, string>([
 	["QA", "Qatar"],
 	["MK", "Republic of North Macedonia"],
 	["RO", "Romania"],
-	["RU", "Russian Federation (the)"],
+	["RU", "Russian Federation"],
 	["RW", "Rwanda"],
 	["SA", "Saudi Arabia"],
 	["SN", "Senegal"],
@@ -133,4 +133,4 @@ export const COUNTRIES_MAP = new Map<CountryCode, string>([
 	["SG", "Singapore"],
 	["SK", "Slovakia"],
 	["SI", "Slovenia"],
-]) 
+])

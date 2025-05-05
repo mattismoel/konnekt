@@ -1,22 +1,22 @@
 <script lang="ts">
 	import { socialUrlToIcon } from '$lib/features/artist/social.js';
 	import type { Artist } from '$lib/features/artist/artist.js';
-	import { pickRandom, removeDuplicates } from '$lib/array.js';
+	import { pickRandom } from '$lib/array.js';
 
 	let { data } = $props();
 
 	/** @description The rate of which artist auto display changes artist. */
 	const AUTO_DISPLAY_RATE = 0.25;
 
-	let { artists, currentArtists } = $derived(data);
+	let { artists } = $derived(data);
 
-	let selectedArtist = $derived<Artist | undefined>(currentArtists[0] || undefined);
+	let selectedArtist = $derived<Artist | undefined>(artists.at(0));
 
 	let timeout = $state<NodeJS.Timeout | null>(null);
 
 	const beginAutoDisplay = () => {
 		timeout = setInterval(() => {
-			const newArtist = pickRandom<Artist>(currentArtists, selectedArtist);
+			const newArtist = pickRandom<Artist>(artists, selectedArtist);
 
 			selectedArtist = newArtist;
 		}, 1000 / AUTO_DISPLAY_RATE);
@@ -27,11 +27,14 @@
 		clearInterval(timeout);
 	};
 
-	$effect(() => beginAutoDisplay());
+	$effect(() => {
+		beginAutoDisplay();
+		return () => endAutoDisplay();
+	});
 </script>
 
-<main class="px-auto isolate h-svh space-y-16 pt-32">
-	{#each removeDuplicates([...currentArtists, ...artists]) as artist (artist.id)}
+<main class="px-auto h-svh pt-32">
+	{#each artists as artist (artist.id)}
 		<img
 			src={artist.imageUrl}
 			alt={artist.name}
@@ -42,13 +45,13 @@
 	{/each}
 	<div class="space-y-16">
 		<section class="flex flex-col">
-			<h1 class="font-heading mb-4 text-5xl font-bold md:text-7xl">Kunstnere.</h1>
+			<h1 class="font-heading mb-4 text-5xl font-bold md:text-7xl">Kunstnere</h1>
 			<span class="text-text/75">
 				Her kan du se alle kunstnere, som medvirker i kommende events.
 			</span>
 		</section>
 		<!-- ARTISTS -->
-		{#if currentArtists.length <= 0}
+		{#if artists.length <= 0}
 			<span>Der er ingen aktuelle kunstnere i øjeblikket...</span>
 		{/if}
 		<ul
@@ -56,7 +59,7 @@
 			onmouseleave={() => beginAutoDisplay()}
 			onmouseenter={() => endAutoDisplay()}
 		>
-			{#each currentArtists as artist (artist.id)}
+			{#each artists as artist (artist.id)}
 				{@render entry(artist)}
 			{/each}
 		</ul>

@@ -4,11 +4,14 @@ import { createListResult, type ListResult } from "$lib/query";
 import { createUrl, type Query } from "$lib/url";
 import { z } from "zod";
 
-export const venueForm = z.object({
+const venueForm = z.object({
 	name: z.string().nonempty(),
 	city: z.string().nonempty(),
 	countryCode: z.string().nonempty(),
 })
+
+export const createVenueForm = venueForm;
+export const editVenueForm = venueForm;
 
 export const venueSchema = z.object({
 	id: z.number().positive(),
@@ -33,8 +36,8 @@ export const listVenues = async (fetchFn: typeof fetch, query?: Query): Promise<
 	return venues
 }
 
-export const createVenue = async (fetchFn: typeof fetch, form: z.infer<typeof venueForm>) => {
-	const venue = requestAndParse(
+export const createVenue = async (fetchFn: typeof fetch, form: z.infer<typeof createVenueForm>) => {
+	const venue = await requestAndParse(
 		fetchFn,
 		createUrl(`${PUBLIC_BACKEND_URL}/venues`),
 		venueSchema,
@@ -65,6 +68,17 @@ export const editVenue = async (fetchFn: typeof fetch, id: number, form: z.infer
 		"Could not edit venue",
 		{ bodySchema: venueForm, body: form },
 		"PUT"
+	)
+
+	return venue
+}
+
+export const venueById = async (fetchFn: typeof fetch, venueId: number) => {
+	const venue = await requestAndParse(
+		fetchFn,
+		createUrl(`${PUBLIC_BACKEND_URL}/venues/${venueId}`),
+		venueSchema,
+		"Could not get venue by ID"
 	)
 
 	return venue

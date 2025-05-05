@@ -12,14 +12,17 @@
 
 	import ConcertsList from './ConcertsList.svelte';
 	import PublishIcon from '~icons/mdi/upload';
+	import RefreshIcon from '~icons/mdi/refresh';
+	import AddIcon from '~icons/mdi/add';
 
-	import FieldError from '$lib/components/ui/FieldError.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Selector from '$lib/components/ui/Selector.svelte';
 	import ImagePreview from '$lib/components/ImagePreview.svelte';
 	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import FormField from '$lib/components/ui/FormField.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	type Props = {
 		venues: Venue[];
@@ -79,7 +82,7 @@
 
 		const id = crypto.randomUUID();
 
-		concerts.set(id, { from, to, artistID: 1 });
+		concerts.set(id, { from, to, artistID: artists.at(0)?.id || 0 });
 	};
 
 	const handleSubmit = (e: SubmitEvent) => {
@@ -96,63 +99,76 @@
 	<!-- COVER IMAGE -->
 	<section>
 		<h2 class="mb-8 text-2xl font-semibold">Coverbillede</h2>
-		<ImagePreview src={imageUrl} onChange={(file) => (form.image = file)} />
-		<FieldError errors={errors?.fieldErrors.image} />
+		<FormField errors={errors?.fieldErrors.image}>
+			<ImagePreview
+				accept="image/jpeg,image/png"
+				src={imageUrl}
+				onChange={(file) => (form.image = file)}
+			/>
+		</FormField>
 	</section>
 
 	<!-- GENERAL -->
 	<section>
 		<h2 class="mb-8 text-2xl font-semibold">Generelt</h2>
-		<Input
-			label="Eventtitel"
-			bind:value={form.title}
-			class="flex-1"
-			errors={errors?.fieldErrors.title}
-		/>
-		<div class="flex w-full gap-4">
-			<Input
-				label="Billet-URL"
-				class="flex-1"
-				bind:value={form.ticketUrl}
-				errors={errors?.fieldErrors.ticketUrl}
-			/>
-			<div>
-				<Selector
-					class="h-min"
-					bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
-					entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
-				/>
-				<FieldError errors={errors?.fieldErrors.venueId} />
-			</div>
-		</div>
-	</section>
 
-	<!-- EVENT DESCRIPTION -->
-	<section>
-		<h2 class="mb-8 text-2xl font-semibold">Eventbeskrivelse</h2>
-		<div>
-			<TipTapEditor bind:value={form.description} />
-			<FieldError errors={errors?.fieldErrors.description} />
+		<div class="space-y-4">
+			<FormField errors={errors?.fieldErrors.title}>
+				<Input placeholder="Eventtitel" bind:value={form.title} class="flex-1" />
+			</FormField>
+
+			<div class="flex w-full gap-4">
+				<FormField errors={errors?.fieldErrors.ticketUrl}>
+					<Input placeholder="Billet-URL" class="flex-1" bind:value={form.ticketUrl} />
+				</FormField>
+
+				<FormField errors={errors?.fieldErrors.venueId}>
+					<div class="flex gap-2">
+						<Selector
+							class="w-full"
+							placeholder="Vælg venue..."
+							bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
+							entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
+						/>
+						<Button
+							title="Opdatér venueliste"
+							type="button"
+							variant="ghost"
+							class="aspect-square h-full"
+							onclick={async () => await invalidateAll()}><RefreshIcon /></Button
+						>
+						<Button
+							title="Lav nyt venue"
+							class="aspect-square h-full"
+							target="__blank"
+							variant="primary"
+							href="/admin/venues/create"><AddIcon /></Button
+						>
+					</div>
+				</FormField>
+			</div>
+			<!-- EVENT DESCRIPTION -->
+			<FormField errors={errors?.fieldErrors.description}>
+				<TipTapEditor bind:value={form.description} />
+			</FormField>
 		</div>
 	</section>
 
 	<!-- CONCERTS -->
 	<section>
-		<h2 class="mb-8 text-2xl font-semibold">Koncerter</h2>
-		<ConcertsList {concerts} {artists} onAdd={addConcert} onDelete={deleteConcert} />
-		<FieldError errors={errors?.fieldErrors.concerts} />
+		<h2 class="mb-4 text-2xl font-semibold">Koncerter</h2>
+		<FormField errors={errors?.fieldErrors.concerts}>
+			<ConcertsList {concerts} {artists} onAdd={addConcert} onDelete={deleteConcert} />
+		</FormField>
 	</section>
 
-	<div class="flex flex-col gap-2 md:flex-row">
-		<Button variant="ghost" class="w-full md:max-w-64">Preview</Button>
-		<Button type="submit" class="w-full md:max-w-64">
-			{#if loading}
-				<Spinner />
-				Offentligører...
-			{:else}
-				<PublishIcon />
-				Offentliggør
-			{/if}
-		</Button>
-	</div>
+	<Button type="submit" class="w-full md:max-w-64">
+		{#if loading}
+			<Spinner />
+			Offentligører...
+		{:else}
+			<PublishIcon />
+			Offentliggør
+		{/if}
+	</Button>
 </form>

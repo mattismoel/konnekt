@@ -17,7 +17,7 @@
 	let { concerts, artists, onAdd, onDelete }: Props = $props();
 </script>
 
-<div class="space-y-4">
+<div class="flex flex-col gap-4">
 	{#each Array.from(concerts.entries()) as [id, concert], idx (id)}
 		<ConcertCard {concert} {artists} {idx} onDelete={() => onDelete(id)} />
 	{/each}

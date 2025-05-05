@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LandingImage from '$lib/assets/landing.jpg';
+	import LandingVideo from '$lib/assets/landing.mp4';
 	import Caroussel from '$lib/components/Caroussel.svelte';
 	import EventCard from '$lib/components/EventCard.svelte';
 	import LogoScroller from '$lib/components/LogoScroller.svelte';
@@ -25,11 +25,15 @@
 			class="pointer-events-none absolute top-0 left-0 isolate -z-10 h-full w-full overflow-hidden"
 		>
 			<GlowCursor />
-			<img
-				src={LandingImage}
-				alt=""
+			<video
+				loop
+				muted
+				autoplay
+				src={LandingVideo}
 				class="pointer-events-none fixed top-0 left-0 z-0 h-full w-full object-cover brightness-50"
-			/>
+			>
+				<track kind="captions" />
+			</video>
 		</div>
 		<section class="flex max-w-lg flex-col gap-8">
 			<h2 class="font-heading text-5xl">For et stærkere <b>fynsk musisk vækstlag</b></h2>
@@ -38,22 +42,31 @@
 				musikere et springbræt til den danske musikscene.
 			</p>
 			<div class="flex w-full flex-col-reverse gap-4 sm:flex-row">
-				<form action="/om-os">
-					<Button type="submit" variant="secondary" class="h-16 w-full sm:w-fit">Læs mere</Button>
-				</form>
-				<form action="/events">
-					<Button type="submit" class="group h-16 w-full items-center gap-2 sm:w-fit">
-						Se events
-						<RightArrowIcon class="transition-transform group-hover:translate-x-2" />
-					</Button>
-				</form>
+				<Button href="/om-os" variant="outline" class="w-full sm:w-fit">Læs mere</Button>
+				<Button href="/events" class="group w-full items-center gap-2 sm:w-fit">
+					Se events
+					<RightArrowIcon class="transition-transform group-hover:translate-x-2" />
+				</Button>
 			</div>
 		</section>
 		<Fader direction="up" class="absolute h-64 from-black/75" />
 	</section>
-	<section class="px-auto space-y-16 bg-zinc-950 py-16">
+
+	<section class="bg-zinc-950">
+		<!-- EVENTS -->
+		{#if events.length > 0}
+			<section class="px-auto py-16">
+				<h1 class="font-heading mb-8 text-2xl font-bold">Kommende events</h1>
+				<Caroussel>
+					{#each events as event (event.id)}
+						<EventCard {event} />
+					{/each}
+				</Caroussel>
+			</section>
+		{/if}
+
 		<!-- ABOUT -->
-		<section class="space-y-8 py-16">
+		<section class="px-auto space-y-8 py-16">
 			<!-- MISSION STATEMENT -->
 			<section>
 				<h1 class="font-heading mb-8 text-2xl font-bold">Vores mission</h1>
@@ -90,18 +103,6 @@
 					/>
 				</div>
 			</section>
-		</section>
-
-		<!-- EVENTS -->
-		<section>
-			{#if events.length > 0}
-				<h1 class="font-heading mb-8 text-2xl font-bold">Kommende events</h1>
-				<Caroussel>
-					{#each events as event (event.id)}
-						<EventCard {event} />
-					{/each}
-				</Caroussel>
-			{/if}
 		</section>
 	</section>
 </div>

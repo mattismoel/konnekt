@@ -3,6 +3,7 @@
 	import { ZodError, type z } from 'zod';
 	import ArtistForm from '../ArtistForm.svelte';
 	import { toaster } from '$lib/toaster.svelte';
+	import { goto } from '$app/navigation';
 
 	let { data } = $props();
 
@@ -14,14 +15,16 @@
 			loading = true;
 			await createArtist(fetch, form);
 			toaster.addToast('Kunstner skabt');
+			await goto('/admin/artists');
 			loading = false;
 		} catch (e) {
 			if (e instanceof ZodError) {
 				toaster.addToast('Kunne ikke skabe kunstner', 'Ugyldig kunstnerdata', 'error');
 				errors = e.flatten();
 				loading = false;
-				return;
+				throw e;
 			}
+
 			toaster.addToast('Kunne ikke skabe kunstner', 'Noget gik galt...', 'error');
 			loading = false;
 			throw e;
@@ -29,6 +32,6 @@
 	};
 </script>
 
-<main class="px-8 py-16 md:px-16">
+<main>
 	<ArtistForm {loading} genres={data.genres} onSubmit={handleSubmit} {errors} />
 </main>

@@ -8,7 +8,6 @@
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import Fader from '$lib/components/Fader.svelte';
-	import GlowCursor from '$lib/components/GlowCursor.svelte';
 
 	import TicketIcon from '~icons/mdi/ticket-confirmation-outline';
 	import MapIcon from '~icons/mdi/map-marker';
@@ -21,7 +20,7 @@
 		prefix?: string;
 	};
 
-	let { event, active, prefix }: Props = $props();
+	let { event, active }: Props = $props();
 	let fromDate = $derived(earliestConcert(event.concerts)?.from);
 
 	let artists = $derived(event.concerts.map(({ artist }) => artist));
@@ -39,6 +38,8 @@
 			})
 	);
 
+	let genresString = $derived(genres.map((genre) => genre.name).join(', '));
+
 	const locationUrl = $derived(
 		new URL(
 			`https://www.google.com/maps/search/?` +
@@ -50,44 +51,44 @@
 	);
 </script>
 
-<section class="relative h-[calc((100vh/4)*3)] overflow-hidden">
+<div class="relative isolate flex h-[calc((100svh/4)*3)] items-end overflow-hidden pb-8 sm:pb-16">
 	<img
-		src={event?.imageUrl}
-		alt={event?.title}
-		class="absolute top-0 left-0 h-full w-full object-cover brightness-75"
+		src={event.imageUrl}
+		alt="Event cover"
+		class="absolute top-0 left-0 -z-10 h-full w-full object-cover brightness-50"
 	/>
-	<Fader direction="up" class="absolute z-10 h-[512px] from-zinc-950 md:h-96" />
-	<GlowCursor class="z-0" />
-	<div class="px-auto absolute bottom-0 left-0 z-20 flex w-full flex-col gap-y-2 px-12 pb-12">
-		<span class="mb-1 font-medium">{prefix}</span>
-		<h1 class="font-heading mb-4 w-full text-6xl font-bold md:text-9xl">{event?.title}</h1>
-		<div class="flex w-full flex-col items-end gap-8 md:flex-row">
-			<!-- DETAILS -->
-			<section class="w-full space-y-1 text-zinc-300">
-				<div class="flex items-center gap-2">
-					<CalendarIcon />
-					<time>{format(fromDate || new Date(), DATE_FORMAT)}</time>
-				</div>
-				<a href={locationUrl.toString()} class="flex items-center gap-2">
-					<MapIcon />
-					<address class="not-italic">{event.venue.name}, {event.venue.city}</address>
-				</a>
-				<div class="flex items-center gap-2">
-					<MusicIcon />
-					<span>{genres.map(({ name }) => name).join(', ')}</span>
-				</div>
-			</section>
-			<!-- CTA -->
-			<section class="w-full space-y-2 md:w-96">
-				<form action={event.ticketUrl}>
-					<Button type="submit" class="h-18 w-full"><TicketIcon />Køb billet</Button>
-				</form>
-				{#if !active}
-					<form action="/events/{event.id}">
-						<Button type="submit" variant="secondary" class="h-18 w-full">Læs mere</Button>
-					</form>
+
+	<Fader class="absolute -z-10 h-1/2" direction="up" />
+
+	<div class="px-auto flex w-full flex-col">
+		<h1 class="mb-8 text-7xl font-bold">{event.title}</h1>
+
+		<div class="text-text/85 flex flex-col gap-8 sm:flex-row">
+			<div class="flex flex-1 flex-col gap-2">
+				{#if fromDate}
+					<div class="flex items-center gap-4">
+						<CalendarIcon />
+						<span class="line-clamp-1">{format(fromDate, DATE_FORMAT)}</span>
+					</div>
 				{/if}
-			</section>
+				<div class="flex items-center gap-4">
+					<MapIcon />
+					<a class="line-clamp-1" href={locationUrl.toString()}
+						>{event.venue.name}, {event.venue.city} ({event.venue.countryCode})</a
+					>
+				</div>
+				<div class="flex items-center gap-4">
+					<MusicIcon />
+					<span class="line-clamp-1">{genresString}</span>
+				</div>
+			</div>
+
+			<div class="flex flex-col justify-end gap-2">
+				<Button href={event.ticketUrl} class="w-full"><TicketIcon />Køb billet</Button>
+				{#if !active}
+					<Button href="/events/{event.id}" variant="outline" class="w-full">Læs mere</Button>
+				{/if}
+			</div>
 		</div>
 	</div>
-</section>
+</div>

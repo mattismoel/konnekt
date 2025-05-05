@@ -16,9 +16,9 @@
 	type="button"
 	onclick={!selected ? onSelect : onDeselect}
 	class={cn(
-		'text-text flex w-full items-center gap-4 rounded-sm border border-transparent bg-zinc-900 p-2 hover:border-zinc-800',
+		'text-text flex w-full items-center gap-4 rounded-sm border border-transparent bg-zinc-950 p-2 hover:border-zinc-800',
 		{
-			'border-zinc-700 bg-zinc-800': selected
+			'border-zinc-800 bg-zinc-900': selected
 		}
 	)}
 >

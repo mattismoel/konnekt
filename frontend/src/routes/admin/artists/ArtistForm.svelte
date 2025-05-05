@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { z, ZodError } from 'zod';
+	import type { z } from 'zod';
 
 	import { createArtistForm, editArtistForm, type Artist } from '$lib/features/artist/artist';
 	import { trackIdFromUrl } from '$lib/features/artist/spotify';
@@ -7,19 +7,19 @@
 	import type { Genre } from '$lib/features/artist/genre';
 
 	import Input from '$lib/components/ui/Input.svelte';
-	import FieldError from '$lib/components/ui/FieldError.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import ImagePreview from '$lib/components/ImagePreview.svelte';
 	import Pill from '$lib/components/Pill.svelte';
 	import GenreSelectorModal from '$lib/components/GenreSelectorModal.svelte';
 	import SpotifyPreview from '$lib/components/SpotifyPreview.svelte';
-	import SocialEntry from './SocialEntry.svelte';
 
 	import PublishIcon from '~icons/mdi/upload';
 	import PlusIcon from '~icons/mdi/add';
 
 	import TipTapEditor from '$lib/components/tiptap/TipTapEditor.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import FormField from '$lib/components/ui/FormField.svelte';
+	import SocialList from './SocialList.svelte';
 
 	type Props = {
 		artist?: Artist;
@@ -34,14 +34,14 @@
 		onSubmit: (form: z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>) => void;
 	};
 
-	let { artist, genres, loading, onSubmit }: Props = $props();
+	let { artist, genres, loading, errors, onSubmit }: Props = $props();
 
 	let form = $state<z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>>(
 		artist
 			? {
 					name: artist.name,
 					description: artist.description,
-					previewUrl: artist.previewUrl,
+					previewUrl: artist.previewUrl || '',
 					genreIds: artist.genres.map((genre) => genre.id),
 					image: null,
 					socials: artist.socials
@@ -60,11 +60,10 @@
 	let selectedGenres = $derived(genres.filter((genre) => form.genreIds.includes(genre.id)));
 
 	let showGenreModal = $state(false);
-	let formError = $state<ZodError | null>(null);
 
 	let imageUrl = $derived(form.image ? URL.createObjectURL(form.image) : artist?.imageUrl || '');
 
-	let trackId = $derived(artist?.previewUrl ? trackIdFromUrl(form.previewUrl) : '');
+	let trackId = $derived(form.previewUrl ? trackIdFromUrl(form.previewUrl) : undefined);
 
 	const updateImage = (file: File | null) => {
 		if (!file) return;
@@ -87,7 +86,7 @@
 	};
 </script>
 
-<form class="w-full max-w-3xl space-y-16" onsubmit={submit}>
+<form class="w-full space-y-16" onsubmit={submit}>
 	<h1 class="font-heading mb-8 text-4xl font-bold">
 		{#if artist}
 			Redigér kunstner
@@ -96,18 +95,19 @@
 		{/if}
 	</h1>
 	<div class="space-y-8">
-		<ImagePreview src={imageUrl} onChange={updateImage} />
+		<FormField errors={errors?.fieldErrors.image}>
+			<ImagePreview accept="image/jpeg,image/png" src={imageUrl} onChange={updateImage} />
+		</FormField>
 		<div class="space-y-8">
 			<div class="space-y-1">
-				<Input
-					label="Kunstnernavn"
-					bind:value={form.name}
-					errors={formError?.flatten().fieldErrors['name']}
-				/>
+				<FormField errors={errors?.fieldErrors.name}>
+					<Input placeholder="Kunstnernavn" bind:value={form.name} />
+				</FormField>
 			</div>
 			<div class="space-y-1">
-				<TipTapEditor bind:value={form.description} />
-				<FieldError errors={formError?.flatten().fieldErrors['description']} />
+				<FormField errors={errors?.fieldErrors.description}>
+					<TipTapEditor bind:value={form.description} />
+				</FormField>
 			</div>
 		</div>
 	</div>
@@ -122,46 +122,42 @@
 			>
 				<PlusIcon />Tilføj
 			</button>
-			{#each selectedGenres as genre (genre.id)}
-				<Pill>{genre.name}</Pill>
-			{/each}
+			<ul class="flex flex-wrap gap-2">
+				{#each selectedGenres as genre (genre.id)}
+					<Pill>{genre.name}</Pill>
+				{/each}
+			</ul>
 		</div>
-		<FieldError errors={formError?.flatten().fieldErrors['genreIds']} />
-		<GenreSelectorModal
-			{genres}
-			show={showGenreModal}
-			onClose={() => (showGenreModal = false)}
-			onChange={(selected) => (form.genreIds = selected.map((genre) => genre.id))}
-		/>
+		<FormField errors={errors?.fieldErrors.genreIds}>
+			<GenreSelectorModal
+				{genres}
+				bind:show={showGenreModal}
+				onChange={(selected) => (form.genreIds = selected.map((genre) => genre.id))}
+			/>
+		</FormField>
 	</div>
 
 	<div class="flex flex-col">
 		<h1 class="font-heading mb-8 text-2xl font-bold">Spotify Preview</h1>
 		<div class="space-y-4">
-			<Input label="Preview URL" bind:value={form.previewUrl} />
-			{#if trackId}
-				<SpotifyPreview {trackId} />
-			{/if}
+			<FormField errors={errors?.fieldErrors.previewUrl}>
+				<Input placeholder="Preview-URL" bind:value={form.previewUrl} />
+				{#if trackId}
+					<SpotifyPreview {trackId} />
+				{/if}
+			</FormField>
 		</div>
 	</div>
 
 	<div class="flex flex-col">
 		<h1 class="font-heading mb-4 text-2xl font-bold">Sociale medier</h1>
 		<div class="mb-4 flex w-full gap-2">
-			<Input type="text" label="URL" bind:value={socialUrl} class="flex-1" />
+			<FormField errors={errors?.fieldErrors.socials}>
+				<Input type="text" placeholder="URL" bind:value={socialUrl} class="flex-1" />
+			</FormField>
 			<Button type="button" onclick={addSocial}><PlusIcon />Tilføj</Button>
 		</div>
-		<div class="space-y-2">
-			{#each form.socials as url (url)}
-				<SocialEntry
-					{url}
-					onChange={(newUrl) =>
-						(form.socials = form.socials.map((social) => (social === url ? newUrl : social)))}
-					onDelete={() => (form.socials = form.socials.filter((social) => social !== url))}
-				/>
-			{/each}
-		</div>
-		<FieldError errors={formError?.flatten().fieldErrors['socials']} />
+		<SocialList bind:socials={form.socials} />
 	</div>
 	<Button type="submit">
 		{#if loading}

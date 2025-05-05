@@ -30,7 +30,7 @@
 	};
 </script>
 
-<div class="relative">
+<div class="relative w-fit">
 	<input hidden bind:this={fileInput} type="file" onchange={onFileChange} />
 	<img src={imageUrl || AvatarImage} alt="Profile" class="h-28 w-28 rounded-full object-cover" />
 	<button

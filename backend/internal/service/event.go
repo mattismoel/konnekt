@@ -2,20 +2,23 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"image"
 	"io"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/query"
+	"github.com/nfnt/resize"
 )
+
+const EVENT_COVER_IMAGE_WIDTH_PX = 4096
 
 type EventService struct {
 	eventRepo   event.Repository
@@ -172,9 +175,17 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	)
 
 	// If there is a cover image URL update, set it.
-	if load.ImageURL != "" {
-		err := e.WithCfgs(event.WithImageURL(load.ImageURL))
+	if strings.TrimSpace(load.ImageURL) != "" {
+		url, err := url.Parse(prevEvent.ImageURL)
 		if err != nil {
+			return event.Event{}, err
+		}
+
+		if err := s.objectStore.Delete(ctx, url.Path); err != nil {
+			return event.Event{}, err
+		}
+
+		if err := e.WithCfgs(event.WithImageURL(load.ImageURL)); err != nil {
 			return event.Event{}, err
 		}
 	}
@@ -188,19 +199,6 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 		return event.Event{}, err
 	}
 
-	// Delete previous cover image, if a new one was set.
-	if load.ImageURL != "" {
-		url, err := url.Parse(prevEvent.ImageURL)
-		if err != nil {
-			return event.Event{}, err
-		}
-
-		err = s.objectStore.Delete(ctx, url.Path)
-		if err != nil {
-			return event.Event{}, err
-		}
-	}
-
 	updatedEvent, err := s.eventRepo.ByID(ctx, eventID)
 	if err != nil {
 		return event.Event{}, err
@@ -209,12 +207,22 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	return updatedEvent, nil
 }
 
-func (s EventService) UploadImage(ctx context.Context, fileName string, r io.Reader) (string, error) {
-	ext := path.Ext(fileName)
+func (s EventService) UploadImage(ctx context.Context, r io.Reader) (string, error) {
+	img, _, err := image.Decode(r)
 
-	fileName = fmt.Sprintf("%s%s", uuid.NewString(), ext)
+	fileName := createRandomImageFileName("jpeg")
 
-	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), r)
+	if img.Bounds().Max.X > EVENT_COVER_IMAGE_WIDTH_PX {
+		img = resize.Resize(EVENT_COVER_IMAGE_WIDTH_PX, 0, img, resize.Lanczos2)
+
+	}
+
+	formattedImg, err := formatJPEG(img)
+	if err != nil {
+		return "", err
+	}
+
+	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), formattedImg)
 	if err != nil {
 		return "", err
 	}
@@ -232,7 +240,22 @@ func (s EventService) List(ctx context.Context, q query.ListQuery) (query.ListRe
 }
 
 func (s EventService) Delete(ctx context.Context, eventID int64) error {
-	err := s.eventRepo.Delete(ctx, eventID)
+	e, err := s.eventRepo.ByID(ctx, eventID)
+	if err != nil {
+		return err
+	}
+
+	url, err := url.Parse(e.ImageURL)
+	if err != nil {
+		return err
+	}
+
+	err = s.objectStore.Delete(ctx, url.Path)
+	if err != nil {
+		return err
+	}
+
+	err = s.eventRepo.Delete(ctx, eventID)
 	if err != nil {
 		return err
 	}

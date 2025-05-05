@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/mattismoel/konnekt/internal/domain/member"
 )
@@ -46,6 +47,8 @@ func (s Server) handleApproveMember() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -64,6 +67,8 @@ func (s Server) handleDeleteMember() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -92,12 +97,14 @@ func (s Server) handleMemberByID() http.HandlerFunc {
 
 func (s Server) handleUpdateMember() http.HandlerFunc {
 	type UpdateMemberLoad struct {
-		Email     string `json:"email"`
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
+		Email             string `json:"email"`
+		FirstName         string `json:"firstName"`
+		LastName          string `json:"lastName"`
+		ProfilePictureURL string `json:"profilePictureUrl"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		ctx := r.Context()
 
 		memberID, err := paramID("memberID", r)
@@ -121,6 +128,7 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 			return
 		}
 
+
 		m, err := member.NewMember(
 			member.WithEmail(load.Email),
 			member.WithFirstName(load.FirstName),
@@ -132,9 +140,27 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 			return
 		}
 
+		if strings.TrimSpace(load.ProfilePictureURL) != "" {
+			err := m.WithCfgs(member.WithProfilePictureURL(load.ProfilePictureURL))
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+		}
+
 		if err := s.memberService.Update(ctx, memberID, m); err != nil {
 			writeError(w, err)
 			return
+		}
+
+		updatedMember, err := s.memberService.ByID(ctx, memberID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if err := writeJSON(w, http.StatusOK, updatedMember); err != nil {
+			writeError(w, err)
 		}
 	}
 }
@@ -168,7 +194,7 @@ func (srv Server) handleSetMemberTeams() http.HandlerFunc {
 
 func (srv Server) handleUploadMemberProfilePicture() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		file, fileHeader, err := r.FormFile("file")
+		file, _, err := r.FormFile("file")
 		if err != nil {
 			writeError(w, err)
 			return
@@ -178,7 +204,8 @@ func (srv Server) handleUploadMemberProfilePicture() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		profilePictureUrl, err := srv.memberService.UploadProfilePicture(ctx, fileHeader.Filename, file)
+		profilePictureUrl, err := srv.memberService.UploadProfilePicture(ctx, file)
+
 		if err != nil {
 			writeError(w, err)
 			return
@@ -188,5 +215,7 @@ func (srv Server) handleUploadMemberProfilePicture() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }

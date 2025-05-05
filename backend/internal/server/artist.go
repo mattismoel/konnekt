@@ -2,9 +2,9 @@ package server
 
 import (
 	"encoding/json"
-	"net/http"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/service"
+	"net/http"
 )
 
 func (s Server) handleListArtists() http.HandlerFunc {
@@ -150,7 +150,7 @@ func (s Server) handleUploadArtistImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		file, fileHeader, err := r.FormFile("image")
+		file, _, err := r.FormFile("image")
 		if err != nil {
 			writeError(w, err)
 			return
@@ -158,7 +158,7 @@ func (s Server) handleUploadArtistImage() http.HandlerFunc {
 
 		defer file.Close()
 
-		url, err := s.artistService.UploadImage(ctx, fileHeader.Filename, file)
+		url, err := s.artistService.UploadImage(ctx, file)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -183,6 +183,8 @@ func (s Server) handleDeleteArtist() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }
 

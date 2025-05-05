@@ -1,21 +1,13 @@
 import type { PageServerLoad } from "./$types";
 import { listUpcomingEvents } from "$lib/features/event/event";
-import { listArtists } from "$lib/features/artist/artist";
-import { removeDuplicates } from "$lib/array";
+import { eventsArtists } from "$lib/features/artist/artist";
 
 export const load: PageServerLoad = async ({ fetch }) => {
-  let currentArtists = await listUpcomingEvents(fetch)
-    .then(({ records }) => records
-      .flatMap(({ concerts }) => concerts)
-      .map(({ artist }) => artist)
-    )
+  const { records: upcomingEvents } = await listUpcomingEvents(fetch)
 
-  currentArtists = removeDuplicates(currentArtists)
-
-  const { records: artists } = await listArtists(fetch)
+  let artists = eventsArtists(upcomingEvents)
 
   return {
-    currentArtists,
     artists,
   }
 }

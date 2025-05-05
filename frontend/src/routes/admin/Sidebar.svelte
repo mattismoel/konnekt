@@ -20,64 +20,78 @@
 	import { type Component } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import { hasSomeTeam } from '$lib/features/auth/team';
+	import { clickOutside } from '$lib/hooks/click-outside.svelte';
+	import { authStore } from '$lib/auth.svelte';
 
 	type Props = {
-		member: Member;
 		expanded: boolean;
-		onToggle: () => void;
 	};
 
-	let { member, expanded, onToggle }: Props = $props();
+	let { expanded = $bindable(false) }: Props = $props();
+
+	// TODO: Implement sign out functionality.
+	const handleSignOut = () => {
+		return;
+	};
 </script>
 
+<div
+	class:expanded
+	class="pointer-events-none absolute top-0 left-0 z-40 h-svh w-screen bg-black opacity-0 transition-opacity [.expanded]:opacity-50"
+></div>
+
 <aside
+	use:clickOutside
+	onclickoutside={() => (expanded = false)}
 	class:expanded
 	class={cn(
-		'group w-sidenav-sm [.expanded]:w-sidenav-lg group fixed z-50 flex h-full flex-col items-center gap-y-8 border-r border-zinc-900 p-8 px-0 [.expanded]:items-stretch [.expanded]:px-8'
+		'group w-sidenav-lg fixed z-50 flex h-full -translate-x-full flex-col gap-y-8 border-r border-zinc-900 bg-zinc-950 p-8 transition-transform duration-200 ease-in-out  [.expanded]:translate-x-0 '
 	)}
 >
-	<div class="flex items-baseline justify-between">
-		<Logo class="hidden h-5 group-[.expanded]:block" />
-		<Button onclick={onToggle} variant="ghost" class="px-2"
-			><CollapseIcon class="rotate-180 group-[.expanded]:rotate-0" /></Button
-		>
+	<!-- LOGO SECTION -->
+	<div class="flex items-center justify-between">
+		<Logo class="h-5" />
+		<Button onclick={() => (expanded = false)} variant="ghost" class="h-12 w-12">
+			<CollapseIcon class="rotate-180 group-[.expanded]:rotate-0" />
+		</Button>
 	</div>
-	<section class="flex flex-1 flex-col gap-8">
-		<ul class="space-y-1">
-			{#if hasSomeTeam(member.teams, ['admin', 'event-management'])}
-				{@render entry(EventIcon, '/admin/dashboard/events', 'Events')}
-			{/if}
-			{#if hasSomeTeam(member.teams, ['admin', 'booking'])}
-				{@render entry(ArtistIcon, '/admin/dashboard/artists', 'Kunstnere')}
-			{/if}
-			{#if hasSomeTeam(member.teams, ['admin', 'event-management'])}
-				{@render entry(VenueIcon, '/admin/dashboard/venues', 'Venues')}
-			{/if}
-			{#if hasSomeTeam(member.teams, ['admin', 'team-management'])}
-				{@render entry(MemberIcon, '/admin/dashboard/members', 'Medlemmer')}
-			{/if}
-			{@render entry(SettingsIcon, '/admin/dashboard/general', 'Generelt')}
-		</ul>
-	</section>
-	{@render memberInformation(member)}
+
+	<ul class="flex flex-1 flex-col gap-2">
+		{#if hasSomeTeam(authStore.teams, ['admin', 'event-management'])}
+			{@render entry(EventIcon, '/admin/events', 'Events')}
+		{/if}
+		{#if hasSomeTeam(authStore.teams, ['admin', 'booking'])}
+			{@render entry(ArtistIcon, '/admin/artists', 'Kunstnere')}
+		{/if}
+		{#if hasSomeTeam(authStore.teams, ['admin', 'event-management'])}
+			{@render entry(VenueIcon, '/admin/venues', 'Venues')}
+		{/if}
+		{#if hasSomeTeam(authStore.teams, ['admin', 'team-management'])}
+			{@render entry(MemberIcon, '/admin/members', 'Medlemmer')}
+		{/if}
+		{@render entry(SettingsIcon, '/admin/general', 'Generelt')}
+	</ul>
+	{#if authStore.member}
+		{@render memberInformation(authStore.member)}
+	{/if}
 </aside>
 
 {#snippet memberInformation(member: Member)}
 	{@const teamsString = member.teams.map((t) => t.displayName).join(', ')}
 
-	<div class="flex flex-col-reverse items-center justify-between gap-8 group-[.expanded]:flex-row">
-		<a href="/admin/dashboard/member/{member.id}" class="flex items-center gap-4">
+	<div class="flex items-center justify-between gap-8">
+		<a href="/admin/members/{member.id}" class="flex items-center gap-6">
 			<img
 				src={member.profilePictureUrl || AvatarImage}
-				alt=""
-				class="aspect-square h-full w-10 rounded-full object-cover"
+				alt="Profile"
+				class="h-10 w-10 rounded-full object-cover"
 			/>
-			<div class="hidden group-[.expanded]:block">
+			<div>
 				<span class="line-clamp-1">{member.firstName} {member.lastName}</span>
 				<span class="text-text/50 line-clamp-1" title={teamsString}>{teamsString}</span>
 			</div>
 		</a>
-		<button type="button" title="Log ud">
+		<button type="button" title="Log ud" onclick={handleSignOut}>
 			<SignOutIcon class="text-text/50 hover:text-text text-xl" />
 		</button>
 	</div>
@@ -85,16 +99,12 @@
 
 {#snippet entry(Logo: Component, href: string, label: string)}
 	<li
-		class={cn(
-			'text-text/75 hover:text-text flex aspect-square w-full items-center justify-center rounded-md border border-transparent group-[.expanded]:aspect-auto hover:border-zinc-800',
-			{
-				'text-text border-zinc-800 bg-zinc-900': page.url.pathname === href
-			}
-		)}
+		class:is-active={page.url.pathname === href}
+		class="[.is-active]:text-text text-text/50 hover:text-text/75 flex w-full rounded-sm border border-transparent transition-colors duration-75 hover:border-zinc-900 [.is-active]:border-zinc-800 [.is-active]:bg-zinc-900"
 	>
 		<a {href} class="flex w-full items-center gap-2 px-4 py-2" title={label}>
 			<Logo />
-			<span class="hidden group-[.expanded]:inline">{label}</span>
+			<span>{label}</span>
 		</a>
 	</li>
 {/snippet}

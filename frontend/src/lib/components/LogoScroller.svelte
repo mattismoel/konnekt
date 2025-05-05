@@ -1,24 +1,23 @@
 <script lang="ts">
 	import type { HTMLAttributes } from 'svelte/elements';
-	import { cn } from '$lib/clsx';
 
 	type Props = HTMLAttributes<HTMLDivElement> & {
 		srcs: Map<string, string>;
 	};
 
-	let { srcs, ...rest }: Props = $props();
+	let { srcs }: Props = $props();
 </script>
 
-<div class={cn('relative isolate h-8 w-full overflow-hidden whitespace-nowrap', rest.class)}>
-	{@render track(srcs)}
-	{@render track(srcs)}
-	{@render track(srcs)}
+<div class="group flex gap-8 overflow-hidden">
+	{#each { length: 2 } as _, i}
+		{@render track(i)}
+	{/each}
 </div>
 
-{#snippet track(srcs: Map<string, string>)}
-	<div class="animate-slide inline-block h-full w-fit flex-nowrap">
-		{#each [...srcs] as [name, src] (src)}
-			<img {src} alt={name} class="mx-8 inline h-full" />
+{#snippet track(idx: number)}
+	<div class="animate-slide flex h-8 space-x-8" aria-hidden={idx > 0}>
+		{#each srcs as [name, src] (src)}
+			<img {src} alt={name} class="max-w-none" />
 		{/each}
 	</div>
 {/snippet}

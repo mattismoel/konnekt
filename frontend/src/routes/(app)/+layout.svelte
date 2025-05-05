@@ -2,17 +2,26 @@
 	import '../../app.css';
 
 	import Footer from './Footer.svelte';
-	import Navbar from './Navbar.svelte';
+	import * as Navbar from '$lib/components/navbar/index';
+	import Logo from '$lib/assets/Logo.svelte';
 
 	let { children } = $props();
 </script>
 
-<Navbar
-	entries={[
-		{ href: '/events', name: 'Events' },
-		{ href: '/artists', name: 'Kunstnere' },
-		{ href: '/about', name: 'Om os' }
-	]}
-/>
+<Navbar.Root>
+	<Navbar.Header>
+		<a href="/">
+			<Logo class="h-4" />
+		</a>
+	</Navbar.Header>
+
+	<Navbar.RouteList>
+		<Navbar.RouteEntry pathname="/events" name="Events" />
+		<Navbar.RouteEntry pathname="/artists" name="Kunstnere" />
+		<Navbar.RouteEntry pathname="/om-os" name="Om os" />
+	</Navbar.RouteList>
+</Navbar.Root>
+
 {@render children()}
+
 <Footer />

@@ -10,6 +10,8 @@ import (
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
+const COVER_IMAGE_WIDTH = 2048
+
 var (
 	ErrEventNoExist = APIError{Message: "Event does not exist", Status: http.StatusNotFound}
 )
@@ -174,7 +176,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 
 func (s Server) handleUploadEventImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		file, fileHeader, err := r.FormFile("image")
+		file, _, err := r.FormFile("image")
 		if err != nil {
 			writeError(w, err)
 			return
@@ -184,7 +186,7 @@ func (s Server) handleUploadEventImage() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		url, err := s.eventService.UploadImage(ctx, fileHeader.Filename, file)
+		url, err := s.eventService.UploadImage(ctx, file)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -209,5 +211,7 @@ func (s Server) handleDeleteEvent() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }

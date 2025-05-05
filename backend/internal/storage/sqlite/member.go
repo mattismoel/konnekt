@@ -216,9 +216,10 @@ func (repo MemberRepository) Update(ctx context.Context, memberID int64, m membe
 	defer tx.Rollback()
 
 	err = updateMember(ctx, tx, memberID, Member{
-		FirstName: m.FirstName,
-		LastName:  m.LastName,
-		Email:     m.Email,
+		FirstName:         m.FirstName,
+		LastName:          m.LastName,
+		Email:             m.Email,
+		ProfilePictureURL: m.ProfilePictureURL,
 	})
 
 	if err != nil {
@@ -507,6 +508,10 @@ func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) err
 		email = CASE 
 			WHEN @email = '' THEN email 
 			ELSE @email
+		END,
+		profile_picture_url = CASE
+			WHEN @profile_picture_url = '' THEN profile_picture_url
+			ELSE @profile_picture_url
 		END
 		WHERE id = @member_id`
 
@@ -514,6 +519,7 @@ func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) err
 		sql.Named("first_name", m.FirstName),
 		sql.Named("last_name", m.LastName),
 		sql.Named("email", m.Email),
+		sql.Named("profile_picture_url", m.ProfilePictureURL),
 		sql.Named("member_id", memberID),
 	)
 

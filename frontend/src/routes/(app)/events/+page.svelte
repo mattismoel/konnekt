@@ -7,12 +7,18 @@
 	let { events } = $derived(data);
 </script>
 
-<main class="min-h-sub-nav">
+<main class="min-h-svh">
 	{#if events.length > 0}
 		<EventDetails event={events[0]} prefix="Næste event:" />
 	{/if}
-	<div class="px-auto">
-		<h1 class="mb-4 text-3xl font-bold">Events</h1>
+	<div class="px-auto flex flex-col gap-16 pt-32 pb-16">
+		<section class="flex flex-col">
+			<h1 class="font-heading mb-4 text-5xl font-bold md:text-7xl">Events</h1>
+			<span class="text-text/75"> Her kan du se alle kommende events. </span>
+		</section>
+		{#if events.length <= 0}
+			<span class="text-text/50 italic">Der er ingen kommende events i øjeblikket...</span>
+		{/if}
 		<Caroussel>
 			{#each events as event (event.id)}
 				<EventCard {event} />

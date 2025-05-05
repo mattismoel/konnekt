@@ -3,7 +3,7 @@
 	import Pill from '$lib/components/Pill.svelte';
 	import TeamsSelectorModal from '$lib/components/TeamsSelectorModal.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import FieldError from '$lib/components/ui/FieldError.svelte';
+	import FormField from '$lib/components/ui/FormField.svelte';
 	import { setMemberTeams, type Member, type setMemberTeamsForm } from '$lib/features/auth/member';
 	import type { Team } from '$lib/features/auth/team';
 	import { toaster } from '$lib/toaster.svelte';
@@ -53,27 +53,30 @@
 	};
 </script>
 
-<h1 class="mb-4 text-2xl font-bold">Teams</h1>
-<form onsubmit={handleSubmit} class="flex flex-wrap gap-4">
-	<ul class="flex flex-wrap gap-2">
-		<button
-			type="button"
-			onclick={() => (isModalOpen = true)}
-			class="flex items-center gap-2 rounded-full border border-zinc-900 px-4 py-2 hover:bg-zinc-900"
-			><EditIcon />Redigér</button
-		>
-		{#each selected || [] as team (team.id)}
-			<Pill>{team.displayName}</Pill>
-		{/each}
-	</ul>
-	<FieldError errors={errors?.formErrors} />
-	<Button disabled={!hasChanged} type="submit" class="w-full">Opdatér</Button>
+<div class="flex flex-col gap-8">
+	<h1 class="text-2xl font-bold">Teams</h1>
 
-	<TeamsSelectorModal
-		{teams}
-		selected={selected || []}
-		show={isModalOpen}
-		onClose={() => (isModalOpen = false)}
-		onChange={(newTeams) => (selected = newTeams)}
-	/>
-</form>
+	<form onsubmit={handleSubmit} class="flex flex-wrap gap-8">
+		<FormField errors={errors?.formErrors}>
+			<ul class="flex flex-wrap gap-2">
+				<Button
+					variant="ghost"
+					type="button"
+					onclick={() => (isModalOpen = true)}
+					class="rounded-full"><EditIcon />Redigér</Button
+				>
+				{#each selected || [] as team (team.id)}
+					<Pill>{team.displayName}</Pill>
+				{/each}
+			</ul>
+		</FormField>
+		<Button disabled={!hasChanged} type="submit" class="w-full">Opdatér</Button>
+
+		<TeamsSelectorModal
+			{teams}
+			selected={selected || []}
+			bind:show={isModalOpen}
+			onChange={(newTeams) => (selected = newTeams)}
+		/>
+	</form>
+</div>

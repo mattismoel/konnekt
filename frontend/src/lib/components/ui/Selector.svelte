@@ -7,12 +7,12 @@
 		value: string;
 	};
 
-	type Props = HTMLSelectAttributes & {
+	type Props = Omit<HTMLSelectAttributes, 'value'> & {
 		entries: Entry[];
-		value: string;
+		value?: string | undefined | null;
 	};
 
-	let { entries, value = $bindable(), ...rest }: Props = $props();
+	let { entries, value = $bindable(), placeholder = 'Vælg...', ...rest }: Props = $props();
 
 	let selectElement: HTMLSelectElement;
 
@@ -27,6 +27,7 @@
 	{...rest}
 	class={cn('rounded-sm border border-zinc-900 bg-zinc-950', rest.class)}
 >
+	<option value="" disabled selected={!value}>{placeholder}</option>
 	{#each entries as entry (entry.value)}
 		<option value={entry.value}>{entry.name}</option>
 	{/each}

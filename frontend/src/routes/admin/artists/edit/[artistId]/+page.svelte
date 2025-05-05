@@ -17,7 +17,7 @@
 			await updateArtist(fetch, data.artist.id, form);
 			toaster.addToast('Kunstner opdateret');
 			loading = false;
-			goto('/admin/dashboard/artists');
+			goto('/admin/artists');
 		} catch (e) {
 			if (e instanceof ZodError) {
 				toaster.addToast('Kunne ikke opdatere kunstner', 'Ugyldig kunstnerdata', 'error');
@@ -33,7 +33,7 @@
 	};
 </script>
 
-<main class="flex min-h-svh justify-center p-16">
+<main>
 	<ArtistForm
 		{loading}
 		{errors}

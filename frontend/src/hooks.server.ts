@@ -2,8 +2,8 @@ import { cleanUrl } from "$lib/url";
 import { redirect, type Handle, type HandleFetch } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-	if (cleanUrl(event.url.pathname) === "/admin/dashboard") {
-		redirect(302, "/admin/dashboard/events")
+	if (cleanUrl(event.url.pathname) === "/admin") {
+		redirect(302, "/admin/events")
 	}
 
 	return await resolve(event)

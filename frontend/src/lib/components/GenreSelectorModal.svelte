@@ -5,20 +5,16 @@
 	import { error } from '@sveltejs/kit';
 	import { invalidateAll } from '$app/navigation';
 	import { createGenre, type Genre } from '$lib/features/artist/genre';
-	import Modal from './ui/modal/Modal.svelte';
-	import ModalHeader from './ui/modal/ModalHeader.svelte';
-	import ModalContent from './ui/modal/ModalContent.svelte';
-	import ModalFooter from './ui/modal/ModalFooter.svelte';
+	import * as Modal from '$lib/components/ui/modal/index';
 	import { APIError } from '$lib/api';
 
 	type Props = {
 		genres: Genre[];
 		show: boolean;
-		onClose: () => void;
 		onChange: (selected: Genre[]) => void;
 	};
 
-	let { genres, show, onClose, onChange }: Props = $props();
+	let { genres, show = $bindable(), onChange }: Props = $props();
 
 	let search = $state('');
 	let selected = $state<Genre[]>([]);
@@ -44,18 +40,23 @@
 	};
 </script>
 
-<Modal {show}>
-	<ModalHeader label="Vælg genrer..." {onClose} />
-	<ModalContent class="text-text space-y-4">
+<Modal.Root bind:show class="max-w-lg">
+	<Modal.Header onClose={() => (show = false)}>
+		<Modal.Title>Vælg genrer...</Modal.Title>
+		<Modal.Description>Her kan du vælge de genrer, som kunstneren associeres med.</Modal.Description
+		>
+	</Modal.Header>
+
+	<Modal.Content class="text-text space-y-4">
 		<div class="flex gap-2">
 			<input
 				type="text"
-				placeholder="Søg..."
+				placeholder="Genrenavn"
 				bind:value={search}
-				class="rounded-md border border-zinc-800 bg-zinc-900"
+				class="w-full rounded-md border border-zinc-800 bg-zinc-900"
 			/>
-			<Button type="button" onclick={addGenre}>
-				<PlusIcon />Tilføj
+			<Button variant="secondary" type="button" onclick={addGenre}>
+				<PlusIcon />Lav
 			</Button>
 		</div>
 		<div class="space-y-1">
@@ -68,8 +69,8 @@
 				/>
 			{/each}
 		</div>
-	</ModalContent>
-	<ModalFooter>
-		<Button type="button" onclick={onClose}>Vælg</Button>
-	</ModalFooter>
-</Modal>
+	</Modal.Content>
+	<Modal.Footer>
+		<Button type="button" onclick={() => (show = false)}>Vælg</Button>
+	</Modal.Footer>
+</Modal.Root>
