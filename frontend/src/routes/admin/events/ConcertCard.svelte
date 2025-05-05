@@ -55,6 +55,7 @@
 		<div class="flex w-full gap-4">
 			<Selector
 				value={concert.artistID.toString()}
+				placeholder="Vælg kunstner..."
 				onchange={(e) => selectArtist(parseInt(e.currentTarget.value))}
 				class="w-full"
 				entries={artists.map((a) => ({

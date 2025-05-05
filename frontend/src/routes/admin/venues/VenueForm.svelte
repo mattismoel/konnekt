@@ -56,6 +56,7 @@
 					<Selector
 						class="h-min w-min"
 						entries={Array.from(COUNTRIES_MAP).map(([key, val]) => ({ name: val, value: key }))}
+						placeholder="Vælg land..."
 						bind:value={form.countryCode}
 					/>
 				</FormField>

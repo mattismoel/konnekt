@@ -126,6 +126,7 @@
 					<div class="flex gap-4">
 						<Selector
 							class="w-full"
+							placeholder="Vælg venue..."
 							bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
 							entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
 						/>
