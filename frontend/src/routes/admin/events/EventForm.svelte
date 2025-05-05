@@ -131,17 +131,18 @@
 							entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
 						/>
 						<Button
+							title="Opdatér venueliste"
+							type="button"
+							variant="ghost"
+							class="aspect-square h-full"
+							onclick={async () => await invalidateAll()}><RefreshIcon /></Button
+						>
+						<Button
 							title="Lav nyt venue"
 							class="aspect-square h-full"
 							target="__blank"
 							variant="primary"
 							href="/admin/venues/create"><AddIcon /></Button
-						>
-						<Button
-							title="Opdatér venueliste"
-							variant="secondary"
-							class="aspect-square h-full"
-							onclick={async () => await invalidateAll()}><RefreshIcon /></Button
 						>
 					</div>
 				</FormField>
