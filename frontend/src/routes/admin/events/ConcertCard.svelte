@@ -18,12 +18,13 @@
 		artists: Artist[];
 		idx: number;
 
+		disabled?: boolean;
 		concert: z.infer<typeof concertForm>;
 
 		onDelete: () => void;
 	};
 
-	let { artists, concert = $bindable(), idx, onDelete }: Props = $props();
+	let { artists, disabled = false, concert = $bindable(), idx, onDelete }: Props = $props();
 
 	const selectArtist = (artistId: number) => {
 		concert.artistID = artistId;
@@ -44,7 +45,7 @@
 
 <Card.Root class="relative flex flex-1 flex-col">
 	<Card.Header>
-		<Card.Title>#{idx + 1}</Card.Title>
+		<Card.Title class="text-text/50">#{idx + 1}</Card.Title>
 		<button
 			type="button"
 			class="text-text/50 hover:text-text absolute top-6 right-6"
@@ -55,6 +56,7 @@
 	<Card.Content class="gap-8">
 		<div class="flex w-full gap-2">
 			<Selector
+				{disabled}
 				placeholder="Vælg kunstner..."
 				value={concert.artistID > 0 ? concert.artistID.toString() : null}
 				onchange={(e) => selectArtist(parseInt(e.currentTarget.value))}
@@ -64,33 +66,37 @@
 					value: a.id.toString()
 				}))}
 			></Selector>
-			<Button
-				type="button"
-				title="Opdatér kunstnerliste"
-				onclick={async () => await invalidateAll()}
-				variant="ghost"
-				class="aspect-square h-full"
-			>
-				<RefreshIcon />
-			</Button>
-			<Button
-				title="Tilføj ny kunstner"
-				href="/admin/artists/create"
-				target="__blank"
-				variant="primary"
-				class="aspect-square h-full"
-			>
-				<PlusIcon></PlusIcon></Button
-			>
+			{#if !disabled}
+				<Button
+					type="button"
+					title="Opdatér kunstnerliste"
+					onclick={async () => await invalidateAll()}
+					variant="ghost"
+					class="aspect-square h-full"
+				>
+					<RefreshIcon />
+				</Button>
+				<Button
+					title="Tilføj ny kunstner"
+					href="/admin/artists/create"
+					target="__blank"
+					variant="primary"
+					class="aspect-square h-full"
+				>
+					<PlusIcon></PlusIcon></Button
+				>
+			{/if}
 		</div>
 		<div class="flex flex-col items-center gap-4 sm:flex-row">
 			<DateTimePicker
+				{disabled}
 				class="w-full"
 				placeholder="Fra"
 				defaultValue={concert.from}
 				onChange={(d) => (concert.from = d)}
 			/>
 			<DateTimePicker
+				{disabled}
 				class="w-full"
 				placeholder="Til"
 				defaultValue={concert.to}

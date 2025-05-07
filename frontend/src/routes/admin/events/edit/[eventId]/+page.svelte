@@ -5,6 +5,8 @@
 
 	import { updateEvent, type editEventForm } from '$lib/features/event/event';
 	import EventForm from '../../EventForm.svelte';
+	import { hasPermissions } from '$lib/features/auth/permission';
+	import { authStore } from '$lib/auth.svelte';
 
 	let { data } = $props();
 	let loading = $state(false);
@@ -35,6 +37,7 @@
 <main>
 	<h1 class="font-heading mb-8 text-4xl font-bold">Redigér event</h1>
 	<EventForm
+		disabled={!hasPermissions(authStore.permissions, ['edit:event'])}
 		{loading}
 		event={data.event}
 		{errors}
