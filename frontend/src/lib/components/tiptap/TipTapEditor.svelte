@@ -31,17 +31,19 @@
 	const HEADER_LEVELS: Level[] = [1, 2, 3];
 
 	type Props = {
+		disabled?: boolean;
 		value?: string;
 		onChange?: (html: string) => void;
 	};
 
-	let { value = $bindable(), onChange }: Props = $props();
+	let { value = $bindable(), disabled = false, onChange }: Props = $props();
 
 	let element: HTMLDivElement;
 	let editor = $state<Editor | null>(null);
 
 	onMount(() => {
 		editor = new Editor({
+			editable: !disabled,
 			element,
 			extensions: [
 				Document,
@@ -90,6 +92,7 @@
 			<ActionGroup>
 				{#each HEADER_LEVELS as level}
 					<ActionButton
+						{disabled}
 						title="Heading {level}"
 						active={editor.isActive('heading', { level })}
 						onclick={() => editor?.chain().focus().toggleHeading({ level }).run()}
@@ -100,6 +103,7 @@
 			</ActionGroup>
 			<ActionGroup>
 				<ActionButton
+					{disabled}
 					title="Bullet List"
 					active={editor.isActive('bulletList')}
 					onclick={() => editor?.chain().focus().toggleBulletList().run()}
@@ -107,6 +111,7 @@
 					<ListBulletedIcon />
 				</ActionButton>
 				<ActionButton
+					{disabled}
 					title="Numbered List"
 					active={editor.isActive('orderedList')}
 					onclick={() => editor?.chain().focus().toggleOrderedList().run()}
@@ -117,6 +122,7 @@
 			<div class="flex-1"></div>
 			<ActionGroup>
 				<ActionButton
+					{disabled}
 					title="Toggle Bold"
 					active={editor.isActive('bold')}
 					onclick={() => editor?.chain().focus().toggleBold().run()}
@@ -124,6 +130,7 @@
 					<BoldIcon />
 				</ActionButton>
 				<ActionButton
+					{disabled}
 					title="Toggle Italic"
 					active={editor.isActive('italic')}
 					onclick={() => editor?.chain().focus().toggleItalic().run()}
@@ -131,6 +138,7 @@
 					<ItalicIcon />
 				</ActionButton>
 				<ActionButton
+					{disabled}
 					title="Toggle Underline"
 					active={editor.isActive('underline')}
 					onclick={() => editor?.chain().focus().toggleUnderline().run()}

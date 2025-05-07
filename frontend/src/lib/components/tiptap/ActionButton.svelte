@@ -12,10 +12,12 @@
 <button
 	{...rest}
 	type="button"
-	class:active
-	class={cn('px-3 py-1 text-sm hover:bg-zinc-700', {
-		'bg-zinc-500': active
-	})}
+	class={cn(
+		'disabled:text-text/50 px-3 py-1 text-sm hover:bg-zinc-700 disabled:hover:bg-zinc-800',
+		{
+			'active bg-zinc-500': active
+		}
+	)}
 >
 	{@render children?.()}
 </button>
