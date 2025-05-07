@@ -8,7 +8,6 @@ export const teamTypes = z.union([
 	z.literal("admin"),
 	z.literal("member"),
 	z.literal("event-management"),
-	z.literal("artist-management"),
 	z.literal("booking"),
 	z.literal("public-relations"),
 	z.literal("visual-identity"),
