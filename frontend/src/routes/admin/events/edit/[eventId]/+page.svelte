@@ -33,7 +33,7 @@
 </script>
 
 <main>
-	<h1 class="mb-8 text-4xl font-bold">Redigér event</h1>
+	<h1 class="font-heading mb-8 text-4xl font-bold">Redigér event</h1>
 	<EventForm
 		{loading}
 		event={data.event}
