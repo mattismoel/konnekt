@@ -1,19 +1,23 @@
-import { cleanUrl } from "$lib/url";
-import { redirect, type Handle, type HandleFetch } from "@sveltejs/kit";
-
-export const handle: Handle = async ({ event, resolve }) => {
-	if (cleanUrl(event.url.pathname) === "/admin") {
-		redirect(302, "/admin/events")
-	}
-
-	return await resolve(event)
-}
+import { APIError, apiErrorSchema } from "$lib/api";
+import { redirect, type HandleFetch } from "@sveltejs/kit";
 
 export const handleFetch: HandleFetch = async ({ request, fetch }) => {
-	return fetch(request, {
+	const response = await fetch(request, {
 		headers: {
-			"Content-Type": "application/json",
-			...request.headers
-		}
+			...request.headers,
+			"Content-Type": "applicaion/json",
+		},
 	})
+
+	if (response.ok) {
+		return response
+	}
+
+	if (response.status === 401) {
+		return redirect(302, "/auth/login")
+	}
+
+	const err = apiErrorSchema.parse(await response.json())
+
+	throw new APIError(response.status, err.message, "")
 }
