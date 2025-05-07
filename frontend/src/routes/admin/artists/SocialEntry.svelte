@@ -3,27 +3,32 @@
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import TrashIcon from '~icons/mdi/trash';
+	import Input from '$lib/components/ui/Input.svelte';
 
 	type Props = {
 		url: string;
 		onDelete: () => void;
+		disabled?: boolean;
 	};
 
-	let { url = $bindable(''), onDelete }: Props = $props();
+	let { url = $bindable(''), disabled = false, onDelete }: Props = $props();
 
 	const Icon = socialUrlToIcon(url);
 </script>
 
-<div class="flex w-full items-center gap-4">
+<div class:disabled class="[.disabled]:text-text/50 flex w-full items-center gap-4">
 	<div class="flex w-full items-center gap-4">
 		<Icon class="text-lg" />
-		<input
+		<Input
+			{disabled}
 			bind:value={url}
 			type="text"
 			class="w-full rounded-sm border-transparent bg-zinc-950 hover:border-zinc-800"
 		/>
 	</div>
-	<Button type="button" onclick={onDelete} variant="dangerous">
-		<TrashIcon />
-	</Button>
+	{#if !disabled}
+		<Button type="button" onclick={onDelete} variant="dangerous">
+			<TrashIcon />
+		</Button>
+	{/if}
 </div>

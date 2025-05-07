@@ -4,6 +4,8 @@
 	import { updateArtist, type editArtistForm } from '$lib/features/artist/artist';
 	import { goto } from '$app/navigation';
 	import ArtistForm from '../../ArtistForm.svelte';
+	import { hasPermissions } from '$lib/features/auth/permission';
+	import { authStore } from '$lib/auth.svelte';
 
 	let { data } = $props();
 
@@ -36,6 +38,7 @@
 <main>
 	<h1 class="font-heading mb-8 text-4xl font-bold">Redigér kunstner</h1>
 	<ArtistForm
+		disabled={!hasPermissions(authStore.permissions, ['edit:artist'])}
 		{loading}
 		{errors}
 		artist={data.artist}

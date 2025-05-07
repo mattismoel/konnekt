@@ -3,9 +3,10 @@
 
 	type Props = {
 		socials: string[];
+		disabled?: boolean;
 	};
 
-	let { socials = $bindable([]) }: Props = $props();
+	let { socials = $bindable([]), disabled = false }: Props = $props();
 
 	const handleDeleteSocial = (url: string) => {
 		const social = socials.find((social) => social === url);
@@ -21,6 +22,7 @@
 <div class="flex flex-col gap-2">
 	{#each socials as url, i (url)}
 		<SocialEntry
+			{disabled}
 			bind:url={() => socials[i], (url) => (socials[i] = url)}
 			onDelete={() => handleDeleteSocial(url)}
 		/>
