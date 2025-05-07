@@ -47,7 +47,7 @@
 
 	<ContextMenu.Root bind:show={showContextMenu} class="absolute top-1/2 right-4">
 		<ContextMenu.Entry
-			disabled={!hasPermissions(authStore.permissions, ['delete:venue'])}
+			disabled={!hasPermissions(authStore.permissions, ['edit:venue'])}
 			href="/admin/venues/edit/{venue.id}"
 		>
 			Redigér
