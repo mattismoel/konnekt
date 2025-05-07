@@ -2,6 +2,7 @@ import type { Member } from "./features/auth/member"
 import type { Permission } from "./features/auth/permission"
 import type { Team } from "./features/auth/team"
 
+
 type Auth = {
 	member: Member | null
 	permissions: Permission[]
@@ -11,7 +12,7 @@ type Auth = {
 let auth = $state<Auth>({
 	member: null,
 	permissions: [],
-	teams: []
+	teams: [],
 })
 
 export const authStore = {
