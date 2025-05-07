@@ -18,6 +18,8 @@ func (s *Server) setupRoutes() {
 		r.Get("/{memberID}/teams", s.withPermissions(s.handleListMemberTeams(), "view:team"))
 		r.Put("/{memberID}/teams", s.withPermissions(s.handleSetMemberTeams(), "view:team", "edit:member"))
 
+		r.Get("/{memberID}/permissions", s.withPermissions(s.handleListMemberPermissions(), "view:permission", "view:member"))
+
 		r.Post("/{memberID}/approve", s.withPermissions(s.handleApproveMember(), "edit:member"))
 
 		r.Post("/picture", s.handleUploadMemberProfilePicture())

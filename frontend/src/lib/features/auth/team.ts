@@ -28,7 +28,7 @@ export type Team = z.infer<typeof teamSchema>
 export const memberTeams = async (fetchFn: typeof fetch, memberId: number): Promise<Team[]> => {
 	const teams = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/teams/${memberId}`),
+		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}/teams`),
 		teamSchema.array(),
 		"Could not fetch member teams",
 	)
