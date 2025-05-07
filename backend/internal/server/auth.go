@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -217,4 +218,25 @@ func (s Server) handleListTeamPermissions() http.HandlerFunc {
 			return
 		}
 	}
+}
+
+func (s Server) memberSession(ctx context.Context, w http.ResponseWriter, r *http.Request) (auth.Session, error) {
+	sessionCookie, err := r.Cookie(SESSION_COOKIE_NAME)
+	if err != nil {
+		return auth.Session{}, err
+	}
+
+	token := auth.SessionToken(sessionCookie.Value)
+
+	session, err := s.authService.Session(ctx, token.SessionID())
+	if err != nil {
+		return auth.Session{}, err
+	}
+
+	_, err = s.authService.ValidateSession(ctx, token)
+	if err != nil {
+		return auth.Session{}, err
+	}
+
+	return session, nil
 }
