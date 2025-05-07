@@ -100,7 +100,7 @@ func main() {
 
 	venueService := service.NewVenueService(venueRepo)
 
-	teamService := service.NewTeamService(teamRepo, authRepo)
+	teamService := service.NewTeamService(teamRepo, memberRepo, authRepo)
 
 	srv, err := server.New(
 		server.WithTeamService(teamService),

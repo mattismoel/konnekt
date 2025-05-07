@@ -15,10 +15,11 @@ type TeamService struct {
 	authRepo   auth.Repository
 }
 
-func NewTeamService(teamRepo team.Repository, authRepo auth.Repository) *TeamService {
+func NewTeamService(teamRepo team.Repository, memberRepo member.Repository, authRepo auth.Repository) *TeamService {
 	return &TeamService{
-		teamRepo: teamRepo,
-		authRepo: authRepo,
+		teamRepo:   teamRepo,
+		memberRepo: memberRepo,
+		authRepo:   authRepo,
 	}
 }
 
