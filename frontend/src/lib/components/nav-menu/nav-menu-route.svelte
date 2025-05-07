@@ -8,8 +8,6 @@
 	let { href, children, ...rest }: Props = $props();
 
 	let isActive = $derived(page.url.pathname === href);
-
-	$inspect(isActive, page.url.pathname);
 </script>
 
 <li>

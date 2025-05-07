@@ -9,8 +9,6 @@
 	};
 
 	let { show = $bindable(), children, ...rest }: Props = $props();
-
-	$inspect(show);
 </script>
 
 <div
