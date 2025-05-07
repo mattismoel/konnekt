@@ -6,9 +6,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/mattismoel/konnekt/internal/domain/auth"
 	"github.com/mattismoel/konnekt/internal/domain/member"
-	"github.com/mattismoel/konnekt/internal/domain/team"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
@@ -86,21 +84,11 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 		}
 	}
 
-	memberTeams, err := memberTeams(ctx, tx, memberID)
-	if err != nil {
-		return member.Member{}, err
-	}
-
-	memeberPerms, err := memberPermissions(ctx, tx, memberID)
-	if err != nil {
-		return member.Member{}, err
-	}
-
 	if err := tx.Commit(); err != nil {
 		return member.Member{}, err
 	}
 
-	return m.ToInternal(memberTeams.ToInternal(), memeberPerms.ToInternal()), nil
+	return m.ToInternal(), nil
 }
 
 func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error {
@@ -174,19 +162,7 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 	members := make([]member.Member, 0)
 
 	for _, dbMember := range dbMembers {
-		memberTeams, err := memberTeams(ctx, tx, dbMember.ID)
-		if err != nil {
-			return query.ListResult[member.Member]{}, err
-		}
-
-		memberPerms, err := memberPermissions(ctx, tx, dbMember.ID)
-		if err != nil {
-			return query.ListResult[member.Member]{}, err
-		}
-
-		teams, perms := memberTeams.ToInternal(), memberPerms.ToInternal()
-
-		members = append(members, dbMember.ToInternal(teams, perms))
+		members = append(members, dbMember.ToInternal())
 	}
 
 	totalCount, err := memberCount(ctx, tx)
@@ -250,21 +226,11 @@ func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.
 		return member.Member{}, err
 	}
 
-	memberTeams, err := memberTeams(ctx, tx, m.ID)
-	if err != nil {
-		return member.Member{}, err
-	}
-
-	memberPerms, err := memberPermissions(ctx, tx, m.ID)
-	if err != nil {
-		return member.Member{}, err
-	}
-
 	if err := tx.Commit(); err != nil {
 		return member.Member{}, err
 	}
 
-	return m.ToInternal(memberTeams.ToInternal(), memberPerms.ToInternal()), nil
+	return m.ToInternal(), nil
 }
 
 func (repo MemberRepository) Delete(ctx context.Context, memberID int64) error {
@@ -593,7 +559,7 @@ func memberCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	return count, nil
 }
 
-func (m Member) ToInternal(teams []team.Team, perms auth.PermissionCollection) member.Member {
+func (m Member) ToInternal() member.Member {
 	return member.Member{
 		ID:                m.ID,
 		FirstName:         m.FirstName,
@@ -603,8 +569,5 @@ func (m Member) ToInternal(teams []team.Team, perms auth.PermissionCollection) m
 		ProfilePictureURL: m.ProfilePictureURL,
 
 		Active: m.Active,
-
-		Teams:       teams,
-		Permissions: perms,
 	}
 }

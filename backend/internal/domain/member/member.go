@@ -6,9 +6,6 @@ import (
 	"net/mail"
 	"net/url"
 	"strings"
-
-	"github.com/mattismoel/konnekt/internal/domain/auth"
-	"github.com/mattismoel/konnekt/internal/domain/team"
 )
 
 var (
@@ -35,18 +32,13 @@ type Member struct {
 	PasswordHash      PasswordHash `json:"-"`
 
 	Active bool `json:"active"`
-
-	Teams       team.TeamCollection       `json:"teams"`
-	Permissions auth.PermissionCollection `json:"permissions"`
 }
 
 type cfgFunc func(m *Member) error
 
 func NewMember(cfgs ...cfgFunc) (Member, error) {
 	m := &Member{
-		Active:      false,
-		Teams:       make(team.TeamCollection, 0),
-		Permissions: make(auth.PermissionCollection, 0),
+		Active: false,
 	}
 
 	if err := m.WithCfgs(cfgs...); err != nil {
@@ -132,20 +124,6 @@ func WithPasswordHash(hash []byte) cfgFunc {
 
 		m.PasswordHash = hash
 
-		return nil
-	}
-}
-
-func WithPermissions(perms auth.PermissionCollection) cfgFunc {
-	return func(m *Member) error {
-		m.Permissions = perms
-		return nil
-	}
-}
-
-func WithTeams(teams team.TeamCollection) cfgFunc {
-	return func(m *Member) error {
-		m.Teams = teams
 		return nil
 	}
 }
