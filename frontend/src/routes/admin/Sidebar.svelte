@@ -59,22 +59,22 @@
 		{@render entry(MemberIcon, '/admin/members', 'Medlemmer')}
 	</ul>
 	{#if authStore.member}
-		{@render memberInformation(authStore.member)}
+		{@render memberInformation()}
 	{/if}
 </aside>
 
-{#snippet memberInformation(member: Member)}
-	{@const teamsString = member.teams.map((t) => t.displayName).join(', ')}
+{#snippet memberInformation()}
+	{@const teamsString = authStore.teams.map((t) => t.displayName).join(', ')}
 
 	<div class="flex items-center justify-between gap-8">
-		<a href="/admin/members/{member.id}" class="flex items-center gap-6">
+		<a href="/admin/members/{authStore.member?.id}" class="flex items-center gap-6">
 			<img
-				src={member.profilePictureUrl || AvatarImage}
+				src={authStore.member?.profilePictureUrl || AvatarImage}
 				alt="Profile"
 				class="h-10 w-10 rounded-full object-cover"
 			/>
 			<div>
-				<span class="line-clamp-1">{member.firstName} {member.lastName}</span>
+				<span class="line-clamp-1">{authStore.member?.firstName} {authStore.member?.lastName}</span>
 				<span class="text-text/50 line-clamp-1" title={teamsString}>{teamsString}</span>
 			</div>
 		</a>
