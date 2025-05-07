@@ -24,9 +24,5 @@
 </AdminHeader.Root>
 
 <main class="pt-16">
-	{#if hasPermissions(authStore.permissions, ['view:event'])}
-		<EventList previousEvents={data.previousEvents} upcomingEvents={data.upcomingEvents} />
-	{:else}
-		<span>Du har ikke tilladelse til at se denne side...</span>
-	{/if}
+	<EventList previousEvents={data.previousEvents} upcomingEvents={data.upcomingEvents} />
 </main>
