@@ -87,13 +87,6 @@
 </script>
 
 <form class="w-full space-y-16" onsubmit={submit}>
-	<h1 class="font-heading mb-8 text-4xl font-bold">
-		{#if artist}
-			Redigér kunstner
-		{:else}
-			Lav kunstner
-		{/if}
-	</h1>
 	<div class="space-y-8">
 		<FormField errors={errors?.fieldErrors.image}>
 			<ImagePreview accept="image/jpeg,image/png" src={imageUrl} onChange={updateImage} />
