@@ -12,7 +12,7 @@ func (s *Server) setupRoutes() {
 		r.Get("/", s.withPermissions(s.handleListMembers(), "view:member", "view:team", "view:permission"))
 
 		r.Get("/{memberID}", s.withPermissions(s.handleMemberByID(), "view:member"))
-		r.Put("/{memberID}", s.withPermissions(s.handleUpdateMember(), "edit:member"))
+		r.Put("/{memberID}", s.handleUpdateMember())
 		r.Delete("/{memberID}", s.withPermissions(s.handleDeleteMember(), "delete:member"))
 
 		r.Get("/{memberID}/teams", s.withPermissions(s.handleListMemberTeams(), "view:team"))
