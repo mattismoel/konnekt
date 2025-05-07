@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { cn } from '$lib/clsx';
-	import type { HTMLAttributes } from 'svelte/elements';
+	import type { HTMLButtonAttributes } from 'svelte/elements';
 
-	type Props = HTMLAttributes<HTMLButtonElement> & {
+	type Props = HTMLButtonAttributes & {
 		active: boolean;
 	};
 
