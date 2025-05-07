@@ -7,7 +7,7 @@
 	import MenuIcon from '~icons/mdi/menu';
 
 	import * as NavMenu from '$lib/components/nav-menu/index';
-	import { beforeNavigate, onNavigate } from '$app/navigation';
+	import { beforeNavigate } from '$app/navigation';
 
 	let { children } = $props();
 
