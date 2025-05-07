@@ -1,22 +1,13 @@
-import { memberById, memberSession } from "$lib/features/auth/member";
-import { hasPermissions } from "$lib/features/auth/permission";
-import { redirect } from "@sveltejs/kit";
-import { listTeams } from "$lib/features/auth/team";
+import { memberById } from "$lib/features/auth/member";
+import { listTeams, memberTeams } from "$lib/features/auth/team";
 import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ fetch, params }) => {
-	const currentMember = await memberSession(fetch)
 	const member = await memberById(fetch, parseInt(params.memberId))
 
-	const { records: teams } = await listTeams(fetch)
+	const { records: allTeams } = await listTeams(fetch)
 
-	if (!hasPermissions(currentMember.permissions, ["view:member"])) {
-		throw redirect(302, "/admin/dashboard")
-	}
+	const teams = await memberTeams(fetch, member.id)
 
-	return {
-		currentMember,
-		member,
-		teams
-	}
+	return { member, teams, allTeams }
 }
