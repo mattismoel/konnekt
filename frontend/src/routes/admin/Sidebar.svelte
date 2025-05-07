@@ -4,22 +4,18 @@
 
 	import { cn } from '$lib/clsx';
 
-	import { type Member } from '$lib/features/auth/member';
-
 	import Logo from '$lib/assets/Logo.svelte';
 
 	import EventIcon from '~icons/mdi/event';
 	import VenueIcon from '~icons/mdi/warehouse';
 	import ArtistIcon from '~icons/mdi/people-group';
 	import MemberIcon from '~icons/mdi/people';
-	import SettingsIcon from '~icons/mdi/settings';
 
 	import SignOutIcon from '~icons/mdi/sign-out';
 
 	import CollapseIcon from '~icons/mdi/arrow-collapse-left';
 	import { type Component } from 'svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import { hasSomeTeam } from '$lib/features/auth/team';
 	import { clickOutside } from '$lib/hooks/click-outside.svelte';
 	import { authStore } from '$lib/auth.svelte';
 
@@ -57,19 +53,10 @@
 	</div>
 
 	<ul class="flex flex-1 flex-col gap-2">
-		{#if hasSomeTeam(authStore.teams, ['admin', 'event-management'])}
-			{@render entry(EventIcon, '/admin/events', 'Events')}
-		{/if}
-		{#if hasSomeTeam(authStore.teams, ['admin', 'booking'])}
-			{@render entry(ArtistIcon, '/admin/artists', 'Kunstnere')}
-		{/if}
-		{#if hasSomeTeam(authStore.teams, ['admin', 'event-management'])}
-			{@render entry(VenueIcon, '/admin/venues', 'Venues')}
-		{/if}
-		{#if hasSomeTeam(authStore.teams, ['admin', 'team-management'])}
-			{@render entry(MemberIcon, '/admin/members', 'Medlemmer')}
-		{/if}
-		{@render entry(SettingsIcon, '/admin/general', 'Generelt')}
+		{@render entry(EventIcon, '/admin/events', 'Events')}
+		{@render entry(ArtistIcon, '/admin/artists', 'Kunstnere')}
+		{@render entry(VenueIcon, '/admin/venues', 'Venues')}
+		{@render entry(MemberIcon, '/admin/members', 'Medlemmer')}
 	</ul>
 	{#if authStore.member}
 		{@render memberInformation(authStore.member)}
