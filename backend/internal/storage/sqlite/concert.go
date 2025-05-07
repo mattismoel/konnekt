@@ -189,39 +189,3 @@ func deleteConcert(ctx context.Context, tx *sql.Tx, concertID int64) error {
 
 	return nil
 }
-
-func updateConcert(ctx context.Context, tx *sql.Tx, concertID int64, c Concert) error {
-	query := `UPDATE concert SET
-	from_date = CASE
-		WHEN @from_date = '' THEN from_date ELSE @from_date
-	END,
-	to_date = CASE
-		WHEN @to_date = '' THEN to_date ELSE @to_date
-	END,
-	artist_id = CASE
-		WHEN @artist_id <= 0 THEN artist_id ELSE @artist_id
-	END
-	WHERE id = @id`
-
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("from_date", c.From),
-		sql.Named("to_date", c.To),
-		sql.Named("artist_id", c.ArtistID),
-		sql.Named("id", concertID),
-	)
-
-	if err != nil {
-		return err
-	}
-
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rowsAffected <= 0 {
-		return ErrNotFound
-	}
-
-	return nil
-}

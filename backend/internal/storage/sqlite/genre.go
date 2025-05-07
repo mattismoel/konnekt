@@ -338,27 +338,3 @@ func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
 		Name: name,
 	}, nil
 }
-
-// Gets a genre by its name.
-func genreByName(ctx context.Context, tx *sql.Tx, name string) (Genre, error) {
-	q, err := NewQuery("SELECT id FROM genre")
-	if err != nil {
-		return Genre{}, err
-	}
-
-	err = q.AddFilter("name", query.Equal, name)
-	if err != nil {
-		return Genre{}, err
-	}
-
-	queryStr, args := q.Build()
-
-	var id int64
-
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(&id)
-	if err != nil {
-		return Genre{}, err
-	}
-
-	return Genre{ID: id, Name: name}, nil
-}
