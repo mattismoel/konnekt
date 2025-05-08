@@ -1,0 +1,73 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Konnekt Backend
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_call:
+    inputs:
+      skipTests:
+        description: "Skip tests. Usefull when there is a dedicated CI job for tests"
+        default: false
+        required: false
+        type: boolean
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5 # Max timeout duration for the build step.
+    strategy:
+      matrix:
+        go: [ "stable", "oldstable" ]
+        
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go }}
+        check-latest: true
+        
+    - name: Format
+      run: gofmt -s -w . && git diff --exit-code
+      
+    - name: Vet
+      run: go vet ./...
+      
+    - name: Tidy
+      run: go mod tidy && git diff --exit-code
+
+    - name: Mod
+      run: go mod download
+
+    - name: Mod verfy
+      run: go mod verify
+      
+    - name: Build
+      run: go build -o /dev/null -v  ./...
+
+    - name: Test
+      if: ${{ !inputs.skipTests }}
+      run: go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
+
+    - name: Compile Tests
+      if: ${{ inputs.skipTests }}
+      run: go test -exec /bin/true ./...
+
+    - name: Benchmark
+      run: go test -v -shuffle=on -run=- -bench=. -benchtime=1x ./...
+
+    - name: Upload coverage
+      if: ${{ !inputs.skipTests }}
+      uses: codecov/codecov-action@v3
+      continue-on-error: true
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
+        file: ./coverage.txt
+        fail_ci_if_error: false
