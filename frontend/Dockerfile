@@ -27,6 +27,9 @@ COPY . .
 
 ENV NODE_ENV=production
 RUN bun test
+
+ENV PUBLIC_BACKEND_URL=http://localhost:8080
+
 RUN bun run build
 
 RUN ls build
@@ -35,8 +38,6 @@ FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /app/build build
 COPY --from=prerelease /app/package.json .
-
-ENV PUBLIC_BACKEND_URL=http://localhost:8080
 
 USER bun
 EXPOSE 3000
