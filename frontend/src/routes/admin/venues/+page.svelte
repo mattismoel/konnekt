@@ -26,9 +26,5 @@
 </AdminHeader.Root>
 
 <main class="pt-16">
-	{#if hasPermissions(authStore.permissions, ['view:venue'])}
-		<VenueList venues={data.venues} />
-	{:else}
-		<span>Du har ikke tilladelse til at se venues...</span>
-	{/if}
+	<VenueList venues={data.venues} />
 </main>

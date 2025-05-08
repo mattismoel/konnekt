@@ -1,7 +1,7 @@
 import { venueById } from "$lib/features/venue/venue";
-import type { PageServerLoad } from "./$types";
+import type { PageLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ params, fetch }) => {
+export const load: PageLoad = async ({ params, fetch }) => {
 	const venue = await venueById(fetch, parseInt(params.venueId))
 
 	return { venue }

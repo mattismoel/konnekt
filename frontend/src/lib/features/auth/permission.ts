@@ -44,7 +44,7 @@ export type Permission = z.infer<typeof permissionSchema>
 export const memberPermissions = async (fetchFn: typeof fetch, memberId: number): Promise<Permission[]> => {
 	const permissions = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/auth/permissions/${memberId}`),
+		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}/permissions`),
 		permissionSchema.array(),
 		"Could not fetch member permissions",
 	)

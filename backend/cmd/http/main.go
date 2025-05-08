@@ -25,14 +25,14 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), MAX_STARTUP_DURATION)
 	defer cancel()
 
-	flag.Parse()
-
 	dbConnStr := flag.String("dbConnStr", "file:./local.db", "The database connection string")
 	frontendURL := flag.String("frontendURL", "http://localhost:5173", "The URL of the frontend")
 	host := flag.String("host", "localhost", "The host of the web server")
-	port := flag.Int("port", 3000, "The port of the web server")
+	port := flag.Int("port", 8080, "The port of the web server")
 	s3Region := flag.String("s3Region", "eu-north-1", "The region of the S3 bucket")
 	s3Bucket := flag.String("s3Bucket", "konnekt-bucket", "The bucket name of the S3 bucket")
+
+	flag.Parse()
 
 	db, err := sql.Open("sqlite3", *dbConnStr)
 	if err != nil {
@@ -100,7 +100,7 @@ func main() {
 
 	venueService := service.NewVenueService(venueRepo)
 
-	teamService := service.NewTeamService(teamRepo, authRepo)
+	teamService := service.NewTeamService(teamRepo, memberRepo, authRepo)
 
 	srv, err := server.New(
 		server.WithTeamService(teamService),

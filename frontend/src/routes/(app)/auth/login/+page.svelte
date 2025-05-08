@@ -1,23 +1,30 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { PUBLIC_BACKEND_URL } from '$env/static/public';
+	import { authStore } from '$lib/auth.svelte';
 
 	import Button from '$lib/components/ui/Button.svelte';
 	import * as Card from '$lib/components/ui/card/index';
 	import Input from '$lib/components/ui/Input.svelte';
+	import { login, loginForm } from '$lib/features/auth/auth';
+	import { memberPermissions } from '$lib/features/auth/permission';
+	import { memberTeams } from '$lib/features/auth/team';
+	import type { z } from 'zod';
 
-	let email = $state('');
-	let password = $state('');
+	let form = $state<z.infer<typeof loginForm>>({
+		email: '',
+		password: ''
+	});
 
 	const handleLogin = async () => {
-		const res = await fetch(`${PUBLIC_BACKEND_URL}/auth/login`, {
-			credentials: 'include',
-			body: JSON.stringify({ email, password }),
-			method: 'post'
-		});
+		try {
+			const member = await login(fetch, form);
+			const teams = await memberTeams(fetch, member.id);
+			const permissions = await memberPermissions(fetch, member.id);
 
-		if (!res.ok) {
-			throw new Error('Could not login');
+			authStore.auth = { member, permissions, teams };
+		} catch (e) {
+			throw e;
 		}
 
 		goto('/admin/events');
@@ -34,8 +41,8 @@
 
 			<Card.Content>
 				<section class="flex flex-col gap-4">
-					<Input type="email" bind:value={email} placeholder="Email" />
-					<Input type="password" bind:value={password} placeholder="Adgangskode" />
+					<Input type="email" bind:value={form.email} placeholder="Email" />
+					<Input type="password" bind:value={form.password} placeholder="Adgangskode" />
 				</section>
 			</Card.Content>
 

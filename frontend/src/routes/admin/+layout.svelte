@@ -70,6 +70,7 @@
 			</button>
 		</Navbar.Content>
 	</Navbar.Root>
+
 	<Sidebar bind:expanded={sidebarExpanded} />
 
 	<div class="px-auto py-16 pt-32">

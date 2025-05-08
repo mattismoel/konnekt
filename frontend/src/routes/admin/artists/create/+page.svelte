@@ -33,5 +33,6 @@
 </script>
 
 <main>
+	<h1 class="font-heading mb-8 text-4xl font-bold">Lav kunstner</h1>
 	<ArtistForm {loading} genres={data.genres} onSubmit={handleSubmit} {errors} />
 </main>

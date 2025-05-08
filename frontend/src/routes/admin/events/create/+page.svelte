@@ -31,6 +31,7 @@
 </script>
 
 <main>
+	<h1 class="font-heading mb-8 text-4xl font-bold">Redigér kunstner</h1>
 	<EventForm
 		{loading}
 		venues={data.venues}

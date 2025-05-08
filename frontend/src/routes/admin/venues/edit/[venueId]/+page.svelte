@@ -4,6 +4,8 @@
 	import { editVenue, editVenueForm } from '$lib/features/venue/venue';
 	import { toaster } from '$lib/toaster.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
+	import { hasPermissions } from '$lib/features/auth/permission';
+	import { authStore } from '$lib/auth.svelte';
 
 	let { data } = $props();
 
@@ -25,6 +27,14 @@
 	};
 </script>
 
-<main class="flex items-center justify-center">
-	<VenueForm venue={data.venue} {errors} onSubmit={handleSubmit} />
+<main class="flex flex-col items-center justify-center">
+	<div>
+		<h1 class="font-heading mb-8 text-4xl font-bold">Redigér venue</h1>
+		<VenueForm
+			disabled={!hasPermissions(authStore.permissions, ['edit:venue'])}
+			venue={data.venue}
+			{errors}
+			onSubmit={handleSubmit}
+		/>
+	</div>
 </main>

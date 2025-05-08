@@ -16,7 +16,7 @@
 		teams: Team[];
 	};
 
-	let { member }: Props = $props();
+	let { member, teams }: Props = $props();
 
 	let errors = $state<z.typeToFlattenedError<z.infer<typeof editMemberForm>>>();
 
@@ -62,7 +62,7 @@
 			<div class="flex flex-col items-center space-y-1 md:items-start">
 				<h1 class="text-2xl font-semibold">{fullName}</h1>
 				<span class="text-text/50 text-center md:text-left"
-					>{member.teams.map(({ displayName }) => displayName).join(', ')}</span
+					>{teams.map(({ displayName }) => displayName).join(', ')}</span
 				>
 			</div>
 			<MemberStatusIndicator status={member.active ? 'approved' : 'non-approved'} />

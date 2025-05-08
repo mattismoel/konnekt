@@ -104,12 +104,22 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		ctx := r.Context()
+
+		session, err := s.memberSession(ctx, w, r)
+		if err != nil {
+			writeError(w, ErrUnauthorized)
+			return
+		}
 
 		memberID, err := paramID("memberID", r)
 		if err != nil {
 			writeError(w, err)
+			return
+		}
+
+		if session.MemberID != memberID {
+			writeError(w, ErrUnauthorized)
 			return
 		}
 
@@ -127,7 +137,6 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
-
 
 		m, err := member.NewMember(
 			member.WithEmail(load.Email),

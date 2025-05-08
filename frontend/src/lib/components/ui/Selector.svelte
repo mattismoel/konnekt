@@ -25,7 +25,7 @@
 	bind:this={selectElement}
 	bind:value
 	{...rest}
-	class={cn('rounded-sm border border-zinc-900 bg-zinc-950', rest.class)}
+	class={cn('disabled:text-text/50 rounded-sm border border-zinc-900 bg-zinc-950', rest.class)}
 >
 	<option value="" disabled selected={!value}>{placeholder}</option>
 	{#each entries as entry (entry.value)}

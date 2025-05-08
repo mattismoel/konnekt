@@ -25,6 +25,7 @@
 		artist?: Artist;
 
 		genres: Genre[];
+		disabled?: boolean;
 
 		errors:
 			| z.typeToFlattenedError<z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>>
@@ -34,7 +35,7 @@
 		onSubmit: (form: z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>) => void;
 	};
 
-	let { artist, genres, loading, errors, onSubmit }: Props = $props();
+	let { artist, genres, disabled = false, loading, errors, onSubmit }: Props = $props();
 
 	let form = $state<z.infer<typeof createArtistForm> | z.infer<typeof editArtistForm>>(
 		artist
@@ -87,26 +88,24 @@
 </script>
 
 <form class="w-full space-y-16" onsubmit={submit}>
-	<h1 class="font-heading mb-8 text-4xl font-bold">
-		{#if artist}
-			Redigér kunstner
-		{:else}
-			Lav kunstner
-		{/if}
-	</h1>
 	<div class="space-y-8">
 		<FormField errors={errors?.fieldErrors.image}>
-			<ImagePreview accept="image/jpeg,image/png" src={imageUrl} onChange={updateImage} />
+			<ImagePreview
+				{disabled}
+				accept="image/jpeg,image/png"
+				src={imageUrl}
+				onChange={updateImage}
+			/>
 		</FormField>
 		<div class="space-y-8">
 			<div class="space-y-1">
 				<FormField errors={errors?.fieldErrors.name}>
-					<Input placeholder="Kunstnernavn" bind:value={form.name} />
+					<Input {disabled} placeholder="Kunstnernavn" bind:value={form.name} />
 				</FormField>
 			</div>
 			<div class="space-y-1">
 				<FormField errors={errors?.fieldErrors.description}>
-					<TipTapEditor bind:value={form.description} />
+					<TipTapEditor {disabled} bind:value={form.description} />
 				</FormField>
 			</div>
 		</div>
@@ -115,13 +114,15 @@
 	<div>
 		<h1 class="font-heading mb-8 text-2xl font-bold">Genrer</h1>
 		<div class="mb-2 flex flex-wrap gap-2">
-			<button
-				type="button"
-				onclick={() => (showGenreModal = true)}
-				class="flex items-center gap-2 rounded-full border border-zinc-900 px-4 py-2 hover:border-zinc-800 hover:bg-zinc-900"
-			>
-				<PlusIcon />Tilføj
-			</button>
+			{#if !disabled}
+				<button
+					type="button"
+					onclick={() => (showGenreModal = true)}
+					class="flex items-center gap-2 rounded-full border border-zinc-900 px-4 py-2 hover:border-zinc-800 hover:bg-zinc-900"
+				>
+					<PlusIcon />Tilføj
+				</button>
+			{/if}
 			<ul class="flex flex-wrap gap-2">
 				{#each selectedGenres as genre (genre.id)}
 					<Pill>{genre.name}</Pill>
@@ -141,7 +142,7 @@
 		<h1 class="font-heading mb-8 text-2xl font-bold">Spotify Preview</h1>
 		<div class="space-y-4">
 			<FormField errors={errors?.fieldErrors.previewUrl}>
-				<Input placeholder="Preview-URL" bind:value={form.previewUrl} />
+				<Input {disabled} placeholder="Preview-URL" bind:value={form.previewUrl} />
 				{#if trackId}
 					<SpotifyPreview {trackId} />
 				{/if}
@@ -151,21 +152,25 @@
 
 	<div class="flex flex-col">
 		<h1 class="font-heading mb-4 text-2xl font-bold">Sociale medier</h1>
-		<div class="mb-4 flex w-full gap-2">
-			<FormField errors={errors?.fieldErrors.socials}>
-				<Input type="text" placeholder="URL" bind:value={socialUrl} class="flex-1" />
-			</FormField>
-			<Button type="button" onclick={addSocial}><PlusIcon />Tilføj</Button>
-		</div>
-		<SocialList bind:socials={form.socials} />
-	</div>
-	<Button type="submit">
-		{#if loading}
-			<Spinner />
-			Offentligører...
-		{:else}
-			<PublishIcon />
-			Offentligør
+		{#if !disabled}
+			<div class="mb-4 flex w-full gap-2">
+				<FormField errors={errors?.fieldErrors.socials}>
+					<Input {disabled} type="text" placeholder="URL" bind:value={socialUrl} class="flex-1" />
+				</FormField>
+				<Button type="button" onclick={addSocial}><PlusIcon />Tilføj</Button>
+			</div>
 		{/if}
-	</Button>
+		<SocialList {disabled} bind:socials={form.socials} />
+	</div>
+	{#if !disabled}
+		<Button type="submit">
+			{#if loading}
+				<Spinner />
+				Offentligører...
+			{:else}
+				<PublishIcon />
+				Offentligør
+			{/if}
+		</Button>
+	{/if}
 </form>

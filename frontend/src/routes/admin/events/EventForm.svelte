@@ -23,7 +23,7 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import FormField from '$lib/components/ui/FormField.svelte';
 	import { invalidateAll } from '$app/navigation';
-
+	import { authStore } from '$lib/auth.svelte';
 	type Props = {
 		venues: Venue[];
 		artists: Artist[];
@@ -33,12 +33,13 @@
 			| z.typeToFlattenedError<z.infer<typeof createEventForm> | z.infer<typeof editEventForm>>
 			| undefined;
 
+		disabled?: boolean;
 		loading: boolean;
 
 		onSubmit: (form: z.infer<typeof createEventForm> | z.infer<typeof editEventForm>) => void;
 	};
 
-	let { event, venues, artists, errors, loading, onSubmit }: Props = $props();
+	let { event, venues, artists, errors, loading, disabled = false, onSubmit }: Props = $props();
 
 	const form = $state<z.infer<typeof createEventForm> | z.infer<typeof editEventForm>>(
 		event
@@ -98,9 +99,9 @@
 <form onsubmit={handleSubmit} class="space-y-16">
 	<!-- COVER IMAGE -->
 	<section>
-		<h2 class="mb-8 text-2xl font-semibold">Coverbillede</h2>
 		<FormField errors={errors?.fieldErrors.image}>
 			<ImagePreview
+				{disabled}
 				accept="image/jpeg,image/png"
 				src={imageUrl}
 				onChange={(file) => (form.image = file)}
@@ -110,46 +111,47 @@
 
 	<!-- GENERAL -->
 	<section>
-		<h2 class="mb-8 text-2xl font-semibold">Generelt</h2>
-
 		<div class="space-y-4">
 			<FormField errors={errors?.fieldErrors.title}>
-				<Input placeholder="Eventtitel" bind:value={form.title} class="flex-1" />
+				<Input {disabled} placeholder="Eventtitel" bind:value={form.title} class="flex-1" />
 			</FormField>
 
 			<div class="flex w-full gap-4">
 				<FormField errors={errors?.fieldErrors.ticketUrl}>
-					<Input placeholder="Billet-URL" class="flex-1" bind:value={form.ticketUrl} />
+					<Input {disabled} placeholder="Billet-URL" class="flex-1" bind:value={form.ticketUrl} />
 				</FormField>
 
 				<FormField errors={errors?.fieldErrors.venueId}>
 					<div class="flex gap-2">
 						<Selector
+							{disabled}
 							class="w-full"
 							placeholder="Vælg venue..."
 							bind:value={() => form.venueId.toString(), (v) => (form.venueId = parseInt(v))}
 							entries={venues.map((venue) => ({ name: venue.name, value: venue.id.toString() }))}
 						/>
-						<Button
-							title="Opdatér venueliste"
-							type="button"
-							variant="ghost"
-							class="aspect-square h-full"
-							onclick={async () => await invalidateAll()}><RefreshIcon /></Button
-						>
-						<Button
-							title="Lav nyt venue"
-							class="aspect-square h-full"
-							target="__blank"
-							variant="primary"
-							href="/admin/venues/create"><AddIcon /></Button
-						>
+						{#if !disabled}
+							<Button
+								title="Opdatér venueliste"
+								type="button"
+								variant="ghost"
+								class="aspect-square h-full"
+								onclick={async () => await invalidateAll()}><RefreshIcon /></Button
+							>
+							<Button
+								title="Lav nyt venue"
+								class="aspect-square h-full"
+								target="__blank"
+								variant="primary"
+								href="/admin/venues/create"><AddIcon /></Button
+							>
+						{/if}
 					</div>
 				</FormField>
 			</div>
 			<!-- EVENT DESCRIPTION -->
 			<FormField errors={errors?.fieldErrors.description}>
-				<TipTapEditor bind:value={form.description} />
+				<TipTapEditor {disabled} bind:value={form.description} />
 			</FormField>
 		</div>
 	</section>
@@ -158,17 +160,19 @@
 	<section>
 		<h2 class="mb-4 text-2xl font-semibold">Koncerter</h2>
 		<FormField errors={errors?.fieldErrors.concerts}>
-			<ConcertsList {concerts} {artists} onAdd={addConcert} onDelete={deleteConcert} />
+			<ConcertsList {disabled} {concerts} {artists} onAdd={addConcert} onDelete={deleteConcert} />
 		</FormField>
 	</section>
 
-	<Button type="submit" class="w-full md:max-w-64">
-		{#if loading}
-			<Spinner />
-			Offentligører...
-		{:else}
-			<PublishIcon />
-			Offentliggør
-		{/if}
-	</Button>
+	{#if !disabled}
+		<Button type="submit" class="w-full md:max-w-64">
+			{#if loading}
+				<Spinner />
+				Offentligører...
+			{:else}
+				<PublishIcon />
+				Offentliggør
+			{/if}
+		</Button>
+	{/if}
 </form>

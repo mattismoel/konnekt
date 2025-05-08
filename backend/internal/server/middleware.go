@@ -11,17 +11,9 @@ func (s Server) withPermissions(next http.HandlerFunc, perms ...string) http.Han
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		sessionCookie, err := r.Cookie(SESSION_COOKIE_NAME)
+		session, err := s.memberSession(ctx, w, r)
 		if err != nil {
 			writeError(w, ErrUnauthorized)
-			return
-		}
-
-		token := auth.SessionToken(sessionCookie.Value)
-
-		session, err := s.authService.Session(ctx, token.SessionID())
-		if err != nil {
-			writeError(w, err)
 			return
 		}
 

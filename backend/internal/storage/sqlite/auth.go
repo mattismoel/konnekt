@@ -37,26 +37,6 @@ func NewAuthRepository(db *sql.DB) (*AuthRepository, error) {
 	}, nil
 }
 
-func memberPermissions(ctx context.Context, tx *sql.Tx, memberID int64) (PermissionCollection, error) {
-	dbTeams, err := memberTeams(ctx, tx, memberID)
-	if err != nil {
-		return nil, err
-	}
-
-	perms := make([]Permission, 0)
-
-	for _, dbTeam := range dbTeams {
-		dbPerms, err := teamPermissions(ctx, tx, dbTeam.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		perms = append(perms, dbPerms...)
-	}
-
-	return perms, nil
-}
-
 func (repo AuthRepository) InsertSession(ctx context.Context, session auth.Session) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {

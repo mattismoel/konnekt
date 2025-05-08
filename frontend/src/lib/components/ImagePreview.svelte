@@ -6,9 +6,10 @@
 		onChange: (file: File) => void;
 		src: HTMLImgAttributes['src'];
 		accept: HTMLInputAttributes['accept'];
+		disabled?: boolean;
 	};
 
-	let { src, accept, onChange, ...rest }: Props = $props();
+	let { src, accept, disabled = false, onChange, ...rest }: Props = $props();
 
 	let url = $state(src);
 
@@ -23,9 +24,11 @@
 <div class="relative aspect-video w-full">
 	<div class="absolute h-full w-full bg-gradient-to-t from-black/50"></div>
 	<img {...rest} src={url} class="h-full w-full rounded-md border border-zinc-900 object-cover" />
-	<FilePicker
-		{accept}
-		onChange={(files) => updateImage(files?.[0] || null)}
-		class="absolute bottom-4 left-4"
-	/>
+	{#if !disabled}
+		<FilePicker
+			{accept}
+			onChange={(files) => updateImage(files?.[0] || null)}
+			class="absolute bottom-4 left-4"
+		/>
+	{/if}
 </div>

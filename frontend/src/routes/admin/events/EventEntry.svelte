@@ -66,7 +66,8 @@
 	</List.Section>
 	<List.Section href="/admin/venues/edit/{event.venue.id}" class="group/venue">
 		<span
-			class="text-text/50 group-hover/venue:text-text hidden w-full items-center gap-2 group-hover/venue:underline md:flex"
+			class:disabled={!hasPermissions(authStore.permissions, ['edit:venue'])}
+			class="text-text/50 group-hover/venue:text-text group-[.disabled]/venue:text-text/50 hidden w-full items-center gap-2 group-hover/venue:underline group-[.disabled]/venue:no-underline md:flex"
 		>
 			<LocationIcon />
 			<span class="whitespace-nowrap">{event.venue.name}</span>

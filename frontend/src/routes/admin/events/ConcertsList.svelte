@@ -10,16 +10,20 @@
 		artists: Artist[];
 		concerts: Map<string, z.infer<typeof concertForm>>;
 
+		disabled?: boolean;
+
 		onAdd: () => void;
 		onDelete: (id: string) => void;
 	};
 
-	let { concerts, artists, onAdd, onDelete }: Props = $props();
+	let { concerts, disabled = false, artists, onAdd, onDelete }: Props = $props();
 </script>
 
 <div class="flex flex-col gap-4">
 	{#each Array.from(concerts.entries()) as [id, concert], idx (id)}
-		<ConcertCard {concert} {artists} {idx} onDelete={() => onDelete(id)} />
+		<ConcertCard {disabled} {concert} {artists} {idx} onDelete={() => onDelete(id)} />
 	{/each}
 </div>
-<Button variant="ghost" onclick={onAdd}><AddIcon />Tilføj</Button>
+{#if !disabled}
+	<Button {disabled} variant="ghost" onclick={onAdd}><AddIcon />Tilføj</Button>
+{/if}

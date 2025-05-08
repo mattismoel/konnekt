@@ -8,7 +8,6 @@ export const teamTypes = z.union([
 	z.literal("admin"),
 	z.literal("member"),
 	z.literal("event-management"),
-	z.literal("artist-management"),
 	z.literal("booking"),
 	z.literal("public-relations"),
 	z.literal("visual-identity"),
@@ -29,7 +28,7 @@ export type Team = z.infer<typeof teamSchema>
 export const memberTeams = async (fetchFn: typeof fetch, memberId: number): Promise<Team[]> => {
 	const teams = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/teams/${memberId}`),
+		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}/teams`),
 		teamSchema.array(),
 		"Could not fetch member teams",
 	)
