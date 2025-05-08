@@ -36,6 +36,8 @@ COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /app/build build
 COPY --from=prerelease /app/package.json .
 
+ENV PUBLIC_BACKEND_URL=http://localhost:8080
+
 USER bun
 EXPOSE 3000
 CMD [ "bun", "./build/index.js" ]
