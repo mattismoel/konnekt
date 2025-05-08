@@ -1,7 +1,9 @@
 name: Upload Docker images to GitHub Container Registry
 
-on:
+
   push:
+    branches: [ "main" ]
+  pull_request:
     branches: [ "main" ]
     
 env:
