@@ -2,8 +2,8 @@ package server
 
 import (
 	"encoding/json"
-	"net/http"
 	"github.com/mattismoel/konnekt/internal/service"
+	"net/http"
 )
 
 func (s Server) handleListTeams() http.HandlerFunc {
