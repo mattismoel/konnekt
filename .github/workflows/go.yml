@@ -20,6 +20,9 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
     timeout-minutes: 5 # Max timeout duration for the build step.
     strategy:
       matrix:
