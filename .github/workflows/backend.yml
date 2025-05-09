@@ -70,7 +70,8 @@ jobs:
     - name: Benchmark
       run: go test -v -shuffle=on -run=- -bench=. -benchtime=1x ./...
   
-  dockerize: # Dockerize Golang backend and push it to GitHub Container Registry. 
+  dockerize: # Dockerize Golang backend and push it to GitHub Container Registry.
+    needs: build
     runs-on: ubuntu-latest
   
     defaults:
