@@ -1,4 +1,4 @@
-name: Conterize Backend
+name: Containerize Backend
 
 on:
   workflow_run:
