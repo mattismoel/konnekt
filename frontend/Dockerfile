@@ -27,6 +27,9 @@ COPY . .
 
 ENV NODE_ENV=production
 RUN bun test
+
+ENV PUBLIC_BACKEND_URL=http://localhost:8080
+
 RUN bun run build
 
 RUN ls build
