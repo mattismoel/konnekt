@@ -1,17 +1,18 @@
-name: Containerize Frontend
+name: Frontend
 
-on:
-  workflow_run:
-    workflows: [Backend Staging]
-    types: [completes]
-    branches: [main]
-    
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-frontend
+  IMAGE_NAME: ${{github.repository }}-frontend
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
 
 jobs:
-  build-and-push-frontend:
+  containerize:
     runs-on: ubuntu-latest
     
     defaults:
