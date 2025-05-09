@@ -21,4 +21,4 @@ COPY --from=build /konnekt-backend .
 
 EXPOSE 8080
 
-CMD ["./konnekt-backend"]
+CMD ["./konnekt-backend", "-frontendURL", "http://frontend:3000"]
