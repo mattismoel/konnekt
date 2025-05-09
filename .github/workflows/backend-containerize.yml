@@ -2,7 +2,7 @@ name: Containerize Backend
 
 on:
   workflow_run:
-    workflows: [Go Staging]
+    workflows: [Backend Staging]
     types: [completed]
     branches: [main]
 
