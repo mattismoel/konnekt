@@ -2,7 +2,7 @@ name: Containerize Frontend
 
 on:
   workflow_run:
-    workflows: [Frontend Staging]
+    workflows: [Backend Staging]
     types: [completes]
     branches: [main]
     
