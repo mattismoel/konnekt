@@ -1,4 +1,3 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public"
 import { APIError, apiErrorSchema, requestAndParse } from "$lib/api"
 import { createListResult } from "$lib/query"
 import { createUrl, type Query } from "$lib/url"
@@ -49,7 +48,7 @@ export const setMemberTeamsForm = z
 export const memberSession = async (fetchFn: typeof fetch) => {
 	const member = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/auth/session`),
+		createUrl("/api/auth/session"),
 		memberSchema,
 		"Could not fetch member session",
 	)
@@ -60,7 +59,7 @@ export const memberSession = async (fetchFn: typeof fetch) => {
 export const listMembers = async (fetchFn: typeof fetch, query?: Query) => {
 	const result = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/members`, query),
+		createUrl("/api/members", query),
 		createListResult(memberSchema),
 		"Could not fetch members",
 	)
@@ -71,7 +70,7 @@ export const listMembers = async (fetchFn: typeof fetch, query?: Query) => {
 export const approveMember = async (fetchFn: typeof fetch, memberId: number) => {
 	return requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}/approve`),
+		createUrl(`/api/members/${memberId}/approve`),
 		undefined,
 		"Could not approve member",
 		undefined,
@@ -82,7 +81,7 @@ export const approveMember = async (fetchFn: typeof fetch, memberId: number) => 
 export const deleteMember = async (fetchFn: typeof fetch, memberId: number) => {
 	return requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}`),
+		createUrl(`/api/members/${memberId}`),
 		undefined,
 		"Could not delete member",
 		undefined,
@@ -93,7 +92,7 @@ export const deleteMember = async (fetchFn: typeof fetch, memberId: number) => {
 export const memberById = async (fetchFn: typeof fetch, memberId: number) => {
 	const member = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}`),
+		createUrl(`/api/members/${memberId}`),
 		memberSchema,
 		"Could not get member by ID"
 	)
@@ -111,7 +110,7 @@ export const editMember = async (fetchFn: typeof fetch, memberId: number, form: 
 
 	const member = requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}`),
+		createUrl(`/api/members/${memberId}`),
 		memberSchema,
 		"Could not update artist",
 		{ bodySchema: editMemberSchema, body: { ...rest, profilePictureUrl } },
@@ -124,7 +123,7 @@ export const editMember = async (fetchFn: typeof fetch, memberId: number, form: 
 export const setMemberTeams = async (fetchFn: typeof fetch, memberId: number, teamIds: number[]) => {
 	await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}/teams`),
+		createUrl(`/api/members/${memberId}/teams`),
 		undefined,
 		"Could not set member teams",
 		{ bodySchema: setMemberTeamsForm, body: teamIds },
@@ -137,7 +136,7 @@ export const uploadMemberProfilePicture = async (fetchFn: typeof fetch, file: Fi
 
 	formData.append("file", file)
 
-	const res = await fetchFn(`${PUBLIC_BACKEND_URL}/members/picture`, {
+	const res = await fetchFn("/api/members/picture", {
 		body: formData,
 		method: "POST",
 		credentials: "include",

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { genreSchema } from "./genre";
 import { APIError, apiErrorSchema, requestAndParse } from "$lib/api";
 import { createUrl, type Query } from "$lib/url";
@@ -73,7 +72,7 @@ export const createArtist = async (
 
 	const artist = requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/artists`),
+		createUrl("/api/artists"),
 		artistSchema,
 		"Could not create artist",
 
@@ -103,7 +102,7 @@ export const updateArtist = async (
 
 	const artist = requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/artists/${artistId}`),
+		createUrl(`/api/artists/${artistId}`),
 		artistSchema,
 		"Could not update artist",
 		{ bodySchema: updateArtistSchema, body: { ...rest, imageUrl } },
@@ -122,7 +121,7 @@ export const uploadArtistImage = async (file: File, init?: RequestInit): Promise
 	const formData = new FormData();
 	formData.append('image', file);
 
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/artists/image`, {
+	const res = await fetch("/api/artists/image", {
 		...init,
 		method: 'PUT',
 		credentials: 'include',
@@ -145,7 +144,7 @@ export const uploadArtistImage = async (file: File, init?: RequestInit): Promise
 export const listArtists = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Artist>> => {
 	const result = requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/artists`, {
+		createUrl("/api/artists", {
 			orderBy: new Map([["name", "ASC"]]),
 			...query,
 		}),
@@ -162,7 +161,7 @@ export const listArtists = async (fetchFn: typeof fetch, query?: Query): Promise
 export const artistById = async (fetchFn: typeof fetch, id: number): Promise<Artist> => {
 	const artist = requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/artists/${id}`),
+		createUrl(`/api/artists/${id}`),
 		artistSchema,
 	)
 
@@ -172,7 +171,7 @@ export const artistById = async (fetchFn: typeof fetch, id: number): Promise<Art
 export const deleteArtist = async (fetchFn: typeof fetch, id: number) => {
 	await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/artists/${id}`),
+		createUrl(`/api/artists/${id}`),
 		undefined,
 		"Could not delete artist",
 		undefined,

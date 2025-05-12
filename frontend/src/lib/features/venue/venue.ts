@@ -1,4 +1,3 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { requestAndParse } from "$lib/api";
 import { createListResult, type ListResult } from "$lib/query";
 import { createUrl, type Query } from "$lib/url";
@@ -28,7 +27,7 @@ export type Venue = z.infer<typeof venueSchema>
 export const listVenues = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Venue>> => {
 	const venues = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/venues`, query),
+		createUrl("/api/venues", query),
 		createListResult(venueSchema),
 		"Could not fetch venues"
 	)
@@ -39,7 +38,7 @@ export const listVenues = async (fetchFn: typeof fetch, query?: Query): Promise<
 export const createVenue = async (fetchFn: typeof fetch, form: z.infer<typeof createVenueForm>) => {
 	const venue = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/venues`),
+		createUrl("/api/venues"),
 		venueSchema,
 		"Could not create venue",
 		{ bodySchema: venueForm, body: form },
@@ -52,7 +51,7 @@ export const createVenue = async (fetchFn: typeof fetch, form: z.infer<typeof cr
 export const deleteVenue = async (fetchFn: typeof fetch, id: number) => {
 	await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/venues/${id}`),
+		createUrl(`/api/venues/${id}`),
 		undefined,
 		"Could not delete venue",
 		undefined,
@@ -63,7 +62,7 @@ export const deleteVenue = async (fetchFn: typeof fetch, id: number) => {
 export const editVenue = async (fetchFn: typeof fetch, id: number, form: z.infer<typeof venueForm>) => {
 	const venue = requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/venues/${id}`),
+		createUrl(`/api/venues/${id}`),
 		venueSchema,
 		"Could not edit venue",
 		{ bodySchema: venueForm, body: form },
@@ -76,7 +75,7 @@ export const editVenue = async (fetchFn: typeof fetch, id: number, form: z.infer
 export const venueById = async (fetchFn: typeof fetch, venueId: number) => {
 	const venue = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/venues/${venueId}`),
+		createUrl(`/api/venues/${venueId}`),
 		venueSchema,
 		"Could not get venue by ID"
 	)
