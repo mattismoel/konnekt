@@ -3,42 +3,48 @@
 # ==============================================================================
 #
 # We instantiate a node alpine image and copy relevant files into the builder,
-# whereafter we build the node SvelteKit project to the output 'build' 
-# directory.
+# set relevant build environment variables, and clean dev packages.
+# After, we build the node SvelteKit project to the output 'build' directory.
+#
+# Thereafter we instantiate a new node alpine image, copying the 'build'
+# directory into the production stage and set runtime environment variables.
 # ==============================================================================
 
-FROM oven/bun:1 AS base
+ARG ORIGIN=${PUBLIC_SERVER_API_ORIGIN:-http://localhost:4000}
 
-# Change work directory to 'app'.
+# ==============================================================================
+# BUILD STAGE ==================================================================
+# ==============================================================================
+
+FROM node:24-alpine AS build
+
 WORKDIR /app
 
-FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lockb /temp/dev/
-RUN cd /temp/dev/ && bun install --frozen-lockfile
+ENV PUBLIC_SERVER_API_ORIGIN=${ORIGIN}
 
-RUN mkdir -p /temp/prod
-COPY package.json bun.lockb /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
-
-FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
+COPY package*.json ./
+RUN npm ci
 COPY . .
+RUN npm run build
+RUN npm prune --omit=dev
 
+# ==============================================================================
+# PRODUCTION STAGE =============================================================
+# ==============================================================================
+FROM node:24-alpine
+WORKDIR /app
+
+# Copy over previous base ORIGIN argument.
+
+COPY --from=build /app/build build
+COPY --from=build /app/node_modules node_modules
+COPY package.json .
+
+# ENV ORIGIN=${ORIGIN}
 ENV NODE_ENV=production
-RUN bun test
+ENV PROTOCOL_HEADER=x-forwarded-proto
+ENV HOST_HEADER=x-forwarded-host
 
-ENV PUBLIC_BACKEND_URL=http://backend:8080
-
-RUN bun run build
-
-RUN ls build
-
-FROM base AS release
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /app/build build
-COPY --from=prerelease /app/package.json .
-
-USER bun
 EXPOSE 3000
-CMD [ "bun", "./build/index.js" ]
+
+CMD [ "node", "build" ]
