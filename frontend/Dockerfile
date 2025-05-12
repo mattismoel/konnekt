@@ -9,16 +9,16 @@
 # Thereafter we instantiate a new node alpine image, copying the 'build'
 # directory into the production stage and set runtime environment variables.
 # ==============================================================================
+ARG PUBLIC_SERVER_API_ORIGIN=${PUBLIC_SERVER_API_ORIGIN:-http://localhost:4000}
 
-# ==============================================================================
-# BUILD STAGE ==================================================================
-# ==============================================================================
 FROM node:24-alpine AS build
-ENV ORIGIN=${ORIGIN:-http://localhost:4000}
+ARG PUBLIC_SERVER_API_ORIGIN
+
+ENV PUBLIC_SERVER_API_ORIGIN=${PUBLIC_SERVER_API_ORIGIN}
+
+RUN echo "SERVER API ORIGIN: $PUBLIC_SERVER_API_ORIGIN"
 
 WORKDIR /app
-
-ENV PUBLIC_SERVER_API_ORIGIN=${ORIGIN}
 
 COPY package*.json ./
 RUN npm ci
@@ -32,13 +32,10 @@ RUN npm prune --omit=dev
 FROM node:24-alpine
 WORKDIR /app
 
-# Copy over previous base ORIGIN argument.
-
 COPY --from=build /app/build build
 COPY --from=build /app/node_modules node_modules
 COPY package.json .
 
-# ENV ORIGIN=${ORIGIN}
 ENV NODE_ENV=production
 ENV PROTOCOL_HEADER=x-forwarded-proto
 ENV HOST_HEADER=x-forwarded-host
