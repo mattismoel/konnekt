@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { PUBLIC_BACKEND_URL } from '$env/static/public';
 	import { authStore } from '$lib/auth.svelte';
 
 	import Button from '$lib/components/ui/Button.svelte';
