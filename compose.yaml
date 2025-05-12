@@ -13,7 +13,7 @@ services:
 
   # SvelteKit frontend set-up.
   frontend:
-    image: ghcr.io/mattismoel/konnekt-frontend:${MODE:-dev}
+    image: ghcr.io/mattismoel/konnekt-frontend:${BRANCH:-latest}
     restart: unless-stopped
     environment:
       - ORIGIN=${ORIGIN:-http://localhost:4000} 
@@ -26,7 +26,7 @@ services:
 
   # Golang backend set-up.
   backend:
-    image: ghcr.io/mattismoel/konnekt-backend:${MODE:-dev}
+    image: ghcr.io/mattismoel/konnekt-backend:${BRANCH:-latest}
     restart: unless-stopped
     environment:
       - DB_DIR=${DB_DIR:-/app/data}
