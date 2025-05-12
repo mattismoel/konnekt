@@ -10,13 +10,11 @@
 # directory into the production stage and set runtime environment variables.
 # ==============================================================================
 
-ARG ORIGIN=${PUBLIC_SERVER_API_ORIGIN:-http://localhost:4000}
-
 # ==============================================================================
 # BUILD STAGE ==================================================================
 # ==============================================================================
-
 FROM node:24-alpine AS build
+ENV ORIGIN=${ORIGIN:-http://localhost:4000}
 
 WORKDIR /app
 
