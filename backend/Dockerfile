@@ -22,12 +22,13 @@ RUN CGO_ENABLED=1 GOOS=linux go build -o /konnekt-backend ./cmd/http/main.go
 # Production stage.
 # ==============================================================================
 FROM alpine
+WORKDIR /app
 
 ENV DB_DIR=${DB_DIR:-/app/data}
 ENV ORIGIN=${ORIGIN:-http://localhost:4000}
 ENV DB_FILE_NAME=${DB_FILE_NAME:-data.db}
 
-WORKDIR /app
+COPY tables.sql .
 
 # System upgrade before SQLite install.
 RUN apk update && apk upgrade && apk add --no-cache sqlite
@@ -39,6 +40,8 @@ ENV TZ=Europe/Copenhagen
 
 # Make $DB_DIR directory for the database file.
 RUN mkdir -p ${DB_DIR}
+
+RUN sqlite3 ${DB_DIR}/${DB_FILE_NAME} < ./tables.sql
 
 EXPOSE 8080
 
