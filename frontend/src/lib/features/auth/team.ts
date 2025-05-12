@@ -1,4 +1,3 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public"
 import { requestAndParse } from "$lib/api"
 import { createListResult, type ListResult } from "$lib/query"
 import { createUrl, type Query } from "$lib/url"
@@ -28,7 +27,7 @@ export type Team = z.infer<typeof teamSchema>
 export const memberTeams = async (fetchFn: typeof fetch, memberId: number): Promise<Team[]> => {
 	const teams = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/members/${memberId}/teams`),
+		createUrl(`/api/members/${memberId}/teams`),
 		teamSchema.array(),
 		"Could not fetch member teams",
 	)
@@ -39,7 +38,7 @@ export const memberTeams = async (fetchFn: typeof fetch, memberId: number): Prom
 export const listTeams = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Team>> => {
 	const result = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/teams`, query),
+		createUrl("/api/teams", query),
 		createListResult(teamSchema),
 		"Could not list teams",
 	)

@@ -26,8 +26,8 @@ func main() {
 	defer cancel()
 
 	dbConnStr := flag.String("dbConnStr", "file:./local.db", "The database connection string")
-	frontendURL := flag.String("frontendURL", "http://localhost:5173", "The URL of the frontend")
-	host := flag.String("host", "localhost", "The host of the web server")
+	origin := flag.String("origin", "http://localhost:4000", "The origin of the proxy web server")
+	host := flag.String("host", "127.0.0.1", "The host of the web server")
 	port := flag.Int("port", 8080, "The port of the web server")
 	s3Region := flag.String("s3Region", "eu-north-1", "The region of the S3 bucket")
 	s3Bucket := flag.String("s3Bucket", "konnekt-bucket", "The bucket name of the S3 bucket")
@@ -105,7 +105,7 @@ func main() {
 	srv, err := server.New(
 		server.WithTeamService(teamService),
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
-		server.WithCORSOrigins(*frontendURL),
+		server.WithCORSOrigins(*origin),
 		server.WithAuthService(authService),
 		server.WithMemberService(memberService),
 		server.WithEventService(eventService),

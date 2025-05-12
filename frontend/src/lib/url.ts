@@ -1,3 +1,5 @@
+import { browser } from "$app/environment"
+import { env } from "$env/dynamic/public"
 import { z } from "zod"
 
 const querySchema = z.object({
@@ -30,8 +32,18 @@ const querySchema = z.object({
 
 export type Query = z.infer<typeof querySchema>
 
-export const createUrl = (base: string, query?: Query): URL => {
-	return new URL(base + (query ? "?" + createQueryParams(query) : ""))
+export const createUrl = (base: string, query?: Query): string => {
+	let origin: string = ""
+
+	// When we are server side, the nginx container will be directly acessible
+	// over the shared Docker network by its 'nginx' container name.
+	if (!browser) {
+		origin = env.PUBLIC_SERVER_API_ORIGIN || "http://nginx:80"
+	}
+
+	const url = origin + base + (query ? "?" + createQueryParams(query) : "")
+
+	return url
 }
 
 const createQueryParams = (query: Query): URLSearchParams => {

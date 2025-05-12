@@ -1,4 +1,3 @@
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { requestAndParse } from "$lib/api";
 import { createUrl } from "$lib/url";
 import { z } from "zod";
@@ -43,7 +42,7 @@ export const loginForm = z.object({
 export const login = async (fetchFn: typeof fetch, form: z.infer<typeof loginForm>) => {
 	const member = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/auth/login`),
+		createUrl(`/api/auth/login`),
 		memberSchema,
 		"Could not login member",
 		{ body: form, bodySchema: loginForm },
@@ -56,7 +55,7 @@ export const login = async (fetchFn: typeof fetch, form: z.infer<typeof loginFor
 export const logOut = async (fetchFn: typeof fetch) => {
 	await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/auth/log-out`),
+		createUrl(`/api/auth/log-out`),
 		undefined,
 		"Could not log out user",
 		undefined,
@@ -73,7 +72,7 @@ export const register = async (fetchFn: typeof fetch, form: z.infer<typeof regis
 
 	const member = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/auth/register`),
+		createUrl(`/api/auth/register`),
 		memberSchema,
 		"Could not register member",
 		{

@@ -1,12 +1,18 @@
 package server
 
 import (
+	"time"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
 func (s *Server) setupRoutes() {
 	s.mux.Use(middleware.Logger)
+	s.mux.Use(middleware.RequestID)
+	s.mux.Use(middleware.RealIP)
+	s.mux.Use(middleware.Recoverer)
+	s.mux.Use(middleware.Timeout(60 * time.Second))
 
 	s.mux.Route("/members", func(r chi.Router) {
 		r.Get("/", s.withPermissions(s.handleListMembers(), "view:member", "view:team", "view:permission"))

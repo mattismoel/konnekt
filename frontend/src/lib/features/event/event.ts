@@ -3,7 +3,6 @@ import { concertForm, concertSchema } from "../concert/concert";
 import { venueSchema } from "../venue/venue";
 import { APIError, apiErrorSchema, requestAndParse } from "$lib/api";
 import { createUrl, type Query } from "$lib/url";
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
 import { createListResult, type ListResult } from "$lib/query";
 import { startOfToday } from "date-fns";
 
@@ -54,7 +53,7 @@ export const createEvent = async (fetchFn: typeof fetch, form: z.infer<typeof cr
 
 	const event = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/events`),
+		createUrl(`/api/events`),
 		eventSchema,
 		"Could not create event",
 		{ body: { ...rest, imageUrl }, bodySchema: createEventSchema },
@@ -77,7 +76,7 @@ export const updateEvent = async (
 
 	const event = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/events/${eventId}`),
+		createUrl(`/api/events/${eventId}`),
 		eventSchema,
 		"Could not update event",
 		{
@@ -95,7 +94,7 @@ export const uploadEventCoverImage = async (file: File, init?: RequestInit): Pro
 
 	formData.append("image", file)
 
-	const res = await fetch(`${PUBLIC_BACKEND_URL}/events/image`, {
+	const res = await fetch(`/api/events/image`, {
 		...init,
 		method: "POST",
 		credentials: "include",
@@ -115,7 +114,7 @@ export const uploadEventCoverImage = async (file: File, init?: RequestInit): Pro
 export const listEvents = async (fetchFn: typeof fetch, query: Query): Promise<ListResult<Event>> => {
 	const result = requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/events`, query),
+		createUrl(`/api/events`, query),
 		createListResult(eventSchema),
 		"Could not fetch events"
 	)
@@ -149,7 +148,7 @@ export const listPreviousEvents = async (fetchFn: typeof fetch): Promise<ListRes
 export const eventById = async (fetchFn: typeof fetch, id: number): Promise<Event> => {
 	const event = await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/events/${id}`),
+		createUrl(`/api/events/${id}`),
 		eventSchema,
 	)
 
@@ -159,7 +158,7 @@ export const eventById = async (fetchFn: typeof fetch, id: number): Promise<Even
 export const artistEvents = async (fetchFn: typeof fetch, artistId: number): Promise<ListResult<Event>> => {
 	const result = requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/events`, {
+		createUrl(`/api/events`, {
 			filter: [
 				"from_date" + ">=" + startOfToday().toISOString(),
 				"artist_id" + "=" + artistId.toString()
@@ -174,7 +173,7 @@ export const artistEvents = async (fetchFn: typeof fetch, artistId: number): Pro
 export const deleteEvent = async (fetchFn: typeof fetch, id: number) => {
 	await requestAndParse(
 		fetchFn,
-		createUrl(`${PUBLIC_BACKEND_URL}/events/${id}`),
+		createUrl(`/events/${id}`),
 		undefined,
 		"Could not delete event",
 		undefined,
