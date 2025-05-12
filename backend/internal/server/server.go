@@ -51,8 +51,11 @@ func WithCORSOrigins(allowedOrigins ...string) CfgFunc {
 	return func(s *Server) error {
 		s.mux.Use(cors.Handler(cors.Options{
 			AllowedOrigins:   allowedOrigins,
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+			ExposedHeaders:   []string{"Link"},
 			AllowCredentials: true,
-			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+			MaxAge:           300,
 		}))
 
 		return nil
