@@ -1,0 +1,38 @@
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "4000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "24678:24678"
+    environment:
+      - VITE_SERVER_ORIGIN=http://localhost:4000
+    volumes:
+      - ./frontend:/app
+      - ./frontend/node_modules:/app/node_modules
+      
+  # Golang backend set-up.
+  backend:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile.dev
+    image: ghcr.io/mattismoel/konnekt-backend:${BRANCH:-latest}
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - ${DB_LOCAL_DIR:-./data}:${DB_DIR:-/app/data}
+      - /home/mattiskristensen/.aws:/root/.aws
