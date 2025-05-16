@@ -1,3 +1,6 @@
+To build dev docker compose:
+$ sudo docker compose -f compose.dev.yaml --env-file .env.dev up --build --remove-orphans
+
 Welcome to your new TanStack app! 
 
 # Getting Started
