@@ -1,11 +1,12 @@
+
 root = "."
 testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
-  args_bin = []
+  args_bin = ["-origin=http://nginx", "-host=0.0.0.0", "-port=8080", "-dbConnStr=/app/data/local.db"]
   bin = "./tmp/main"
-  cmd = "go build -o ./tmp/main ./cmd/http/..."
+  cmd = "CGO_ENABLED=1 go build -o ./tmp/main ./cmd/http/..."
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
