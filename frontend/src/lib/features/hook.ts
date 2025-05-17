@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { artistEvents, eventById, listPreviousEvents, listUpcomingEvents } from "./event"
 import { eventsArtists } from "./events-artists"
 import { artistById, listArtists } from "./artist"
