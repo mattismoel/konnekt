@@ -4,6 +4,8 @@ import { pickRandom } from '@/lib/array';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/clsx';
 import { useListUpcomingArtists } from '@/lib/features/hook';
+import { randomInt } from '@/lib/random';
+import { SkeletonIcon, SkeletonText } from '@/lib/components/skeleton';
 
 /** @description The rate of which artist auto display changes artist. */
 const AUTO_DISPLAY_RATE = 0.25;
@@ -13,7 +15,7 @@ export const Route = createFileRoute('/_app/artists/')({
 })
 
 function RouteComponent() {
-  const { data: artists, isLoading } = useListUpcomingArtists()
+  const { data: artists, isError } = useListUpcomingArtists()
 
   const [selected, setSelected] = useState<Artist>();
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -52,13 +54,11 @@ function RouteComponent() {
     intervalRef.current = null
   };
 
-  if (isLoading) return <p>Loading...</p>
-
-  if (!artists || artists.length <= 0) return <span>Ingen kunstnere...</span>
+  if (isError) return <span>Noget gik galt...</span>
 
   return (
     <main className="px-auto h-svh pt-32">
-      {artists.map(artist => (
+      {artists?.map(artist => (
         <img
           key={artist.id}
           src={artist.imageUrl}
@@ -76,18 +76,16 @@ function RouteComponent() {
           </span>
         </section>
         {/*  ARTISTS */}
-        {artists.length <= 0 && (
+        {artists && artists.length <= 0 && (
           <span>Der er ingen aktuelle kunstnere i øjeblikket...</span>
         )}
-        <ul
-          className="divide-text/50 max-h-96 divide-y overflow-y-scroll"
-          onMouseLeave={() => beginAutoDisplay()}
-          onMouseEnter={() => endAutoDisplay()}
-        >
-          {artists.map(artist => (
-            <Entry selected={selected} key={artist.id} artist={artist} onSelect={() => setSelected(artist)} />
-          ))}
-        </ul>
+        <ArtistList
+          artists={artists}
+          selected={selected}
+          onSelect={setSelected}
+          onMouseEnter={endAutoDisplay}
+          onMouseLeave={beginAutoDisplay}
+        />
       </div>
     </main>
   )
@@ -98,6 +96,31 @@ type EntryProps = {
   selected?: Artist;
   onSelect: () => void;
 }
+
+type ArtistListProps = {
+  artists: Artist[] | undefined
+  selected: Artist | undefined
+
+  onMouseLeave: () => void;
+  onMouseEnter: () => void;
+
+  onSelect: (artist: Artist) => void;
+}
+
+const ArtistList = ({ artists, selected, onSelect, onMouseEnter, onMouseLeave }: ArtistListProps) => (
+  <ul
+    className="divide-text/50 max-h-96 divide-y overflow-y-scroll"
+    onMouseLeave={onMouseLeave}
+    onMouseEnter={onMouseEnter}
+  >
+    {!artists
+      ? [...Array(randomInt(4, 8))].map((_, i) => <SkeletonEntry key={i} />)
+      : artists.map(artist => (
+        <Entry selected={selected} key={artist.id} artist={artist} onSelect={() => onSelect(artist)} />
+      )
+      )}
+  </ul>
+)
 
 const Entry = ({ artist, selected, onSelect }: EntryProps) => {
   return (
@@ -139,3 +162,23 @@ const Entry = ({ artist, selected, onSelect }: EntryProps) => {
     </li>
   )
 }
+
+const SkeletonEntry = () => (
+  <li
+    className="group text-text/75 relative flex items-center"
+  >
+    <div className="grid w-full grid-cols-3 py-3 pl-3 items-center">
+      {/* ARTIST NAME */}
+      <SkeletonText />
+
+      {/* GENRES */}
+      <SkeletonText wordCount={randomInt(2, 4)} />
+
+      {/* SOCIALS */}
+      <div className="text-text/50 flex items-center justify-end gap-2 pr-3">
+        <SkeletonIcon />
+      </div>
+    </div>
+  </li>
+)
+
