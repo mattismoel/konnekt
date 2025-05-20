@@ -8,8 +8,8 @@ type Props = {
 	accept?: InputHTMLAttributes<HTMLInputElement>["accept"]
 };
 
-const ProfilePictureSelector = ({ accept = "image/jpeg,image/png", file, onChange }: Props) => {
-	const [src, setSrc] = useState(() => file ? URL.createObjectURL(file) : undefined)
+const ProfilePictureSelector = ({ src, accept = "image/jpeg,image/png", file, onChange }: Props) => {
+	const [imgSrc, setImgSrc] = useState(() => file ? URL.createObjectURL(file) : src ? src : undefined)
 
 	const ref = useRef<HTMLInputElement>(null)
 
@@ -22,14 +22,14 @@ const ProfilePictureSelector = ({ accept = "image/jpeg,image/png", file, onChang
 	};
 
 	const changeImage = (newFile: File) => {
-		setSrc(URL.createObjectURL(newFile))
+		setImgSrc(URL.createObjectURL(newFile))
 		onChange(newFile)
 	};
 
 	return (
 		<div className="relative w-fit">
 			<input ref={ref} hidden accept={accept} type="file" onChange={onFileChange} />
-			<img src={src || AvatarImage} alt="Profile" className="h-28 w-28 rounded-full object-cover" />
+			<img src={imgSrc || AvatarImage} alt="Profile" className="h-28 w-28 rounded-full object-cover" />
 			<button
 				type="button"
 				onClick={() => ref.current?.click()}
