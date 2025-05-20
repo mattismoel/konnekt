@@ -77,7 +77,7 @@ const AuthLayout = () => {
     </NavMenu>
 
 
-    <div className="px-auto py-16 px-32 relative">
+    <div className="px-auto py-32 relative">
       <Outlet />
       <div className='fixed bottom-8 right-8 z-50 flex flex-col gap-2'>
         {toasts.map(toast => (
