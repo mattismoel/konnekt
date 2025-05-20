@@ -1,47 +1,28 @@
-import { APIError } from '@/lib/api'
-import EventForm from '@/lib/components/event-form/event-form'
-import { useToast } from '@/lib/context/toast'
-import { createEvent, createEventForm } from '@/lib/features/event'
-import { useArtists, useVenues } from '@/lib/features/hook'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import type { z } from 'zod'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+
+import { artistsQueryOpts } from '@/lib/features/artist/query'
+import { venuesQueryOpts } from '@/lib/features/event/query'
+
+import EventForm from '@/lib/features/event/components/event-form/event-form'
 
 export const Route = createFileRoute('/admin/events/create')({
   component: RouteComponent,
+  loader: async ({ context: { queryClient } }) => {
+    queryClient.ensureQueryData(artistsQueryOpts)
+    queryClient.ensureQueryData(venuesQueryOpts)
+  }
 })
 
 function RouteComponent() {
-  const { addToast } = useToast()
-  const navigate = useNavigate()
-
-  const artistQuery = useArtists()
-  const venueQuery = useVenues()
-
-  const isLoading = artistQuery.isLoading || venueQuery.isLoading
-  const isError = artistQuery.isError || venueQuery.isError
-
-  if (isLoading) return <p>Loading...</p>
-  if (isError) return <p>Error...</p>
-
-  const onSubmit = async (form: z.infer<typeof createEventForm>) => {
-    try {
-      await createEvent(form)
-      addToast("Event tilføjet")
-      navigate({ to: "/admin/events" })
-    } catch (e) {
-      console.error(e)
-      if (e instanceof APIError) {
-        addToast("Noget gik galt...", e.message, "error")
-      }
-    }
-  }
+  const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
+  const { data: { records: venues } } = useSuspenseQuery(venuesQueryOpts)
 
   return (
     <EventForm
-      venues={venueQuery.data?.records || []}
-      artists={artistQuery.data?.records || []}
+      venues={venues}
+      artists={artists}
       disabled={false}
-      onSubmit={onSubmit}
     />
   )
 }

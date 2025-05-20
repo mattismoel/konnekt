@@ -1,43 +1,20 @@
-import { APIError } from '@/lib/api'
-import ArtistForm from '@/lib/components/artist-form'
-import { useToast } from '@/lib/context/toast'
-import { createArtist, type createArtistForm } from '@/lib/features/artist'
-import { useGenres } from '@/lib/features/hook'
-import { useQueryClient } from '@tanstack/react-query'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import type { z } from 'zod'
+import { genresQueryOpts } from '@/lib/features/artist/query'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+
+import ArtistForm from '@/lib/features/artist/components/artist-form'
 
 export const Route = createFileRoute('/admin/artists/create')({
   component: RouteComponent,
+  loader: async ({ context: { queryClient } }) => {
+    queryClient.ensureQueryData(genresQueryOpts)
+  }
 })
 
 function RouteComponent() {
-  const { addToast } = useToast()
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-
-  const genreQuery = useGenres()
-
-  const genres = genreQuery.data?.records || []
-
-  const onSubmit = async (form: z.infer<typeof createArtistForm>) => {
-    try {
-      await createArtist(form)
-      addToast("Kunstner lavet")
-      await queryClient.invalidateQueries({ queryKey: ["artists"] })
-      navigate({ to: "/admin/artists" })
-    } catch (e) {
-      if (e instanceof APIError) {
-        addToast("Kunne ikke lave kunstner", e.message, "error")
-        throw e
-      }
-
-      addToast("Kunne ikke lave kunstner", "Noget gik galt...", "error")
-      throw e
-    }
-  }
+  const { data: { records: genres } } = useSuspenseQuery(genresQueryOpts)
 
   return (
-    <ArtistForm genres={genres} onSubmit={onSubmit} />
+    <ArtistForm genres={genres} />
   )
 }

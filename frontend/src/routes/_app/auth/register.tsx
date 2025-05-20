@@ -1,5 +1,5 @@
-import RegisterForm from '@/lib/components/register-form'
-import { register, type registerForm } from '@/lib/features/auth'
+import { register, type registerForm } from '@/lib/features/auth/auth'
+import RegisterForm from '@/lib/features/auth/components/register-form'
 import { createFileRoute } from '@tanstack/react-router'
 import type { z } from 'zod'
 

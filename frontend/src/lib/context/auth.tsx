@@ -1,8 +1,8 @@
 import type { z } from "zod"
-import { login, logOut, register, type loginForm, type registerForm } from "../features/auth"
-import { memberSession, type Member } from "../features/member";
-import { memberPermissions, type Permission, type PermissionType } from "../features/permission";
-import { memberTeams, type Team, type TeamType } from "../features/team";
+import { login, logOut, register, type loginForm, type registerForm } from "../features/auth/auth"
+import { memberSession, type Member } from "../features/auth/member";
+import { memberPermissions, type Permission, type PermissionType } from "../features/auth/permission";
+import { memberTeams, type Team, type TeamType } from "../features/auth/team";
 import { createContext, useContext, useState, type PropsWithChildren } from "react";
 
 

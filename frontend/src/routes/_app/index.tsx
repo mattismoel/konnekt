@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import LandingVideo from '@/lib/assets/landing.mp4';
 import Caroussel from '@/lib/components/caroussel';
-import EventCard from '@/lib/components/event-card';
 import LogoScroller from '@/lib/components/logo-scroller';
 
 import OdenseKommuneLogo from '@/lib/assets/logos/odense-kommune-logo.svg';
@@ -15,18 +14,21 @@ import Fader from '@/lib/components/fader';
 import GlowCursor from '@/lib/components/glow-cursor';
 import { FaArrowRight } from 'react-icons/fa';
 
-import { useListUpcomingEvents } from '@/lib/features/hook';
 import LinkButton from '@/lib/components/ui/button/link-button';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { upcomingEventsQueryOpts } from '@/lib/features/event/query';
+import EventCard from '@/lib/features/event/components/event-card';
 
 
 export const Route = createFileRoute('/_app/')({
   component: App,
+  loader: async ({ context: { queryClient } }) => {
+    queryClient.ensureQueryData(upcomingEventsQueryOpts)
+  }
 })
 
 function App() {
-  const { data, isLoading } = useListUpcomingEvents()
-
-  if (isLoading) return <p>...</p>
+  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts)
 
   return (
     <div>
@@ -63,11 +65,11 @@ function App() {
       </section>
 
       <section className="bg-zinc-950">
-        {data?.records && data.records.length > 0 && (
+        {upcomingEvents.length > 0 && (
           <section className="px-auto py-16">
             <h1 className="font-heading mb-8 text-2xl font-bold">Kommende events</h1>
             <Caroussel>
-              {data?.records.map(event => (
+              {upcomingEvents.map(event => (
                 <EventCard key={event.id} event={event} />
               ))}
             </Caroussel>

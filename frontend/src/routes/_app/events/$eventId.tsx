@@ -1,29 +1,32 @@
 import Caroussel from '@/lib/components/caroussel'
-import EventCalendar from '@/lib/components/event-calendar'
-import EventCard from '@/lib/components/event-card'
-import EventDetails from '@/lib/components/event-details'
-import { useEventById, useListUpcomingEvents } from '@/lib/features/hook'
+import EventCalendar from '@/lib/features/event/components/event-calendar'
+import EventCard from '@/lib/features/event/components/event-card'
+import EventDetails from '@/lib/features/event/components/event-details'
+import { createEventByIdOpts, upcomingEventsQueryOpts } from '@/lib/features/event/query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_app/events/$eventId')({
   component: RouteComponent,
+  loader: async ({ context: { queryClient }, params: { eventId: eventIdStr } }) => {
+    const eventId = parseInt(eventIdStr)
+
+    const eventOptions = createEventByIdOpts(eventId)
+
+    queryClient.ensureQueryData(eventOptions)
+    queryClient.ensureQueryData(upcomingEventsQueryOpts)
+
+    return { eventOptions }
+  }
 })
 
 function RouteComponent() {
-  const { eventId } = Route.useParams()
-  const eventQuery = useEventById(parseInt(eventId))
-  const upcomingEventsQuery = useListUpcomingEvents()
+  const { eventOptions } = Route.useLoaderData()
 
-  const isLoading = eventQuery.isLoading || upcomingEventsQuery.isLoading
-  const isError = eventQuery.isError || upcomingEventsQuery.isError
+  const { data: event } = useSuspenseQuery(eventOptions)
+  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts)
 
-  if (isLoading) return <p>Loading...</p>
-  if (isError) return <p>Error...</p>
-
-  const event = eventQuery.data
-  if (!event) return <p>No such event...</p>
-
-  const upcomingEvents = upcomingEventsQuery.data?.records.filter(e => e.id !== event.id) || []
+  const filteredEvents = upcomingEvents.filter(({ id }) => id !== event.id)
 
   return (
     <main className="min-h-sub-nav flex flex-col gap-16 pb-16 text-white">
@@ -35,7 +38,7 @@ function RouteComponent() {
           <section>
             <h1 className="mb-4 text-2xl font-bold">Se også</h1>
             <Caroussel>
-              {upcomingEvents.map(event => <EventCard key={event.id} event={event} />)}
+              {filteredEvents.map(event => <EventCard key={event.id} event={event} />)}
             </Caroussel>
           </section>
         )}

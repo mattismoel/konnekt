@@ -1,26 +1,25 @@
 import AdminHeader from '@/lib/components/admin-header'
-import ArtistList from '@/lib/components/artist-list'
 import LinkButton from '@/lib/components/ui/button/link-button'
 import { useAuth } from '@/lib/context/auth'
-import { useArtists, useListUpcomingArtists } from '@/lib/features/hook'
+import ArtistList from '@/lib/features/artist/components/artist-list'
+import { artistsQueryOpts, upcomingArtistsQueryOpts } from '@/lib/features/artist/query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { FaPlus } from 'react-icons/fa6'
 
 export const Route = createFileRoute('/admin/artists/')({
   component: RouteComponent,
+  loader: async ({ context: { queryClient } }) => {
+    queryClient.ensureQueryData(upcomingArtistsQueryOpts)
+    queryClient.ensureQueryData(artistsQueryOpts)
+  }
 })
 
 function RouteComponent() {
-  const upcomingArtistsQuery = useListUpcomingArtists()
-  const artistsQuery = useArtists()
+  const { data: upcomingArtists } = useSuspenseQuery(upcomingArtistsQueryOpts)
+  const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
 
   const { hasPermissions } = useAuth()
-
-  const isLoading = upcomingArtistsQuery.isLoading || artistsQuery.isLoading
-  const isError = upcomingArtistsQuery.isError || artistsQuery.isError
-
-  if (isLoading) return <p>Loading...</p>
-  if (isError) return <p>Error...</p>
 
   return (
     <>
@@ -43,8 +42,8 @@ function RouteComponent() {
         {hasPermissions(['view:artist']) ? (
           <section className="space-y-4">
             <ArtistList
-              artists={artistsQuery.data?.records || []}
-              upcomingArtists={upcomingArtistsQuery.data || []}
+              artists={artists}
+              upcomingArtists={upcomingArtists}
             />
           </section>
         ) : (

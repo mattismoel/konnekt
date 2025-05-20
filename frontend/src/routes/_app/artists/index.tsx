@@ -1,31 +1,34 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { socialUrlToIcon, type Artist } from '@/lib/features/artist';
+import { socialUrlToIcon, type Artist } from '@/lib/features/artist/artist';
 import { pickRandom } from '@/lib/array';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/clsx';
-import { useListUpcomingArtists } from '@/lib/features/hook';
 import { randomInt } from '@/lib/random';
 import { SkeletonIcon, SkeletonText } from '@/lib/components/skeleton';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { artistsQueryOpts } from '@/lib/features/artist/query';
 
 /** @description The rate of which artist auto display changes artist. */
 const AUTO_DISPLAY_RATE = 0.25;
 
 export const Route = createFileRoute('/_app/artists/')({
   component: RouteComponent,
+  loader: async ({ context: { queryClient } }) => {
+    queryClient.ensureQueryData(artistsQueryOpts)
+  }
 })
 
 function RouteComponent() {
-  const { data: artists, isError } = useListUpcomingArtists()
+  const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
 
   const [selected, setSelected] = useState<Artist>();
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    if (!artists) return
-    const initialArtist = artists.at(0)
+    if (artists.length <= 0) return
 
-    if (!initialArtist) return
-    setSelected(artists?.at(0))
+    const initialArtist = artists[0]
+    setSelected(initialArtist)
   }, [artists])
 
   useEffect(() => {
@@ -54,11 +57,9 @@ function RouteComponent() {
     intervalRef.current = null
   };
 
-  if (isError) return <span>Noget gik galt...</span>
-
   return (
     <main className="px-auto h-svh pt-32">
-      {artists?.map(artist => (
+      {artists.map(artist => (
         <img
           key={artist.id}
           src={artist.imageUrl}
@@ -76,7 +77,7 @@ function RouteComponent() {
           </span>
         </section>
         {/*  ARTISTS */}
-        {artists && artists.length <= 0 && (
+        {artists.length <= 0 && (
           <span>Der er ingen aktuelle kunstnere i øjeblikket...</span>
         )}
         <ArtistList

@@ -1,5 +1,5 @@
-import LoginForm from '@/lib/components/login-form';
-import { login, type loginForm } from '@/lib/features/auth';
+import { login, type loginForm } from '@/lib/features/auth/auth';
+import LoginForm from '@/lib/features/auth/components/login-form';
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import type { z } from 'zod';
 
@@ -21,7 +21,7 @@ function RouteComponent() {
 
 	return (
 		<main className="flex h-svh items-center justify-center">
-			<LoginForm onSubmit={onSubmit} />
+			<LoginForm />
 		</main>
 	)
 }

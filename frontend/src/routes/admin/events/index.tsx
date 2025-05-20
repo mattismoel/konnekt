@@ -1,30 +1,26 @@
 import { useAuth } from '@/lib/context/auth'
 import { createFileRoute } from '@tanstack/react-router'
 
-import { useListPreviousEvents, useListUpcomingEvents } from '@/lib/features/hook';
 import AdminHeader from '@/lib/components/admin-header';
 import LinkButton from '@/lib/components/ui/button/link-button';
 import { FaPlus } from 'react-icons/fa6';
-import EventList from '@/lib/components/event-list';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { previousEventsQueryOpts, upcomingEventsQueryOpts } from '@/lib/features/event/query';
+import EventList from '@/lib/features/event/components/event-list';
 
 export const Route = createFileRoute('/admin/events/')({
   component: RouteComponent,
+  loader: async ({ context: { queryClient } }) => {
+    queryClient.ensureQueryData(upcomingEventsQueryOpts)
+    queryClient.ensureQueryData(previousEventsQueryOpts)
+  }
 })
 
 function RouteComponent() {
   const { hasPermissions } = useAuth()
 
-  const upcomingEventsQuery = useListUpcomingEvents()
-  const previousEventsQuery = useListPreviousEvents()
-
-  const isLoading = upcomingEventsQuery.isLoading || previousEventsQuery.isLoading
-  const isError = upcomingEventsQuery.isError || previousEventsQuery.isError
-
-  if (isLoading) return <p>Loading...</p>
-  if (isError) return <p>Error...</p>
-
-  const upcomingEvents = upcomingEventsQuery.data?.records || []
-  const previousEvents = previousEventsQuery.data?.records || []
+  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts)
+  const { data: { records: previousEvents } } = useSuspenseQuery(previousEventsQueryOpts)
 
   return (
     <>
