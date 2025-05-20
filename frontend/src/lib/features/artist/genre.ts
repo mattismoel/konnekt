@@ -1,10 +1,10 @@
-import { requestAndParse } from "@/lib/api"
+import { idSchema, requestAndParse } from "@/lib/api"
 import { createListResult, type ListResult } from "@/lib/query"
 import { createUrl, type Query } from "@/lib/url"
 import { z } from "zod"
 
 export const genreSchema = z.object({
-	id: z.number().positive(),
+	id: idSchema,
 	name: z.string()
 })
 

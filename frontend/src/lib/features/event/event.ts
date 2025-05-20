@@ -1,15 +1,14 @@
 import { z } from "zod";
 import { concertForm, concertSchema } from "./concert";
 import { venueSchema } from "./venue";
-import { APIError, apiErrorSchema, requestAndParse } from "@/lib/api";
+import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/lib/api";
 import { createUrl, type Query } from "@/lib/url";
 import { createListResult, type ListResult } from "@/lib/query";
 import { startOfToday } from "date-fns";
-import { env } from "../env";
-// import { PUBLIC_PROXY_ORIGIN } from "$env/static/public";
+import { env } from "../../env";
 
 export const eventSchema = z.object({
-	id: z.number().positive(),
+	id: idSchema,
 	title: z.string().nonempty(),
 	description: z.string().nonempty(),
 	ticketUrl: z.string().url(),
@@ -18,34 +17,25 @@ export const eventSchema = z.object({
 	venue: venueSchema
 })
 
-const eventForm = z.object({
+export type Event = z.infer<typeof eventSchema>
+
+export const eventForm = z.object({
 	title: z.string().nonempty({ message: "Eventtitel skal være defineret" }),
 	description: z.string().nonempty({ message: "Eventbeskrivelse skal være defineret" }),
 	ticketUrl: z.string().nonempty({ message: "Billet-URL skal være defineret" }),
-	venueId: z.number().positive(),
-	concerts: concertForm.array().min(1, { message: "Et event skal have mindst én koncert" })
+	venueId: idSchema,
+	concerts: concertForm.array().min(1, { message: "Et event skal have mindst én koncert" }),
+	image: z.instanceof(File).optional()
 });
 
-export const createEventForm = eventForm
-	.extend({ image: z.instanceof(File).optional() })
+export type EventFormValues = z.infer<typeof eventForm>
 
-export const editEventForm = eventForm
-	.extend({ image: z.instanceof(File).optional() })
-
-
-const createEventSchema = createEventForm
+const createEventSchema = eventForm
 	.omit({ image: true })
 	.extend({ imageUrl: z.string().url() })
 
-const updateEventSchema = editEventForm
-	.omit({ image: true })
-	.extend({ imageUrl: z.string().url().optional() })
-
-export type Event = z.infer<typeof eventSchema>
-
-
-export const createEvent = async (form: z.infer<typeof createEventForm>,): Promise<Event> => {
-	const { data: formData, error: formError } = createEventForm.safeParse(form)
+export const createEvent = async (form: EventFormValues): Promise<Event> => {
+	const { data: formData, error: formError } = eventForm.safeParse(form)
 	if (formError) throw formError
 
 	const { image, ...rest } = formData
@@ -64,11 +54,12 @@ export const createEvent = async (form: z.infer<typeof createEventForm>,): Promi
 	return event
 }
 
-export const updateEvent = async (
-	form: z.infer<typeof editEventForm>,
-	eventId: number,
-): Promise<Event> => {
-	const { data, success, error } = editEventForm.safeParse(form)
+const updateEventSchema = eventForm
+	.omit({ image: true })
+	.extend({ imageUrl: z.string().url().optional() })
+
+export const updateEvent = async (form: EventFormValues, eventId: ID): Promise<Event> => {
+	const { data, success, error } = eventForm.safeParse(form)
 	if (!success) throw error
 
 	const imageUrl = data.image ? await uploadEventCoverImage(data.image) : undefined
@@ -124,8 +115,6 @@ export const listUpcomingEvents = async (): Promise<ListResult<Event>> => {
 	return listEvents({ filter: ["from_date" + ">=" + startOfToday().toISOString()] })
 }
 
-
-
 // /**
 //  * @description Returns all upcoming events, if any.
 //  */
@@ -152,16 +141,16 @@ export const listPreviousEvents = async (): Promise<ListResult<Event>> => {
 }
 
 
-export const eventById = async (id: number): Promise<Event> => {
+export const eventById = async (id: ID): Promise<Event> => {
 	const event = await requestAndParse(
-		createUrl(`${""}/api/events/${id}`),
+		createUrl(`/api/events/${id}`),
 		eventSchema,
 	)
 
 	return event
 }
 
-export const artistEvents = async (artistId: number): Promise<ListResult<Event>> => {
+export const artistEvents = async (artistId: ID): Promise<ListResult<Event>> => {
 	const result = requestAndParse(
 		createUrl(`/api/events`, {
 			filter: [
@@ -175,7 +164,7 @@ export const artistEvents = async (artistId: number): Promise<ListResult<Event>>
 	return result
 }
 
-export const deleteEvent = async (id: number,) => {
+export const deleteEvent = async (id: ID) => {
 	await requestAndParse(
 		createUrl(`/events/${id}`),
 		undefined,

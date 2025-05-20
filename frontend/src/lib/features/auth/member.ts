@@ -1,10 +1,11 @@
-import { APIError, apiErrorSchema, requestAndParse } from "@/lib/api"
+import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/lib/api"
 import { createListResult } from "@/lib/query"
 import { createUrl, type Query } from "@/lib/url"
 import { z } from "zod"
+import { setMemberTeams } from "./team"
 
 export const memberSchema = z.object({
-	id: z.number().positive(),
+	id: idSchema,
 	email: z.string().email(),
 	firstName: z.string(),
 	lastName: z.string(),
@@ -29,21 +30,19 @@ export const memberForm = z.object({
 	email: z
 		.string()
 		.email(),
+	memberTeams: z
+		.number()
+		.int()
+		.positive()
+		.array(),
+	image: z.instanceof(File).optional()
 })
 
-export const editMemberForm = memberForm
-	.extend({ image: z.instanceof(File).nullable() })
+export type MemberFormValues = z.infer<typeof memberForm>
 
-const editMemberSchema = editMemberForm
+const editMemberSchema = memberForm
 	.omit({ image: true })
 	.extend({ profilePictureUrl: z.string().url().optional() })
-
-export const setMemberTeamsForm = z
-	.number()
-	.int()
-	.positive()
-	.array()
-	.nonempty()
 
 export const memberSession = async () => {
 	const member = await requestAndParse(
@@ -65,7 +64,7 @@ export const listMembers = async (query?: Query) => {
 	return result
 }
 
-export const approveMember = async (memberId: number) => {
+export const approveMember = async (memberId: ID) => {
 	return requestAndParse(
 		createUrl(`/api/members/${memberId}/approve`),
 		undefined,
@@ -75,7 +74,7 @@ export const approveMember = async (memberId: number) => {
 	)
 }
 
-export const deleteMember = async (memberId: number) => {
+export const deleteMember = async (memberId: ID) => {
 	return requestAndParse(
 		createUrl(`/api/members/${memberId}`),
 		undefined,
@@ -85,7 +84,7 @@ export const deleteMember = async (memberId: number) => {
 	)
 }
 
-export const memberById = async (memberId: number) => {
+export const memberById = async (memberId: ID) => {
 	const member = await requestAndParse(
 		createUrl(`/api/members/${memberId}`),
 		memberSchema,
@@ -95,8 +94,8 @@ export const memberById = async (memberId: number) => {
 	return member
 }
 
-export const editMember = async (memberId: number, form: z.infer<typeof editMemberForm>) => {
-	const { data, success, error } = editMemberForm.safeParse(form)
+export const editMember = async (memberId: ID, form: MemberFormValues) => {
+	const { data, success, error } = memberForm.safeParse(form)
 	if (!success) throw error
 
 	const { image, ...rest } = data;
@@ -111,17 +110,9 @@ export const editMember = async (memberId: number, form: z.infer<typeof editMemb
 		"PUT"
 	)
 
-	return member
-}
+	await setMemberTeams(memberId, form.memberTeams)
 
-export const setMemberTeams = async (memberId: number, teamIds: number[]) => {
-	await requestAndParse(
-		createUrl(`/api/members/${memberId}/teams`),
-		undefined,
-		"Could not set member teams",
-		{ bodySchema: setMemberTeamsForm, body: teamIds },
-		"PUT"
-	)
+	return member
 }
 
 export const uploadMemberProfilePicture = async (file: File): Promise<string> => {

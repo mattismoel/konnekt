@@ -1,4 +1,13 @@
 import { z, ZodSchema } from "zod"
+import { useToast } from "./context/toast";
+import { useNavigate } from "@tanstack/react-router";
+
+export const idSchema = z
+  .number()
+  .int()
+  .positive()
+
+export type ID = z.infer<typeof idSchema>
 
 export const apiErrorSchema = z.object({
   message: z.string(),
@@ -79,4 +88,41 @@ export async function requestAndParse<TBody, TResponse>(
 
 const isResponseSuccessful = (res: Response): boolean => {
   return (res.status >= 200 && res.status < 300)
+}
+
+type SubmitHandlerOptions<T> = {
+  action: (form: T) => Promise<any>
+  successMessage: string;
+  errorMessage?: string;
+  navigateTo?: string;
+}
+
+export const createSubmitHandler = <T>(
+  options: SubmitHandlerOptions<T>
+): (form: T) => Promise<void> => {
+  const {
+    action,
+    successMessage,
+    errorMessage = "Noget gik galt...",
+    navigateTo = "/admin/events",
+  } = options
+
+  const { addToast } = useToast()
+  const navigate = useNavigate()
+
+  return async (form: T) => {
+    try {
+      await action(form)
+      addToast(successMessage)
+      navigate({ to: navigateTo })
+    } catch (e) {
+      if (e instanceof APIError) {
+        addToast(errorMessage, e.message, "error")
+        return
+      }
+
+      addToast(errorMessage, "Noget gik galt...", "error")
+      throw e
+    }
+  }
 }

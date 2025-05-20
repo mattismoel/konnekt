@@ -1,20 +1,27 @@
 import { z } from "zod";
-import { artistSchema } from "./artist";
+import { artistSchema } from "../artist/artist";
+import { idSchema } from "@/lib/api";
 
 export const concertSchema = z.object({
-	id: z.number().positive(),
+	id: idSchema,
 	from: z.coerce.date(),
 	to: z.coerce.date(),
 	artist: artistSchema,
 })
 
+export type Concert = z.infer<typeof concertSchema>
+
 export const concertForm = z.object({
-	artistID: z.number().positive(),
+	artistID: idSchema,
 	from: z.coerce.date(),
 	to: z.coerce.date()
 });
 
-export type Concert = z.infer<typeof concertSchema>
+export const createConcertForm = concertForm
+export const editConcertForm = concertForm
+
+export type CreateConcertForm = z.infer<typeof createConcertForm>
+export type EditConcertForm = z.infer<typeof editConcertForm>
 
 /***
  * @description Returns the earliest concert within an input concerts array.

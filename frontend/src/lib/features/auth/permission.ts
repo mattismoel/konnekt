@@ -1,4 +1,4 @@
-import { requestAndParse } from "@/lib/api";
+import { idSchema, requestAndParse, type ID } from "@/lib/api";
 import { createUrl } from "@/lib/url";
 import { z } from "zod";
 
@@ -31,7 +31,7 @@ export const permissionTypes = z.union([
 ])
 
 export const permissionSchema = z.object({
-	id: z.number().int().positive(),
+	id: idSchema,
 	name: permissionTypes,
 	displayName: z.string().nonempty(),
 	description: z.string().nonempty(),
@@ -40,7 +40,7 @@ export const permissionSchema = z.object({
 export type PermissionType = z.infer<typeof permissionTypes>
 export type Permission = z.infer<typeof permissionSchema>
 
-export const memberPermissions = async (memberId: number): Promise<Permission[]> => {
+export const memberPermissions = async (memberId: ID): Promise<Permission[]> => {
 	const permissions = await requestAndParse(
 		createUrl(`/api/members/${memberId}/permissions`),
 		permissionSchema.array(),

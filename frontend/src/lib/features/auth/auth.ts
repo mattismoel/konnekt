@@ -2,12 +2,12 @@ import { requestAndParse } from "@/lib/api";
 import { createUrl } from "@/lib/url";
 import { z } from "zod";
 import { memberSchema, uploadMemberProfilePicture } from "./member";
-import { env } from "../env";
+import { env } from "../../env";
 
 const MINIMUM_PASSWORD_LENGTH = 8
 const MAXIMUM_PASSWORD_LENGTH = 24
 
-export const registerForm = z.object({
+const baseRegisterForm = z.object({
 	email: z
 		.string()
 		.email(),
@@ -23,12 +23,18 @@ export const registerForm = z.object({
 		.max(MAXIMUM_PASSWORD_LENGTH),
 	passwordConfirm:
 		z.string(),
+})
+
+export const registerForm = baseRegisterForm.extend({
 	profilePictureFile: z
 		.instanceof(File)
 })
 	.refine(({ password, passwordConfirm }) => passwordConfirm === password, {
 		message: "Adgangskoder skal være ens",
 	})
+
+export type RegisterFormValues = z.infer<typeof registerForm>
+
 
 export const loginForm = z.object({
 	email: z
@@ -38,7 +44,9 @@ export const loginForm = z.object({
 		.string()
 })
 
-export const login = async (form: z.infer<typeof loginForm>) => {
+export type LoginFormValues = z.infer<typeof loginForm>
+
+export const login = async (form: LoginFormValues) => {
 	const member = await requestAndParse(
 		createUrl(`${env.VITE_SERVER_ORIGIN}/api/auth/login`),
 		memberSchema,
@@ -60,7 +68,11 @@ export const logOut = async () => {
 	)
 }
 
-export const register = async (form: z.infer<typeof registerForm>) => {
+const registerSchema = baseRegisterForm.extend({
+	profilePictureUrl: z.string().url()
+})
+
+export const register = async (form: RegisterFormValues) => {
 	const { profilePictureFile } = form;
 
 	const profilePictureUrl = await uploadMemberProfilePicture(profilePictureFile)
@@ -72,8 +84,8 @@ export const register = async (form: z.infer<typeof registerForm>) => {
 		{
 			body: {
 				...form,
-				...(profilePictureUrl && { profilePictureUrl }),
-			}, bodySchema: registerForm
+				profilePictureUrl,
+			}, bodySchema: registerSchema
 		},
 		"POST",
 	)

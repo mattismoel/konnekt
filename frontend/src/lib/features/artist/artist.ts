@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { genreSchema } from "./genre";
-import { APIError, apiErrorSchema, requestAndParse } from "@/lib/api";
+import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/lib/api";
 import { createUrl, isValidUrl, type Query } from "@/lib/url";
 import { createListResult, type ListResult } from "@/lib/query";
 
@@ -13,10 +13,11 @@ import {
 	FaSpotify,
 	FaYoutube,
 } from "react-icons/fa";
-import { env } from "../env";
+
+import { env } from "../../env";
 
 export const artistSchema = z.object({
-	id: z.number().positive(),
+	id: idSchema,
 	name: z.string(),
 	imageUrl: z.string().optional().or(z.string().url().optional()),
 	description: z.string(),
@@ -27,7 +28,7 @@ export const artistSchema = z.object({
 
 export type Artist = z.infer<typeof artistSchema>
 
-const artistForm = z.object({
+export const artistForm = z.object({
 	name: z
 		.string()
 		.nonempty({ message: "Kustnernavn skal være defineret" }),
@@ -44,35 +45,28 @@ const artistForm = z.object({
 			return hostname === "open.spotify.com"
 		}, { message: "Preview URL skal være fra Spotify" }),
 	]),
-	genreIds: z.number()
-		.positive()
+	genreIds: idSchema
 		.array()
-		.min(1, { message: "Mindst én genre skal være valgt" }),
+		.nonempty(),
 	socials: z
 		.string()
 		.nonempty()
 		.url({ message: "URL skal være gyldigt" })
 		.array(),
+	image: z.instanceof(File).optional()
 })
 
-export const createArtistForm = artistForm
-	.extend({ image: z.instanceof(File).optional() })
+export type ArtistFormValues = z.infer<typeof artistForm>
 
-export const editArtistForm = artistForm
-	.extend({ image: z.instanceof(File).optional() })
-
-
-const createArtistSchema = createArtistForm
+const createArtistSchema = artistForm
 	.omit({ image: true })
 	.extend({ imageUrl: z.string().url() })
 
-const updateArtistSchema = editArtistForm
+const editArtistSchema = artistForm
 	.omit({ image: true })
 	.extend({ imageUrl: z.string().url().optional() })
 
-export const createArtist = async (
-	form: z.infer<typeof createArtistForm>,
-) => {
+export const createArtist = async (form: ArtistFormValues) => {
 	let { image, ...rest } = form
 	if (!image) throw new APIError(400, "Could not upload artist image", "Image file not present")
 
@@ -92,14 +86,11 @@ export const createArtist = async (
 
 /**
  * @description Updates an artist.
- * @param {number} artistId - The artist to be updated's ID.
+ * @param {ID} artistId - The artist to be updated's ID.
  * @param form - The form data to update the artist with.
  */
-export const updateArtist = async (
-	artistId: number,
-	form: z.infer<typeof editArtistForm>,
-): Promise<Artist> => {
-	const { data, success, error } = editArtistForm.safeParse(form)
+export const updateArtist = async (artistId: ID, form: ArtistFormValues): Promise<Artist> => {
+	const { data, success, error } = artistForm.safeParse(form)
 	if (!success) throw error
 
 	const { image, ...rest } = data;
@@ -110,7 +101,7 @@ export const updateArtist = async (
 		createUrl(`/api/artists/${artistId}`),
 		artistSchema,
 		"Could not update artist",
-		{ bodySchema: updateArtistSchema, body: { ...rest, imageUrl } },
+		{ bodySchema: editArtistSchema, body: { ...rest, imageUrl } },
 		"PUT"
 	)
 
@@ -161,9 +152,9 @@ export const listArtists = async (query?: Query): Promise<ListResult<Artist>> =>
 
 /**
  * @description Gets an artists by its ID.
- * @param {number} id - The ID of the artist.
+ * @param {ID} id - The ID of the artist.
  */
-export const artistById = async (id: number): Promise<Artist> => {
+export const artistById = async (id: ID): Promise<Artist> => {
 	const artist = await requestAndParse(
 		createUrl(`${env.VITE_SERVER_ORIGIN}/api/artists/${id}`),
 		artistSchema,
@@ -172,7 +163,7 @@ export const artistById = async (id: number): Promise<Artist> => {
 	return artist
 }
 
-export const deleteArtist = async (id: number) => {
+export const deleteArtist = async (id: ID) => {
 	await requestAndParse(
 		createUrl(`/api/artists/${id}`),
 		undefined,
