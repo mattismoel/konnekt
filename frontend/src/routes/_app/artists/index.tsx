@@ -7,6 +7,7 @@ import { randomInt } from '@/lib/random';
 import { SkeletonIcon, SkeletonText } from '@/lib/components/skeleton';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { artistsQueryOpts } from '@/lib/features/artist/query';
+import PageMeta from '@/lib/components/page-meta';
 
 /** @description The rate of which artist auto display changes artist. */
 const AUTO_DISPLAY_RATE = 0.25;
@@ -58,37 +59,44 @@ function RouteComponent() {
   };
 
   return (
-    <main className="px-auto h-svh pt-32">
-      {artists.map(artist => (
-        <img
-          key={artist.id}
-          src={artist.imageUrl}
-          alt={artist.name}
-          className={cn("pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-75 transition-all duration-1000", {
-            "opacity-100 scale-105": selected?.id === artist.id
-          })}
-        />
-      ))}
-      <div className="space-y-16">
-        <section className="flex flex-col">
-          <h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl">Kunstnere</h1>
-          <span className="text-text/75">
-            Her kan du se alle kunstnere, som medvirker i kommende events.
-          </span>
-        </section>
-        {/*  ARTISTS */}
-        {artists.length <= 0 && (
-          <span>Der er ingen aktuelle kunstnere i øjeblikket...</span>
-        )}
-        <ArtistList
-          artists={artists}
-          selected={selected}
-          onSelect={setSelected}
-          onMouseEnter={endAutoDisplay}
-          onMouseLeave={beginAutoDisplay}
-        />
-      </div>
-    </main>
+    <>
+      <PageMeta
+        title="Konnekt | Kunstnere"
+        description="Se alle aktuelle kunstnere der medvirker i Konnekts kommende events"
+      />
+
+      <main className="px-auto h-svh pt-32">
+        {artists.map(artist => (
+          <img
+            key={artist.id}
+            src={artist.imageUrl}
+            alt={artist.name}
+            className={cn("pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-75 transition-all duration-1000", {
+              "opacity-100 scale-105": selected?.id === artist.id
+            })}
+          />
+        ))}
+        <div className="space-y-16">
+          <section className="flex flex-col">
+            <h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl">Kunstnere</h1>
+            <span className="text-text/75">
+              Her kan du se alle kunstnere, som medvirker i kommende events.
+            </span>
+          </section>
+          {/*  ARTISTS */}
+          {artists.length <= 0 && (
+            <span>Der er ingen aktuelle kunstnere i øjeblikket...</span>
+          )}
+          <ArtistList
+            artists={artists}
+            selected={selected}
+            onSelect={setSelected}
+            onMouseEnter={endAutoDisplay}
+            onMouseLeave={beginAutoDisplay}
+          />
+        </div>
+      </main>
+    </>
   )
 }
 

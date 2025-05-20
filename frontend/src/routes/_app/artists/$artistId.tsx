@@ -1,5 +1,6 @@
 import Caroussel from '@/lib/components/caroussel';
 import Fader from '@/lib/components/fader';
+import PageMeta from '@/lib/components/page-meta';
 import SpotifyPreview from '@/lib/components/spotify-preview';
 import { socialUrlToIcon } from '@/lib/features/artist/artist';
 import { createArtistByIdOpts, createArtistEventsOpts } from '@/lib/features/artist/query';
@@ -33,6 +34,12 @@ if (!artist) return <p>No such artist...</p>
 let trackId = artist.previewUrl ? trackIdFromUrl(artist.previewUrl) : undefined;
 
 return  (
+    <>
+    <PageMeta 
+      title={`Konnekt | Kunstner | ${artist.name}`}
+      description={`Oplev ${artist.name} til "${artistEvents.at(0)?.title}"`}
+    />
+
 <main>
 <div className="grid min-h-svh grid-cols-1 grid-rows-[85svh_1fr]">
 <div className="px-auto relative isolate flex items-end py-16">
@@ -83,5 +90,7 @@ return (
 </article>
 </div>
 </main>
+    </>
 )
 }
+
