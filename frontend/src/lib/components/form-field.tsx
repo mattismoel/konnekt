@@ -1,14 +1,19 @@
 import { cn } from "@/lib/clsx";
-import type { PropsWithChildren } from "react";
-import type { FieldError } from "react-hook-form";
+import type { HTMLAttributes } from "react";
+import type { FieldError, FieldErrorsImpl, Merge } from "react-hook-form";
 
-type Props = PropsWithChildren<{
-	error?: FieldError | undefined
-}>;
+type Error = Merge<FieldError, (Merge<FieldError, FieldErrorsImpl<{
+	value: string;
+}>> | undefined)[]> | FieldError | undefined
 
-const FormField = ({ error, children }: Props) => (
-	<div className="flex w-full flex-col gap-2">
-		<div className="flex gap-4">
+
+type Props = HTMLAttributes<HTMLDivElement> & {
+	error?: Error;
+}
+
+const FormField = ({ error, children, className }: Props) => (
+	<>
+		<div className={cn("flex gap-4 w-full", className)}>
 			{children}
 		</div>
 
@@ -17,7 +22,7 @@ const FormField = ({ error, children }: Props) => (
 				{error?.message}
 			</span>
 		)}
-	</div>
+	</>
 )
 
 export default FormField

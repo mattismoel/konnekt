@@ -2,13 +2,13 @@ import { DATE_FORMAT } from '@/lib/time';
 
 import { format } from 'date-fns';
 
-import { earliestConcert } from '@/lib/features/concert';
-import type { Event } from '@/lib/features/event';
+import { earliestConcert } from '@/lib/features/event/concert';
+import type { Event } from '@/lib/features/event/event';
 
 import Fader from "@/lib/components/fader"
 
 import { FaCalendarDay, FaMapPin, FaMusic, FaTicketAlt } from "react-icons/fa"
-import LinkButton from './ui/button/link-button';
+import LinkButton from '@/lib/components/ui/button/link-button';
 
 type Props = {
 	event: Event;

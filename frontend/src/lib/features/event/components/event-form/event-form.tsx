@@ -3,18 +3,19 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { FaArrowsRotate, FaPlus, FaUpload } from "react-icons/fa6"
 import { addMinutes, roundToNearestHours } from "date-fns"
 import ConcertList from "./concert-list"
-import { z } from "zod"
-import { createEventForm, editEventForm, type Event } from "@/lib/features/event"
-import type { Venue } from "@/lib/features/venue"
-import FormField from "../form-field"
-import ImagePreview from "../image-preview"
-import Input from "../ui/input"
-import Selector from "../ui/selector"
-import Button from "../ui/button/button"
-import LinkButton from "../ui/button/link-button"
-import type { Artist } from "@/lib/features/artist"
+import { createEvent, eventForm, updateEvent, type Event, type EventFormValues } from "@/lib/features/event/event"
+import type { Venue } from "@/lib/features/event/venue"
+import type { Artist } from "@/lib/features/artist/artist"
 import { createContext, useContext } from "react"
-import Tiptap from "../tiptap/tiptap"
+import FormField from "@/lib/components/form-field"
+import ImagePreview from "@/lib/components/image-preview"
+import Tiptap from "@/lib/components/tiptap/tiptap"
+import Button from "@/lib/components/ui/button/button"
+import Input from "@/lib/components/ui/input"
+import Selector from "@/lib/components/ui/selector"
+import LinkButton from "@/lib/components/ui/button/link-button"
+import { createSubmitHandler } from "@/lib/api"
+import { useQueryClient } from "@tanstack/react-query"
 
 // We must include the fieldArray as part of the context, to not create another
 // instance in children.
@@ -22,8 +23,8 @@ import Tiptap from "../tiptap/tiptap"
 // This also means, that we are NOT to use the react-hook-form useFormContext,
 // but rather the extended useEventFormContext!
 type EventFormContext =
-	UseFieldArrayReturn<EventForm> &
-	UseFormReturn<EventForm> & {
+	UseFieldArrayReturn<EventFormValues> &
+	UseFormReturn<EventFormValues> & {
 		event?: Event;
 		venues: Venue[]
 		artists: Artist[]
@@ -43,31 +44,32 @@ export const useEventFormContext = () => {
 	return eventFormContext
 }
 
-
-const eventFormSchema = z.union([createEventForm, editEventForm])
-type EventForm = z.infer<typeof eventFormSchema>
-
 type Props = {
 	event?: Event;
 	venues: Venue[]
 	artists: Artist[]
 	disabled?: boolean;
-
-	onSubmit: (form: EventForm) => void;
 }
 
-const EventForm = ({ event, venues, artists, disabled = false, onSubmit }: Props) => {
-	const methods = useForm<EventForm>({
-		defaultValues: {
-			...event,
-			venueId: event?.venue.id,
-			concerts: event?.concerts.map(c => ({
-				from: c.from,
-				to: c.to,
-				artistID: c.artist.id,
-			}))
-		},
-		resolver: zodResolver(eventFormSchema),
+
+const EventForm = ({ event, venues, artists, disabled = false }: Props) => {
+	const queryClient = useQueryClient()
+
+	const methods = useForm({
+		defaultValues:
+			event ? {
+				title: event.title,
+				description: event.description,
+				venueId: event?.venue.id,
+				image: undefined,
+				ticketUrl: event.ticketUrl,
+				concerts: event?.concerts.map(c => ({
+					from: c.from,
+					to: c.to,
+					artistID: c.artist.id,
+				}))
+			} : undefined,
+		resolver: zodResolver(eventForm),
 	})
 
 	const { control, formState: { defaultValues, errors }, setValue, getValues, handleSubmit } = methods;
@@ -89,6 +91,18 @@ const EventForm = ({ event, venues, artists, disabled = false, onSubmit }: Props
 	const onDeleteConcert = (idx: number) => {
 		remove(idx)
 	}
+
+
+
+	const onSubmit = createSubmitHandler({
+		action: async (form: EventFormValues) => {
+			event ? await updateEvent(form, event.id) : await createEvent(form)
+			await queryClient.invalidateQueries({ queryKey: ["events"] })
+		},
+		successMessage: event ? "Event opdateret" : "Event skabt",
+		errorMessage: event ? "Kunne ikke redigére event" : "Kunne ikke lave event",
+		navigateTo: "/admin/events",
+	})
 
 	return (
 		<FormProvider {...methods}>

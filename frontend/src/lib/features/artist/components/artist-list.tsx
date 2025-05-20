@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import { deleteArtist, type Artist } from "../features/artist";
-import SearchList from "./search-list";
-import { useToast } from "../context/toast";
+import { deleteArtist, type Artist } from "../artist";
+import SearchList from "@/lib/components/search-list";
+import { useToast } from "@/lib/context/toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { APIError } from "../api";
-import List from "./list/list";
-import ContextMenu from "./context-menu";
-import { useAuth } from "../context/auth";
+import { useAuth } from "@/lib/context/auth";
+import { APIError } from "@/lib/api";
+import List from "@/lib/components/list/list";
+import ContextMenu from "@/lib/components/context-menu";
 
 type Props = {
 	artists: Artist[];

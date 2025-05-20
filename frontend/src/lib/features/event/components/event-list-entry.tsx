@@ -1,16 +1,20 @@
 import { useState } from "react";
-import { useAuth } from "../context/auth";
-import { useToast } from "../context/toast";
-import { deleteEvent, type Event } from "../features/event";
-import { earliestConcert } from "../features/concert";
 import { format, isBefore, startOfToday } from "date-fns";
-import { APIError } from "../api";
-import List from "./list/list";
-import type { Artist } from "../features/artist";
-import { DATETIME_FORMAT } from "../time";
-import { cn } from "../clsx";
+
+import { APIError } from "@/lib/api";
+import { DATETIME_FORMAT } from "@/lib/time";
+import { useToast } from "@/lib/context/toast";
+import { useAuth } from "@/lib/context/auth";
+import { cn } from "@/lib/clsx";
+
+import { earliestConcert } from "../concert";
+import { deleteEvent, type Event } from "../event";
+import type { Artist } from "../../artist/artist";
+
+import List from "@/lib/components/list/list";
+import ContextMenu from "@/lib/components/context-menu";
+
 import { FaMapMarker } from "react-icons/fa";
-import ContextMenu from "./context-menu";
 
 type Props = {
 	event: Event;
@@ -62,7 +66,7 @@ const EventEntry = ({ event }: Props) => {
 					{formatArtists(artists)}
 				</span>
 			</List.Entry.LinkSection>
-			<List.Entry.LinkSection to="/admin/venues/edit/$venueId" className="group/venue hidden md:block">
+			<List.Entry.LinkSection to="/admin/venues/$venueId/edit" params={{ venueId: event.venue.id.toString() }} className="group/venue hidden md:block">
 				<span
 					// className:disabled={!hasPermissions(authStore.permissions, ['edit:venue'])}
 					className={cn("text-text/50 group-hover/venue:text-text group-[.disabled]/venue:text-text/50 hidden w-full items-center gap-2 group-hover/venue:underline group-[.disabled]/venue:no-underline md:flex", {
@@ -81,7 +85,8 @@ const EventEntry = ({ event }: Props) => {
 			<ContextMenu show={showContextMenu} onClose={() => setShowContextMenu(false)} className="absolute top-1/2 right-4">
 				<ContextMenu.LinkEntry
 					disabled={!hasPermissions(['edit:event'])}
-					to="/admin/events/edit/$eventId"
+					to="/admin/events/$eventId/edit"
+					params={{ eventId: event.id.toString() }}
 				>
 					Redigér
 				</ContextMenu.LinkEntry>

@@ -2,9 +2,10 @@ import { differenceInMinutes, startOfHour, addHours, format } from 'date-fns';
 
 import { cn } from '@/lib/clsx';
 
-import type { Event } from '@/lib/features/event';
+import type { Event } from '@/lib/features/event/event';
 import { useMemo, type HTMLAttributes } from 'react';
-import type { Concert } from '../features/concert';
+import type { Concert } from '../features/event/concert';
+import { Link } from '@tanstack/react-router';
 
 type Props = HTMLAttributes<HTMLDivElement> & {
 	event: Event;
@@ -92,15 +93,14 @@ const Entry = ({ concert, totalMinutes, startHour }: EntryProps) => {
 	const concertDurationMinutes = differenceInMinutes(concert.to, concert.from);
 
 	return (
-		<a
+		<Link
 			style={{
 				top: `calc(${concertStartOffset / totalMinutes} * 100%)`,
 				height: `calc(${concertDurationMinutes / totalMinutes} * 100% - 1px)`
 			}}
-			// style:top="calc({(concertStartOffset / totalMinutes) * 100}%)"
-			// style:height="calc({(concertDurationMinutes / totalMinutes) * 100}% - 1px)"
 			className="absolute flex w-full justify-between overflow-hidden rounded-sm border border-t border-blue-800 bg-blue-950 p-2 text-sm transition-colors hover:bg-blue-900"
-			href="/artists/{concert.artist.id}"
+			to="/artists/$artistId"
+			params={{ artistId: concert.artist.id.toString() }}
 		>
 			<p className="font-bold text-blue-200">
 				{concert.artist.name}
@@ -108,7 +108,7 @@ const Entry = ({ concert, totalMinutes, startHour }: EntryProps) => {
 			<p className="text-blue-500">
 				{format(concert.from, 'HH:mm')} - {format(concert.to, 'HH:mm')}
 			</p>
-		</a>
+		</Link>
 	)
 }
 

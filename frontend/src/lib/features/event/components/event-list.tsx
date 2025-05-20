@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 
-import { type Event } from '../features/event';
-import SearchList from './search-list';
 import EventEntry from './event-list-entry';
+import type { Event } from '../event';
+import SearchList from '@/lib/components/search-list';
 
 type Props = {
 	previousEvents: Event[];

@@ -4,34 +4,27 @@ import { z } from "zod"
 import { FormProvider, useFieldArray, useForm, type UseFieldArrayReturn, type UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { createArtistForm, editArtistForm, socialUrlToIcon, type Artist } from "../features/artist"
-import type { Genre } from "../features/genre"
-import { trackIdFromUrl } from "../spotify"
-
-import FormField from "./form-field"
-import Input from "./ui/input"
-import Button from "./ui/button/button"
-import Picker, { type Entry } from "./ui/picker"
-import PillList from "./pill-list"
-import ImagePreview from "./image-preview"
-import Tiptap from "./tiptap/tiptap"
-import SpotifyPreview from "./spotify-preview"
-
 import { FaPlus, FaTrash, FaUpload, FaPen } from "react-icons/fa"
-
-const artistForm = z.union([createArtistForm, editArtistForm])
-type ArtistForm = z.infer<typeof artistForm>
+import { artistForm, createArtist, socialUrlToIcon, updateArtist, type Artist, type ArtistFormValues } from "../artist"
+import type { Genre } from "../genre"
+import FormField from "@/lib/components/form-field"
+import ImagePreview from "@/lib/components/image-preview"
+import Button from "@/lib/components/ui/button/button"
+import Input from "@/lib/components/ui/input"
+import Tiptap from "@/lib/components/tiptap/tiptap"
+import { trackIdFromUrl } from "@/lib/spotify"
+import SpotifyPreview from "@/lib/components/spotify-preview"
+import type { Entry } from "@/lib/components/ui/picker"
+import PillList from "@/lib/components/pill-list"
+import Picker from "@/lib/components/ui/picker"
+import { createSubmitHandler } from "@/lib/api"
+import { useQueryClient } from "@tanstack/react-query"
 
 const internalSocialSchema = z.object({ value: z.string().url() })
 
-const internalArtistFormSchema = z.union([
-	createArtistForm
-		.omit({ socials: true })
-		.extend({ socials: internalSocialSchema.array() }),
-	editArtistForm
-		.omit({ socials: true })
-		.extend({ socials: internalSocialSchema.array() }),
-])
+const internalArtistFormSchema = artistForm
+	.omit({ socials: true })
+	.extend({ socials: internalSocialSchema.array() })
 
 type InternalArtistForm = z.infer<typeof internalArtistFormSchema>
 
@@ -53,11 +46,9 @@ export const useArtistFormContext = () => {
 type Props = {
 	artist?: Artist;
 	genres: Genre[]
-
-	onSubmit: (form: ArtistForm) => void;
 }
 
-const ArtistForm = ({ artist, genres, onSubmit }: Props) => {
+const ArtistForm = ({ artist, genres }: Props) => {
 	const methods = useForm<InternalArtistForm>({
 		defaultValues: {
 			...artist,
@@ -67,28 +58,37 @@ const ArtistForm = ({ artist, genres, onSubmit }: Props) => {
 		resolver: zodResolver(internalArtistFormSchema),
 	})
 
-	const { control, formState: { errors }, register, watch, handleSubmit, setValue } = methods
+	const { control, formState: { errors }, handleSubmit, setValue } = methods
 	const fieldArrayMethods = useFieldArray({ control, name: "socials" })
 
-	const submitForm = (form: InternalArtistForm) => {
-		const output: ArtistForm = {
-			...form,
-			socials: form.socials.map(v => v.value)
-		}
+	const queryClient = useQueryClient()
 
-		const { data, success, error } = artistForm.safeParse(output)
-		if (!success) {
-			console.error(error)
-			throw error
-		}
+	const onSubmit = createSubmitHandler({
+		navigateTo: "/admin/artists",
+		successMessage: artist ? "Kunstner redigeret" : "Kunstner skabt",
+		errorMessage: artist ? "Kunne ikke redigere kunstner" : "Kunne ikke skabe kunstner",
+		action: async (form: InternalArtistForm) => {
+			const socials: string[] = form.socials.map(({ value }) => value)
+			const output: ArtistFormValues = { ...form, socials }
 
-		onSubmit(data)
-	}
+			const { data, success, error } = artistForm.safeParse(output)
+			if (!success) {
+				console.error(error)
+				throw error
+			}
+
+			artist
+				? await updateArtist(artist.id, data)
+				: await createArtist(data)
+
+			await queryClient.invalidateQueries({ queryKey: ["artists"] })
+		},
+	})
 
 	return (
 		<ArtistFormContext.Provider value={{ ...methods, ...fieldArrayMethods, artist, genres }}>
 			<FormProvider {...methods}>
-				<form className="flex flex-col gap-16" onSubmit={handleSubmit(submitForm)}>
+				<form className="flex flex-col gap-16" onSubmit={handleSubmit(onSubmit)}>
 					<FormField error={errors.image}>
 						<ImagePreview
 							src={artist?.imageUrl}

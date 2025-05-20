@@ -1,12 +1,12 @@
-import Button from "../ui/button/button";
 import { FaArrowRight, FaArrowsRotate, FaPlus, FaXmark } from "react-icons/fa6";
-import Card from "../ui/card";
-import Selector from "../ui/selector";
-import LinkButton from "../ui/button/link-button";
-import DatetimePicker from "../datetime-picker";
 import { useEventFormContext } from "./event-form";
 import { Controller } from "react-hook-form";
 import type { PropsWithChildren } from "react";
+import Button from "@/lib/components/ui/button/button";
+import Card from "@/lib/components/ui/card";
+import Selector from "@/lib/components/ui/selector";
+import LinkButton from "@/lib/components/ui/button/link-button";
+import DatetimePicker from "@/lib/components/datetime-picker";
 
 const ConcertList = ({ children }: PropsWithChildren) => {
 	const { onAddConcert } = useEventFormContext()

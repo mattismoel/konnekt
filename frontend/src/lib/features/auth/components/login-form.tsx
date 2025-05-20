@@ -1,19 +1,26 @@
+import Button from "@/lib/components/ui/button/button"
+import Card from "@/lib/components/ui/card"
+import Input from "@/lib/components/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { loginForm } from "../features/auth"
-import Card from "./ui/card"
-import Input from "./ui/input"
-import Button from "./ui/button/button"
-import type { z } from "zod"
+import { login, loginForm, type LoginFormValues } from "../auth"
+import { useNavigate } from "@tanstack/react-router"
 
-type Props = {
-	onSubmit: (form: z.infer<typeof loginForm>) => void
-}
+const LoginForm = () => {
+	const navigate = useNavigate()
 
-const LoginForm = ({ onSubmit }: Props) => {
 	const { register, handleSubmit } = useForm({
 		resolver: zodResolver(loginForm)
 	})
+
+	const onSubmit = async (form: LoginFormValues) => {
+		try {
+			await login(form)
+			navigate({ to: "/admin/events" })
+		} catch (e) {
+			throw e
+		}
+	}
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)}>

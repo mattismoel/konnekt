@@ -1,4 +1,4 @@
-import type { Genre } from "../features/genre";
+import type { Genre } from "../features/artist/genre";
 import Button from "./ui/button/button";
 import Modal from "./ui/modal"
 import Picker from "./ui/picker";

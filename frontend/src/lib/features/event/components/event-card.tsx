@@ -1,4 +1,4 @@
-import type { Event } from '@/lib/features/event';
+import type { Event } from '@/lib/features/event/event';
 // import CalendarIcon from '~icons/mdi/calendar';
 // import VenueIcon from '~icons/mdi/map-marker';
 import QRCode from 'qrcode';
