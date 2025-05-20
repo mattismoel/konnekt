@@ -2,8 +2,8 @@ import Logo from '@/lib/assets/logo'
 import Footer from '@/lib/components/footer'
 import Navbar from '@/lib/components/navbar/navbar'
 import NavMenu from '@/lib/components/navmenu'
-import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
-import { useState } from 'react'
+import { createFileRoute, Link, Outlet, useLocation } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 import { BiMenu } from 'react-icons/bi'
 
 export const Route = createFileRoute('/_app')({
@@ -12,6 +12,12 @@ export const Route = createFileRoute('/_app')({
 
 function RouteComponent() {
   const [expanded, setExpanded] = useState(false)
+
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    setExpanded(false)
+  }, [pathname])
 
   return (
     <>

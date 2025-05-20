@@ -5,7 +5,7 @@ import NavMenu from '@/lib/components/navmenu'
 import Toast from '@/lib/components/toast'
 import { AuthProvider, useAuth } from '@/lib/context/auth'
 import { ToastProvider, useToast } from '@/lib/context/toast'
-import { createFileRoute, Link, Navigate, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Link, Navigate, Outlet, useLocation } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { FaBars } from 'react-icons/fa'
 
@@ -19,6 +19,11 @@ const AuthLayout = () => {
 
   const { member, refetch, handleLogout } = useAuth()
   const { toasts, removeToast } = useToast()
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    setExpanded(false)
+  }, [pathname])
 
   useEffect(() => {
     refetch()
