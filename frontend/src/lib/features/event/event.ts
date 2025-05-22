@@ -103,7 +103,7 @@ export const uploadEventCoverImage = async (file: File, init?: RequestInit): Pro
 
 export const listEvents = async (query: Query,): Promise<ListResult<Event>> => {
 	const result = requestAndParse(
-		createUrl(`${env.VITE_SERVER_ORIGIN}/api/events`, query),
+		createUrl(`/api/events`, query),
 		createListResult(eventSchema),
 		"Could not fetch events"
 	)

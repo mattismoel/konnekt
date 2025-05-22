@@ -156,7 +156,7 @@ export const listArtists = async (query?: Query): Promise<ListResult<Artist>> =>
  */
 export const artistById = async (id: ID): Promise<Artist> => {
 	const artist = await requestAndParse(
-		createUrl(`${env.VITE_SERVER_ORIGIN}/api/artists/${id}`),
+		createUrl(`/api/artists/${id}`),
 		artistSchema,
 	)
 

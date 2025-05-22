@@ -48,7 +48,7 @@ export type LoginFormValues = z.infer<typeof loginForm>
 
 export const login = async (form: LoginFormValues) => {
 	const member = await requestAndParse(
-		createUrl(`${env.VITE_SERVER_ORIGIN}/api/auth/login`),
+		createUrl(`/api/auth/login`),
 		memberSchema,
 		"Could not login member",
 		{ body: form, bodySchema: loginForm },

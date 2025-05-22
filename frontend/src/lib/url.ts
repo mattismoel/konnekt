@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { env } from "./env"
 
 const querySchema = z.object({
   page: z
@@ -31,18 +32,18 @@ const querySchema = z.object({
 export type Query = z.infer<typeof querySchema>
 
 export const createUrl = (base: string, query?: Query): string => {
-  // let origin: string = ""
-  //
-  // When we are server side, the nginx container will be directly acessible
-  // over the shared Docker network by its 'nginx' container name.
-  // if (!browser) {
-  // console.log("NOT BROWSER")
-  // origin = "http://backend:8080"
-  // }
+  console.log("baseUrl", env().BASE_URL, "base", base, "query", query)
 
-  const url = base + (query ? "?" + createQueryParams(query) : "")
+  if (env().DEV) {
+    return base + (query ? "?" + createQueryParams(query) : "")
+  }
 
-  return url
+  const url = new URL(base, env().BASE_URL)
+  if (query) {
+    url.search = createQueryParams(query).toString()
+  }
+
+  return url.toString()
 }
 
 const createQueryParams = (query: Query): URLSearchParams => {
