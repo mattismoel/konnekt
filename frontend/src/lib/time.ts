@@ -1,3 +1,8 @@
+import { da } from "date-fns/locale"
+import { setDefaultOptions } from "date-fns"
+
+setDefaultOptions({ locale: da })
+
 export const DATE_FORMAT = "EEEE / dd.MM.yy"
 export const DATETIME_FORMAT = `${DATE_FORMAT}, HH:mm`
 
