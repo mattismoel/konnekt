@@ -1,13 +1,23 @@
 import { z } from "zod";
 import { genreSchema } from "./genre";
-import { APIError, apiErrorSchema, requestAndParse } from "$lib/api";
-import { createUrl, type Query } from "$lib/url";
-import { createListResult, type ListResult } from "$lib/query";
-import { removeDuplicates } from "$lib/array";
-import type { Event } from "../event/event";
+import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/lib/api";
+import { createUrl, isValidUrl, type Query } from "@/lib/url";
+import { createListResult, type ListResult } from "@/lib/query";
+
+import type { IconType } from "react-icons/lib";
+import {
+	FaApple,
+	FaExclamationTriangle,
+	FaFacebook,
+	FaInstagram,
+	FaSpotify,
+	FaYoutube,
+} from "react-icons/fa";
+
+import { env } from "../../env";
 
 export const artistSchema = z.object({
-	id: z.number().positive(),
+	id: idSchema,
 	name: z.string(),
 	imageUrl: z.string().optional().or(z.string().url().optional()),
 	description: z.string(),
@@ -18,7 +28,7 @@ export const artistSchema = z.object({
 
 export type Artist = z.infer<typeof artistSchema>
 
-const artistForm = z.object({
+export const artistForm = z.object({
 	name: z
 		.string()
 		.nonempty({ message: "Kustnernavn skal være defineret" }),
@@ -35,43 +45,34 @@ const artistForm = z.object({
 			return hostname === "open.spotify.com"
 		}, { message: "Preview URL skal være fra Spotify" }),
 	]),
-	genreIds: z.number()
-		.positive()
+	genreIds: idSchema
 		.array()
-		.min(1, { message: "Mindst én genre skal være valgt" }),
+		.nonempty(),
 	socials: z
 		.string()
 		.nonempty()
 		.url({ message: "URL skal være gyldigt" })
 		.array(),
+	image: z.instanceof(File).optional()
 })
 
-export const createArtistForm = artistForm
-	.extend({ image: z.instanceof(File).nullable() })
+export type ArtistFormValues = z.infer<typeof artistForm>
 
-export const editArtistForm = artistForm
-	.extend({ image: z.instanceof(File).nullable() })
-
-
-const createArtistSchema = createArtistForm
+const createArtistSchema = artistForm
 	.omit({ image: true })
 	.extend({ imageUrl: z.string().url() })
 
-const updateArtistSchema = editArtistForm
+const editArtistSchema = artistForm
 	.omit({ image: true })
 	.extend({ imageUrl: z.string().url().optional() })
 
-export const createArtist = async (
-	fetchFn: typeof fetch,
-	form: z.infer<typeof createArtistForm>,
-) => {
+export const createArtist = async (form: ArtistFormValues) => {
 	let { image, ...rest } = form
 	if (!image) throw new APIError(400, "Could not upload artist image", "Image file not present")
 
 	const imageUrl = await uploadArtistImage(image)
 
 	const artist = requestAndParse(
-		fetchFn,
 		createUrl("/api/artists"),
 		artistSchema,
 		"Could not create artist",
@@ -85,15 +86,11 @@ export const createArtist = async (
 
 /**
  * @description Updates an artist.
- * @param {number} artistId - The artist to be updated's ID.
+ * @param {ID} artistId - The artist to be updated's ID.
  * @param form - The form data to update the artist with.
  */
-export const updateArtist = async (
-	fetchFn: typeof fetch,
-	artistId: number,
-	form: z.infer<typeof editArtistForm>,
-): Promise<Artist> => {
-	const { data, success, error } = editArtistForm.safeParse(form)
+export const updateArtist = async (artistId: ID, form: ArtistFormValues): Promise<Artist> => {
+	const { data, success, error } = artistForm.safeParse(form)
 	if (!success) throw error
 
 	const { image, ...rest } = data;
@@ -101,11 +98,10 @@ export const updateArtist = async (
 	const imageUrl = image ? await uploadArtistImage(image) : undefined
 
 	const artist = requestAndParse(
-		fetchFn,
 		createUrl(`/api/artists/${artistId}`),
 		artistSchema,
 		"Could not update artist",
-		{ bodySchema: updateArtistSchema, body: { ...rest, imageUrl } },
+		{ bodySchema: editArtistSchema, body: { ...rest, imageUrl } },
 		"PUT"
 	)
 
@@ -138,12 +134,12 @@ export const uploadArtistImage = async (file: File, init?: RequestInit): Promise
 	return url
 };
 
+
 /**
  * @description Lists artists as a {ListResult} object.
  */
-export const listArtists = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Artist>> => {
+export const listArtists = async (query?: Query): Promise<ListResult<Artist>> => {
 	const result = requestAndParse(
-		fetchFn,
 		createUrl("/api/artists", {
 			orderBy: new Map([["name", "ASC"]]),
 			...query,
@@ -156,11 +152,10 @@ export const listArtists = async (fetchFn: typeof fetch, query?: Query): Promise
 
 /**
  * @description Gets an artists by its ID.
- * @param {number} id - The ID of the artist.
+ * @param {ID} id - The ID of the artist.
  */
-export const artistById = async (fetchFn: typeof fetch, id: number): Promise<Artist> => {
-	const artist = requestAndParse(
-		fetchFn,
+export const artistById = async (id: ID): Promise<Artist> => {
+	const artist = await requestAndParse(
 		createUrl(`/api/artists/${id}`),
 		artistSchema,
 	)
@@ -168,9 +163,8 @@ export const artistById = async (fetchFn: typeof fetch, id: number): Promise<Art
 	return artist
 }
 
-export const deleteArtist = async (fetchFn: typeof fetch, id: number) => {
+export const deleteArtist = async (id: ID) => {
 	await requestAndParse(
-		fetchFn,
 		createUrl(`/api/artists/${id}`),
 		undefined,
 		"Could not delete artist",
@@ -179,8 +173,24 @@ export const deleteArtist = async (fetchFn: typeof fetch, id: number) => {
 	)
 }
 
-export const eventsArtists = (events: Event[]): Artist[] => {
-	return removeDuplicates(
-		events.flatMap(({ concerts }) => concerts).map(({ artist }) => artist)
-	)
+const iconMap = new Map<string, IconType>([
+	["spotify.com", FaSpotify],
+	["open.spotify.com", FaSpotify],
+	["instagram.com", FaInstagram],
+	["music.apple.com", FaApple],
+	["facebook.com", FaFacebook],
+	["youtube.com", FaYoutube]
+])
+
+export const socialUrlToIcon = (url: string): IconType => {
+	if (!isValidUrl(url)) return FaExclamationTriangle
+
+	const { hostname } = new URL(url);
+	const iconKey = hostname.replace(/^www\./, '');
+
+	const icon = iconMap.get(iconKey)
+
+	if (!icon) return FaExclamationTriangle
+
+	return icon
 }

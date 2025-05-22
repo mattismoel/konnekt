@@ -1,5 +1,5 @@
-import { requestAndParse } from "$lib/api";
-import { createUrl } from "$lib/url";
+import { idSchema, requestAndParse, type ID } from "@/lib/api";
+import { createUrl } from "@/lib/url";
 import { z } from "zod";
 
 export const permissionTypes = z.union([
@@ -31,7 +31,7 @@ export const permissionTypes = z.union([
 ])
 
 export const permissionSchema = z.object({
-	id: z.number().int().positive(),
+	id: idSchema,
 	name: permissionTypes,
 	displayName: z.string().nonempty(),
 	description: z.string().nonempty(),
@@ -40,17 +40,12 @@ export const permissionSchema = z.object({
 export type PermissionType = z.infer<typeof permissionTypes>
 export type Permission = z.infer<typeof permissionSchema>
 
-export const memberPermissions = async (fetchFn: typeof fetch, memberId: number): Promise<Permission[]> => {
+export const memberPermissions = async (memberId: ID): Promise<Permission[]> => {
 	const permissions = await requestAndParse(
-		fetchFn,
 		createUrl(`/api/members/${memberId}/permissions`),
 		permissionSchema.array(),
 		"Could not fetch member permissions",
 	)
 
 	return permissions
-}
-
-export const hasPermissions = (permissions: Permission[], reqPermNames: PermissionType[]): boolean => {
-	return reqPermNames.every(perm => permissions.some(p => p.name === perm))
 }

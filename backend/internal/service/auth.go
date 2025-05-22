@@ -50,7 +50,7 @@ func (srv AuthService) Register(ctx context.Context, load RegisterLoad) error {
 	// Return if member already exists.
 	_, err := srv.memberRepo.ByEmail(ctx, load.Email)
 	if err == nil {
-		return err
+		return member.ErrAlreadyExists
 	}
 
 	if err := load.Password.Validate(); err != nil {

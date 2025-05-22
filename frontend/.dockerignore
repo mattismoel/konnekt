@@ -1,12 +1,5 @@
-Dockerfile
-.dockerignore
-.gitignore
-.gitattributes
-README.md
-.npmrc
-.prettierrc
-.eslintrc
-.svelte-kit/
+.git/
+.vscode/
 node_modules/
-build/
-*.env
+.env/
+Dockerfile*

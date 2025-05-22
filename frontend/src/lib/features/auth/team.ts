@@ -1,6 +1,6 @@
-import { requestAndParse } from "$lib/api"
-import { createListResult, type ListResult } from "$lib/query"
-import { createUrl, type Query } from "$lib/url"
+import { idSchema, requestAndParse, type ID } from "@/lib/api"
+import { createListResult, type ListResult } from "@/lib/query"
+import { createUrl, type Query } from "@/lib/url"
 import { z } from "zod"
 
 export const teamTypes = z.union([
@@ -16,7 +16,7 @@ export const teamTypes = z.union([
 export type TeamType = z.infer<typeof teamTypes>
 
 export const teamSchema = z.object({
-	id: z.number().positive(),
+	id: idSchema,
 	name: teamTypes,
 	displayName: z.string(),
 	description: z.string()
@@ -24,9 +24,8 @@ export const teamSchema = z.object({
 
 export type Team = z.infer<typeof teamSchema>
 
-export const memberTeams = async (fetchFn: typeof fetch, memberId: number): Promise<Team[]> => {
+export const memberTeams = async (memberId: ID): Promise<Team[]> => {
 	const teams = await requestAndParse(
-		fetchFn,
 		createUrl(`/api/members/${memberId}/teams`),
 		teamSchema.array(),
 		"Could not fetch member teams",
@@ -35,10 +34,9 @@ export const memberTeams = async (fetchFn: typeof fetch, memberId: number): Prom
 	return teams
 }
 
-export const listTeams = async (fetchFn: typeof fetch, query?: Query): Promise<ListResult<Team>> => {
+export const listTeams = async (query?: Query): Promise<ListResult<Team>> => {
 	const result = await requestAndParse(
-		fetchFn,
-		createUrl("/api/teams", query),
+		createUrl(`/api/teams`, query),
 		createListResult(teamSchema),
 		"Could not list teams",
 	)
@@ -46,6 +44,15 @@ export const listTeams = async (fetchFn: typeof fetch, query?: Query): Promise<L
 	return result
 }
 
+export const setMemberTeams = async (memberId: ID, teamIds: ID[]): Promise<void> => {
+	await requestAndParse(
+		createUrl(`/api/members/${memberId}/teams`),
+		undefined,
+		"Could not update member teams",
+		{ body: teamIds, bodySchema: idSchema.array() },
+		"PUT",
+	)
+}
 
 /**
  * @description Checks whether or not a given member has all required input teams.
@@ -53,8 +60,3 @@ export const listTeams = async (fetchFn: typeof fetch, query?: Query): Promise<L
 export const hasAllTeams = (teams: Team[], reqTeamNames: TeamType[]): boolean => {
 	return reqTeamNames.every(team => teams.some(t => t.name === team))
 }
-
-export const hasSomeTeam = (teams: Team[], reqTeamNames: TeamType[]): boolean => {
-	return reqTeamNames.some(team => teams.some(t => t.name === team))
-}
-

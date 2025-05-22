@@ -28,7 +28,7 @@ ENV DB_DIR=${DB_DIR:-/app/data}
 ENV ORIGIN=${ORIGIN:-http://localhost:4000}
 ENV DB_FILE_NAME=${DB_FILE_NAME:-data.db}
 
-COPY tables.sql .
+COPY tables.sql seed.sql ./
 
 # System upgrade before SQLite install.
 RUN apk update && apk upgrade && apk add --no-cache sqlite
@@ -40,8 +40,6 @@ ENV TZ=Europe/Copenhagen
 
 # Make $DB_DIR directory for the database file.
 RUN mkdir -p ${DB_DIR}
-
-RUN sqlite3 ${DB_DIR}/${DB_FILE_NAME} < ./tables.sql
 
 EXPOSE 8080
 

@@ -1,10 +1,11 @@
-import { APIError, apiErrorSchema, requestAndParse } from "$lib/api"
-import { createListResult } from "$lib/query"
-import { createUrl, type Query } from "$lib/url"
+import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/lib/api"
+import { createListResult } from "@/lib/query"
+import { createUrl, type Query } from "@/lib/url"
 import { z } from "zod"
+import { setMemberTeams } from "./team"
 
 export const memberSchema = z.object({
-	id: z.number().positive(),
+	id: idSchema,
 	email: z.string().email(),
 	firstName: z.string(),
 	lastName: z.string(),
@@ -29,26 +30,23 @@ export const memberForm = z.object({
 	email: z
 		.string()
 		.email(),
+	memberTeams: z
+		.number()
+		.int()
+		.positive()
+		.array(),
+	image: z.instanceof(File).optional()
 })
 
-export const editMemberForm = memberForm
-	.extend({ image: z.instanceof(File).nullable() })
+export type MemberFormValues = z.infer<typeof memberForm>
 
-const editMemberSchema = editMemberForm
+const editMemberSchema = memberForm
 	.omit({ image: true })
 	.extend({ profilePictureUrl: z.string().url().optional() })
 
-export const setMemberTeamsForm = z
-	.number()
-	.int()
-	.positive()
-	.array()
-	.nonempty()
-
-export const memberSession = async (fetchFn: typeof fetch) => {
+export const memberSession = async () => {
 	const member = await requestAndParse(
-		fetchFn,
-		createUrl("/api/auth/session"),
+		createUrl(`/api/auth/session`),
 		memberSchema,
 		"Could not fetch member session",
 	)
@@ -56,10 +54,9 @@ export const memberSession = async (fetchFn: typeof fetch) => {
 	return member
 }
 
-export const listMembers = async (fetchFn: typeof fetch, query?: Query) => {
+export const listMembers = async (query?: Query) => {
 	const result = await requestAndParse(
-		fetchFn,
-		createUrl("/api/members", query),
+		createUrl(`/api/members`, query),
 		createListResult(memberSchema),
 		"Could not fetch members",
 	)
@@ -67,9 +64,8 @@ export const listMembers = async (fetchFn: typeof fetch, query?: Query) => {
 	return result
 }
 
-export const approveMember = async (fetchFn: typeof fetch, memberId: number) => {
+export const approveMember = async (memberId: ID) => {
 	return requestAndParse(
-		fetchFn,
 		createUrl(`/api/members/${memberId}/approve`),
 		undefined,
 		"Could not approve member",
@@ -78,9 +74,8 @@ export const approveMember = async (fetchFn: typeof fetch, memberId: number) => 
 	)
 }
 
-export const deleteMember = async (fetchFn: typeof fetch, memberId: number) => {
+export const deleteMember = async (memberId: ID) => {
 	return requestAndParse(
-		fetchFn,
 		createUrl(`/api/members/${memberId}`),
 		undefined,
 		"Could not delete member",
@@ -89,9 +84,8 @@ export const deleteMember = async (fetchFn: typeof fetch, memberId: number) => {
 	)
 }
 
-export const memberById = async (fetchFn: typeof fetch, memberId: number) => {
+export const memberById = async (memberId: ID) => {
 	const member = await requestAndParse(
-		fetchFn,
 		createUrl(`/api/members/${memberId}`),
 		memberSchema,
 		"Could not get member by ID"
@@ -100,16 +94,15 @@ export const memberById = async (fetchFn: typeof fetch, memberId: number) => {
 	return member
 }
 
-export const editMember = async (fetchFn: typeof fetch, memberId: number, form: z.infer<typeof editMemberForm>) => {
-	const { data, success, error } = editMemberForm.safeParse(form)
+export const editMember = async (memberId: ID, form: MemberFormValues) => {
+	const { data, success, error } = memberForm.safeParse(form)
 	if (!success) throw error
 
 	const { image, ...rest } = data;
 
-	const profilePictureUrl = image ? await uploadMemberProfilePicture(fetchFn, image) : undefined
+	const profilePictureUrl = image ? await uploadMemberProfilePicture(image) : undefined
 
 	const member = requestAndParse(
-		fetchFn,
 		createUrl(`/api/members/${memberId}`),
 		memberSchema,
 		"Could not update artist",
@@ -117,26 +110,17 @@ export const editMember = async (fetchFn: typeof fetch, memberId: number, form: 
 		"PUT"
 	)
 
+	await setMemberTeams(memberId, form.memberTeams)
+
 	return member
 }
 
-export const setMemberTeams = async (fetchFn: typeof fetch, memberId: number, teamIds: number[]) => {
-	await requestAndParse(
-		fetchFn,
-		createUrl(`/api/members/${memberId}/teams`),
-		undefined,
-		"Could not set member teams",
-		{ bodySchema: setMemberTeamsForm, body: teamIds },
-		"PUT"
-	)
-}
-
-export const uploadMemberProfilePicture = async (fetchFn: typeof fetch, file: File): Promise<string> => {
+export const uploadMemberProfilePicture = async (file: File): Promise<string> => {
 	const formData = new FormData()
 
 	formData.append("file", file)
 
-	const res = await fetchFn("/api/members/picture", {
+	const res = await fetch(`/api/members/picture`, {
 		body: formData,
 		method: "POST",
 		credentials: "include",

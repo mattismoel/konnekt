@@ -97,7 +97,23 @@ func (s Server) handleLogin() http.HandlerFunc {
 		}
 
 		writeSessionCookie(w, token, expiry)
-		w.WriteHeader(http.StatusOK)
+
+		session, err := s.authService.Session(ctx, token.SessionID())
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		usr, err := s.memberService.ByID(ctx, session.MemberID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if err := writeJSON(w, http.StatusOK, usr); err != nil {
+			writeError(w, err)
+			return
+		}
 	}
 }
 
@@ -179,8 +195,9 @@ func writeSessionCookie(w http.ResponseWriter, token auth.SessionToken, expiresA
 		Value:    string(token),
 		HttpOnly: true,
 		Path:     "/",
+		// Domain:   "knnkt.dk",
 		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 		Expires:  expiresAt,
 	})
 }
