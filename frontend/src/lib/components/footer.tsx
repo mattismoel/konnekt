@@ -21,9 +21,8 @@ const Footer = () => {
 					<h3 className="font-heading mb-2 font-bold sm:hidden">Kontakt os</h3>
 					<address className="not-italic">
 						<ul className="text-text/50 flex flex-col items-start sm:items-end">
-							<a href="tel:+4512345678">+45 12 34 56 78</a>
-							<a href="mailto:konnekt@mail.dk">konnekt@mail.dk</a>
-							<a href="https://google.maps.com/konnekt">Konnektvej 17B, Konnekticut</a>
+							<a href="mailto:konnekt.samarbejde@gmail.dk">konnekt.samarbejde@gmail.com</a>
+							<a href="mailto:booking.konnekt@gmail.dk">booking.konnekt@gmail.com</a>
 						</ul>
 					</address>
 				</div>
