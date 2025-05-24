@@ -46,7 +46,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
 					<span>{prefix}</span>
 
 				)}
-				<h1 className="mb-8 text-7xl font-bold">{event.title}</h1>
+				<h1 className="md:mb-8 mb-4 text-4xl md:text-7xl font-bold">{event.title}</h1>
 
 				<div className="text-text/85 flex flex-col gap-8 sm:flex-row">
 					<div className="flex flex-1 flex-col gap-2">
