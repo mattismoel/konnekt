@@ -32,7 +32,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
 	)
 
 	return (
-		<div className="relative isolate flex h-[calc((100svh/4)*3)] items-end overflow-hidden pb-8 sm:pb-16">
+		<div className="relative isolate flex h-[calc((100svh/5)*4)] items-end overflow-hidden pb-8 sm:pb-16">
 			<img
 				src={event.imageUrl}
 				alt="Event cover"
