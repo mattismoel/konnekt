@@ -9,6 +9,7 @@ import Fader from "@/lib/components/fader"
 
 import { FaCalendarDay, FaMapPin, FaMusic, FaTicketAlt } from "react-icons/fa"
 import LinkButton from '@/lib/components/ui/button/link-button';
+import { eventGenres } from '../../artist/genre';
 
 type Props = {
 	event: Event;
@@ -19,19 +20,7 @@ type Props = {
 const EventDetails = ({ event, active, prefix }: Props) => {
 	let fromDate = earliestConcert(event.concerts)?.from;
 
-	let artists = event.concerts.map(({ artist }) => artist);
-
-	// https://stackoverflow.com/questions/2218999/how-to-remove-all-duplicates-from-an-array-of-objects
-	const genres = artists
-		.flatMap((artist) => artist.genres)
-		.filter((value, index, self) => index === self.findIndex((t) => t.id === value.id))
-		.sort((a, b) => {
-			const nameA = a.name.toUpperCase();
-			const nameB = b.name.toUpperCase();
-
-			return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
-		})
-
+	const genres = eventGenres(event)
 	let genresString = genres.map((genre) => genre.name).join(', ')
 
 	const locationUrl = new URL(
@@ -43,7 +32,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
 	)
 
 	return (
-		<div className="relative isolate flex h-[calc((100svh/4)*3)] items-end overflow-hidden pb-8 sm:pb-16">
+		<div className="relative isolate flex h-[calc((100svh/5)*4)] items-end overflow-hidden pb-8 sm:pb-16">
 			<img
 				src={event.imageUrl}
 				alt="Event cover"
@@ -57,7 +46,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
 					<span>{prefix}</span>
 
 				)}
-				<h1 className="mb-8 text-7xl font-bold">{event.title}</h1>
+				<h1 className="md:mb-8 mb-4 text-4xl md:text-7xl font-bold">{event.title}</h1>
 
 				<div className="text-text/85 flex flex-col gap-8 sm:flex-row">
 					<div className="flex flex-1 flex-col gap-2">

@@ -15,7 +15,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=1 GOOS=linux go build -o /konnekt-backend ./cmd/http/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o /konnekt-backend ./cmd/http/main.go
 
 
 # ==============================================================================

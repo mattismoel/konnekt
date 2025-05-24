@@ -30,6 +30,7 @@ const AuthLayout = () => {
   }, [])
 
   if (member === undefined) return "Loading..."
+
   if (member === null) return <Navigate to="/auth/login" />
 
   return <>
@@ -49,6 +50,7 @@ const AuthLayout = () => {
           <Navbar.RouteEntry pathname='/admin/artists' name="Kunstnere" />
           <Navbar.RouteEntry pathname='/admin/venues' name="Venues" />
           <Navbar.RouteEntry pathname='/admin/members' name="Medlemmer" />
+          <Navbar.RouteEntry pathname='/admin/content' name="Indhold" />
         </Navbar.RouteList>
       </Navbar.Content>
       <button className="group" onClick={() => setShowUserContext(true)}>
@@ -73,6 +75,7 @@ const AuthLayout = () => {
         <NavMenu.RouteEntry to="/admin/artists">Kunstnere</NavMenu.RouteEntry>
         <NavMenu.RouteEntry to="/admin/venues">Venues</NavMenu.RouteEntry>
         <NavMenu.RouteEntry to="/admin/members">Medlemmer</NavMenu.RouteEntry>
+        <NavMenu.RouteEntry to="/admin/content">Indhold</NavMenu.RouteEntry>
       </NavMenu.RouteList>
     </NavMenu>
 

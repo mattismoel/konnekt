@@ -14,6 +14,14 @@ func (s *Server) setupRoutes() {
 	s.mux.Use(middleware.Recoverer)
 	s.mux.Use(middleware.Timeout(60 * time.Second))
 
+	s.mux.Route("/content", func(r chi.Router) {
+		r.Route("/landing-images", func(r chi.Router) {
+			r.Get("/", s.handleLandingImages())
+			r.Post("/", s.withPermissions(s.handleUploadLandingImage(), "edit:content"))
+			r.Delete("/{imageID}", s.withPermissions(s.handleDeleteLandingImage(), "delete:content"))
+		})
+	})
+
 	s.mux.Route("/members", func(r chi.Router) {
 		r.Get("/", s.withPermissions(s.handleListMembers(), "view:member", "view:team", "view:permission"))
 

@@ -14,7 +14,7 @@ import (
 	"github.com/mattismoel/konnekt/internal/server"
 	"github.com/mattismoel/konnekt/internal/service"
 	"github.com/mattismoel/konnekt/internal/storage/sqlite"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 const (
@@ -34,12 +34,17 @@ func main() {
 
 	flag.Parse()
 
-	db, err := sql.Open("sqlite3", *dbConnStr)
+	db, err := sql.Open("sqlite", *dbConnStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	if err := db.PingContext(ctx); err != nil {
+		log.Fatal(err)
+	}
+
+	contentRepo, err := sqlite.NewContentRepository(db)
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -101,8 +106,10 @@ func main() {
 	venueService := service.NewVenueService(venueRepo)
 
 	teamService := service.NewTeamService(teamRepo, memberRepo, authRepo)
+	contentService := service.NewContentService(s3Store, contentRepo)
 
 	srv, err := server.New(
+		server.WithContentService(contentService),
 		server.WithTeamService(teamService),
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithCORSOrigins(*origin),
