@@ -2,6 +2,7 @@ import Caroussel from '@/lib/components/caroussel';
 import PageMeta from '@/lib/components/page-meta';
 import EventCard from '@/lib/features/event/components/event-card';
 import EventDetails from '@/lib/features/event/components/event-details';
+import EventGrid from '@/lib/features/event/components/event-grid';
 import { upcomingEventsQueryOpts } from '@/lib/features/event/query';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
@@ -31,19 +32,12 @@ function RouteComponent() {
         {(events.length > 0) && (
           <EventDetails event={events[0]} prefix="Næste event:" />
         )}
-        <div className="px-auto flex flex-col gap-16 pt-32 pb-16">
-          <section className="flex flex-col">
-            <h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl">Events</h1>
-            <span className="text-text/75"> Her kan du se alle kommende events. </span>
-          </section>
+        <div className="px-auto flex flex-col pt-8 md:pt-16 pb-16">
+          <h1 className="font-heading mb-8 font-bold text-4xl">Kommende events</h1>
           {(events.length <= 0) && (
             <span className="text-text/50 italic">Der er ingen kommende events i øjeblikket...</span>
           )}
-          <Caroussel>
-            {events.map(event => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </Caroussel>
+          <EventGrid events={events} />
         </div>
       </main>
     </>
