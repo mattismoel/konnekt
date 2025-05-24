@@ -43,6 +43,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	contentRepo, err := sqlite.NewContentRepository(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	memberRepo, err := sqlite.NewMemberRepository(db)
 	if err != nil {
 		log.Fatal(err)
@@ -101,8 +106,10 @@ func main() {
 	venueService := service.NewVenueService(venueRepo)
 
 	teamService := service.NewTeamService(teamRepo, memberRepo, authRepo)
+	contentService := service.NewContentService(s3Store, contentRepo)
 
 	srv, err := server.New(
+		server.WithContentService(contentService),
 		server.WithTeamService(teamService),
 		server.WithAddress(net.JoinHostPort(*host, strconv.Itoa(*port))),
 		server.WithCORSOrigins(*origin),

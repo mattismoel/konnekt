@@ -21,12 +21,13 @@ type Server struct {
 	mux  *chi.Mux
 	addr string
 
-	authService   *service.AuthService
-	teamService   *service.TeamService
-	eventService  *service.EventService
-	artistService *service.ArtistService
-	memberService *service.MemberService
-	venueService  *service.VenueService
+	contentService *service.ContentService
+	authService    *service.AuthService
+	teamService    *service.TeamService
+	eventService   *service.EventService
+	artistService  *service.ArtistService
+	memberService  *service.MemberService
+	venueService   *service.VenueService
 }
 
 type CfgFunc func(s *Server) error
@@ -58,6 +59,13 @@ func WithCORSOrigins(allowedOrigins ...string) CfgFunc {
 			MaxAge:           300,
 		}))
 
+		return nil
+	}
+}
+
+func WithContentService(contentService *service.ContentService) CfgFunc {
+	return func(s *Server) error {
+		s.contentService = contentService
 		return nil
 	}
 }

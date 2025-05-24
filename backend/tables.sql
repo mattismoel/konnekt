@@ -99,3 +99,8 @@ CREATE TABLE artists_genres (
 
   PRIMARY KEY (artist_id, genre_id)
 );
+
+CREATE TABLE landing_image (
+  id INTEGER PRIMARY KEY,
+  url TEXT UNIQUE NOT NULL,
+);
