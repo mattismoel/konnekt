@@ -28,6 +28,9 @@ export const permissionTypes = z.union([
 	z.literal("view:member"),
 	z.literal("edit:member"),
 	z.literal("delete:member"),
+
+	z.literal("edit:content"),
+	z.literal("delete:content"),
 ])
 
 export const permissionSchema = z.object({
