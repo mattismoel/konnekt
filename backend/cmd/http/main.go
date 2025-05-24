@@ -14,7 +14,7 @@ import (
 	"github.com/mattismoel/konnekt/internal/server"
 	"github.com/mattismoel/konnekt/internal/service"
 	"github.com/mattismoel/konnekt/internal/storage/sqlite"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 const (
@@ -34,7 +34,7 @@ func main() {
 
 	flag.Parse()
 
-	db, err := sql.Open("sqlite3", *dbConnStr)
+	db, err := sql.Open("sqlite", *dbConnStr)
 	if err != nil {
 		log.Fatal(err)
 	}
