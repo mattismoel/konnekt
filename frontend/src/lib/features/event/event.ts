@@ -166,7 +166,7 @@ export const artistEvents = async (artistId: ID): Promise<ListResult<Event>> => 
 
 export const deleteEvent = async (id: ID) => {
 	await requestAndParse(
-		createUrl(`/events/${id}`),
+		createUrl(`/api/events/${id}`),
 		undefined,
 		"Could not delete event",
 		undefined,
