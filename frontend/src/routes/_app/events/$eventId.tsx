@@ -1,8 +1,7 @@
-import Caroussel from '@/lib/components/caroussel'
 import PageMeta from '@/lib/components/page-meta'
 import EventCalendar from '@/lib/features/event/components/event-calendar'
-import EventCard from '@/lib/features/event/components/event-card'
 import EventDetails from '@/lib/features/event/components/event-details'
+import EventGrid from '@/lib/features/event/components/event-grid'
 import { earliestConcert } from '@/lib/features/event/concert'
 import { createEventByIdOpts, upcomingEventsQueryOpts } from '@/lib/features/event/query'
 import { DATETIME_FORMAT } from '@/lib/time'
@@ -45,12 +44,10 @@ function RouteComponent() {
         <article className="px-auto space-y-16 pt-8 pb-16">
           <section className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: event.description }} />
           <EventCalendar event={event} />
-          {upcomingEvents.length > 0 && (
+          {filteredEvents.length > 0 && (
             <section>
-              <h1 className="mb-4 text-2xl font-bold">Se også</h1>
-              <Caroussel>
-                {filteredEvents.map(event => <EventCard key={event.id} event={event} />)}
-              </Caroussel>
+              <h1 className="mb-8 text-2xl font-bold">Se også</h1>
+              <EventGrid events={filteredEvents} />
             </section>
           )}
         </article>
