@@ -69,7 +69,9 @@ jobs:
 
     - name: Benchmark
       run: go test -v -shuffle=on -run=- -bench=. -benchtime=1x ./...
+ 
   publish:
+    needs: build
     strategy:
       matrix:
         include:
