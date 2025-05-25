@@ -105,11 +105,20 @@ func (repo ArtistRepository) GenreByID(ctx context.Context, genreID int64) (arti
 	}, nil
 }
 
+var genreBuilder = sq.Select("id", "name").From("genre")
+
+func scanGenre(s Scanner, dst *Genre) error {
+	err := s.Scan(&dst.ID, &dst.Name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Lists genres based on the input {GenreQueryParams}.
 func listGenres(ctx context.Context, tx *sql.Tx, params GenreQueryParams) ([]Genre, error) {
-	builder := sq.
-		Select("id", "name").
-		From("genre")
+	builder := genreBuilder
 
 	if params.Limit > 0 {
 		builder = builder.Limit(uint64(params.Limit))
@@ -134,14 +143,12 @@ func listGenres(ctx context.Context, tx *sql.Tx, params GenreQueryParams) ([]Gen
 	genres := make([]Genre, 0)
 
 	for rows.Next() {
-		var id int64
-		var name string
-
-		if err := rows.Scan(&id, &name); err != nil {
+		var g Genre
+		if err := scanGenre(rows, &g); err != nil {
 			return nil, err
 		}
 
-		genres = append(genres, Genre{ID: id, Name: name})
+		genres = append(genres, g)
 	}
 
 	return genres, nil
@@ -152,11 +159,7 @@ func listGenres(ctx context.Context, tx *sql.Tx, params GenreQueryParams) ([]Gen
 // If the attemptedly inserted genre already exists, the previous genre is
 // returned.
 func insertGenre(ctx context.Context, tx *sql.Tx, name string) (int64, error) {
-	// Return exising genre, if exists.
-	var id int64
-	existing, args, err := sq.
-		Select("id").
-		From("genre").
+	existing, args, err := genreBuilder.
 		Where(sq.Eq{"name": name}).
 		ToSql()
 
@@ -164,12 +167,10 @@ func insertGenre(ctx context.Context, tx *sql.Tx, name string) (int64, error) {
 		return 0, err
 	}
 
-	err = tx.
-		QueryRowContext(ctx, existing, args...).
-		Scan(&id)
-
-	if err == nil {
-		return id, nil
+	var existingGenre Genre
+	row := tx.QueryRowContext(ctx, existing, args...)
+	if err := scanGenre(row, &existingGenre); err == nil {
+		return existingGenre.ID, err
 	}
 
 	query, args, err := sq.
@@ -281,10 +282,8 @@ func dissasociateArtistFromGenre(ctx context.Context, tx *sql.Tx, artistID int64
 
 // Lists all genres associated with an artist.
 func artistGenres(ctx context.Context, tx *sql.Tx, artistID int64) ([]Genre, error) {
-	query, args, err := sq.
-		Select("id", "name").
-		From("genre g").
-		Join("artists_genres ag on ag.genre_id = g.id").
+	query, args, err := genreBuilder.
+		Join("artists_genres ag on ag.genre_id = genre.id").
 		Where(sq.Eq{"ag.artist_id": artistID}).
 		ToSql()
 
@@ -302,14 +301,12 @@ func artistGenres(ctx context.Context, tx *sql.Tx, artistID int64) ([]Genre, err
 	genres := make([]Genre, 0)
 
 	for rows.Next() {
-		var id int64
-		var name string
-
-		if err := rows.Scan(&id, &name); err != nil {
+		var g Genre
+		if err := scanGenre(rows, &g); err != nil {
 			return nil, err
 		}
 
-		genres = append(genres, Genre{ID: id, Name: name})
+		genres = append(genres, g)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -321,9 +318,7 @@ func artistGenres(ctx context.Context, tx *sql.Tx, artistID int64) ([]Genre, err
 
 // Gets a genre by its ID.
 func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
-	query, args, err := sq.
-		Select("name").
-		From("genre").
+	query, args, err := genreBuilder.
 		Where(sq.Eq{"id": genreID}).
 		ToSql()
 
@@ -331,18 +326,11 @@ func genreByID(ctx context.Context, tx *sql.Tx, genreID int64) (Genre, error) {
 		return Genre{}, err
 	}
 
-	var name string
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&name)
-
-	if err != nil {
+	var g Genre
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanGenre(row, &g); err != nil {
 		return Genre{}, err
 	}
 
-	return Genre{
-		ID:   genreID,
-		Name: name,
-	}, nil
+	return g, nil
 }
