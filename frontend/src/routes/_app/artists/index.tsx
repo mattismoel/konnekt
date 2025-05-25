@@ -79,7 +79,7 @@ function RouteComponent() {
         description="Se alle aktuelle kunstnere der medvirker i Konnekts kommende events"
       />
 
-      <main className="px-auto h-svh pt-24 md:pt-32">
+      <main className="px-auto h-svh pb-32 pt-24 md:pt-32">
         {artists.map(artist => (
           <img
             key={artist.id}
@@ -90,17 +90,19 @@ function RouteComponent() {
             })}
           />
         ))}
-        <div className="space-y-16">
+
+        <div className="space-y-16 h-full flex flex-col">
           <section className="flex flex-col">
             <h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl text-shadow-md/15">Kunstnere</h1>
             <span className="text-text/75 text-shadow-sm">
               Her kan du se alle kunstnere, som medvirker i kommende events.
             </span>
           </section>
-          {/*  ARTISTS */}
+
           {artists.length <= 0 && (
             <span>Der er ingen aktuelle kunstnere i øjeblikket...</span>
           )}
+
           <ArtistList />
         </div>
       </main>
@@ -112,13 +114,11 @@ const ArtistList = () => {
   const { artists } = useArtistsContext()
 
   return (
-    <div className="relative">
-      <ul className="max-h-96 overflow-y-scroll">
-        {artists.map(artist => (
-          <Entry key={artist.id} artist={artist} />
-        ))}
-      </ul>
-    </div>
+    <ul className="flex-1 overflow-y-scroll">
+      {artists.map(artist => (
+        <Entry key={artist.id} artist={artist} />
+      ))}
+    </ul>
   )
 }
 
