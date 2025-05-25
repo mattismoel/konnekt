@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
 	"github.com/mattismoel/konnekt/internal/query"
 )
@@ -158,24 +159,24 @@ func (repo VenueRepository) Delete(ctx context.Context, venueID int64) error {
 }
 
 func listVenues(ctx context.Context, tx *sql.Tx, params VenueQueryParams) ([]Venue, error) {
-	query, err := NewQuery(`SELECT id, name, country_code, city FROM venue`)
+	builder := sq.
+		Select("id", "name", "country_code", "city").
+		From("venue")
+
+	if params.Limit > 0 {
+		builder = builder.Limit(uint64(params.Limit))
+	}
+
+	if params.Offset > 0 {
+		builder = builder.Offset(uint64(params.Offset))
+	}
+
+	query, args, err := builder.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
-	err = query.WithLimit(params.Limit)
-	if err != nil {
-		return nil, err
-	}
-
-	err = query.WithOffset(params.Offset)
-	if err != nil {
-		return nil, err
-	}
-
-	queryString, args := query.Build()
-
-	rows, err := tx.QueryContext(ctx, queryString, args...)
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +206,19 @@ func listVenues(ctx context.Context, tx *sql.Tx, params VenueQueryParams) ([]Ven
 func venueCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	var count int
 
-	err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM venue").Scan(&count)
+	query, args, err := sq.
+		Select("COUNT(*)").
+		From("venue").
+		ToSql()
+
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.
+		QueryRowContext(ctx, query, args...).
+		Scan(&count)
+
 	if err != nil {
 		return 0, err
 	}
@@ -214,15 +227,17 @@ func venueCount(ctx context.Context, tx *sql.Tx) (int, error) {
 }
 
 func insertVenue(ctx context.Context, tx *sql.Tx, v Venue) (int64, error) {
-	query := `
-	INSERT INTO venue (name, country_code, city)
-	VALUES (@name, @country_code, @city)`
+	query, args, err := sq.
+		Insert("venue").
+		Columns("name", "country_code", "city").
+		Values(v.Name, v.CountryCode, v.City).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("name", v.Name),
-		sql.Named("country_code", v.CountryCode),
-		sql.Named("city", v.City),
-	)
+	if err != nil {
+		return 0, err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 
 	if err != nil {
 		return 0, err
@@ -237,12 +252,20 @@ func insertVenue(ctx context.Context, tx *sql.Tx, v Venue) (int64, error) {
 }
 
 func venueByID(ctx context.Context, tx *sql.Tx, venueID int64) (Venue, error) {
-	query := `SELECT name, country_code, city FROM venue WHERE id = @venue_id`
+	query, args, err := sq.
+		Select("name", "country_code", "city").
+		From("venue").
+		Where(sq.Eq{"id": venueID}).
+		ToSql()
+
+	if err != nil {
+		return Venue{}, err
+	}
 
 	var name, countryCode, city string
-	err := tx.QueryRowContext(ctx, query, sql.Named("venue_id", venueID)).Scan(
-		&name, &countryCode, &city,
-	)
+	err = tx.
+		QueryRowContext(ctx, query, args...).
+		Scan(&name, &countryCode, &city)
 
 	if err != nil {
 		return Venue{}, err
@@ -257,8 +280,16 @@ func venueByID(ctx context.Context, tx *sql.Tx, venueID int64) (Venue, error) {
 }
 
 func deleteVenue(ctx context.Context, tx *sql.Tx, venueID int64) error {
-	query := `DELETE FROM venue WHERE id = @venue_id`
-	_, err := tx.ExecContext(ctx, query, sql.Named("venue_id", venueID))
+	query, args, err := sq.
+		Delete("venue").
+		Where(sq.Eq{"id": venueID}).
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -267,29 +298,24 @@ func deleteVenue(ctx context.Context, tx *sql.Tx, venueID int64) error {
 }
 
 func updateVenue(ctx context.Context, tx *sql.Tx, venueID int64, v Venue) error {
-	query := `
-	UPDATE venue SET
-	name = CASE
-		when @name = '' THEN name 
-		ELSE @name 
-	END,
-	city = CASE
-		WHEN @city = '' THEN city 
-		ELSE @city
-	END,
-	country_code = CASE
-		WHEN @country_code = '' THEN country_code 
-		ELSE @country_code 
-	END
-	WHERE id = @id`
+	builder := sq.Update("venue").Where(sq.Eq{"id": venueID})
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("name", v.Name),
-		sql.Named("city", v.City),
-		sql.Named("country_code", v.CountryCode),
-		sql.Named("id", venueID),
-	)
+	if v.Name != "" {
+		builder = builder.Set("name", v.Name)
+	}
+	if v.City != "" {
+		builder = builder.Set("city", v.City)
+	}
+	if v.CountryCode != "" {
+		builder = builder.Set("country_code", v.Name)
+	}
 
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
