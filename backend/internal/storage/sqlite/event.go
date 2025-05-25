@@ -292,14 +292,7 @@ func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.
 }
 
 func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
-	event := sq.Select(
-		"title",
-		"description",
-		"ticket_url",
-		"image_url",
-		"venue_id",
-	).
-		From("event").
+	event := eventBuilder.
 		Where(sq.Eq{"id": eventID})
 
 	query, args, err := event.ToSql()
@@ -307,27 +300,35 @@ func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
 		return Event{}, err
 	}
 
-	var title, description, ticketURL, coverImageURL string
-	var venueID int64
-
-	err = tx.QueryRowContext(ctx, query, args...).Scan(
-		&title, &description, &ticketURL, &coverImageURL, &venueID,
-	)
-
-	if err != nil {
+	var e Event
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanEvent(row, &e); err != nil {
 		return Event{}, err
 	}
 
-	return Event{
-		ID:          eventID,
-		Title:       title,
-		Description: description,
-		TicketURL:   ticketURL,
-		ImageURL:    coverImageURL,
-		VenueID:     venueID,
-	}, nil
+	return e, nil
 }
 
+var eventBuilder = sq.
+	Select(
+		"e.id",
+		"e.title",
+		"e.description",
+		"e.ticket_url",
+		"e.image_url",
+		"e.venue_id",
+	).
+	From("event e")
+
+func scanEvent(s Scanner, dst *Event) error {
+	err := s.Scan(
+		&dst.ID,
+		&dst.Title,
+		&dst.Description,
+		&dst.TicketURL,
+		&dst.ImageURL,
+		&dst.VenueID,
+	)
 
 	if err != nil {
 		return err
@@ -337,17 +338,8 @@ func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
 }
 
 func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {
-	builder := sq.
-		Select(
-			"e.id",
-			"e.title",
-			"e.description",
-			"e.ticket_url",
-			"e.image_url",
-			"e.venue_id",
-		).
+	builder := eventBuilder.
 		Distinct().
-		From("event e").
 		Join("concert c ON c.event_id = e.id")
 
 	if filters, ok := params.Filters["title"]; ok {
@@ -358,7 +350,6 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 
 	if filters, ok := params.Filters["from_date"]; ok {
 		for _, f := range filters {
-			fmt.Printf("c.from_date %s %s", f.Cmp, f.Value)
 			builder = builder.Where(fmt.Sprintf("c.from_date %s '%s'", f.Cmp, f.Value))
 		}
 	}
@@ -409,22 +400,12 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 
 	events := make([]Event, 0)
 	for rows.Next() {
-		var id, venueID int64
-		var title, description, ticketURL, coverImageURL string
-
-		err := rows.Scan(&id, &title, &description, &ticketURL, &coverImageURL, &venueID)
-		if err != nil {
+		var e Event
+		if err := scanEvent(rows, &e); err != nil {
 			return nil, err
 		}
 
-		events = append(events, Event{
-			ID:          id,
-			Title:       title,
-			Description: description,
-			TicketURL:   ticketURL,
-			ImageURL:    coverImageURL,
-			VenueID:     venueID,
-		})
+		events = append(events, e)
 	}
 
 	if err := rows.Err(); err != nil {
