@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
@@ -91,27 +90,11 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 		return member.Member{}, err
 	}
 
-	fmt.Printf("TEAMS %+v\n", dbTeams)
-
 	if err := tx.Commit(); err != nil {
 		return member.Member{}, err
 	}
 
-	m, err := member.NewMember(
-		member.WithID(dbMember.ID),
-		member.WithEmail(dbMember.Email),
-		member.WithFirstName(dbMember.FirstName),
-		member.WithLastName(dbMember.LastName),
-		member.WithPasswordHash(dbMember.PasswordHash),
-		member.WithProfilePictureURL(dbMember.ProfilePictureURL),
-		member.WithTeams(dbTeams.ToInternal()),
-	)
-
-	if err != nil {
-		return member.Member{}, err
-	}
-
-	return m, nil
+	return dbMember.ToInternal(dbTeams), nil
 }
 
 func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error {
@@ -190,21 +173,7 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 			return query.ListResult[member.Member]{}, err
 		}
 
-		m, err := member.NewMember(
-			member.WithID(dbMember.ID),
-			member.WithEmail(dbMember.Email),
-			member.WithFirstName(dbMember.FirstName),
-			member.WithLastName(dbMember.LastName),
-			member.WithProfilePictureURL(dbMember.ProfilePictureURL),
-			member.WithPasswordHash(dbMember.PasswordHash),
-			member.WithTeams(dbTeams.ToInternal()),
-		)
-
-		if err != nil {
-			return query.ListResult[member.Member]{}, err
-		}
-
-		members = append(members, m)
+		members = append(members, dbMember.ToInternal(dbTeams))
 	}
 
 	totalCount, err := count(ctx, tx, "member")
@@ -277,21 +246,7 @@ func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.
 		return member.Member{}, err
 	}
 
-	m, err := member.NewMember(
-		member.WithID(dbMember.ID),
-		member.WithEmail(dbMember.Email),
-		member.WithFirstName(dbMember.FirstName),
-		member.WithLastName(dbMember.LastName),
-		member.WithProfilePictureURL(dbMember.ProfilePictureURL),
-		member.WithPasswordHash(dbMember.PasswordHash),
-		member.WithTeams(dbTeams.ToInternal()),
-	)
-
-	if err != nil {
-		return member.Member{}, err
-	}
-
-	return m, nil
+	return dbMember.ToInternal(dbTeams), nil
 }
 
 func (repo MemberRepository) Delete(ctx context.Context, memberID int64) error {
@@ -631,7 +586,7 @@ func deleteMemberTeams(ctx context.Context, tx *sql.Tx, memberID int64) error {
 	return nil
 }
 
-func (m Member) ToInternal() member.Member {
+func (m Member) ToInternal(teams TeamCollection) member.Member {
 	return member.Member{
 		ID:                m.ID,
 		FirstName:         m.FirstName,
@@ -639,6 +594,8 @@ func (m Member) ToInternal() member.Member {
 		Email:             m.Email,
 		PasswordHash:      m.PasswordHash,
 		ProfilePictureURL: m.ProfilePictureURL,
+
+		Teams: teams.ToInternal(),
 
 		Active: m.Active,
 	}

@@ -19,19 +19,26 @@ import PageMeta from '@/lib/components/page-meta';
 import EventGrid from '@/lib/features/event/components/event-grid';
 import Slideshow from '@/lib/components/slideshow';
 import { landingImagesQueryOptions } from '@/lib/features/content/query';
-
+import TeamDisplay from '@/lib/components/team-display';
+import { membersQueryOpts, teamsQueryOpts } from '@/lib/features/auth/query';
+import SponsorLogoSlider from '@/lib/components/logo-scroller';
+import SponsorDisplay from '@/lib/components/sponsor-display';
 
 export const Route = createFileRoute('/_app/')({
   component: App,
   loader: async ({ context: { queryClient } }) => {
     queryClient.ensureQueryData(upcomingEventsQueryOpts)
     queryClient.ensureQueryData(landingImagesQueryOptions)
+    queryClient.ensureQueryData(teamsQueryOpts)
+    queryClient.ensureQueryData(membersQueryOpts)
   }
 })
 
 function App() {
   const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts)
   const { data: landingImages } = useSuspenseQuery(landingImagesQueryOptions)
+  const { data: { records: teams } } = useSuspenseQuery(teamsQueryOpts)
+  const { data: { records: members } } = useSuspenseQuery(membersQueryOpts)
 
   return (
     <>
@@ -49,11 +56,14 @@ function App() {
             <GlowCursor />
             <Slideshow srcs={landingImages.map(({ url }) => ({ src: url }))} />
           </div>
-          <section className="flex max-w-lg flex-col gap-8 overflow-hidden">
-            <h2 className="font-heading text-4xl sm:text-5xl text-shadow-lg/15"><b>Fynsk musik</b> med fremtiden for øje</h2>
-            <p className="text-text/75 text-shadow-md leading-relaxed">
-              Konnekt - et tiltag for aspirerende fynske musiskere, og et springbræt til den danske musikscene.
-            </p>
+          <section className="flex max-w-lg flex-col gap-16 overflow-hidden">
+            <div className="flex flex-col gap-4">
+              <h2 className="font-heading text-4xl sm:text-5xl text-shadow-lg/15"><b>Fynsk musik</b> med fremtiden for øje</h2>
+              <p className="text-text/75 text-shadow-md leading-relaxed">
+                Et springbræt for aspirerende fynske musiskere, og en indgang ind til den danske musikscene.
+              </p>
+            </div>
+
             <div className="z-10 flex w-full flex-col-reverse gap-4 sm:flex-row">
               <LinkButton to="/about" variant="outline" className="w-full sm:w-fit">Læs mere</LinkButton>
               <LinkButton to="/events" className="group w-full items-center gap-2 sm:w-fit">
@@ -66,15 +76,8 @@ function App() {
         </section>
 
         <section className="bg-zinc-950">
-          {upcomingEvents.length > 0 && (
-            <section className="px-auto py-16">
-              <h1 className="font-heading mb-8 text-2xl font-bold">Kommende events</h1>
-              <EventGrid events={upcomingEvents} />
-            </section>
-          )}
 
-          <section className="px-auto space-y-8 py-16">
-            {/*  MISSION STATEMENT  */}
+          <section className="px-auto flex flex-col gap-32 py-16">
             <section>
               <h1 className="font-heading mb-8 text-2xl font-bold">Vores mission</h1>
               <p className="text-text/75">
@@ -92,24 +95,33 @@ function App() {
               </p>
             </section>
 
-            {/*  SPONSORS  */}
             <section className="z-0 flex w-full flex-col gap-8">
-              <span className="font-bold">Med støtte fra</span>
+              <span className="text-center text-text/50">I samarbejde med</span>
               <div className="relative isolate w-full">
                 <Fader direction="right" className="absolute z-50 w-32 from-zinc-950" />
                 <Fader direction="left" className="absolute z-50 w-32 from-zinc-950" />
-                <LogoScroller
-                  className="h-10 w-full"
+                <SponsorDisplay
                   srcs={new Map<string, string>([
-                    ['Spillestedet Odense', SpillestedetOdenseLogo],
-                    ['UngOdense', UngOdenseLogo],
-                    ['Posten', PostenLogo],
-                    ['Kulturmaskinen', KulturMaskinenLogo],
-                    ['Odense Kommune', OdenseKommuneLogo]
+                    ['https://ungodense.dk/index.php?open=1283&menu_id=58', SpillestedetOdenseLogo],
+                    ['https://ungodense.dk/', UngOdenseLogo],
+                    ['https://postenlive.dk/', PostenLogo],
+                    ['https://kulturmaskinen.dk/', KulturMaskinenLogo],
+                    ['https://odense.dk', OdenseKommuneLogo]
                   ])}
                 />
               </div>
             </section>
+            <section>
+              <h1 className="font-heading text-4xl font-bold text-center mb-16">Mød holdet</h1>
+              <TeamDisplay allTeams={teams} members={members} />
+            </section>
+
+            {upcomingEvents.length > 0 && (
+              <section>
+                <h1 className="font-heading mb-8 text-4xl font-bold">Ses vi her?</h1>
+                <EventGrid events={[upcomingEvents[0]]} />
+              </section>
+            )}
           </section>
         </section>
       </div >
