@@ -37,7 +37,7 @@ const Footer = () => {
 				</div>
 			</div >
 			<div className="text-text/50 flex justify-center text-xs">
-				<span>&copy;&nbsp;{new Date().getFullYear()}&nbsp;Foreningen&nbsp;KONNEKT&reg;</span>
+				<span>&copy;&nbsp;{new Date().getFullYear()}&nbsp;Foreningen&nbsp;Konnekt</span>
 			</div>
 		</footer >
 	)
