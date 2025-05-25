@@ -30,7 +30,7 @@ const Entry = ({ index }: EntryProps) => {
 				<Card.Title>#{index + 1}</Card.Title>
 				<button type="button" onClick={() => onDeleteConcert(index)} className="absolute top-4 right-4"><FaXmark /></button>
 			</Card.Header>
-			<Card.Content className="gap-4">
+			<Card.Content className="gap-8 @container">
 				<div className="flex gap-4">
 					<Selector
 						onChange={(e) => setValue(`concerts.${index}.artistID`, parseInt(e.target.value))}
@@ -44,7 +44,7 @@ const Entry = ({ index }: EntryProps) => {
 						<LinkButton to="/admin/artists/create" className="aspect-square h-full"><FaPlus /></LinkButton>
 					</div>
 				</div>
-				<div className="flex gap-8 items-center">
+				<div className="flex flex-col gap-4 @xl:flex-row @xl:gap-8 items-center">
 					<Controller
 						control={control}
 						name={`concerts.${index}.from`}
@@ -52,7 +52,7 @@ const Entry = ({ index }: EntryProps) => {
 							<DatetimePicker value={value} onChange={onChange} />
 						)}
 					/>
-					<FaArrowRight className="text-lg w-fit" />
+					<FaArrowRight className="hidden shrink-0 @xl:block" />
 					<Controller
 						control={control}
 						name={`concerts.${index}.to`}
