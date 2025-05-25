@@ -249,7 +249,7 @@ func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.
 		return query.ListResult[event.Event]{}, err
 	}
 
-	totalCount, err := eventCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "event")
 	if err != nil {
 		return query.ListResult[event.Event]{}, err
 	}
@@ -328,20 +328,12 @@ func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
 	}, nil
 }
 
-func eventCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	var count int
 
-	query, args, err := sq.Select("COUNT(*)").From("event").ToSql()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	err = tx.QueryRowContext(ctx, query, args...).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
+	return nil
 }
 
 func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {

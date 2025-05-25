@@ -88,7 +88,7 @@ func (repo ArtistRepository) List(ctx context.Context, q artist.Query) (query.Li
 		artists = append(artists, dbArtist.ToInternal(genres, socials))
 	}
 
-	totalCount, err := artistCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "artist")
 	if err != nil {
 		return query.ListResult[artist.Artist]{}, err
 	}
@@ -368,22 +368,6 @@ func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist,
 	}
 
 	return artists, nil
-}
-
-func artistCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	var count int
-
-	query, args, err := sq.Select("COUNT(*)").From("artist").ToSql()
-	if err != nil {
-		return 0, err
-	}
-
-	err = tx.QueryRowContext(ctx, query, args...).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
 }
 
 func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {

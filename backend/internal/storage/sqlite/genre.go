@@ -64,7 +64,7 @@ func (repo ArtistRepository) ListGenres(ctx context.Context, q artist.GenreQuery
 		})
 	}
 
-	totalCount, err := genreCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "genre")
 	if err != nil {
 		return query.ListResult[artist.Genre]{}, err
 	}
@@ -145,26 +145,6 @@ func listGenres(ctx context.Context, tx *sql.Tx, params GenreQueryParams) ([]Gen
 	}
 
 	return genres, nil
-}
-
-// Returns the total amount of genres in the database.
-func genreCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	query, args, err := sq.Select("COUNT(*)").From("genre").ToSql()
-	if err != nil {
-		return 0, err
-	}
-
-	var totalCount int
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&totalCount)
-
-	if err != nil {
-		return 0, err
-	}
-
-	return totalCount, nil
 }
 
 // Inserts the genre with the given name.

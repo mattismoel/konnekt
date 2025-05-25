@@ -89,7 +89,7 @@ func (repo TeamRepository) List(ctx context.Context, q query.ListQuery) (query.L
 		return query.ListResult[team.Team]{}, err
 	}
 
-	totalCount, err := teamCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "team")
 	if err != nil {
 		return query.ListResult[team.Team]{}, err
 	}
@@ -437,27 +437,4 @@ func associateMemberWithTeam(ctx context.Context, tx *sql.Tx, memberID int64, te
 	}
 
 	return nil
-}
-
-func teamCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	query, args, err := sq.
-		Select("COUNT(*)").
-		From("team").
-		ToSql()
-
-	if err != nil {
-		return 0, err
-	}
-
-	var count int
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&count)
-
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
 }

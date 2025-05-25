@@ -166,7 +166,7 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 		members = append(members, dbMember.ToInternal())
 	}
 
-	totalCount, err := memberCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "member")
 	if err != nil {
 		return query.ListResult[member.Member]{}, err
 	}
@@ -569,28 +569,6 @@ func deleteMemberTeams(ctx context.Context, tx *sql.Tx, memberID int64) error {
 	}
 
 	return nil
-}
-
-func memberCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	var count int
-	query, args, err := sq.
-		Select("COUNT(*)").
-		From("member").
-		ToSql()
-
-	if err != nil {
-		return 0, err
-	}
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&count)
-
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
 }
 
 func (m Member) ToInternal() member.Member {

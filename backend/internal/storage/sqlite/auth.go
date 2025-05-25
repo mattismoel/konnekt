@@ -145,7 +145,7 @@ func (repo AuthRepository) ListPermissions(ctx context.Context, q query.ListQuer
 		permissions = append(permissions, dbPerm.ToInternal())
 	}
 
-	totalCount, err := permissionCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "permission")
 	if err != nil {
 		return query.ListResult[auth.Permission]{}, err
 	}
@@ -379,21 +379,6 @@ func teamPermissions(ctx context.Context, tx *sql.Tx, teamID int64) (PermissionC
 	}
 
 	return permissions, nil
-}
-
-func permissionCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	query, args, err := sq.Select("COUNT(*)").From("permission").ToSql()
-	if err != nil {
-		return 0, err
-	}
-
-	var count int
-	err = tx.QueryRowContext(ctx, query, args...).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
 }
 
 func (pc PermissionCollection) ToInternal() auth.PermissionCollection {

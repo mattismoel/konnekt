@@ -51,7 +51,7 @@ func (repo VenueRepository) List(ctx context.Context, q venue.Query) (query.List
 		return query.ListResult[venue.Venue]{}, err
 	}
 
-	totalCount, err := venueCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "venue")
 	if err != nil {
 		return query.ListResult[venue.Venue]{}, err
 	}
@@ -203,29 +203,6 @@ func listVenues(ctx context.Context, tx *sql.Tx, params VenueQueryParams) ([]Ven
 	return venues, nil
 }
 
-func venueCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	var count int
-
-	query, args, err := sq.
-		Select("COUNT(*)").
-		From("venue").
-		ToSql()
-
-	if err != nil {
-		return 0, err
-	}
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&count)
-
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
-}
-
 func insertVenue(ctx context.Context, tx *sql.Tx, v Venue) (int64, error) {
 	query, args, err := sq.
 		Insert("venue").
@@ -238,7 +215,6 @@ func insertVenue(ctx context.Context, tx *sql.Tx, v Venue) (int64, error) {
 	}
 
 	res, err := tx.ExecContext(ctx, query, args...)
-
 	if err != nil {
 		return 0, err
 	}
