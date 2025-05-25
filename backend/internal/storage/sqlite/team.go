@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"strconv"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/team"
 	"github.com/mattismoel/konnekt/internal/query"
 )
@@ -218,17 +219,18 @@ func (repo TeamRepository) MemberTeams(ctx context.Context, memberID int64) (tea
 	return teams, nil
 }
 
-func insertTeam(ctx context.Context, tx *sql.Tx, r Team) (int64, error) {
-	query := `
-	INSERT INTO team (name, display_name, description) 
-	VALUES (@name, @display_name, @description)`
+func insertTeam(ctx context.Context, tx *sql.Tx, t Team) (int64, error) {
+	query, args, err := sq.
+		Insert("team").
+		Columns("name", "display_name", "description").
+		Values(t.Name, t.DisplayName, t.Description).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("name", r.Name),
-		sql.Named("display_name", r.DisplayName),
-		sql.Named("description", r.Description),
-	)
+	if err != nil {
+		return 0, err
+	}
 
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -242,25 +244,22 @@ func insertTeam(ctx context.Context, tx *sql.Tx, r Team) (int64, error) {
 }
 
 func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollection, error) {
-	q, err := NewQuery(`
-	SELECT DISTINCT id, name, description, display_name
-	FROM team`)
+	builder := sq.
+		Select("id", "name", "description", "display_name").
+		Distinct()
 
+	if filters, ok := params.Filters["id"]; ok {
+		for _, filter := range filters {
+			builder.Where(sq.Eq{"id": filter.Value})
+		}
+	}
+
+	query, args, err := builder.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
-	if filters, ok := params.Filters["id"]; ok {
-		for _, filter := range filters {
-			if err := q.AddFilter("id", filter.Cmp, filter.Value); err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	queryStr, args := q.Build()
-
-	rows, err := tx.QueryContext(ctx, queryStr, args...)
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -290,22 +289,21 @@ func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollect
 }
 
 func teamByID(ctx context.Context, tx *sql.Tx, id int64) (Team, error) {
-	q, err := NewQuery("SELECT name, display_name, description FROM team")
+	query, args, err := sq.
+		Select("name", "display_name", "description").
+		From("team").
+		Where(sq.Eq{"id": id}).
+		ToSql()
+
 	if err != nil {
 		return Team{}, err
 	}
 
-	if err := q.AddFilter("id", query.Equal, strconv.Itoa(int(id))); err != nil {
-		return Team{}, err
-	}
-
-	queryStr, args := q.Build()
-
 	var name, displayName, description string
 
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(
-		&name, &displayName, &description,
-	)
+	err = tx.
+		QueryRowContext(ctx, query, args...).
+		Scan(&name, &displayName, &description)
 
 	if err != nil {
 		return Team{}, err
@@ -320,23 +318,22 @@ func teamByID(ctx context.Context, tx *sql.Tx, id int64) (Team, error) {
 }
 
 func teamByName(ctx context.Context, tx *sql.Tx, name string) (Team, error) {
-	q, err := NewQuery("SELECT id, display_name, description FROM team")
+	query, args, err := sq.
+		Select("id", "display_name", "description").
+		From("team").
+		Where(sq.Eq{"name": name}).
+		ToSql()
+
 	if err != nil {
 		return Team{}, err
 	}
 
-	if err := q.AddFilter("name", query.Equal, name); err != nil {
-		return Team{}, err
-	}
-
-	queryStr, args := q.Build()
-
 	var id int64
 	var displayName, description string
 
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(
-		&id, &displayName, &description,
-	)
+	err = tx.
+		QueryRowContext(ctx, query, args...).
+		Scan(&id, &displayName, &description)
 
 	if err != nil {
 		return Team{}, err
@@ -351,9 +348,16 @@ func teamByName(ctx context.Context, tx *sql.Tx, name string) (Team, error) {
 }
 
 func deleteTeam(ctx context.Context, tx *sql.Tx, teamID int64) error {
-	query := "DELETE FROM team WHERE id = @team_id"
+	query, args, err := sq.
+		Delete("team").
+		Where(sq.Eq{"id": teamID}).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query, sql.Named("team_id", teamID))
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -371,13 +375,18 @@ func deleteTeam(ctx context.Context, tx *sql.Tx, teamID int64) error {
 }
 
 func memberTeams(ctx context.Context, tx *sql.Tx, memberID int64) (TeamCollection, error) {
-	query := `
-	SELECT t.id, t.name, t.display_name, t.description
-	FROM team t
-	JOIN members_teams mt ON mt.team_id = t.id
-	WHERE mt.member_id = @member_id`
+	query, args, err := sq.
+		Select("t.id", "t.name", "t.display_name", "t.description").
+		From("team t").
+		Join("members_teams mt ON mt.team_id = t.id").
+		Where(sq.Eq{"mt.member_id": memberID}).
+		ToSql()
 
-	rows, err := tx.QueryContext(ctx, query, sql.Named("member_id", memberID))
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -411,9 +420,18 @@ func memberTeams(ctx context.Context, tx *sql.Tx, memberID int64) (TeamCollectio
 }
 
 func associateMemberWithTeam(ctx context.Context, tx *sql.Tx, memberID int64, teamID int64) error {
-	query := `INSERT OR IGNORE INTO members_teams (member_id, team_id) VALUES (@member_id, @team_id)`
+	query, args, err := sq.
+		Insert("members_teams").
+		Options("OR IGNORE").
+		Columns("member_id", "team_id").
+		Values(memberID, teamID).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID), sql.Named("team_id", teamID))
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -422,16 +440,21 @@ func associateMemberWithTeam(ctx context.Context, tx *sql.Tx, memberID int64, te
 }
 
 func teamCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	q, err := NewQuery("SELECT COUNT(*) FROM team")
+	query, args, err := sq.
+		Select("COUNT(*)").
+		From("team").
+		ToSql()
+
 	if err != nil {
 		return 0, err
 	}
 
-	queryStr, args := q.Build()
-
 	var count int
 
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(&count)
+	err = tx.
+		QueryRowContext(ctx, query, args...).
+		Scan(&count)
+
 	if err != nil {
 		return 0, err
 	}
