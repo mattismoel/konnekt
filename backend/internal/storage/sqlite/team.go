@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"strconv"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/team"
@@ -246,7 +245,8 @@ func insertTeam(ctx context.Context, tx *sql.Tx, t Team) (int64, error) {
 func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollection, error) {
 	builder := sq.
 		Select("id", "name", "description", "display_name").
-		Distinct()
+		Distinct().
+		From("team")
 
 	if filters, ok := params.Filters["id"]; ok {
 		for _, filter := range filters {
