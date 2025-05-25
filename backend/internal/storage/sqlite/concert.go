@@ -99,8 +99,17 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 }
 
 var concertBuilder = sq.
-	Select("id", "from_date", "to_date", "artist_id").
+	Select("id", "artist_id", "from_date", "to_date").
 	From("concert")
+
+func scanConcert(s Scanner, dst *Concert) error {
+	err := s.Scan(&dst.ID, &dst.ArtistID, &dst.From, &dst.To)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) (Concerts, error) {
 	query, args, err := concertBuilder.
@@ -120,20 +129,12 @@ func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) (Concerts, er
 
 	concerts := make([]Concert, 0)
 	for rows.Next() {
-		var id int64
-		var fromDate, toDate time.Time
-		var artistID int64
-
-		if err := rows.Scan(&id, &fromDate, &toDate, &artistID); err != nil {
+		var c Concert
+		if err := scanConcert(rows, &c); err != nil {
 			return nil, err
 		}
 
-		concerts = append(concerts, Concert{
-			ID:       id,
-			From:     fromDate,
-			To:       toDate,
-			ArtistID: artistID,
-		})
+		concerts = append(concerts, c)
 	}
 
 	if err := rows.Err(); err != nil {
