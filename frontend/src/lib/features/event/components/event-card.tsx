@@ -29,7 +29,7 @@ const EventCard = ({ event }: Props) => {
 		>
 			<div
 				role="none"
-				className="relative h-64 w-full overflow-hidden"
+				className="relative h-64 w-full overflow-hidden rounded-sm"
 				onMouseMove={(e) => {
 					const rect = e.currentTarget.getBoundingClientRect();
 					setMousePos(() => ({
@@ -41,7 +41,7 @@ const EventCard = ({ event }: Props) => {
 				<img
 					src={event.imageUrl}
 					alt={event.title}
-					className="h-full w-full scale-110 object-cover transition-all duration-200 group-hover:scale-100 group-hover:brightness-100 md:brightness-90"
+					className="h-full w-full brightness-75 scale-110 object-cover transition-all duration-200 group-hover:scale-100 group-hover:brightness-100 md:brightness-90"
 				/>
 				<Fader direction="up" className="absolute h-48 from-black/80" />
 				<div className="absolute bottom-0 left-0 h-full w-full border 
