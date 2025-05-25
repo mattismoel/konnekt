@@ -6,6 +6,8 @@ import (
 	"net/mail"
 	"net/url"
 	"strings"
+
+	"github.com/mattismoel/konnekt/internal/domain/team"
 )
 
 var (
@@ -24,20 +26,22 @@ var (
 )
 
 type Member struct {
-	ID                int64        `json:"id"`
-	FirstName         string       `json:"firstName"`
-	LastName          string       `json:"lastName"`
-	Email             string       `json:"email"`
-	ProfilePictureURL string       `json:"profilePictureUrl"`
-	PasswordHash      PasswordHash `json:"-"`
+	ID                int64               `json:"id"`
+	FirstName         string              `json:"firstName"`
+	LastName          string              `json:"lastName"`
+	Email             string              `json:"email"`
+	ProfilePictureURL string              `json:"profilePictureUrl"`
+	Teams             team.TeamCollection `json:"teams"`
+	Active            bool                `json:"active"`
 
-	Active bool `json:"active"`
+	PasswordHash PasswordHash `json:"-"`
 }
 
 type cfgFunc func(m *Member) error
 
 func NewMember(cfgs ...cfgFunc) (Member, error) {
 	m := &Member{
+		Teams:  make(team.TeamCollection, 0),
 		Active: false,
 	}
 
@@ -112,6 +116,13 @@ func WithEmail(email string) cfgFunc {
 
 		m.Email = mail.Address
 
+		return nil
+	}
+}
+
+func WithTeams(teams team.TeamCollection) cfgFunc {
+	return func(m *Member) error {
+		m.Teams = append(m.Teams, teams...)
 		return nil
 	}
 }

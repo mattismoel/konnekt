@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -119,15 +120,23 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 			return
 		}
 
-		if session.MemberID != memberID {
-			writeError(w, ErrUnauthorized)
+		reqMember, err := s.memberService.ByID(ctx, session.MemberID)
+		if err != nil {
+			writeError(w, err)
 			return
 		}
 
-		// Return if member does not exist.
-		_, err = s.memberService.ByID(ctx, memberID)
-		if err != nil {
-			writeError(w, err)
+		isAdmin := false
+		for _, team := range reqMember.Teams {
+			fmt.Println("TEAM", team.Name)
+			if team.Name == "admin" {
+				fmt.Println(reqMember.FirstName, "IS ADMIN")
+				isAdmin = true
+			}
+		}
+
+		if (session.MemberID != memberID) && !isAdmin {
+			writeError(w, ErrUnauthorized)
 			return
 		}
 

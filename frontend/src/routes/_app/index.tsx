@@ -50,10 +50,9 @@ function App() {
             <Slideshow srcs={landingImages.map(({ url }) => ({ src: url }))} />
           </div>
           <section className="flex max-w-lg flex-col gap-8 overflow-hidden">
-            <h2 className="font-heading text-4xl sm:text-5xl">For et stærkere <b>fynsk musisk vækstlag</b></h2>
-            <p className="text-text/75">
-              En forening med formål, at støtte det lokale fynske musiske vækstlag og give aspirerende
-              musikere et springbræt til den danske musikscene.
+            <h2 className="font-heading text-4xl sm:text-5xl text-shadow-lg/15"><b>Fynsk musik</b> med fremtiden for øje</h2>
+            <p className="text-text/75 text-shadow-md leading-relaxed">
+              Konnekt - et tiltag for aspirerende fynske musiskere, og et springbræt til den danske musikscene.
             </p>
             <div className="z-10 flex w-full flex-col-reverse gap-4 sm:flex-row">
               <LinkButton to="/about" variant="outline" className="w-full sm:w-fit">Læs mere</LinkButton>
