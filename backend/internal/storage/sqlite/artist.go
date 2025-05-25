@@ -302,10 +302,12 @@ func (repo ArtistRepository) Delete(ctx context.Context, artistID int64) error {
 	return nil
 }
 
+var artistBuilder = sq.
+	Select("id", "name", "description", "preview_url", "image_url").
+	From("artist")
+
 func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist, error) {
-	builder := sq.
-		Select("id", "name", "description", "preview_url", "image_url").
-		From("artist")
+	builder := artistBuilder
 
 	if order, ok := params.OrderBy["name"]; ok {
 		builder = builder.OrderBy("name " + string(order))
@@ -396,8 +398,7 @@ func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 }
 
 func artistByID(ctx context.Context, tx *sql.Tx, artistID int64) (Artist, error) {
-	query, args, err := sq.Select("name", "description", "preview_url", "image_url").
-		From("artist").
+	query, args, err := artistBuilder.
 		Where(sq.Eq{"id": artistID}).
 		ToSql()
 
@@ -405,18 +406,19 @@ func artistByID(ctx context.Context, tx *sql.Tx, artistID int64) (Artist, error)
 		return Artist{}, err
 	}
 
+	var id int64
 	var name, description, previewURL, imageURL string
 
 	err = tx.
 		QueryRowContext(ctx, query, args...).
-		Scan(&name, &description, &previewURL, &imageURL)
+		Scan(&id, &name, &description, &previewURL, &imageURL)
 
 	if err != nil {
 		return Artist{}, err
 	}
 
 	return Artist{
-		ID:          artistID,
+		ID:          id,
 		Name:        name,
 		Description: description,
 		PreviewURL:  previewURL,
