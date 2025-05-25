@@ -1,13 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { socialUrlToIcon, type Artist } from '@/lib/features/artist/artist';
 import { pickRandom } from '@/lib/array';
-import { useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/clsx';
-import { randomInt } from '@/lib/random';
-import { SkeletonIcon, SkeletonText } from '@/lib/components/skeleton';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { artistsQueryOpts } from '@/lib/features/artist/query';
 import PageMeta from '@/lib/components/page-meta';
+import Fader from '@/lib/components/fader';
 
 /** @description The rate of which artist auto display changes artist. */
 const AUTO_DISPLAY_RATE = 0.25;
@@ -19,17 +18,31 @@ export const Route = createFileRoute('/_app/artists/')({
   }
 })
 
+type ArtistsContext = {
+  artists: Artist[]
+  selected: Artist | undefined
+
+  onSelect: (artist: Artist) => void;
+  onExit: () => void;
+}
+
+const ArtistsContext = createContext<ArtistsContext | undefined>(undefined)
+
+const useArtistsContext = () => {
+  const ctx = useContext(ArtistsContext)
+  if (!ctx) throw new Error("No ArtistsContext.Provider found")
+  return ctx
+}
+
 function RouteComponent() {
   const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
 
   const [selected, setSelected] = useState<Artist>();
+  const selectedRef = useRef<HTMLLIElement>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    if (artists.length <= 0) return
-
-    const initialArtist = artists[0]
-    setSelected(initialArtist)
+    if (artists.length > 0) setSelected(artists[0])
   }, [artists])
 
   useEffect(() => {
@@ -45,9 +58,7 @@ function RouteComponent() {
 
       const newArtist = pickRandom(artists, selected);
 
-      if (!newArtist) return
-
-      setSelected(newArtist);
+      if (newArtist) setSelected(newArtist);
     }, 1000 / AUTO_DISPLAY_RATE);
   };
 
@@ -58,20 +69,25 @@ function RouteComponent() {
     intervalRef.current = null
   };
 
+  const onSelect = (artist: Artist) => {
+    setSelected(artist)
+    endAutoDisplay()
+  }
+
   return (
-    <>
+    <ArtistsContext.Provider value={{ artists, selected, onSelect, onExit: beginAutoDisplay }}>
       <PageMeta
         title="Konnekt | Kunstnere"
         description="Se alle aktuelle kunstnere der medvirker i Konnekts kommende events"
       />
 
-      <main className="px-auto h-svh pt-32">
+      <main className="px-auto h-svh pt-24 md:pt-32">
         {artists.map(artist => (
           <img
             key={artist.id}
             src={artist.imageUrl}
             alt={artist.name}
-            className={cn("pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-75 transition-all duration-1000", {
+            className={cn("pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-50 transition-all duration-1000", {
               "opacity-100 scale-105": selected?.id === artist.id
             })}
           />
@@ -87,106 +103,82 @@ function RouteComponent() {
           {artists.length <= 0 && (
             <span>Der er ingen aktuelle kunstnere i øjeblikket...</span>
           )}
-          <ArtistList
-            artists={artists}
-            selected={selected}
-            onSelect={setSelected}
-            onMouseEnter={endAutoDisplay}
-            onMouseLeave={beginAutoDisplay}
-          />
+          <ArtistList />
         </div>
       </main>
-    </>
+    </ArtistsContext.Provider>
+  )
+}
+
+const ArtistList = () => {
+  const { artists } = useArtistsContext()
+
+  return (
+    <div className="relative">
+      <ul className="max-h-96 overflow-y-scroll">
+        {artists.map(artist => (
+          <Entry key={artist.id} artist={artist} />
+        ))}
+      </ul>
+    </div>
   )
 }
 
 type EntryProps = {
   artist: Artist;
-  selected?: Artist;
-  onSelect: () => void;
 }
 
-type ArtistListProps = {
-  artists: Artist[] | undefined
-  selected: Artist | undefined
+const Entry = ({ artist }: EntryProps) => {
+  const { selected, onSelect, onExit } = useArtistsContext()
 
-  onMouseLeave: () => void;
-  onMouseEnter: () => void;
+  const genreString = artist.genres.map(({ name }) => name).join(", ")
 
-  onSelect: (artist: Artist) => void;
-}
+  const ref = useRef<HTMLLIElement>(null)
 
-const ArtistList = ({ artists, selected, onSelect, onMouseEnter, onMouseLeave }: ArtistListProps) => (
-  <ul
-    className="divide-text/50 max-h-96 divide-y overflow-y-scroll"
-    onMouseLeave={onMouseLeave}
-    onMouseEnter={onMouseEnter}
-  >
-    {!artists
-      ? [...Array(randomInt(4, 8))].map((_, i) => <SkeletonEntry key={i} />)
-      : artists.map(artist => (
-        <Entry selected={selected} key={artist.id} artist={artist} onSelect={() => onSelect(artist)} />
-      )
-      )}
-  </ul>
-)
+  useEffect(() => {
+    if (selected?.id === artist.id)
+      ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+  }, [selected])
 
-const Entry = ({ artist, selected, onSelect }: EntryProps) => {
   return (
     <li
-      className={cn("@container group text-text/75 hover:text-text [.selected]:text-text relative flex items-center border-l-transparent transition-colors", {
-        "text-text": selected?.id === artist.id
+      ref={ref}
+      className={cn("@container px-4 border border-transparent rounded-md hover:bg-text/10", {
+        "border-text/25": selected?.id === artist.id
       })}
-      onMouseEnter={onSelect}
+      onMouseEnter={() => onSelect(artist)}
+      onMouseLeave={onExit}
     >
-      {/* <!-- SELECTED MARKER --> */}
-      <div
-        className="group-[.selected]:bg-text h-6 w-1 scale-y-0 rounded-full bg-transparent transition-all group-[.selected]:scale-y-100"
-      ></div>
-      <div className="grid w-full grid-cols-3">
+      <div className="grid grid-cols-1 @md:grid-cols-2 @2xl:grid-cols-3 items-center">
         <Link
           to="/artists/$artistId"
           params={{ artistId: artist.id.toString() }}
-          className="col-span-2 grid grid-cols-2 py-3 pl-3"
-        >
-          <span className="line-clamp-1 font-bold">{artist.name}</span>
-          <span className="hidden @xl:block line-clamp-1">{artist.genres.map((g) => g.name).join(', ')}</span>
-        </Link>
-
-        <div
-          className="hidden @sm:flex text-text/50 group-[.selected]:text-text/75 group-hover:text-text/75 items-center justify-end gap-4 pr-3 text-lg"
-        >
-          {artist.socials.map(social => {
-            const Icon = socialUrlToIcon(social)
-
-            return (
-              <a key={social} href={social} className="hover:text-text">
-                <Icon className='text-2xl' />
-              </a>
-            )
+          className={cn("font-bold w-full py-3 text-text/50", {
+            "text-text": selected?.id === artist.id
           })}
+        >
+          {artist.name}
+        </Link>
+        <span className="hidden @md:block text-text/75">{genreString}</span>
+        <div className="hidden @2xl:flex justify-end">
+          <SocialList socials={artist.socials} />
         </div>
       </div>
     </li>
   )
 }
 
-const SkeletonEntry = () => (
-  <li
-    className="group text-text/75 relative flex items-center"
-  >
-    <div className="grid w-full grid-cols-3 py-3 pl-3 items-center">
-      {/* ARTIST NAME */}
-      <SkeletonText />
-
-      {/* GENRES */}
-      <SkeletonText wordCount={randomInt(2, 4)} />
-
-      {/* SOCIALS */}
-      <div className="text-text/50 flex items-center justify-end gap-2 pr-3">
-        <SkeletonIcon />
-      </div>
-    </div>
-  </li>
-)
-
+const SocialList = ({ socials }: { socials: string[] }) => {
+  return (
+    <ul className="flex gap-4">
+      {socials.map(social => {
+        const Icon = socialUrlToIcon(social)
+        return (
+          <li key={social} className="text-text/50">
+            <a href={social}><Icon key={social} className="text-2xl" /></a>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
