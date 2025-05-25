@@ -242,11 +242,21 @@ func insertTeam(ctx context.Context, tx *sql.Tx, t Team) (int64, error) {
 	return teamID, nil
 }
 
+var teamBuilder = sq.
+	Select("id", "name", "description", "display_name").
+	From("team")
+
+func scanTeam(s Scanner, dst *Team) error {
+	err := s.Scan(&dst.ID, &dst.Name, &dst.Description, &dst.DisplayName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollection, error) {
-	builder := sq.
-		Select("id", "name", "description", "display_name").
-		Distinct().
-		From("team")
+	builder := teamBuilder.Distinct()
 
 	if filters, ok := params.Filters["id"]; ok {
 		for _, filter := range filters {
@@ -269,29 +279,19 @@ func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollect
 	teams := make(TeamCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var name, description, displayName string
-
-		err := rows.Scan(&id, &name, &description, &displayName)
-		if err != nil {
+		var t Team
+		if err := scanTeam(rows, &t); err != nil {
 			return nil, err
 		}
 
-		teams = append(teams, Team{
-			ID:          id,
-			Name:        name,
-			Description: description,
-			DisplayName: displayName,
-		})
+		teams = append(teams, t)
 	}
 
 	return teams, nil
 }
 
 func teamByID(ctx context.Context, tx *sql.Tx, id int64) (Team, error) {
-	query, args, err := sq.
-		Select("name", "display_name", "description").
-		From("team").
+	query, args, err := teamBuilder.
 		Where(sq.Eq{"id": id}).
 		ToSql()
 
@@ -299,28 +299,17 @@ func teamByID(ctx context.Context, tx *sql.Tx, id int64) (Team, error) {
 		return Team{}, err
 	}
 
-	var name, displayName, description string
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&name, &displayName, &description)
-
-	if err != nil {
+	var t Team
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanTeam(row, &t); err != nil {
 		return Team{}, err
 	}
 
-	return Team{
-		ID:          id,
-		Name:        name,
-		DisplayName: displayName,
-		Description: description,
-	}, nil
+	return t, nil
 }
 
 func teamByName(ctx context.Context, tx *sql.Tx, name string) (Team, error) {
-	query, args, err := sq.
-		Select("id", "display_name", "description").
-		From("team").
+	query, args, err := teamBuilder.
 		Where(sq.Eq{"name": name}).
 		ToSql()
 
@@ -328,23 +317,13 @@ func teamByName(ctx context.Context, tx *sql.Tx, name string) (Team, error) {
 		return Team{}, err
 	}
 
-	var id int64
-	var displayName, description string
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&id, &displayName, &description)
-
-	if err != nil {
+	var t Team
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanTeam(row, &t); err != nil {
 		return Team{}, err
 	}
 
-	return Team{
-		ID:          id,
-		Name:        name,
-		DisplayName: displayName,
-		Description: description,
-	}, nil
+	return t, nil
 }
 
 func deleteTeam(ctx context.Context, tx *sql.Tx, teamID int64) error {
@@ -375,10 +354,8 @@ func deleteTeam(ctx context.Context, tx *sql.Tx, teamID int64) error {
 }
 
 func memberTeams(ctx context.Context, tx *sql.Tx, memberID int64) (TeamCollection, error) {
-	query, args, err := sq.
-		Select("t.id", "t.name", "t.display_name", "t.description").
-		From("team t").
-		Join("members_teams mt ON mt.team_id = t.id").
+	query, args, err := teamBuilder.
+		Join("members_teams mt ON mt.team_id = team.id").
 		Where(sq.Eq{"mt.member_id": memberID}).
 		ToSql()
 
@@ -396,20 +373,12 @@ func memberTeams(ctx context.Context, tx *sql.Tx, memberID int64) (TeamCollectio
 	teams := make(TeamCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var name, displayName, description string
-
-		err := rows.Scan(&id, &name, &displayName, &description)
-		if err != nil {
+		var t Team
+		if err := scanTeam(rows, &t); err != nil {
 			return nil, err
 		}
 
-		teams = append(teams, Team{
-			ID:          id,
-			Name:        name,
-			DisplayName: displayName,
-			Description: description,
-		})
+		teams = append(teams, t)
 	}
 
 	if err := rows.Err(); err != nil {
