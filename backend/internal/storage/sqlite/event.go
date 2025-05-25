@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
@@ -247,7 +249,7 @@ func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.
 		return query.ListResult[event.Event]{}, err
 	}
 
-	totalCount, err := eventCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "event")
 	if err != nil {
 		return query.ListResult[event.Event]{}, err
 	}
@@ -290,129 +292,106 @@ func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.
 }
 
 func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
-	query := `
-	SELECT title, description, ticket_url, image_url, venue_id FROM event
-	WHERE id = @event_id`
+	event := eventBuilder.
+		Where(sq.Eq{"id": eventID})
 
-	var title, description, ticketURL, coverImageUrl string
-	var venueID int64
-
-	err := tx.QueryRowContext(ctx, query, sql.Named("event_id", eventID)).Scan(
-		&title, &description, &ticketURL, &coverImageUrl, &venueID,
-	)
-
+	query, args, err := event.ToSql()
 	if err != nil {
 		return Event{}, err
 	}
 
-	return Event{
-		ID:          eventID,
-		Title:       title,
-		Description: description,
-		TicketURL:   ticketURL,
-		ImageURL:    coverImageUrl,
-		VenueID:     venueID,
-	}, nil
-}
-
-func eventCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	var count int
-
-	err := tx.QueryRowContext(ctx, "select count(*) from event").Scan(&count)
-	if err != nil {
-		return 0, err
+	var e Event
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanEvent(row, &e); err != nil {
+		return Event{}, err
 	}
 
-	return count, nil
+	return e, nil
+}
+
+var eventBuilder = sq.
+	Select(
+		"e.id",
+		"e.title",
+		"e.description",
+		"e.ticket_url",
+		"e.image_url",
+		"e.venue_id",
+	).
+	From("event e")
+
+func scanEvent(s Scanner, dst *Event) error {
+	err := s.Scan(
+		&dst.ID,
+		&dst.Title,
+		&dst.Description,
+		&dst.TicketURL,
+		&dst.ImageURL,
+		&dst.VenueID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {
-	q, err := NewQuery(`
-    SELECT DISTINCT
-		e.id,
-		e.title,
-		e.description,
-		e.ticket_url,
-		e.image_url,
-		e.venue_id
-	FROM event e
-		JOIN concert c ON c.event_id = e.id`)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = q.WithOffset(params.Offset)
-	if err != nil {
-		return nil, err
-	}
-
-	err = q.WithLimit(params.Limit)
-	if err != nil {
-		return nil, err
-	}
-
-	if order, ok := params.OrderBy["from_date"]; ok {
-		err := q.WithOrdering(map[string]query.Order{"c.from_date": order})
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		err := q.WithOrdering(map[string]query.Order{"c.from_date": query.OrderAscending})
-		if err != nil {
-			return nil, err
-		}
-	}
+	builder := eventBuilder.
+		Distinct().
+		Join("concert c ON c.event_id = e.id")
 
 	if filters, ok := params.Filters["title"]; ok {
 		for _, f := range filters {
-			err := q.AddFilter("title", f.Cmp, f.Value)
-			if err != nil {
-				return nil, err
-			}
+			builder = builder.Where(sq.Like{"e.title": f.Value})
 		}
 	}
 
 	if filters, ok := params.Filters["from_date"]; ok {
 		for _, f := range filters {
-			err = q.AddFilter("from_date", f.Cmp, f.Value)
-			if err != nil {
-				return nil, err
-			}
+			builder = builder.Where(fmt.Sprintf("c.from_date %s '%s'", f.Cmp, f.Value))
 		}
 	}
 
 	if filters, ok := params.Filters["to_date"]; ok {
 		for _, f := range filters {
-			err = q.AddFilter("from_date", f.Cmp, f.Value)
-			if err != nil {
-				return nil, err
-			}
+			builder = builder.Where(fmt.Sprintf("c.to_date %s '%s'", f.Cmp, f.Value))
 		}
 	}
 
 	if filters, ok := params.Filters["id"]; ok {
 		for _, f := range filters {
-			err = q.AddFilter("e.id", f.Cmp, f.Value)
-			if err != nil {
-				return nil, err
-			}
+			builder = builder.Where(sq.Eq{"e.id": f.Value})
 		}
-
 	}
 
 	if filters, ok := params.Filters["artist_id"]; ok {
 		for _, f := range filters {
-			err = q.AddFilter("c.artist_id", f.Cmp, f.Value)
-			if err != nil {
-				return nil, err
-			}
+			builder = builder.Where(sq.Eq{"c.artist_id": f.Value})
 		}
 	}
 
-	queryString, args := q.Build()
+	if order, ok := params.OrderBy["from_date"]; ok {
+		builder = builder.OrderBy("c.from_date " + string(order))
+	} else {
+		builder = builder.OrderBy("c.from_date ASC")
+	}
 
-	rows, err := tx.QueryContext(ctx, queryString, args...)
+	if params.Limit > 0 {
+		builder = builder.Limit(uint64(params.Offset))
+	}
+
+	if params.Offset > 0 {
+		builder = builder.Offset(uint64(params.Offset))
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -421,22 +400,12 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 
 	events := make([]Event, 0)
 	for rows.Next() {
-		var id, venueID int64
-		var title, description, ticketURL, coverImageURL string
-
-		err := rows.Scan(&id, &title, &description, &ticketURL, &coverImageURL, &venueID)
-		if err != nil {
+		var e Event
+		if err := scanEvent(rows, &e); err != nil {
 			return nil, err
 		}
 
-		events = append(events, Event{
-			ID:          id,
-			Title:       title,
-			Description: description,
-			TicketURL:   ticketURL,
-			ImageURL:    coverImageURL,
-			VenueID:     venueID,
-		})
+		events = append(events, e)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -447,18 +416,15 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 }
 
 func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
-	query := `
-	INSERT INTO event (title, description, ticket_url, image_url, venue_id)
-	VALUES (@title, @description, @ticket_url, @image_url, @venue_id)`
+	query, args, err := sq.Insert("event").
+		Columns("title", "description", "ticket_url", "image_url", "venue_id").
+		Values(e.Title, e.Description, e.TicketURL, e.ImageURL, e.VenueID).ToSql()
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("title", e.Title),
-		sql.Named("description", e.Description),
-		sql.Named("ticket_url", e.TicketURL),
-		sql.Named("image_url", e.ImageURL),
-		sql.Named("venue_id", e.VenueID),
-	)
+	if err != nil {
+		return 0, err
+	}
 
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -472,13 +438,17 @@ func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
 }
 
 func setEventImageURL(ctx context.Context, tx *sql.Tx, eventID int64, url string) error {
-	query := `UPDATE event SET image_url = @url WHERE id = @id`
+	query, args, err := sq.
+		Update("event").
+		Set("image_url", url).
+		Where(sq.Eq{"id": eventID}).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query,
-		sql.Named("url", url),
-		sql.Named("id", eventID),
-	)
+	if err != nil {
+		return err
+	}
 
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -487,34 +457,30 @@ func setEventImageURL(ctx context.Context, tx *sql.Tx, eventID int64, url string
 }
 
 func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error {
-	query := `
-		UPDATE event SET
-		title = CASE
-			WHEN @title = '' THEN title
-			ELSE @title
-		END,
-		description = CASE
-			WHEN @description = '' THEN description
-			ELSE @description
-		END,
-		ticket_url = CASE
-			WHEN @ticket_url = '' THEN ticket_url
-			ELSE @ticket_url
-		END,
-		image_url = CASE
-			WHEN @image_url = '' THEN image_url
-			ELSE @image_url
-		END
-		WHERE id = @id`
+	builder := sq.Update("event").Where(sq.Eq{"id": eventID})
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("title", e.Title),
-		sql.Named("description", e.Description),
-		sql.Named("ticket_url", e.TicketURL),
-		sql.Named("image_url", e.ImageURL),
-		sql.Named("id", eventID),
-	)
+	if e.Title != "" {
+		builder = builder.Set("title", e.Title)
+	}
 
+	if e.Description != "" {
+		builder = builder.Set("description", e.Description)
+	}
+
+	if e.TicketURL != "" {
+		builder = builder.Set("ticket_url", e.TicketURL)
+	}
+
+	if e.ImageURL != "" {
+		builder = builder.Set("image_url", e.ImageURL)
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -528,9 +494,16 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 }
 
 func deleteEvent(ctx context.Context, tx *sql.Tx, eventID int64) error {
-	query := "DELETE FROM event WHERE id = @event_id"
+	query, args, err := sq.
+		Delete("event").
+		Where(sq.Eq{"id": eventID}).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query, sql.Named("event_id", eventID))
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}

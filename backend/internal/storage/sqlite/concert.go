@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 )
@@ -69,17 +70,22 @@ func (c Concert) ToInternal(a artist.Artist) concert.Concert {
 }
 
 func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
-	query := `
-	INSERT into concert (event_id, artist_id, from_date, to_date)
-	VALUES (@event_id, @artist_id, @from_date, @to_date)`
+	query, args, err := sq.
+		Insert("concert").
+		Columns("event_id", "artist_id", "from_date", "to_date").
+		Values(
+			c.EventID,
+			c.ArtistID,
+			c.From.UTC().Format(time.RFC3339),
+			c.To.UTC().Format(time.RFC3339),
+		).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("event_id", c.EventID),
-		sql.Named("artist_id", c.ArtistID),
-		sql.Named("from_date", c.From.UTC().Format(time.RFC3339)),
-		sql.Named("to_date", c.To.UTC().Format(time.RFC3339)),
-	)
+	if err != nil {
+		return 0, err
+	}
 
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -92,12 +98,29 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 	return concertID, nil
 }
 
-func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) (Concerts, error) {
-	query := `
-	SELECT id, from_date, to_date, artist_id FROM concert
-	WHERE event_id = @event_id`
+var concertBuilder = sq.
+	Select("id", "artist_id", "from_date", "to_date").
+	From("concert")
 
-	rows, err := tx.QueryContext(ctx, query, sql.Named("event_id", eventID))
+func scanConcert(s Scanner, dst *Concert) error {
+	err := s.Scan(&dst.ID, &dst.ArtistID, &dst.From, &dst.To)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) (Concerts, error) {
+	query, args, err := concertBuilder.
+		Where(sq.Eq{"event_id": eventID}).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -106,20 +129,12 @@ func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) (Concerts, er
 
 	concerts := make([]Concert, 0)
 	for rows.Next() {
-		var id int64
-		var fromDate, toDate time.Time
-		var artistID int64
-
-		if err := rows.Scan(&id, &fromDate, &toDate, &artistID); err != nil {
+		var c Concert
+		if err := scanConcert(rows, &c); err != nil {
 			return nil, err
 		}
 
-		concerts = append(concerts, Concert{
-			ID:       id,
-			From:     fromDate,
-			To:       toDate,
-			ArtistID: artistID,
-		})
+		concerts = append(concerts, c)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -171,9 +186,16 @@ func deleteEventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) error {
 }
 
 func deleteConcert(ctx context.Context, tx *sql.Tx, concertID int64) error {
-	query := "DELETE FROM concert WHERE id = @id"
+	query, args, err := sq.
+		Delete("concert").
+		Where(sq.Eq{"id": concertID}).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query, sql.Named("id", concertID))
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}

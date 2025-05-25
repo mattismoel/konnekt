@@ -6,6 +6,7 @@ import (
 	"errors"
 	"strings"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/member"
 	"github.com/mattismoel/konnekt/internal/query"
 )
@@ -165,7 +166,7 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 		members = append(members, dbMember.ToInternal())
 	}
 
-	totalCount, err := memberCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "member")
 	if err != nil {
 		return query.ListResult[member.Member]{}, err
 	}
@@ -284,18 +285,18 @@ func (repo MemberRepository) PasswordHash(ctx context.Context, memberID int64) (
 }
 
 func insertMember(ctx context.Context, tx *sql.Tx, m Member) (int64, error) {
-	query := `
-	INSERT OR IGNORE INTO member (email, first_name, last_name, password_hash, profile_picture_url) 
-	VALUES (@email, @first_name, @last_name, @password_hash, @profile_picture_url)`
+	query, args, err := sq.
+		Insert("member").
+		Options("OR IGNORE").
+		Columns("email", "first_name", "last_name", "password_hash", "profile_picture_url").
+		Values(m.Email, m.FirstName, m.LastName, m.PasswordHash, m.ProfilePictureURL).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("email", m.Email),
-		sql.Named("first_name", m.FirstName),
-		sql.Named("last_name", m.LastName),
-		sql.Named("password_hash", m.PasswordHash),
-		sql.Named("profile_picture_url", m.ProfilePictureURL),
-	)
+	if err != nil {
+		return 0, err
+	}
 
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -318,54 +319,55 @@ func insertMember(ctx context.Context, tx *sql.Tx, m Member) (int64, error) {
 }
 
 func memberByEmail(ctx context.Context, tx *sql.Tx, email string) (Member, error) {
-	query := "select id from member where email = @email"
+	query, args, err := memberBuilder.
+		Where(sq.Eq{"email": email}).
+		ToSql()
 
-	var id int64
-
-	err := tx.QueryRowContext(ctx, query, sql.Named("email", email)).Scan(&id)
 	if err != nil {
 		return Member{}, err
 	}
 
-	m, err := memberByID(ctx, tx, id)
+	var m Member
+
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanMember(row, &m); err != nil {
+		return Member{}, err
+	}
 
 	return m, nil
 }
 
 func memberByID(ctx context.Context, tx *sql.Tx, memberID int64) (Member, error) {
-	query := `
-  SELECT email, first_name, last_name, active, password_hash, profile_picture_url FROM member 
-  WHERE id = @member_id`
-
-	var email, firstName, lastName, profilePictureURL string
-	var active bool
-	var passwordHash []byte
-
-	err := tx.QueryRowContext(ctx, query, sql.Named("member_id", memberID)).Scan(
-		&email, &firstName, &lastName, &active, &passwordHash, &profilePictureURL,
-	)
+	query, args, err := memberBuilder.
+		Where(sq.Eq{"id": memberID}).
+		ToSql()
 
 	if err != nil {
 		return Member{}, err
 	}
 
-	return Member{
-		ID:                memberID,
-		Email:             email,
-		FirstName:         firstName,
-		LastName:          lastName,
-		ProfilePictureURL: profilePictureURL,
-		Active:            active,
-		PasswordHash:      passwordHash,
-	}, nil
+	var m Member
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanMember(row, &m); err != nil {
+		return Member{}, err
+	}
+
+	return m, nil
 }
 
 func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte, error) {
-	query := `SELECT password_hash FROM member WHERE id = @id`
+	query, args, err := sq.
+		Select("password_hash").
+		From("member").
+		Where(sq.Eq{"id": memberID}).
+		ToSql()
 
 	var passwordHash []byte
 
-	err := tx.QueryRowContext(ctx, query, sql.Named("id", memberID)).Scan(&passwordHash)
+	err = tx.
+		QueryRowContext(ctx, query, args...).
+		Scan(&passwordHash)
+
 	if err != nil {
 		return nil, err
 	}
@@ -373,33 +375,50 @@ func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte
 	return passwordHash, nil
 }
 
-func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollection, error) {
-	dbQuery, err := NewQuery(`
-		SELECT 
-			id, 
-			first_name, 
-			last_name, 
-			email, 
-			profile_picture_url,
-			active,
-			password_hash
-		FROM member`)
+func scanMember(s Scanner, dst *Member) error {
+	err := s.Scan(
+		&dst.ID,
+		&dst.FirstName,
+		&dst.LastName,
+		&dst.Email,
+		&dst.ProfilePictureURL,
+		&dst.Active,
+		&dst.PasswordHash,
+	)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if err := dbQuery.WithLimit(q.Limit); err != nil {
-		return nil, err
+	return nil
+}
+
+var memberBuilder = sq.
+	Select(
+		"id",
+		"first_name",
+		"last_name",
+		"email",
+		"profile_picture_url",
+		"active",
+		"password_hash",
+	).
+	From("member")
+
+func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCollection, error) {
+	builder := memberBuilder
+
+	if params.Limit > 0 {
+		builder = builder.Limit(uint64(params.Limit))
 	}
 
-	if err := dbQuery.WithOffset(q.Offset); err != nil {
-		return nil, err
+	if params.Offset > 0 {
+		builder = builder.Offset(uint64(params.Offset))
 	}
 
 	active := true
 
-	if filters, ok := q.Filters["active"]; ok {
+	if filters, ok := params.Filters["active"]; ok {
 		for _, filter := range filters {
 			val := strings.ToUpper(filter.Value)
 			if val == "FALSE" {
@@ -415,14 +434,14 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 		activeVal = "FALSE"
 	}
 
-	err = dbQuery.AddFilter("active", query.Equal, activeVal)
+	builder = builder.Where(sq.Eq{"active": activeVal})
+
+	query, args, err := builder.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
-	queryStr, args := dbQuery.Build()
-
-	rows, err := tx.QueryContext(ctx, queryStr, args...)
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -432,25 +451,12 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 	members := make(MemberCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var firstName, lastName, email, profilePictureURL string
-		var active bool
-		var passwordhash []byte
-
-		err := rows.Scan(&id, &firstName, &lastName, &email, &profilePictureURL, &active, &passwordhash)
-		if err != nil {
+		var m Member
+		if err := scanMember(rows, &m); err != nil {
 			return nil, err
 		}
 
-		members = append(members, Member{
-			ID:                id,
-			FirstName:         firstName,
-			LastName:          lastName,
-			ProfilePictureURL: profilePictureURL,
-			Active:            active,
-			Email:             email,
-			PasswordHash:      passwordhash,
-		})
+		members = append(members, m)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -461,34 +467,30 @@ func listMembers(ctx context.Context, tx *sql.Tx, q QueryParams) (MemberCollecti
 }
 
 func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) error {
-	query := `
-		update member set
-		first_name = CASE 
-			WHEN @first_name = '' THEN first_name 
-			ELSE @first_name
-		END,
-		last_name = CASE 
-			WHEN @last_name = '' THEN last_name 
-			ELSE @last_name
-		END,
-		email = CASE 
-			WHEN @email = '' THEN email 
-			ELSE @email
-		END,
-		profile_picture_url = CASE
-			WHEN @profile_picture_url = '' THEN profile_picture_url
-			ELSE @profile_picture_url
-		END
-		WHERE id = @member_id`
+	builder := sq.Update("member").Where(sq.Eq{"id": memberID})
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("first_name", m.FirstName),
-		sql.Named("last_name", m.LastName),
-		sql.Named("email", m.Email),
-		sql.Named("profile_picture_url", m.ProfilePictureURL),
-		sql.Named("member_id", memberID),
-	)
+	if m.FirstName != "" {
+		builder = builder.Set("first_name", m.FirstName)
+	}
 
+	if m.LastName != "" {
+		builder = builder.Set("last_name", m.LastName)
+	}
+
+	if m.Email != "" {
+		builder = builder.Set("email", m.Email)
+	}
+
+	if m.ProfilePictureURL != "" {
+		builder = builder.Set("profile_picture_url", m.ProfilePictureURL)
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -506,9 +508,17 @@ func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) err
 }
 
 func approveMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
-	query := `UPDATE member SET active = "TRUE" WHERE id = @member_id`
+	query, args, err := sq.
+		Update("member").
+		Set("active", "TRUE").
+		Where(sq.Eq{"id": memberID}).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID))
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -526,9 +536,16 @@ func approveMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
 }
 
 func deleteMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
-	query := "DELETE FROM member WHERE id = @member_id"
+	query, args, err := sq.
+		Delete("member").
+		Where(sq.Eq{"id": memberID}).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID))
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -537,26 +554,21 @@ func deleteMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
 }
 
 func deleteMemberTeams(ctx context.Context, tx *sql.Tx, memberID int64) error {
-	query := "DELETE FROM members_teams WHERE member_id = @member_id"
+	query, args, err := sq.
+		Delete("members_teams").
+		Where(sq.Eq{"member_id": memberID}).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID))
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func memberCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	var count int
-	query := "SELECT COUNT(*) FROM member"
-
-	err := tx.QueryRowContext(ctx, query).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
 }
 
 func (m Member) ToInternal() member.Member {

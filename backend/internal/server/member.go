@@ -97,10 +97,11 @@ func (s Server) handleMemberByID() http.HandlerFunc {
 
 func (s Server) handleUpdateMember() http.HandlerFunc {
 	type UpdateMemberLoad struct {
-		Email             string `json:"email"`
-		FirstName         string `json:"firstName"`
-		LastName          string `json:"lastName"`
-		ProfilePictureURL string `json:"profilePictureUrl"`
+		Email             string  `json:"email"`
+		FirstName         string  `json:"firstName"`
+		LastName          string  `json:"lastName"`
+		ProfilePictureURL string  `json:"profilePictureUrl"`
+		MemberTeamIDs     []int64 `json:"memberTeams"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -158,6 +159,12 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 		}
 
 		if err := s.memberService.Update(ctx, memberID, m); err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = s.memberService.SetMemberTeams(ctx, memberID, load.MemberTeamIDs...)
+		if err != nil {
 			writeError(w, err)
 			return
 		}

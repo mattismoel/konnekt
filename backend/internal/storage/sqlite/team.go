@@ -3,8 +3,8 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"strconv"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/team"
 	"github.com/mattismoel/konnekt/internal/query"
 )
@@ -89,7 +89,7 @@ func (repo TeamRepository) List(ctx context.Context, q query.ListQuery) (query.L
 		return query.ListResult[team.Team]{}, err
 	}
 
-	totalCount, err := teamCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "team")
 	if err != nil {
 		return query.ListResult[team.Team]{}, err
 	}
@@ -218,17 +218,18 @@ func (repo TeamRepository) MemberTeams(ctx context.Context, memberID int64) (tea
 	return teams, nil
 }
 
-func insertTeam(ctx context.Context, tx *sql.Tx, r Team) (int64, error) {
-	query := `
-	INSERT INTO team (name, display_name, description) 
-	VALUES (@name, @display_name, @description)`
+func insertTeam(ctx context.Context, tx *sql.Tx, t Team) (int64, error) {
+	query, args, err := sq.
+		Insert("team").
+		Columns("name", "display_name", "description").
+		Values(t.Name, t.DisplayName, t.Description).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("name", r.Name),
-		sql.Named("display_name", r.DisplayName),
-		sql.Named("description", r.Description),
-	)
+	if err != nil {
+		return 0, err
+	}
 
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -241,26 +242,34 @@ func insertTeam(ctx context.Context, tx *sql.Tx, r Team) (int64, error) {
 	return teamID, nil
 }
 
-func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollection, error) {
-	q, err := NewQuery(`
-	SELECT DISTINCT id, name, description, display_name
-	FROM team`)
+var teamBuilder = sq.
+	Select("id", "name", "description", "display_name").
+	From("team")
 
+func scanTeam(s Scanner, dst *Team) error {
+	err := s.Scan(&dst.ID, &dst.Name, &dst.Description, &dst.DisplayName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollection, error) {
+	builder := teamBuilder.Distinct()
+
+	if filters, ok := params.Filters["id"]; ok {
+		for _, filter := range filters {
+			builder.Where(sq.Eq{"id": filter.Value})
+		}
+	}
+
+	query, args, err := builder.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
-	if filters, ok := params.Filters["id"]; ok {
-		for _, filter := range filters {
-			if err := q.AddFilter("id", filter.Cmp, filter.Value); err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	queryStr, args := q.Build()
-
-	rows, err := tx.QueryContext(ctx, queryStr, args...)
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -270,90 +279,64 @@ func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollect
 	teams := make(TeamCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var name, description, displayName string
-
-		err := rows.Scan(&id, &name, &description, &displayName)
-		if err != nil {
+		var t Team
+		if err := scanTeam(rows, &t); err != nil {
 			return nil, err
 		}
 
-		teams = append(teams, Team{
-			ID:          id,
-			Name:        name,
-			Description: description,
-			DisplayName: displayName,
-		})
+		teams = append(teams, t)
 	}
 
 	return teams, nil
 }
 
 func teamByID(ctx context.Context, tx *sql.Tx, id int64) (Team, error) {
-	q, err := NewQuery("SELECT name, display_name, description FROM team")
-	if err != nil {
-		return Team{}, err
-	}
-
-	if err := q.AddFilter("id", query.Equal, strconv.Itoa(int(id))); err != nil {
-		return Team{}, err
-	}
-
-	queryStr, args := q.Build()
-
-	var name, displayName, description string
-
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(
-		&name, &displayName, &description,
-	)
+	query, args, err := teamBuilder.
+		Where(sq.Eq{"id": id}).
+		ToSql()
 
 	if err != nil {
 		return Team{}, err
 	}
 
-	return Team{
-		ID:          id,
-		Name:        name,
-		DisplayName: displayName,
-		Description: description,
-	}, nil
+	var t Team
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanTeam(row, &t); err != nil {
+		return Team{}, err
+	}
+
+	return t, nil
 }
 
 func teamByName(ctx context.Context, tx *sql.Tx, name string) (Team, error) {
-	q, err := NewQuery("SELECT id, display_name, description FROM team")
-	if err != nil {
-		return Team{}, err
-	}
-
-	if err := q.AddFilter("name", query.Equal, name); err != nil {
-		return Team{}, err
-	}
-
-	queryStr, args := q.Build()
-
-	var id int64
-	var displayName, description string
-
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(
-		&id, &displayName, &description,
-	)
+	query, args, err := teamBuilder.
+		Where(sq.Eq{"name": name}).
+		ToSql()
 
 	if err != nil {
 		return Team{}, err
 	}
 
-	return Team{
-		ID:          id,
-		Name:        name,
-		DisplayName: displayName,
-		Description: description,
-	}, nil
+	var t Team
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanTeam(row, &t); err != nil {
+		return Team{}, err
+	}
+
+	return t, nil
 }
 
 func deleteTeam(ctx context.Context, tx *sql.Tx, teamID int64) error {
-	query := "DELETE FROM team WHERE id = @team_id"
+	query, args, err := sq.
+		Delete("team").
+		Where(sq.Eq{"id": teamID}).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query, sql.Named("team_id", teamID))
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -371,13 +354,16 @@ func deleteTeam(ctx context.Context, tx *sql.Tx, teamID int64) error {
 }
 
 func memberTeams(ctx context.Context, tx *sql.Tx, memberID int64) (TeamCollection, error) {
-	query := `
-	SELECT t.id, t.name, t.display_name, t.description
-	FROM team t
-	JOIN members_teams mt ON mt.team_id = t.id
-	WHERE mt.member_id = @member_id`
+	query, args, err := teamBuilder.
+		Join("members_teams mt ON mt.team_id = team.id").
+		Where(sq.Eq{"mt.member_id": memberID}).
+		ToSql()
 
-	rows, err := tx.QueryContext(ctx, query, sql.Named("member_id", memberID))
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -387,20 +373,12 @@ func memberTeams(ctx context.Context, tx *sql.Tx, memberID int64) (TeamCollectio
 	teams := make(TeamCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var name, displayName, description string
-
-		err := rows.Scan(&id, &name, &displayName, &description)
-		if err != nil {
+		var t Team
+		if err := scanTeam(rows, &t); err != nil {
 			return nil, err
 		}
 
-		teams = append(teams, Team{
-			ID:          id,
-			Name:        name,
-			DisplayName: displayName,
-			Description: description,
-		})
+		teams = append(teams, t)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -411,30 +389,21 @@ func memberTeams(ctx context.Context, tx *sql.Tx, memberID int64) (TeamCollectio
 }
 
 func associateMemberWithTeam(ctx context.Context, tx *sql.Tx, memberID int64, teamID int64) error {
-	query := `INSERT OR IGNORE INTO members_teams (member_id, team_id) VALUES (@member_id, @team_id)`
+	query, args, err := sq.
+		Insert("members_teams").
+		Options("OR IGNORE").
+		Columns("member_id", "team_id").
+		Values(memberID, teamID).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID), sql.Named("team_id", teamID))
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func teamCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	q, err := NewQuery("SELECT COUNT(*) FROM team")
-	if err != nil {
-		return 0, err
-	}
-
-	queryStr, args := q.Build()
-
-	var count int
-
-	err = tx.QueryRowContext(ctx, queryStr, args...).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
 }

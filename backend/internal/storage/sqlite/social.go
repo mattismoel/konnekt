@@ -3,9 +3,8 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"strconv"
 
-	"github.com/mattismoel/konnekt/internal/query"
+	sq "github.com/Masterminds/squirrel"
 )
 
 type Social struct {
@@ -42,19 +41,16 @@ func deleteArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64) error 
 		return err
 	}
 
-	q, err := NewQuery("DELETE FROM artists_socials")
+	query, args, err := sq.
+		Delete("artists_socials").
+		Where(sq.Eq{"artist_id": artistID}).
+		ToSql()
+
 	if err != nil {
 		return err
 	}
 
-	err = q.AddFilter("artist_id", query.Equal, strconv.Itoa(int(artistID)))
-	if err != nil {
-		return err
-	}
-
-	queryStr, args := q.Build()
-
-	_, err = tx.ExecContext(ctx, queryStr, args...)
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -71,15 +67,17 @@ func deleteArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64) error 
 
 // Associates a social entry with a given artist.
 func associateArtistWithSocial(ctx context.Context, tx *sql.Tx, artistID int64, socialID int64) error {
-	query := `
-	INSERT INTO artists_socials (artist_id, social_id)
-	VALUES (@artist_id, @social_id)`
+	query, args, err := sq.
+		Insert("artists_socials").
+		Columns("artist_id", "social_id").
+		Values(artistID, socialID).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query,
-		sql.Named("artist_id", artistID),
-		sql.Named("social_id", socialID),
-	)
+	if err != nil {
+		return err
+	}
 
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -89,9 +87,17 @@ func associateArtistWithSocial(ctx context.Context, tx *sql.Tx, artistID int64, 
 
 // Inserts a social entry into the database.
 func insertSocial(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
-	query := `INSERT INTO social (url) VALUES (@url)`
+	query, args, err := sq.
+		Insert("social").
+		Columns("url").
+		Values(url).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query, sql.Named("url", url))
+	if err != nil {
+		return 0, err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -104,14 +110,28 @@ func insertSocial(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
 	return socialID, nil
 }
 
+var socialBuilder = sq.Select("id", "url").From("social")
+
+func scanSocial(s Scanner, dst *Social) error {
+	if err := s.Scan(&dst.ID, &dst.URL); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Lists all social entries associated with an artist.
 func artistSocials(ctx context.Context, tx *sql.Tx, artistID int64) ([]Social, error) {
-	query := `
-	SELECT id, url FROM social
-	JOIN artists_socials ON artists_socials.social_id = social.id
-	WHERE artists_socials.artist_id = @artist_id`
+	query, args, err := socialBuilder.
+		Join("artists_socials ON artists_socials.social_id = social.id").
+		Where(sq.Eq{"artists_socials.artist_id": artistID}).
+		ToSql()
 
-	rows, err := tx.QueryContext(ctx, query, sql.Named("artist_id", artistID))
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -121,14 +141,12 @@ func artistSocials(ctx context.Context, tx *sql.Tx, artistID int64) ([]Social, e
 	socials := make([]Social, 0)
 
 	for rows.Next() {
-		var id int64
-		var url string
-
-		if err := rows.Scan(&id, &url); err != nil {
+		var s Social
+		if err := scanSocial(rows, &s); err != nil {
 			return nil, err
 		}
 
-		socials = append(socials, Social{ID: id, URL: url})
+		socials = append(socials, s)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -140,9 +158,16 @@ func artistSocials(ctx context.Context, tx *sql.Tx, artistID int64) ([]Social, e
 
 // Deletes a social given its ID.
 func deleteSocial(ctx context.Context, tx *sql.Tx, socialID int64) error {
-	query := `DELETE FROM social WHERE id = @id`
+	query, args, err := sq.
+		Delete("social").
+		Where(sq.Eq{"id": socialID}).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query, sql.Named("id", socialID))
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}

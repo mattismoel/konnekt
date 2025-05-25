@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/auth"
 	"github.com/mattismoel/konnekt/internal/query"
 )
@@ -144,7 +145,7 @@ func (repo AuthRepository) ListPermissions(ctx context.Context, q query.ListQuer
 		permissions = append(permissions, dbPerm.ToInternal())
 	}
 
-	totalCount, err := permissionCount(ctx, tx)
+	totalCount, err := count(ctx, tx, "permission")
 	if err != nil {
 		return query.ListResult[auth.Permission]{}, err
 	}
@@ -189,9 +190,43 @@ func (repo AuthRepository) TeamPermissions(ctx context.Context, teamID int64) (a
 	return collection, nil
 }
 
+var sessionBuilder = sq.
+	Select("id", "member_id", "expires_at").
+	From("session")
+
+func scanSession(s Scanner, dst *Session) error {
+	err := s.Scan(&dst.ID, &dst.MemberID, &dst.ExpiresAt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var permissionBuilder = sq.
+	Select("id", "name", "display_name", "description").
+	From("permission")
+
+func scanPermission(s Scanner, dst *Permission) error {
+	err := s.Scan(&dst.ID, &dst.Name, &dst.DisplayName, &dst.Description)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func deleteMemberSession(ctx context.Context, tx *sql.Tx, memberID int64) error {
-	query := `DELETE FROM session WHERE member_id = @member_id`
-	_, err := tx.ExecContext(ctx, query, sql.Named("member_id", memberID))
+	query, args, err := sq.
+		Delete("session").
+		Where(sq.Eq{"member_id": memberID}).
+		ToSql()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -200,15 +235,17 @@ func deleteMemberSession(ctx context.Context, tx *sql.Tx, memberID int64) error 
 }
 
 func insertSession(ctx context.Context, tx *sql.Tx, session Session) error {
-	query := `
-	INSERT INTO session (id, member_id, expires_at)
-	VALUES (@id, @member_id, @expires_at)`
+	query, args, err := sq.
+		Insert("session").
+		Columns("id", "member_id", "expires_at").
+		Values(session.ID, session.MemberID, session.ExpiresAt).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query,
-		sql.Named("id", session.ID),
-		sql.Named("member_id", session.MemberID),
-		sql.Named("expires_at", session.ExpiresAt),
-	)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -217,35 +254,35 @@ func insertSession(ctx context.Context, tx *sql.Tx, session Session) error {
 }
 
 func sessionByID(ctx context.Context, tx *sql.Tx, sessionID string) (Session, error) {
-	query := `
-	SELECT member_id, expires_at 
-	FROM session 
-	WHERE id = @session_id`
-
-	var memberID int64
-	var expiresAt time.Time
-
-	err := tx.QueryRowContext(ctx, query,
-		sql.Named("session_id", sessionID),
-	).Scan(&memberID, &expiresAt)
+	query, args, err := sessionBuilder.
+		Where(sq.Eq{"id": sessionID}).
+		ToSql()
 
 	if err != nil {
 		return Session{}, err
 	}
 
-	return Session{
-		ID:        sessionID,
-		MemberID:  memberID,
-		ExpiresAt: expiresAt,
-	}, nil
+	var s Session
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanSession(row, &s); err != nil {
+		return Session{}, err
+	}
+
+	return s, nil
 }
 
 func setSessionExpiry(ctx context.Context, tx *sql.Tx, sessionID string, newExpiry time.Time) error {
-	query := `
-	UPDATE session
-	SET expires_at = @expires_at`
+	query, args, err := sq.
+		Update("session").
+		Where(sq.Eq{"id": sessionID}).
+		Set("expires_at", newExpiry).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query, sql.Named("expires_at", newExpiry))
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -276,14 +313,12 @@ func (p Permission) ToInternal() auth.Permission {
 }
 
 func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (PermissionCollection, error) {
-	q, err := NewQuery(`SELECT id, name, display_name, description FROM permission`)
+	query, args, err := permissionBuilder.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
-	queryStr, args := q.Build()
-
-	rows, err := tx.QueryContext(ctx, queryStr, args...)
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -293,20 +328,12 @@ func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (Permi
 	permissions := make(PermissionCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var name, displayName, description string
-
-		err := rows.Scan(&id, &name, &displayName, &description)
-		if err != nil {
+		var p Permission
+		if err := scanPermission(rows, &p); err != nil {
 			return nil, err
 		}
 
-		permissions = append(permissions, Permission{
-			ID:          id,
-			DisplayName: displayName,
-			Name:        name,
-			Description: description,
-		})
+		permissions = append(permissions, p)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -317,13 +344,18 @@ func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (Permi
 }
 
 func teamPermissions(ctx context.Context, tx *sql.Tx, teamID int64) (PermissionCollection, error) {
-	query := `
-	SELECT p.id, p.name, p.display_name, p.description
-	FROM permission p
-	JOIN teams_permissions tp on tp.permission_id = p.id
-	WHERE tp.team_id = @team_id`
+	query, args, err := sq.
+		Select("p.id", "p.name", "p.display_name", "p.description").
+		From("permission p").
+		Join("teams_permissions tp on tp.permission_id = p.id").
+		Where(sq.Eq{"tp.team_id": teamID}).
+		ToSql()
 
-	rows, err := tx.QueryContext(ctx, query, sql.Named("team_id", teamID))
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -333,19 +365,13 @@ func teamPermissions(ctx context.Context, tx *sql.Tx, teamID int64) (PermissionC
 	permissions := make(PermissionCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var name, displayName, description string
+		var p Permission
 
-		if err := rows.Scan(&id, &name, &displayName, &description); err != nil {
+		if err := scanPermission(rows, &p); err != nil {
 			return nil, err
 		}
 
-		permissions = append(permissions, Permission{
-			ID:          id,
-			Name:        name,
-			DisplayName: displayName,
-			Description: description,
-		})
+		permissions = append(permissions, p)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -353,18 +379,6 @@ func teamPermissions(ctx context.Context, tx *sql.Tx, teamID int64) (PermissionC
 	}
 
 	return permissions, nil
-}
-
-func permissionCount(ctx context.Context, tx *sql.Tx) (int, error) {
-	query := "SELECT COUNT(*) FROM permission"
-
-	var count int
-	err := tx.QueryRowContext(ctx, query).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
 }
 
 func (pc PermissionCollection) ToInternal() auth.PermissionCollection {
