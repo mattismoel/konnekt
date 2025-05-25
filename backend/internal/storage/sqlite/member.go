@@ -319,9 +319,7 @@ func insertMember(ctx context.Context, tx *sql.Tx, m Member) (int64, error) {
 }
 
 func memberByEmail(ctx context.Context, tx *sql.Tx, email string) (Member, error) {
-	query, args, err := sq.
-		Select("id").
-		From("member").
+	query, args, err := memberBuilder.
 		Where(sq.Eq{"email": email}).
 		ToSql()
 
@@ -329,25 +327,18 @@ func memberByEmail(ctx context.Context, tx *sql.Tx, email string) (Member, error
 		return Member{}, err
 	}
 
-	var id int64
+	var m Member
 
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&id)
-
-	if err != nil {
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanMember(row, &m); err != nil {
 		return Member{}, err
 	}
-
-	m, err := memberByID(ctx, tx, id)
 
 	return m, nil
 }
 
 func memberByID(ctx context.Context, tx *sql.Tx, memberID int64) (Member, error) {
-	query, args, err := sq.
-		Select("email", "first_name", "last_name", "active", "password_hash", "profile_picture_url").
-		From("member").
+	query, args, err := memberBuilder.
 		Where(sq.Eq{"id": memberID}).
 		ToSql()
 
@@ -355,27 +346,13 @@ func memberByID(ctx context.Context, tx *sql.Tx, memberID int64) (Member, error)
 		return Member{}, err
 	}
 
-	var email, firstName, lastName, profilePictureURL string
-	var active bool
-	var passwordHash []byte
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&email, &firstName, &lastName, &active, &passwordHash, &profilePictureURL)
-
-	if err != nil {
+	var m Member
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanMember(row, &m); err != nil {
 		return Member{}, err
 	}
 
-	return Member{
-		ID:                memberID,
-		Email:             email,
-		FirstName:         firstName,
-		LastName:          lastName,
-		ProfilePictureURL: profilePictureURL,
-		Active:            active,
-		PasswordHash:      passwordHash,
-	}, nil
+	return m, nil
 }
 
 func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte, error) {
@@ -398,10 +375,42 @@ func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte
 	return passwordHash, nil
 }
 
+type Scanner interface {
+	Scan(dst ...any) error
+}
+
+func scanMember(s Scanner, dst *Member) error {
+	err := s.Scan(
+		&dst.ID,
+		&dst.FirstName,
+		&dst.LastName,
+		&dst.Email,
+		&dst.ProfilePictureURL,
+		&dst.Active,
+		&dst.PasswordHash,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var memberBuilder = sq.
+	Select(
+		"id",
+		"first_name",
+		"last_name",
+		"email",
+		"profile_picture_url",
+		"active",
+		"password_hash",
+	).
+	From("member")
+
 func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCollection, error) {
-	builder := sq.
-		Select("id", "first_name", "last_name", "email", "profile_picture", "active", "password_hash").
-		From("member")
+	builder := memberBuilder
 
 	if params.Limit > 0 {
 		builder = builder.Limit(uint64(params.Limit))
@@ -446,25 +455,12 @@ func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCol
 	members := make(MemberCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var firstName, lastName, email, profilePictureURL string
-		var active bool
-		var passwordhash []byte
-
-		err := rows.Scan(&id, &firstName, &lastName, &email, &profilePictureURL, &active, &passwordhash)
-		if err != nil {
+		var m Member
+		if err := scanMember(rows, &m); err != nil {
 			return nil, err
 		}
 
-		members = append(members, Member{
-			ID:                id,
-			FirstName:         firstName,
-			LastName:          lastName,
-			ProfilePictureURL: profilePictureURL,
-			Active:            active,
-			Email:             email,
-			PasswordHash:      passwordhash,
-		})
+		members = append(members, m)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -475,7 +471,7 @@ func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCol
 }
 
 func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) error {
-	builder := sq.Update("member").Where(sq.Eq{"member_id": memberID})
+	builder := sq.Update("member").Where(sq.Eq{"id": memberID})
 
 	if m.FirstName != "" {
 		builder = builder.Set("first_name", m.FirstName)
