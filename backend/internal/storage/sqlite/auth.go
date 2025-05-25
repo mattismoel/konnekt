@@ -190,6 +190,32 @@ func (repo AuthRepository) TeamPermissions(ctx context.Context, teamID int64) (a
 	return collection, nil
 }
 
+var sessionBuilder = sq.
+	Select("id", "member_id", "expires_at").
+	From("session")
+
+func scanSession(s Scanner, dst *Session) error {
+	err := s.Scan(&dst.ID, &dst.MemberID, &dst.ExpiresAt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var permissionBuilder = sq.
+	Select("id", "name", "display_name", "description").
+	From("permission")
+
+func scanPermission(s Scanner, dst *Permission) error {
+	err := s.Scan(&dst.ID, &dst.Name, &dst.DisplayName, &dst.Description)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func deleteMemberSession(ctx context.Context, tx *sql.Tx, memberID int64) error {
 	query, args, err := sq.
 		Delete("session").
@@ -228,9 +254,7 @@ func insertSession(ctx context.Context, tx *sql.Tx, session Session) error {
 }
 
 func sessionByID(ctx context.Context, tx *sql.Tx, sessionID string) (Session, error) {
-	query, args, err := sq.
-		Select("member_id", "expires_at").
-		From("session").
+	query, args, err := sessionBuilder.
 		Where(sq.Eq{"id": sessionID}).
 		ToSql()
 
@@ -238,22 +262,13 @@ func sessionByID(ctx context.Context, tx *sql.Tx, sessionID string) (Session, er
 		return Session{}, err
 	}
 
-	var memberID int64
-	var expiresAt time.Time
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&memberID, &expiresAt)
-
-	if err != nil {
+	var s Session
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanSession(row, &s); err != nil {
 		return Session{}, err
 	}
 
-	return Session{
-		ID:        sessionID,
-		MemberID:  memberID,
-		ExpiresAt: expiresAt,
-	}, nil
+	return s, nil
 }
 
 func setSessionExpiry(ctx context.Context, tx *sql.Tx, sessionID string, newExpiry time.Time) error {
@@ -298,11 +313,7 @@ func (p Permission) ToInternal() auth.Permission {
 }
 
 func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (PermissionCollection, error) {
-	query, args, err := sq.
-		Select("id", "name", "display_name", "description").
-		From("permission").
-		ToSql()
-
+	query, args, err := permissionBuilder.ToSql()
 	if err != nil {
 		return nil, err
 	}
@@ -317,20 +328,12 @@ func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (Permi
 	permissions := make(PermissionCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var name, displayName, description string
-
-		err := rows.Scan(&id, &name, &displayName, &description)
-		if err != nil {
+		var p Permission
+		if err := scanPermission(rows, &p); err != nil {
 			return nil, err
 		}
 
-		permissions = append(permissions, Permission{
-			ID:          id,
-			DisplayName: displayName,
-			Name:        name,
-			Description: description,
-		})
+		permissions = append(permissions, p)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -362,19 +365,13 @@ func teamPermissions(ctx context.Context, tx *sql.Tx, teamID int64) (PermissionC
 	permissions := make(PermissionCollection, 0)
 
 	for rows.Next() {
-		var id int64
-		var name, displayName, description string
+		var p Permission
 
-		if err := rows.Scan(&id, &name, &displayName, &description); err != nil {
+		if err := scanPermission(rows, &p); err != nil {
 			return nil, err
 		}
 
-		permissions = append(permissions, Permission{
-			ID:          id,
-			Name:        name,
-			DisplayName: displayName,
-			Description: description,
-		})
+		permissions = append(permissions, p)
 	}
 
 	if err := rows.Err(); err != nil {
