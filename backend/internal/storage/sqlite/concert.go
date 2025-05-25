@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 )
@@ -69,17 +70,22 @@ func (c Concert) ToInternal(a artist.Artist) concert.Concert {
 }
 
 func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
-	query := `
-	INSERT into concert (event_id, artist_id, from_date, to_date)
-	VALUES (@event_id, @artist_id, @from_date, @to_date)`
+	query, args, err := sq.
+		Insert("concert").
+		Columns("event_id", "artist_id", "from_date", "to_date").
+		Values(
+			c.EventID,
+			c.ArtistID,
+			c.From.UTC().Format(time.RFC3339),
+			c.To.UTC().Format(time.RFC3339),
+		).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("event_id", c.EventID),
-		sql.Named("artist_id", c.ArtistID),
-		sql.Named("from_date", c.From.UTC().Format(time.RFC3339)),
-		sql.Named("to_date", c.To.UTC().Format(time.RFC3339)),
-	)
+	if err != nil {
+		return 0, err
+	}
 
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -93,11 +99,17 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 }
 
 func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) (Concerts, error) {
-	query := `
-	SELECT id, from_date, to_date, artist_id FROM concert
-	WHERE event_id = @event_id`
+	query, args, err := sq.
+		Select("id", "from_date", "to_date", "artist_id").
+		From("concert").
+		Where(sq.Eq{"id": eventID}).
+		ToSql()
 
-	rows, err := tx.QueryContext(ctx, query, sql.Named("event_id", eventID))
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -171,9 +183,16 @@ func deleteEventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) error {
 }
 
 func deleteConcert(ctx context.Context, tx *sql.Tx, concertID int64) error {
-	query := "DELETE FROM concert WHERE id = @id"
+	query, args, err := sq.
+		Delete("concert").
+		Where(sq.Eq{"id": concertID}).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query, sql.Named("id", concertID))
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
