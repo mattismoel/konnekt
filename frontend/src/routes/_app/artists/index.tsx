@@ -134,7 +134,7 @@ const ArtistList = ({ artists, selected, onSelect, onMouseEnter, onMouseLeave }:
 const Entry = ({ artist, selected, onSelect }: EntryProps) => {
   return (
     <li
-      className={cn("group text-text/75 hover:text-text [.selected]:text-text relative flex items-center border-l-transparent transition-colors", {
+      className={cn("@container group text-text/75 hover:text-text [.selected]:text-text relative flex items-center border-l-transparent transition-colors", {
         "text-text": selected?.id === artist.id
       })}
       onMouseEnter={onSelect}
@@ -146,23 +146,22 @@ const Entry = ({ artist, selected, onSelect }: EntryProps) => {
       <div className="grid w-full grid-cols-3">
         <Link
           to="/artists/$artistId"
-          params={{
-            artistId: artist.id.toString(),
-          }}
+          params={{ artistId: artist.id.toString() }}
           className="col-span-2 grid grid-cols-2 py-3 pl-3"
         >
           <span className="line-clamp-1 font-bold">{artist.name}</span>
-          <span className="line-clamp-1">{artist.genres.map((g) => g.name).join(', ')}</span>
+          <span className="hidden @xl:block line-clamp-1">{artist.genres.map((g) => g.name).join(', ')}</span>
         </Link>
+
         <div
-          className="text-text/50 group-[.selected]:text-text/75 group-hover:text-text/75 flex items-center justify-end gap-2 pr-3 text-lg"
+          className="hidden @sm:flex text-text/50 group-[.selected]:text-text/75 group-hover:text-text/75 items-center justify-end gap-4 pr-3 text-lg"
         >
           {artist.socials.map(social => {
             const Icon = socialUrlToIcon(social)
 
             return (
               <a key={social} href={social} className="hover:text-text">
-                <Icon />
+                <Icon className='text-2xl' />
               </a>
             )
           })}
