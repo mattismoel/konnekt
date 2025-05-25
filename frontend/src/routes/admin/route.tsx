@@ -57,12 +57,12 @@ const AuthLayout = () => {
         <img src={member.profilePictureUrl} alt="Profil" className="h-8 w-8 rounded-full object-cover outline outline-zinc-700 group-hover:outline-2" />
       </button>
       <ContextMenu show={showUserContext} onClose={() => setShowUserContext(false)}>
-        {/* <ContextMenu.LinkEntry */}
-        {/*   to="/admin/members/$memberId" */}
-        {/*   params={{ memberId: member.id.toString() }} */}
-        {/* > */}
-        {/*   Redigér */}
-        {/* </ContextMenu.LinkEntry> */}
+        <ContextMenu.LinkEntry
+          to="/admin/members/$memberId"
+          params={{ memberId: member.id.toString() }}
+        >
+          Redigér
+        </ContextMenu.LinkEntry>
         <ContextMenu.Entry onClick={handleLogout}>
           Log ud
         </ContextMenu.Entry>
