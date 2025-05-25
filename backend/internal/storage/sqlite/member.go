@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
@@ -75,7 +76,7 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 
 	defer tx.Rollback()
 
-	m, err := memberByID(ctx, tx, memberID)
+	dbMember, err := memberByID(ctx, tx, memberID)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -85,11 +86,32 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 		}
 	}
 
+	dbTeams, err := memberTeams(ctx, tx, memberID)
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	fmt.Printf("TEAMS %+v\n", dbTeams)
+
 	if err := tx.Commit(); err != nil {
 		return member.Member{}, err
 	}
 
-	return m.ToInternal(), nil
+	m, err := member.NewMember(
+		member.WithID(dbMember.ID),
+		member.WithEmail(dbMember.Email),
+		member.WithFirstName(dbMember.FirstName),
+		member.WithLastName(dbMember.LastName),
+		member.WithPasswordHash(dbMember.PasswordHash),
+		member.WithProfilePictureURL(dbMember.ProfilePictureURL),
+		member.WithTeams(dbTeams.ToInternal()),
+	)
+
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	return m, nil
 }
 
 func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error {
@@ -163,7 +185,26 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 	members := make([]member.Member, 0)
 
 	for _, dbMember := range dbMembers {
-		members = append(members, dbMember.ToInternal())
+		dbTeams, err := memberTeams(ctx, tx, dbMember.ID)
+		if err != nil {
+			return query.ListResult[member.Member]{}, err
+		}
+
+		m, err := member.NewMember(
+			member.WithID(dbMember.ID),
+			member.WithEmail(dbMember.Email),
+			member.WithFirstName(dbMember.FirstName),
+			member.WithLastName(dbMember.LastName),
+			member.WithProfilePictureURL(dbMember.ProfilePictureURL),
+			member.WithPasswordHash(dbMember.PasswordHash),
+			member.WithTeams(dbTeams.ToInternal()),
+		)
+
+		if err != nil {
+			return query.ListResult[member.Member]{}, err
+		}
+
+		members = append(members, m)
 	}
 
 	totalCount, err := count(ctx, tx, "member")
@@ -218,7 +259,7 @@ func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.
 
 	defer tx.Rollback()
 
-	m, err := memberByEmail(ctx, tx, email)
+	dbMember, err := memberByEmail(ctx, tx, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return member.Member{}, member.ErrNotFound
@@ -227,11 +268,30 @@ func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.
 		return member.Member{}, err
 	}
 
+	dbTeams, err := memberTeams(ctx, tx, dbMember.ID)
+	if err != nil {
+		return member.Member{}, err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return member.Member{}, err
 	}
 
-	return m.ToInternal(), nil
+	m, err := member.NewMember(
+		member.WithID(dbMember.ID),
+		member.WithEmail(dbMember.Email),
+		member.WithFirstName(dbMember.FirstName),
+		member.WithLastName(dbMember.LastName),
+		member.WithProfilePictureURL(dbMember.ProfilePictureURL),
+		member.WithPasswordHash(dbMember.PasswordHash),
+		member.WithTeams(dbTeams.ToInternal()),
+	)
+
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	return m, nil
 }
 
 func (repo MemberRepository) Delete(ctx context.Context, memberID int64) error {

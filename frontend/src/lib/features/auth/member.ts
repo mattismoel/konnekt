@@ -2,14 +2,14 @@ import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/
 import { createListResult } from "@/lib/query"
 import { createUrl, type Query } from "@/lib/url"
 import { z } from "zod"
-import { setMemberTeams } from "./team"
+import { setMemberTeams, teamSchema } from "./team"
 
 export const memberSchema = z.object({
 	id: idSchema,
 	email: z.string().email(),
 	firstName: z.string(),
 	lastName: z.string(),
-
+	teams: teamSchema.array().min(1),
 	profilePictureUrl: z
 		.string()
 		.url()
