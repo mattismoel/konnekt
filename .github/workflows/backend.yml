@@ -1,11 +1,4 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Backend
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{github.repository }}-backend
+name: Build
 
 on:
   push:
@@ -61,10 +54,3 @@ jobs:
     - name: Test
       if: ${{ !inputs.skipTests }}
       run: go test -v -count=1 -race -shuffle=on -coverprofile=coverage.txt ./...
-
-    - name: Compile Tests
-      if: ${{ inputs.skipTests }}
-      run: go test -exec /bin/true ./...
-
-    - name: Benchmark
-      run: go test -v -shuffle=on -run=- -bench=. -benchtime=1x ./...
