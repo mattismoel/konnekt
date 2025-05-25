@@ -102,7 +102,7 @@ func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) (Concerts, er
 	query, args, err := sq.
 		Select("id", "from_date", "to_date", "artist_id").
 		From("concert").
-		Where(sq.Eq{"id": eventID}).
+		Where(sq.Eq{"event_id": eventID}).
 		ToSql()
 
 	if err != nil {
