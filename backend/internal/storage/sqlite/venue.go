@@ -158,10 +158,19 @@ func (repo VenueRepository) Delete(ctx context.Context, venueID int64) error {
 	return nil
 }
 
+var venueBuilder = sq.Select("id", "name", "country_code", "city").From("venue")
+
+func scanVenue(s Scanner, dst *Venue) error {
+	err := s.Scan(&dst.ID, &dst.Name, &dst.CountryCode, &dst.City)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func listVenues(ctx context.Context, tx *sql.Tx, params VenueQueryParams) ([]Venue, error) {
-	builder := sq.
-		Select("id", "name", "country_code", "city").
-		From("venue")
+	builder := venueBuilder
 
 	if params.Limit > 0 {
 		builder = builder.Limit(uint64(params.Limit))
@@ -184,20 +193,14 @@ func listVenues(ctx context.Context, tx *sql.Tx, params VenueQueryParams) ([]Ven
 	defer rows.Close()
 
 	venues := make([]Venue, 0)
-	for rows.Next() {
-		var id int64
-		var name, countryCode, city string
 
-		if err := rows.Scan(&id, &name, &countryCode, &city); err != nil {
+	for rows.Next() {
+		var v Venue
+		if err := scanVenue(rows, &v); err != nil {
 			return nil, err
 		}
 
-		venues = append(venues, Venue{
-			ID:          id,
-			Name:        name,
-			CountryCode: countryCode,
-			City:        city,
-		})
+		venues = append(venues, v)
 	}
 
 	return venues, nil
@@ -228,9 +231,7 @@ func insertVenue(ctx context.Context, tx *sql.Tx, v Venue) (int64, error) {
 }
 
 func venueByID(ctx context.Context, tx *sql.Tx, venueID int64) (Venue, error) {
-	query, args, err := sq.
-		Select("name", "country_code", "city").
-		From("venue").
+	query, args, err := venueBuilder.
 		Where(sq.Eq{"id": venueID}).
 		ToSql()
 
@@ -238,21 +239,13 @@ func venueByID(ctx context.Context, tx *sql.Tx, venueID int64) (Venue, error) {
 		return Venue{}, err
 	}
 
-	var name, countryCode, city string
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&name, &countryCode, &city)
-
-	if err != nil {
+	var v Venue
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanVenue(row, &v); err != nil {
 		return Venue{}, err
 	}
 
-	return Venue{
-		ID:          venueID,
-		Name:        name,
-		CountryCode: countryCode,
-		City:        city,
-	}, nil
+	return v, nil
 }
 
 func deleteVenue(ctx context.Context, tx *sql.Tx, venueID int64) error {
