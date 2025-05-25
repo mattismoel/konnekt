@@ -23,7 +23,7 @@ func (s *Server) setupRoutes() {
 	})
 
 	s.mux.Route("/members", func(r chi.Router) {
-		r.Get("/", s.withPermissions(s.handleListMembers(), "view:member", "view:team", "view:permission"))
+		r.Get("/", s.handleListMembers())
 
 		r.Get("/{memberID}", s.withPermissions(s.handleMemberByID(), "view:member"))
 		r.Put("/{memberID}", s.handleUpdateMember())
