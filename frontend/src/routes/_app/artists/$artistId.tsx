@@ -54,11 +54,11 @@ function RouteComponent() {
             >
               <h1
                 style={{ wordSpacing: "100vw" }}
-                className="font-heading text-7xl font-bold md:text-8xl lg:text-9xl"
+                className="font-heading text-7xl font-bold text-shadow-md md:text-8xl lg:text-9xl"
               >
                 {artist.name}
               </h1>
-              <div className="text-text/50 flex gap-4 text-3xl">
+              <div className="text-text/50 flex gap-4 text-3xl text-shadow-sm">
                 {artist.socials.map(social => {
                   const Icon = socialUrlToIcon(social)
                   return (

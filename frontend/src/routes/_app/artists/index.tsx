@@ -6,7 +6,6 @@ import { cn } from '@/lib/clsx';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { artistsQueryOpts } from '@/lib/features/artist/query';
 import PageMeta from '@/lib/components/page-meta';
-import Fader from '@/lib/components/fader';
 
 /** @description The rate of which artist auto display changes artist. */
 const AUTO_DISPLAY_RATE = 0.25;
@@ -38,7 +37,6 @@ function RouteComponent() {
   const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
 
   const [selected, setSelected] = useState<Artist>();
-  const selectedRef = useRef<HTMLLIElement>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -94,8 +92,8 @@ function RouteComponent() {
         ))}
         <div className="space-y-16">
           <section className="flex flex-col">
-            <h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl">Kunstnere</h1>
-            <span className="text-text/75">
+            <h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl text-shadow-md/15">Kunstnere</h1>
+            <span className="text-text/75 text-shadow-sm">
               Her kan du se alle kunstnere, som medvirker i kommende events.
             </span>
           </section>
@@ -149,11 +147,11 @@ const Entry = ({ artist }: EntryProps) => {
       onMouseEnter={() => onSelect(artist)}
       onMouseLeave={onExit}
     >
-      <div className="grid grid-cols-1 @md:grid-cols-2 @2xl:grid-cols-3 items-center">
+      <div className="grid grid-cols-1 @md:grid-cols-2 @2xl:grid-cols-3 items-center text-shadow-sm">
         <Link
           to="/artists/$artistId"
           params={{ artistId: artist.id.toString() }}
-          className={cn("font-bold w-full py-3 text-text/50", {
+          className={cn("font-bold w-full py-3 text-text/50 ", {
             "text-text": selected?.id === artist.id
           })}
         >

@@ -50,8 +50,8 @@ function App() {
             <Slideshow srcs={landingImages.map(({ url }) => ({ src: url }))} />
           </div>
           <section className="flex max-w-lg flex-col gap-8 overflow-hidden">
-            <h2 className="font-heading text-4xl sm:text-5xl">For et stærkere <b>fynsk musisk vækstlag</b></h2>
-            <p className="text-text/75">
+            <h2 className="font-heading text-4xl sm:text-5xl text-shadow-lg/15">For et stærkere <b>fynsk musisk vækstlag</b></h2>
+            <p className="text-text/75 text-shadow-md">
               En forening med formål, at støtte det lokale fynske musiske vækstlag og give aspirerende
               musikere et springbræt til den danske musikscene.
             </p>

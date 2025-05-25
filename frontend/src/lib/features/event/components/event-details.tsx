@@ -42,13 +42,11 @@ const EventDetails = ({ event, active, prefix }: Props) => {
 			<Fader className="absolute -z-10 h-1/2" direction="up" />
 
 			<div className="px-auto flex w-full flex-col">
-				{prefix && (
-					<span>{prefix}</span>
+				{prefix && <span className="text-shadow-sm">{prefix}</span>}
 
-				)}
-				<h1 className="md:mb-8 mb-4 text-4xl md:text-7xl font-bold">{event.title}</h1>
+				<h1 className="md:mb-8 mb-4 text-4xl md:text-7xl font-bold text-shadow-md">{event.title}</h1>
 
-				<div className="text-text/85 flex flex-col gap-8 sm:flex-row">
+				<div className="text-text/85 flex flex-col gap-8 sm:flex-row text-shadow-sm">
 					<div className="flex flex-1 flex-col gap-2">
 						{fromDate && (
 							<div className="flex items-center gap-4">
