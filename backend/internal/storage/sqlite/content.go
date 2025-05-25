@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/content"
 )
 
@@ -116,9 +117,17 @@ func (r ContentRepository) DeleteLandingImage(ctx context.Context, id int64) err
 }
 
 func insertLandingImage(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
-	query := "INSERT INTO landing_image (url) VALUES (@url)"
+	query, args, err := sq.
+		Insert("landing_image").
+		Columns("url").
+		Values(url).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query, sql.Named("url", url))
+	if err != nil {
+		return 0, err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -132,9 +141,16 @@ func insertLandingImage(ctx context.Context, tx *sql.Tx, url string) (int64, err
 }
 
 func landingImages(ctx context.Context, tx *sql.Tx) (ImageCollection, error) {
-	query := "SELECT id, url FROM landing_image"
+	query, args, err := sq.
+		Select("id", "url").
+		From("landing_image").
+		ToSql()
 
-	rows, err := tx.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -165,10 +181,22 @@ func landingImages(ctx context.Context, tx *sql.Tx) (ImageCollection, error) {
 }
 
 func landingImageByID(ctx context.Context, tx *sql.Tx, id int64) (Image, error) {
-	query := "SELECT url FROM landing_image WHERE id = @id"
+	query, args, err := sq.
+		Select("url").
+		From("landing_image").
+		Where(sq.Eq{"id": id}).
+		ToSql()
+
+	if err != nil {
+		return Image{}, err
+	}
 
 	var url string
-	err := tx.QueryRowContext(ctx, query, sql.Named("id", id)).Scan(&url)
+
+	err = tx.
+		QueryRowContext(ctx, query, args...).
+		Scan(&url)
+
 	if err != nil {
 		return Image{}, err
 	}
@@ -180,9 +208,16 @@ func landingImageByID(ctx context.Context, tx *sql.Tx, id int64) (Image, error) 
 }
 
 func deleteLandingImage(ctx context.Context, tx *sql.Tx, id int64) error {
-	query := "DELETE FROM landing_image WHERE id = @id"
+	query, args, err := sq.
+		Delete("landing_image").
+		Where(sq.Eq{"id": id}).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query, sql.Named("id", id))
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
