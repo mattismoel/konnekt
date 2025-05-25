@@ -427,7 +427,11 @@ func artistByID(ctx context.Context, tx *sql.Tx, artistID int64) (Artist, error)
 }
 
 func deleteArtist(ctx context.Context, tx *sql.Tx, artistID int64) error {
-	artist, args, err := sq.Delete("artist").Where(sq.Eq{"id": artistID}).ToSql()
+	artist, args, err := sq.
+		Delete("artist").
+		Where(sq.Eq{"id": artistID}).
+		ToSql()
+
 	if err != nil {
 		return err
 	}
