@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/query"
 )
@@ -302,34 +303,34 @@ func (repo ArtistRepository) Delete(ctx context.Context, artistID int64) error {
 }
 
 func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist, error) {
-	q, err := NewQuery(`SELECT id, name, description, preview_url, image_url FROM artist a`)
-	if err != nil {
-		return nil, err
+	builder := sq.
+		Select("id", "name", "description", "preview_url", "image_url").
+		From("artist")
+
+	if order, ok := params.OrderBy["name"]; ok {
+		builder = builder.OrderBy("name " + string(order))
 	}
 
-	if err := q.WithOrdering(params.OrderBy); err != nil {
-		return nil, err
+	if params.Offset > 0 {
+		builder = builder.Offset(uint64(params.Offset))
 	}
 
-	if err := q.WithOffset(params.Offset); err != nil {
-		return nil, err
-	}
-
-	if err := q.WithLimit(params.Limit); err != nil {
-		return nil, err
+	if params.Limit > 0 {
+		builder = builder.Limit(uint64(params.Limit))
 	}
 
 	if filters, ok := params.Filters["artist_id"]; ok {
 		for _, f := range filters {
-			if err := q.AddFilter("artist_id", query.Equal, f.Value); err != nil {
-				return nil, err
-			}
+			builder = builder.Where(sq.Eq{"artist_id": f.Value})
 		}
 	}
 
-	queryStr, args := q.Build()
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
 
-	rows, err := tx.QueryContext(ctx, queryStr, args...)
+	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -361,27 +362,27 @@ func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist,
 func artistCount(ctx context.Context, tx *sql.Tx) (int, error) {
 	var count int
 
-	err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM artist").Scan(&count)
+	query, args, err := sq.Select("COUNT(*)").From("artist").ToSql()
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.QueryRowContext(ctx, query, args...).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
 
 	return count, nil
-
 }
 
 func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
-	query := `
-	INSERT INTO artist (name, description, preview_url, image_url)
-	VALUES (@name, @description, @preview_url, @image_url)`
+	query, args, err := sq.
+		Insert("artist").
+		Columns("name", "description", "preview_url", "image_url").
+		Values(a.Name, a.Description, a.PreviewURL, a.ImageURL).
+		ToSql()
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("name", a.Name),
-		sql.Named("description", a.Description),
-		sql.Named("preview_url", a.PreviewURL),
-		sql.Named("image_url", a.ImageURL),
-	)
-
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -395,14 +396,20 @@ func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 }
 
 func artistByID(ctx context.Context, tx *sql.Tx, artistID int64) (Artist, error) {
-	query := `
-	SELECT name, description, preview_url, image_url
-	FROM artist where id = @id`
+	query, args, err := sq.Select("name", "description", "preview_url", "image_url").
+		From("artist").
+		Where(sq.Eq{"id": artistID}).
+		ToSql()
+
+	if err != nil {
+		return Artist{}, err
+	}
 
 	var name, description, previewURL, imageURL string
-	err := tx.QueryRowContext(ctx, query, sql.Named("id", artistID)).Scan(
-		&name, &description, &previewURL, &imageURL,
-	)
+
+	err = tx.
+		QueryRowContext(ctx, query, args...).
+		Scan(&name, &description, &previewURL, &imageURL)
 
 	if err != nil {
 		return Artist{}, err
@@ -418,21 +425,28 @@ func artistByID(ctx context.Context, tx *sql.Tx, artistID int64) (Artist, error)
 }
 
 func deleteArtist(ctx context.Context, tx *sql.Tx, artistID int64) error {
-	query := `DELETE FROM artist WHERE id = @artist_id`
-
-	_, err := tx.ExecContext(ctx, query, sql.Named("artist_id", artistID))
+	artist, args, err := sq.Delete("artist").Where(sq.Eq{"id": artistID}).ToSql()
 	if err != nil {
 		return err
 	}
 
-	query = `DELETE FROM artists_socials WHERE artist_id = @artist_id`
-	_, err = tx.ExecContext(ctx, query, sql.Named("artist_id", artistID))
+	_, err = tx.ExecContext(ctx, artist, args...)
 	if err != nil {
 		return err
 	}
 
-	query = `DELETE FROM artists_genres WHERE artist_id = @artist_id`
-	_, err = tx.ExecContext(ctx, query, sql.Named("artist_id", artistID))
+	socials, args, err := sq.Delete("artists_socials").Where(sq.Eq{"artist_id": artistID}).ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, socials, args...)
+	if err != nil {
+		return err
+	}
+
+	genres, args, err := sq.Delete("artists_genres").Where(sq.Eq{"artist_id": artistID}).ToSql()
+	_, err = tx.ExecContext(ctx, genres, args...)
 	if err != nil {
 		return err
 	}
@@ -441,13 +455,17 @@ func deleteArtist(ctx context.Context, tx *sql.Tx, artistID int64) error {
 }
 
 func setArtistImageURL(ctx context.Context, tx *sql.Tx, artistID int64, url string) error {
-	query := `UPDATE artist SET image_url = @image_url WHERE id = @artist_id`
+	query, args, err := sq.
+		Update("artist").
+		Where(sq.Eq{"id": artistID}).
+		Set("image_url", url).
+		ToSql()
 
-	_, err := tx.ExecContext(ctx, query,
-		sql.Named("image_url", url),
-		sql.Named("artist_id", artistID),
-	)
+	if err != nil {
+		return err
+	}
 
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
@@ -456,34 +474,30 @@ func setArtistImageURL(ctx context.Context, tx *sql.Tx, artistID int64, url stri
 }
 
 func updateArtist(ctx context.Context, tx *sql.Tx, artistID int64, a Artist) error {
-	query := `
-	UPDATE artist SET 
-		name = CASE 
-			WHEN @name = '' THEN name
-			ELSE @name
-		END,
-		description = CASE
-			WHEN @description = '' THEN description
-			ELSE @description
-		END,
-		preview_url = CASE
-			WHEN @preview_url = '' THEN preview_url
-			ELSE @preview_url
-		END,
-		image_url = CASE
-			WHEN @image_url = '' THEN image_url
-			ELSE @image_url
-		END
-	WHERE id = @artist_id`
+	builder := sq.Update("artist").Where(sq.Eq{"id": artistID})
 
-	res, err := tx.ExecContext(ctx, query,
-		sql.Named("name", a.Name),
-		sql.Named("description", a.Description),
-		sql.Named("preview_url", a.PreviewURL),
-		sql.Named("image_url", a.ImageURL),
-		sql.Named("artist_id", artistID),
-	)
+	if a.Name != "" {
+		builder = builder.Set("name", a.Name)
+	}
 
+	if a.Description != "" {
+		builder = builder.Set("description", a.Description)
+	}
+
+	if a.PreviewURL != "" {
+		builder = builder.Set("preview_url", a.PreviewURL)
+	}
+
+	if a.ImageURL != "" {
+		builder = builder.Set("image_url", a.ImageURL)
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
