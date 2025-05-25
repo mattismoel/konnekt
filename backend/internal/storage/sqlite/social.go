@@ -110,12 +110,20 @@ func insertSocial(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
 	return socialID, nil
 }
 
+var socialBuilder = sq.Select("id", "url").From("social")
+
+func scanSocial(s Scanner, dst *Social) error {
+	if err := s.Scan(&dst.ID, &dst.URL); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Lists all social entries associated with an artist.
 func artistSocials(ctx context.Context, tx *sql.Tx, artistID int64) ([]Social, error) {
-	query, args, err := sq.
-		Select("id", "url").
-		From("social s").
-		Join("artists_socials ON artists_socials.social_id = s.id").
+	query, args, err := socialBuilder.
+		Join("artists_socials ON artists_socials.social_id = social.id").
 		Where(sq.Eq{"artists_socials.artist_id": artistID}).
 		ToSql()
 
@@ -133,14 +141,12 @@ func artistSocials(ctx context.Context, tx *sql.Tx, artistID int64) ([]Social, e
 	socials := make([]Social, 0)
 
 	for rows.Next() {
-		var id int64
-		var url string
-
-		if err := rows.Scan(&id, &url); err != nil {
+		var s Social
+		if err := scanSocial(rows, &s); err != nil {
 			return nil, err
 		}
 
-		socials = append(socials, Social{ID: id, URL: url})
+		socials = append(socials, s)
 	}
 
 	if err := rows.Err(); err != nil {
