@@ -302,6 +302,22 @@ func (repo ArtistRepository) Delete(ctx context.Context, artistID int64) error {
 	return nil
 }
 
+func scanArtist(scanner Scanner, dst *Artist) error {
+	err := scanner.Scan(
+		&dst.ID,
+		&dst.Name,
+		&dst.Description,
+		&dst.PreviewURL,
+		&dst.ImageURL,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 var artistBuilder = sq.
 	Select("id", "name", "description", "preview_url", "image_url").
 	From("artist")
@@ -342,20 +358,13 @@ func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist,
 	artists := make([]Artist, 0)
 
 	for rows.Next() {
-		var id int64
-		var name, description, previewUrl, imageURL string
+		var a Artist
 
-		if err := rows.Scan(&id, &name, &description, &previewUrl, &imageURL); err != nil {
+		if err := scanArtist(rows, &a); err != nil {
 			return nil, err
 		}
 
-		artists = append(artists, Artist{
-			ID:          id,
-			Name:        name,
-			Description: description,
-			PreviewURL:  previewUrl,
-			ImageURL:    imageURL,
-		})
+		artists = append(artists, a)
 	}
 
 	return artists, nil
@@ -406,24 +415,13 @@ func artistByID(ctx context.Context, tx *sql.Tx, artistID int64) (Artist, error)
 		return Artist{}, err
 	}
 
-	var id int64
-	var name, description, previewURL, imageURL string
-
-	err = tx.
-		QueryRowContext(ctx, query, args...).
-		Scan(&id, &name, &description, &previewURL, &imageURL)
-
-	if err != nil {
+	var a Artist
+	row := tx.QueryRowContext(ctx, query, args...)
+	if err := scanArtist(row, &a); err != nil {
 		return Artist{}, err
 	}
 
-	return Artist{
-		ID:          id,
-		Name:        name,
-		Description: description,
-		PreviewURL:  previewURL,
-		ImageURL:    imageURL,
-	}, nil
+	return a, nil
 }
 
 func deleteArtist(ctx context.Context, tx *sql.Tx, artistID int64) error {
