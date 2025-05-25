@@ -375,10 +375,6 @@ func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte
 	return passwordHash, nil
 }
 
-type Scanner interface {
-	Scan(dst ...any) error
-}
-
 func scanMember(s Scanner, dst *Member) error {
 	err := s.Scan(
 		&dst.ID,
