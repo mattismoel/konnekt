@@ -98,10 +98,12 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 	return concertID, nil
 }
 
+var concertBuilder = sq.
+	Select("id", "from_date", "to_date", "artist_id").
+	From("concert")
+
 func eventConcerts(ctx context.Context, tx *sql.Tx, eventID int64) (Concerts, error) {
-	query, args, err := sq.
-		Select("id", "from_date", "to_date", "artist_id").
-		From("concert").
+	query, args, err := concertBuilder.
 		Where(sq.Eq{"event_id": eventID}).
 		ToSql()
 
