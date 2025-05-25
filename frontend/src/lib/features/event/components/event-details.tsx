@@ -46,8 +46,8 @@ const EventDetails = ({ event, active, prefix }: Props) => {
 
 				<h1 className="md:mb-8 mb-4 text-5xl md:text-7xl font-bold text-shadow-md">{event.title}</h1>
 
-				<div className="text-text/85 flex flex-col gap-8 sm:flex-row text-shadow-sm">
-					<div className="flex flex-1 flex-col gap-2">
+				<div className="text-text/75 flex flex-col gap-8 sm:flex-row text-shadow-sm">
+					<div className="flex flex-1 flex-col gap-1">
 						{fromDate && (
 							<div className="flex items-center gap-4">
 								<FaCalendarDay />
