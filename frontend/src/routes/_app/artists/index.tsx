@@ -4,7 +4,7 @@ import { pickRandom } from '@/lib/array';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/clsx';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { artistsQueryOpts } from '@/lib/features/artist/query';
+import { artistsQueryOpts, upcomingArtistsQueryOpts } from '@/lib/features/artist/query';
 import PageMeta from '@/lib/components/page-meta';
 
 /** @description The rate of which artist auto display changes artist. */
@@ -13,7 +13,7 @@ const AUTO_DISPLAY_RATE = 0.25;
 export const Route = createFileRoute('/_app/artists/')({
   component: RouteComponent,
   loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(artistsQueryOpts)
+    queryClient.ensureQueryData(upcomingArtistsQueryOpts)
   }
 })
 
@@ -34,7 +34,7 @@ const useArtistsContext = () => {
 }
 
 function RouteComponent() {
-  const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
+  const { data: artists } = useSuspenseQuery(upcomingArtistsQueryOpts)
 
   const [selected, setSelected] = useState<Artist>();
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
