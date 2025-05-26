@@ -36,7 +36,7 @@ function RouteComponent() {
   return (
     <>
       <PageMeta
-        title={`Konnekt | Kunstner | ${artist.name}`}
+        title={`Konnekt | ${artist.name}`}
         description={`Oplev ${artist.name} til "${artistEvents.at(0)?.title}"`}
       />
       <main>
