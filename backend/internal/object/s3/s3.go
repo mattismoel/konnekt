@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"path"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -12,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/mattismoel/konnekt/internal/object"
 )
+
+var DEFAULT_CACHE_CONTROL_MS = 2 * time.Hour.Milliseconds()
 
 var _ object.Store = (*S3ObjectStore)(nil)
 
@@ -44,9 +47,10 @@ func NewS3ObjectStore(region string, bucket string) (*S3ObjectStore, error) {
 
 func (s S3ObjectStore) Upload(ctx context.Context, key string, body io.Reader) (string, error) {
 	output, err := s.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
-		Key:    aws.String(key),
-		Bucket: aws.String(s.bucket),
-		Body:   body,
+		Key:          aws.String(key),
+		Bucket:       aws.String(s.bucket),
+		Body:         body,
+		CacheControl: aws.String(fmt.Sprintf("Max-Age=%d", DEFAULT_CACHE_CONTROL_MS)),
 	})
 
 	if err != nil {
