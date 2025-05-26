@@ -1,6 +1,4 @@
-import Caroussel from '@/lib/components/caroussel';
 import PageMeta from '@/lib/components/page-meta';
-import EventCard from '@/lib/features/event/components/event-card';
 import EventDetails from '@/lib/features/event/components/event-details';
 import EventGrid from '@/lib/features/event/components/event-grid';
 import { upcomingEventsQueryOpts } from '@/lib/features/event/query';
@@ -13,7 +11,6 @@ export const Route = createFileRoute('/_app/events/')({
   loader: async ({ context: { queryClient } }) => {
     queryClient.ensureQueryData(upcomingEventsQueryOpts)
   },
-  pendingComponent: () => <div>Loading...</div>
 })
 
 function RouteComponent() {

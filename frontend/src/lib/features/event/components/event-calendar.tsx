@@ -40,7 +40,7 @@ const EventCalendar = ({ event, ...rest }: Props) => {
 		<div className="flex w-full flex-col gap-8" {...rest}>
 			<div>
 				<h3 className="mb-2 text-xl font-bold">Program for {event.title}</h3>
-				<span className="text-zinc-300">{format(concerts[0].from, 'EE, dd/MM/yyyy')}</span>
+				<span className="text-zinc-300">{format(concerts[0].from, "EEEE, dd/MM/yyyy")}</span>
 			</div>
 
 			<div className="overflow-y-scroll">

@@ -107,7 +107,7 @@ const EventForm = ({ event, venues, artists, disabled = false }: Props) => {
 	return (
 		<FormProvider {...methods}>
 			<EventFormContext.Provider value={{ ...methods, ...fieldArrayMethods, artists, venues, event, disabled, onAddConcert, onDeleteConcert }}>
-				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-16">
+				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-16 @container">
 					<FormField error={errors.image}>
 						<ImagePreview src={event?.imageUrl} accept="image/jpeg,image/png" onChange={file => setValue("image", file)} />
 					</FormField>
@@ -139,7 +139,7 @@ const GeneralSection = () => {
 					<Input {...register("title")} placeholder="Eventtitel" />
 				</FormField>
 
-				<div className="flex gap-4">
+				<div className="flex flex-col @xl:flex-row gap-4">
 					<FormField error={errors.ticketUrl}>
 						<Input {...register("ticketUrl")} placeholder="Billet-URL" className="w-full" />
 					</FormField>
