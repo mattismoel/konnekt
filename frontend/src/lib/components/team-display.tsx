@@ -38,7 +38,7 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 	const memberTeams = member.teams.filter(team => includedTeams.some(t => t.name === team.name))
 
 	return (
-		<div className="group bg-zinc-900 flex flex-col border border-zinc-800 hover:border-zinc-700 rounded-sm overflow-hidden hover:bg-zinc-800 transition-colors">
+		<div className="group bg-background flex flex-col border border-zinc-800 hover:border-zinc-700 rounded-sm overflow-hidden hover:bg-zinc-900 transition-colors">
 			<div className="overflow-hidden">
 				<img src={member.profilePictureUrl} className="brightness-75 h-48 w-full object-cover scale-100 group-hover:scale-100 group-hover:brightness-100 transition-[scale,filter] duration-500" />
 			</div>
