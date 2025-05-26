@@ -12,7 +12,7 @@ export type Image = z.infer<typeof landingImageSchema>
 export const landingImages = async () => {
 	const srcs = await requestAndParse(
 		createUrl("/api/content/landing-images"),
-		landingImageSchema.array().min(1),
+		landingImageSchema.array(),
 	)
 
 	return srcs
