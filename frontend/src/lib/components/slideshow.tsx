@@ -31,7 +31,7 @@ const Slideshow = ({ srcs }: Props) => {
 					key={src}
 					src={src}
 					alt={alt}
-					className={cn("absolute h-full w-full object-cover opacity-0 brightness-50 transition-opacity duration-1000", {
+					className={cn("absolute h-full w-full object-cover opacity-0 brightness-60 transition-opacity duration-1000", {
 						"opacity-100": index === currentIdx
 					})}
 				/>
