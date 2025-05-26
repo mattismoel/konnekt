@@ -18,7 +18,7 @@ import (
 	"github.com/nfnt/resize"
 )
 
-const EVENT_COVER_IMAGE_WIDTH_PX = 4096
+const EVENT_COVER_IMAGE_WIDTH_PX = 2048
 
 type EventService struct {
 	eventRepo   event.Repository
