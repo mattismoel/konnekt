@@ -1,7 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import LogoScroller from '@/lib/components/logo-scroller';
-
 import OdenseKommuneLogo from '@/lib/assets/logos/odense-kommune-logo.svg';
 import UngOdenseLogo from '@/lib/assets/logos/ungodense-logo.svg';
 import PostenLogo from '@/lib/assets/logos/posten-logo.svg';
@@ -21,7 +19,6 @@ import Slideshow from '@/lib/components/slideshow';
 import { landingImagesQueryOptions } from '@/lib/features/content/query';
 import TeamDisplay from '@/lib/components/team-display';
 import { membersQueryOpts, teamsQueryOpts } from '@/lib/features/auth/query';
-import SponsorLogoSlider from '@/lib/components/logo-scroller';
 import SponsorDisplay from '@/lib/components/sponsor-display';
 
 export const Route = createFileRoute('/_app/')({
