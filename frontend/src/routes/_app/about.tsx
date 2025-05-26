@@ -51,25 +51,24 @@ function RouteComponent() {
       <section>
         <h1 className="font-heading text-4xl font-bold mb-8">Ofte stillede spørgsmål</h1>
         <div className="flex flex-col gap-4">
-          <Accordion title="Hvor ofte afholdes i events?">
+          <Accordion title="Hvor ofte afholder Konnekt events?">
             Vi bestræber os på, at afholde flest mulige events af højest mulig
             kvalitet. Vores events består af de dygtigste upcoming kunstnere, som
             vores event management arbejder på højtryk for at finde.
           </Accordion>
-          <Accordion title="Jeg er kunstner. Hvordan bliver jeg set?">
+          <Accordion title="Jeg er kunstner. Hvordan bliver jeg booket?">
             Hvis du er musiker, og brænder for at komme på scenen, så tag fat i
             os på vores booking mail <a href="mailto:booking.konnekt@gmail.com">booking.konnekt@gmail.com</a>
           </Accordion>
-          <Accordion title="Hvordan kan jeg hjælpe?">
+          <Accordion title="Hvordan kan jeg hjælpe foreningen?">
             Du er altid velkommen til at kontakte os på <a href="mailto:konnekt.samarbejde@gmail.com">
               konnekt.samarbejde@gmail.com
             </a>, for at blive medlem af foreningen. Vi kan garanteret bruge din
             hjælp!
           </Accordion>
-          <Accordion title="Hvad med kunstnere fra andet end Fyn?">
+          <Accordion title="Hvad med kunstnere fra Sjælland og Jylland?">
             Vi beskæftiger os som udgangspunkt med fysnke kunstnere, men ser også
-            gerne samarbejde med ikke-fynske kunstnere. Tag fat i os på
-            <a href="mailto:booking.konnekt@gmail.com">booking.konnekt@gmail.com</a>,
+            gerne samarbejde med ikke-fynske kunstnere. Tag fat i os på&nbsp;<a href="mailto:booking.konnekt@gmail.com">booking.konnekt@gmail.com</a>,
             hvis du er interesseret i at stå på scenen.
           </Accordion>
         </div>
