@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -220,14 +219,6 @@ func (repo EventRepository) SetImageURL(ctx context.Context, eventID int64, cove
 	return nil
 }
 
-type EventQueryParams struct {
-	QueryParams
-	From      time.Time
-	To        time.Time
-	ID        int64
-	ArtistIDs []int64
-}
-
 func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.ListResult[event.Event], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -236,14 +227,12 @@ func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.
 
 	defer tx.Rollback()
 
-	dbEvents, err := listEvents(ctx, tx, EventQueryParams{
-		QueryParams: QueryParams{
-			Offset:  q.Offset(),
-			Limit:   q.Limit,
-			Filters: q.Filters,
-			OrderBy: q.OrderBy,
-		}},
-	)
+	dbEvents, err := listEvents(ctx, tx, QueryParams{
+		Offset:  q.Offset(),
+		Limit:   q.Limit,
+		Filters: q.Filters,
+		OrderBy: q.OrderBy,
+	})
 
 	if err != nil {
 		return query.ListResult[event.Event]{}, err
@@ -337,7 +326,7 @@ func scanEvent(s Scanner, dst *Event) error {
 	return nil
 }
 
-func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {
+func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, error) {
 	builder := eventBuilder.
 		Distinct().
 		Join("concert c ON c.event_id = e.id")
