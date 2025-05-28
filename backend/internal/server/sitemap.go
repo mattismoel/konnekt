@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
@@ -50,15 +49,13 @@ func (s Server) handleGetSitemap() http.HandlerFunc {
 			return
 		}
 
-		artistQuery, err := query.NewListQuery()
+		q, err := query.NewListQuery()
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		aq := artist.Query{ListQuery: artistQuery}
-
-		artistResult, err := s.artistService.List(ctx, aq)
+		artistResult, err := s.artistService.List(ctx, q)
 		if err != nil {
 			writeError(w, err)
 			return
