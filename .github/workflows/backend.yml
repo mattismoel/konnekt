@@ -1,10 +1,14 @@
-name: Build
+name: Backend Build
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+    - backend/*
   pull_request:
     branches: [ "main" ]
+    paths:
+    - backend/*
   workflow_call:
     inputs:
       skipTests:
