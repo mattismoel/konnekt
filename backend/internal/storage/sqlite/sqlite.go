@@ -44,7 +44,6 @@ func withPagination(b sq.SelectBuilder, params QueryParams) sq.SelectBuilder {
 	return b
 }
 
-
 func withOrdering(
 	b sq.SelectBuilder,
 	orderMap query.OrderMap,
