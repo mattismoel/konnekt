@@ -22,6 +22,7 @@ const (
 )
 
 type Order string
+type OrderMap map[string]Order
 
 const (
 	OrderAscending  = Order("ASC")
@@ -44,7 +45,7 @@ type ListQuery struct {
 	//		"created_at": OrderAscending,
 	//		"name": OrderDescending,
 	//	}
-	OrderBy map[string]Order
+	OrderBy OrderMap
 
 	// The filters part of this query.
 	Filters FilterCollection
@@ -71,7 +72,7 @@ func NewListQuery(cfgs ...CfgFunc) (ListQuery, error) {
 		Page:    DEFAULT_PAGE,
 		PerPage: DEFAULT_PER_PAGE,
 		Limit:   DEFAULT_LIMIT,
-		OrderBy: map[string]Order{},
+		OrderBy: make(OrderMap),
 		Filters: make(FilterCollection),
 	}
 
