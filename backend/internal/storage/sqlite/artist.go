@@ -331,11 +331,6 @@ var artistBuilder = sq.
 func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist, error) {
 	builder := artistBuilder
 
-	if filters, ok := params.Filters["artist_id"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(sq.Eq{"artist_id": f.Value})
-		}
-	}
 	builder = withPagination(builder, params)
 	builder = withOrdering(builder, params.OrderBy, "name", "artist")
 
