@@ -5,7 +5,9 @@ import type { ID } from "@/lib/api";
 
 export const membersQueryOpts = queryOptions({
 	queryKey: ["members"],
-	queryFn: () => listMembers()
+	queryFn: () => listMembers({
+		filter: ["active=true"]
+	})
 })
 
 export const pendingMembersQueryOpts = queryOptions({
