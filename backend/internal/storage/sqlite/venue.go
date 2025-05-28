@@ -28,10 +28,6 @@ func NewVenueRepository(db *sql.DB) (*VenueRepository, error) {
 	}, nil
 }
 
-type VenueQueryParams struct {
-	QueryParams
-}
-
 func (repo VenueRepository) List(ctx context.Context, q venue.Query) (query.ListResult[venue.Venue], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -40,11 +36,9 @@ func (repo VenueRepository) List(ctx context.Context, q venue.Query) (query.List
 
 	defer tx.Rollback()
 
-	dbVenues, err := listVenues(ctx, tx, VenueQueryParams{
-		QueryParams: QueryParams{
-			Offset: q.Offset(),
-			Limit:  q.Limit,
-		},
+	dbVenues, err := listVenues(ctx, tx, QueryParams{
+		Offset: q.Offset(),
+		Limit:  q.Limit,
 	})
 
 	if err != nil {
@@ -176,7 +170,7 @@ func scanVenue(s Scanner, dst *Venue) error {
 	return nil
 }
 
-func listVenues(ctx context.Context, tx *sql.Tx, params VenueQueryParams) ([]Venue, error) {
+func listVenues(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Venue, error) {
 	builder := venueBuilder
 
 	builder = withPagination(builder, params)
