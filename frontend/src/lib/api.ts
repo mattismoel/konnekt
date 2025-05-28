@@ -117,7 +117,7 @@ export const createSubmitHandler = <T>(
       navigate({ to: navigateTo })
     } catch (e) {
       if (e instanceof APIError) {
-        addToast(errorMessage, e.message, "error")
+        addToast(errorMessage, e.cause, "error")
         return
       }
 

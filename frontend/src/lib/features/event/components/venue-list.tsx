@@ -50,7 +50,7 @@ const Entry = ({ venue }: EntryProps) => {
 			await queryClient.invalidateQueries({ queryKey: ["venues"] });
 		} catch (e) {
 			if (e instanceof APIError) {
-				addToast('Kunne ikke slette venue', e.message, 'error');
+				addToast('Kunne ikke slette venue', e.cause, 'error');
 				return;
 			}
 

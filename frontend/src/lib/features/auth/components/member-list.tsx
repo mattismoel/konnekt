@@ -64,7 +64,7 @@ const MemberEntry = ({ member }: MemberEntryProps) => {
 			await queryClient.invalidateQueries({ queryKey: ["members"] });
 		} catch (e) {
 			if (e instanceof APIError) {
-				addToast('Kunne ikke slette medlemmet', e.message, 'error');
+				addToast('Kunne ikke slette medlemmet', e.cause, 'error');
 				throw e
 			}
 			addToast('Kunne ikke slette medlemmet', 'Noget gik galt...', 'error');
@@ -126,7 +126,7 @@ const ApprovalEntry = ({ member }: ApprovalEntryProps) => {
 			await queryClient.invalidateQueries({ queryKey: ["members"] })
 		} catch (e) {
 			if (e instanceof APIError) {
-				addToast("Kunne ikke godkende bruger", e.message, "error")
+				addToast("Kunne ikke godkende bruger", e.cause, "error")
 				throw e
 			}
 
@@ -142,7 +142,7 @@ const ApprovalEntry = ({ member }: ApprovalEntryProps) => {
 			queryClient.invalidateQueries({ queryKey: ["members"] })
 		} catch (e) {
 			if (e instanceof APIError) {
-				addToast('Kunne ikke forkaste bruger', e.message, 'error');
+				addToast('Kunne ikke forkaste bruger', e.cause, 'error');
 				throw e
 			}
 
