@@ -329,8 +329,6 @@ func scanEvent(s Scanner, dst *Event) error {
 func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, error) {
 	builder := eventBuilder.
 		Distinct().
-		Join("concert c ON c.event_id = e.id")
-
 	if filters, ok := params.Filters["title"]; ok {
 		for _, f := range filters {
 			builder = builder.Where(sq.Like{"e.title": f.Value})
@@ -361,12 +359,10 @@ func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, e
 		}
 	}
 
-	if order, ok := params.OrderBy["from_date"]; ok {
-		builder = builder.OrderBy("c.from_date " + string(order))
-	} else {
-		builder = builder.OrderBy("c.from_date ASC")
-	}
+		Join("concert ON concert.event_id = event.id")
 
+
+	builder = withOrdering(builder, params.OrderBy, "from_date", "concert")
 	builder = withPagination(builder, params)
 
 	query, args, err := builder.ToSql()

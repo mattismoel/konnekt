@@ -44,3 +44,26 @@ func withPagination(b sq.SelectBuilder, params QueryParams) sq.SelectBuilder {
 	return b
 }
 
+
+func withOrdering(
+	b sq.SelectBuilder,
+	orderMap query.OrderMap,
+	column string,
+	table string,
+) sq.SelectBuilder {
+	order, ok := orderMap[column]
+	if !ok {
+		return b
+	}
+
+	tableColumn := fmt.Sprintf("%s.%s", table, column)
+	if order == "ASC" || order == "DESC" {
+		orderStr := fmt.Sprintf("%s %s", tableColumn, order)
+		b = b.OrderBy(orderStr)
+	} else {
+		orderStr := fmt.Sprintf("%s ASC", tableColumn)
+		b = b.OrderBy(orderStr)
+	}
+
+	return b
+}
