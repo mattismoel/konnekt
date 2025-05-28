@@ -313,6 +313,10 @@ func (p Permission) ToInternal() auth.Permission {
 }
 
 func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (PermissionCollection, error) {
+	builder := permissionBuilder
+
+	builder = withPagination(builder, params)
+
 	query, args, err := permissionBuilder.ToSql()
 	if err != nil {
 		return nil, err

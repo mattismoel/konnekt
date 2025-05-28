@@ -120,13 +120,7 @@ func scanGenre(s Scanner, dst *Genre) error {
 func listGenres(ctx context.Context, tx *sql.Tx, params GenreQueryParams) ([]Genre, error) {
 	builder := genreBuilder
 
-	if params.Limit > 0 {
-		builder = builder.Limit(uint64(params.Limit))
-	}
-
-	if params.Offset > 0 {
-		builder = builder.Offset(uint64(params.Offset))
-	}
+	builder = withPagination(builder, params)
 
 	query, args, err := builder.ToSql()
 	if err != nil {

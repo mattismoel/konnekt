@@ -378,13 +378,7 @@ func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Eve
 		builder = builder.OrderBy("c.from_date ASC")
 	}
 
-	if params.Limit > 0 {
-		builder = builder.Limit(uint64(params.Offset))
-	}
-
-	if params.Offset > 0 {
-		builder = builder.Offset(uint64(params.Offset))
-	}
+	builder = withPagination(builder, params)
 
 	query, args, err := builder.ToSql()
 	if err != nil {

@@ -264,6 +264,8 @@ func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollect
 		}
 	}
 
+	builder = withPagination(builder, params)
+
 	query, args, err := builder.ToSql()
 	if err != nil {
 		return nil, err

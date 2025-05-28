@@ -172,13 +172,7 @@ func scanVenue(s Scanner, dst *Venue) error {
 func listVenues(ctx context.Context, tx *sql.Tx, params VenueQueryParams) ([]Venue, error) {
 	builder := venueBuilder
 
-	if params.Limit > 0 {
-		builder = builder.Limit(uint64(params.Limit))
-	}
-
-	if params.Offset > 0 {
-		builder = builder.Offset(uint64(params.Offset))
-	}
+	builder = withPagination(builder, params)
 
 	query, args, err := builder.ToSql()
 	if err != nil {

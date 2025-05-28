@@ -423,13 +423,8 @@ var memberBuilder = sq.
 func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCollection, error) {
 	builder := memberBuilder
 
-	if params.Limit > 0 {
-		builder = builder.Limit(uint64(params.Limit))
-	}
+	builder = withPagination(builder, params)
 
-	if params.Offset > 0 {
-		builder = builder.Offset(uint64(params.Offset))
-	}
 
 	active := true
 

@@ -329,19 +329,12 @@ func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist,
 		builder = builder.OrderBy("name " + string(order))
 	}
 
-	if params.Offset > 0 {
-		builder = builder.Offset(uint64(params.Offset))
-	}
-
-	if params.Limit > 0 {
-		builder = builder.Limit(uint64(params.Limit))
-	}
-
 	if filters, ok := params.Filters["artist_id"]; ok {
 		for _, f := range filters {
 			builder = builder.Where(sq.Eq{"artist_id": f.Value})
 		}
 	}
+	builder = withPagination(builder, params)
 
 	query, args, err := builder.ToSql()
 	if err != nil {
