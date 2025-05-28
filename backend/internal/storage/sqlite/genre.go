@@ -14,10 +14,6 @@ type Genre struct {
 	Name string
 }
 
-type GenreQueryParams struct {
-	QueryParams
-}
-
 func (repo ArtistRepository) InsertGenre(ctx context.Context, name string) (int64, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -46,10 +42,11 @@ func (repo ArtistRepository) ListGenres(ctx context.Context, q artist.GenreQuery
 
 	defer tx.Rollback()
 
-	dbGenres, err := listGenres(ctx, tx, GenreQueryParams{
-		QueryParams: QueryParams{
-			Offset: q.Offset(), Limit: q.Limit,
-		},
+	dbGenres, err := listGenres(ctx, tx, QueryParams{
+		Offset:  q.Offset(),
+		Limit:   q.Limit,
+		Filters: q.Filters,
+		OrderBy: q.OrderBy,
 	})
 
 	if err != nil {
@@ -121,8 +118,8 @@ func scanGenre(s Scanner, dst *Genre) error {
 	return nil
 }
 
-// Lists genres based on the input {GenreQueryParams}.
-func listGenres(ctx context.Context, tx *sql.Tx, params GenreQueryParams) ([]Genre, error) {
+// Lists genres based on the input {QueryParams}.
+func listGenres(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Genre, error) {
 	builder := genreBuilder
 
 	builder = withPagination(builder, params)
