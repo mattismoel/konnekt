@@ -438,6 +438,10 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 		builder = builder.Set("image_url", e.ImageURL)
 	}
 
+	if e.VenueID != 0 {
+		builder = builder.Set("venue_id", e.VenueID)
+	}
+
 	query, args, err := builder.ToSql()
 	if err != nil {
 		return err
