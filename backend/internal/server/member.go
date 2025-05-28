@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -128,9 +127,7 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 
 		isAdmin := false
 		for _, team := range reqMember.Teams {
-			fmt.Println("TEAM", team.Name)
 			if team.Name == "admin" {
-				fmt.Println(reqMember.FirstName, "IS ADMIN")
 				isAdmin = true
 			}
 		}

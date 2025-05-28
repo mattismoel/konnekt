@@ -55,7 +55,7 @@ const Entry = ({ artist }: EntryProps) => {
 			queryClient.invalidateQueries({ queryKey: ["artists"] });
 		} catch (e) {
 			if (e instanceof APIError) {
-				addToast('Kunne ikke slette kunstner', e.message, 'error');
+				addToast('Kunne ikke slette kunstner', e.cause, 'error');
 				throw e;
 			}
 

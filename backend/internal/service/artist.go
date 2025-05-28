@@ -73,7 +73,7 @@ func (s ArtistService) ByID(ctx context.Context, artistID int64) (artist.Artist,
 	return a, nil
 }
 
-func (s ArtistService) List(ctx context.Context, q artist.Query) (query.ListResult[artist.Artist], error) {
+func (s ArtistService) List(ctx context.Context, q query.ListQuery) (query.ListResult[artist.Artist], error) {
 	result, err := s.artistRepo.List(ctx, q)
 	if err != nil {
 		return query.ListResult[artist.Artist]{}, err

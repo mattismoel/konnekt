@@ -243,7 +243,12 @@ func insertTeam(ctx context.Context, tx *sql.Tx, t Team) (int64, error) {
 }
 
 var teamBuilder = sq.
-	Select("id", "name", "description", "display_name").
+	Select(
+		"team.id",
+		"team.name",
+		"team.description",
+		"team.display_name",
+	).
 	From("team")
 
 func scanTeam(s Scanner, dst *Team) error {
@@ -258,11 +263,13 @@ func scanTeam(s Scanner, dst *Team) error {
 func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollection, error) {
 	builder := teamBuilder.Distinct()
 
-	if filters, ok := params.Filters["id"]; ok {
-		for _, filter := range filters {
-			builder.Where(sq.Eq{"id": filter.Value})
-		}
-	}
+	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
+		"id": func(f query.Filter) sq.Sqlizer {
+			return sq.Eq{"id": f.Value}
+		},
+	})
+
+	builder = withPagination(builder, params)
 
 	query, args, err := builder.ToSql()
 	if err != nil {

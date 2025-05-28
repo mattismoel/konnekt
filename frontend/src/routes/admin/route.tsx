@@ -2,9 +2,9 @@ import Logo from '@/lib/assets/logo'
 import ContextMenu from '@/lib/components/context-menu'
 import Navbar from '@/lib/components/navbar/navbar'
 import NavMenu from '@/lib/components/navmenu'
-import Toast from '@/lib/components/toast'
+import ToastList from '@/lib/components/toast-list'
 import { AuthProvider, useAuth } from '@/lib/context/auth'
-import { ToastProvider, useToast } from '@/lib/context/toast'
+import { ToastProvider } from '@/lib/context/toast'
 import { createFileRoute, Link, Navigate, Outlet, useLocation } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { FaBars } from 'react-icons/fa'
@@ -18,7 +18,6 @@ const AuthLayout = () => {
   const [showUserContext, setShowUserContext] = useState(false)
 
   const { member, refetch, handleLogout } = useAuth()
-  const { toasts, removeToast } = useToast()
   const { pathname } = useLocation()
 
   useEffect(() => {
@@ -80,13 +79,9 @@ const AuthLayout = () => {
     </NavMenu>
 
 
-    <div className="px-auto py-32 relative">
+    <div className="px-auto py-32">
       <Outlet />
-      <div className='fixed bottom-8 right-8 z-50 flex flex-col gap-2'>
-        {toasts.map(toast => (
-          <Toast key={toast.id} toast={toast} onDelete={() => removeToast(toast.id)} />
-        ))}
-      </div>
+      <ToastList />
     </div>
   </>
 }

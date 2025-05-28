@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/auth"
@@ -34,6 +35,8 @@ func (s Server) handleRegister() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		var load RegisterLoad
 
 		if err := json.NewDecoder(r.Body).Decode(&load); err != nil {
@@ -41,7 +44,7 @@ func (s Server) handleRegister() http.HandlerFunc {
 			return
 		}
 
-		err := s.authService.Register(r.Context(), service.RegisterLoad{
+		userID, err := s.authService.Register(ctx, service.RegisterLoad{
 			FirstName:         load.FirstName,
 			LastName:          load.LastName,
 			Email:             load.Email,
@@ -53,16 +56,39 @@ func (s Server) handleRegister() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, member.ErrAlreadyExists):
+				// Delete profile picuture from S3.
+				u, err := url.Parse(load.ProfilePictureURL)
+				if err != nil {
+					writeError(w, err)
+					return
+				}
+
+				err = s.memberService.DeleteProfilePicture(ctx, u.Path)
+				if err != nil {
+					writeError(w, err)
+					return
+				}
+
 				writeError(w, ErrMemberAlreadyExists)
 			case errors.Is(err, auth.ErrPasswordsNoMatch):
 				writeError(w, ErrPasswordsNoMatch)
 			default:
 				writeError(w, err)
 			}
+
 			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
+		u, err := s.memberService.ByID(ctx, userID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if err := writeJSON(w, http.StatusCreated, u); err != nil {
+			writeError(w, err)
+			return
+		}
 	}
 }
 

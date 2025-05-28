@@ -75,6 +75,15 @@ func (srv MemberService) UploadProfilePicture(ctx context.Context, r io.Reader) 
 	return url, nil
 }
 
+func (srv MemberService) DeleteProfilePicture(ctx context.Context, url string) error {
+	err := srv.objectStore.Delete(ctx, url)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (srv MemberService) Approve(ctx context.Context, memberID int64) error {
 	err := srv.memberRepo.Approve(ctx, memberID)
 	if err != nil {

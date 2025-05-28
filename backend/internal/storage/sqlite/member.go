@@ -410,46 +410,36 @@ func scanMember(s Scanner, dst *Member) error {
 
 var memberBuilder = sq.
 	Select(
-		"id",
-		"first_name",
-		"last_name",
-		"email",
-		"profile_picture_url",
-		"active",
-		"password_hash",
+		"member.id",
+		"member.first_name",
+		"member.last_name",
+		"member.email",
+		"member.profile_picture_url",
+		"member.active",
+		"member.password_hash",
 	).
 	From("member")
 
 func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCollection, error) {
 	builder := memberBuilder
 
-	if params.Limit > 0 {
-		builder = builder.Limit(uint64(params.Limit))
-	}
+	builder = withPagination(builder, params)
 
-	if params.Offset > 0 {
-		builder = builder.Offset(uint64(params.Offset))
-	}
-
-	active := true
-
-	if filters, ok := params.Filters["active"]; ok {
-		for _, filter := range filters {
-			val := strings.ToUpper(filter.Value)
-			if val == "FALSE" {
-				active = false
-			} else if val == "TRUE" {
-				active = true
+	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
+		"active": func(f query.Filter) sq.Sqlizer {
+			if strings.ToUpper(f.Value) == "TRUE" {
+				return sq.Eq{"active": "TRUE"}
 			}
-		}
-	}
 
-	activeVal := "TRUE"
-	if !active {
-		activeVal = "FALSE"
-	}
-
-	builder = builder.Where(sq.Eq{"active": activeVal})
+			return sq.Eq{"active": "FALSE"}
+		},
+		"first_name": func(f query.Filter) sq.Sqlizer {
+			return contains("first_name", f.Value)
+		},
+		"last_name": func(f query.Filter) sq.Sqlizer {
+			return contains("last_name", f.Value)
+		},
+	})
 
 	query, args, err := builder.ToSql()
 	if err != nil {

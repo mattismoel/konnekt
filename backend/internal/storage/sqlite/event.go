@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -220,14 +219,6 @@ func (repo EventRepository) SetImageURL(ctx context.Context, eventID int64, cove
 	return nil
 }
 
-type EventQueryParams struct {
-	QueryParams
-	From      time.Time
-	To        time.Time
-	ID        int64
-	ArtistIDs []int64
-}
-
 func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.ListResult[event.Event], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -236,14 +227,12 @@ func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.
 
 	defer tx.Rollback()
 
-	dbEvents, err := listEvents(ctx, tx, EventQueryParams{
-		QueryParams: QueryParams{
-			Offset:  q.Offset(),
-			Limit:   q.Limit,
-			Filters: q.Filters,
-			OrderBy: q.OrderBy,
-		}},
-	)
+	dbEvents, err := listEvents(ctx, tx, QueryParams{
+		Offset:  q.Offset(),
+		Limit:   q.Limit,
+		Filters: q.Filters,
+		OrderBy: q.OrderBy,
+	})
 
 	if err != nil {
 		return query.ListResult[event.Event]{}, err
@@ -311,14 +300,14 @@ func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
 
 var eventBuilder = sq.
 	Select(
-		"e.id",
-		"e.title",
-		"e.description",
-		"e.ticket_url",
-		"e.image_url",
-		"e.venue_id",
+		"event.id",
+		"event.title",
+		"event.description",
+		"event.ticket_url",
+		"event.image_url",
+		"event.venue_id",
 	).
-	From("event e")
+	From("event")
 
 func scanEvent(s Scanner, dst *Event) error {
 	err := s.Scan(
@@ -337,54 +326,28 @@ func scanEvent(s Scanner, dst *Event) error {
 	return nil
 }
 
-func listEvents(ctx context.Context, tx *sql.Tx, params EventQueryParams) ([]Event, error) {
+func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, error) {
 	builder := eventBuilder.
 		Distinct().
-		Join("concert c ON c.event_id = e.id")
+		Join("concert ON concert.event_id = event.id")
 
-	if filters, ok := params.Filters["title"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(sq.Like{"e.title": f.Value})
-		}
-	}
+	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
+		"title": func(f query.Filter) sq.Sqlizer {
+			return contains("title", f.Value)
+		},
+		"from_date": func(f query.Filter) sq.Sqlizer {
+			return sq.Expr(fmt.Sprintf("concert.from_date %s ?", f.Cmp), f.Value)
+		},
+		"to_date": func(f query.Filter) sq.Sqlizer {
+			return sq.Expr(fmt.Sprintf("concert.to_date %s ?", f.Cmp), f.Value)
+		},
+		"artist_id": func(f query.Filter) sq.Sqlizer {
+			return sq.Eq{"concert.artist_id": f.Value}
+		},
+	})
 
-	if filters, ok := params.Filters["from_date"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(fmt.Sprintf("c.from_date %s '%s'", f.Cmp, f.Value))
-		}
-	}
-
-	if filters, ok := params.Filters["to_date"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(fmt.Sprintf("c.to_date %s '%s'", f.Cmp, f.Value))
-		}
-	}
-
-	if filters, ok := params.Filters["id"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(sq.Eq{"e.id": f.Value})
-		}
-	}
-
-	if filters, ok := params.Filters["artist_id"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(sq.Eq{"c.artist_id": f.Value})
-		}
-	}
-
-	if order, ok := params.OrderBy["from_date"]; ok {
-		builder = builder.OrderBy("c.from_date " + string(order))
-	} else {
-		builder = builder.OrderBy("c.from_date ASC")
-	}
-
-	if params.Limit > 0 {
-		builder = builder.Limit(uint64(params.Offset))
-	}
-
-	if params.Offset > 0 {
-		builder = builder.Offset(uint64(params.Offset))
-	}
+	builder = withOrdering(builder, params.OrderBy, "from_date", "concert")
+	builder = withPagination(builder, params)
 
 	query, args, err := builder.ToSql()
 	if err != nil {

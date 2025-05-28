@@ -46,24 +46,24 @@ type RegisterLoad struct {
 	ProfilePictureURL string
 }
 
-func (srv AuthService) Register(ctx context.Context, load RegisterLoad) error {
+func (srv AuthService) Register(ctx context.Context, load RegisterLoad) (int64, error) {
 	// Return if member already exists.
 	_, err := srv.memberRepo.ByEmail(ctx, load.Email)
 	if err == nil {
-		return member.ErrAlreadyExists
+		return 0, member.ErrAlreadyExists
 	}
 
 	if err := load.Password.Validate(); err != nil {
-		return err
+		return 0, err
 	}
 
 	if err := load.Password.Matches(load.PasswordConfirm); err != nil {
-		return err
+		return 0, err
 	}
 
 	hash, err := bcrypt.GenerateFromPassword(load.Password, bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	m, err := member.NewMember(
@@ -74,32 +74,32 @@ func (srv AuthService) Register(ctx context.Context, load RegisterLoad) error {
 	)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if strings.TrimSpace(load.ProfilePictureURL) != "" {
 		err := m.WithCfgs(member.WithProfilePictureURL(load.ProfilePictureURL))
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
 	memberID, err := srv.memberRepo.Insert(ctx, m)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	team, err := srv.teamRepo.ByName(ctx, "member")
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	err = srv.teamRepo.AddMemberTeams(ctx, memberID, team.ID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return memberID, nil
 }
 
 func (srv AuthService) Login(ctx context.Context, email string, password []byte) (auth.SessionToken, time.Time, error) {

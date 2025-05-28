@@ -11,15 +11,13 @@ func (s Server) handleListArtists() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		baseQuery, err := NewListQueryFromURL(r.URL.Query())
+		q, err := NewListQueryFromURL(r.URL.Query())
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		result, err := s.artistService.List(ctx, artist.Query{
-			ListQuery: baseQuery,
-		})
+		result, err := s.artistService.List(ctx, q)
 
 		if err != nil {
 			writeError(w, err)

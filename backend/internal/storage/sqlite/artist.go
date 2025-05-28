@@ -41,7 +41,7 @@ func NewArtistRepository(db *sql.DB) (*ArtistRepository, error) {
 	}, nil
 }
 
-func (repo ArtistRepository) List(ctx context.Context, q artist.Query) (query.ListResult[artist.Artist], error) {
+func (repo ArtistRepository) List(ctx context.Context, q query.ListQuery) (query.ListResult[artist.Artist], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return query.ListResult[artist.Artist]{}, err
@@ -319,29 +319,20 @@ func scanArtist(scanner Scanner, dst *Artist) error {
 }
 
 var artistBuilder = sq.
-	Select("id", "name", "description", "preview_url", "image_url").
+	Select(
+		"artist.id",
+		"artist.name",
+		"artist.description",
+		"artist.preview_url",
+		"artist.image_url",
+	).
 	From("artist")
 
 func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist, error) {
 	builder := artistBuilder
 
-	if order, ok := params.OrderBy["name"]; ok {
-		builder = builder.OrderBy("name " + string(order))
-	}
-
-	if params.Offset > 0 {
-		builder = builder.Offset(uint64(params.Offset))
-	}
-
-	if params.Limit > 0 {
-		builder = builder.Limit(uint64(params.Limit))
-	}
-
-	if filters, ok := params.Filters["artist_id"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(sq.Eq{"artist_id": f.Value})
-		}
-	}
+	builder = withPagination(builder, params)
+	builder = withOrdering(builder, params.OrderBy, "name", "artist")
 
 	query, args, err := builder.ToSql()
 	if err != nil {

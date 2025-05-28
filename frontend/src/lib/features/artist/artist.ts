@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 
 import { env } from "../../env";
+import { FaTiktok } from "react-icons/fa6";
 
 export const artistSchema = z.object({
 	id: idSchema,
@@ -179,7 +180,8 @@ const iconMap = new Map<string, IconType>([
 	["instagram.com", FaInstagram],
 	["music.apple.com", FaApple],
 	["facebook.com", FaFacebook],
-	["youtube.com", FaYoutube]
+	["youtube.com", FaYoutube],
+	["tiktok.com", FaTiktok],
 ])
 
 export const socialUrlToIcon = (url: string): IconType => {

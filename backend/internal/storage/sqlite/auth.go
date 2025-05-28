@@ -191,7 +191,11 @@ func (repo AuthRepository) TeamPermissions(ctx context.Context, teamID int64) (a
 }
 
 var sessionBuilder = sq.
-	Select("id", "member_id", "expires_at").
+	Select(
+		"session.id",
+		"session.member_id",
+		"session.expires_at",
+	).
 	From("session")
 
 func scanSession(s Scanner, dst *Session) error {
@@ -204,7 +208,12 @@ func scanSession(s Scanner, dst *Session) error {
 }
 
 var permissionBuilder = sq.
-	Select("id", "name", "display_name", "description").
+	Select(
+		"permission.id",
+		"permission.name",
+		"permission.display_name",
+		"permission.description",
+	).
 	From("permission")
 
 func scanPermission(s Scanner, dst *Permission) error {
@@ -313,6 +322,10 @@ func (p Permission) ToInternal() auth.Permission {
 }
 
 func listPermissions(ctx context.Context, tx *sql.Tx, params QueryParams) (PermissionCollection, error) {
+	builder := permissionBuilder
+
+	builder = withPagination(builder, params)
+
 	query, args, err := permissionBuilder.ToSql()
 	if err != nil {
 		return nil, err

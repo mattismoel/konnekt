@@ -1,10 +1,10 @@
-import Caroussel from '@/lib/components/caroussel';
 import Fader from '@/lib/components/fader';
 import PageMeta from '@/lib/components/page-meta';
 import SpotifyPreview from '@/lib/components/spotify-preview';
 import { socialUrlToIcon } from '@/lib/features/artist/artist';
 import { createArtistByIdOpts, createArtistEventsOpts } from '@/lib/features/artist/query';
 import EventCard from '@/lib/features/event/components/event-card';
+import EventGrid from '@/lib/features/event/components/event-grid';
 import { trackIdFromUrl } from '@/lib/spotify';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router'
@@ -81,9 +81,7 @@ function RouteComponent() {
             {artistEvents.length > 0 && (
               <section>
                 <h1 className="font-heading mb-8 text-2xl font-bold">Oplev {artist.name} her</h1>
-                <Caroussel>
-                  {artistEvents.map(event => <EventCard key={event.id} event={event} />)}
-                </Caroussel>
+                <EventGrid events={artistEvents} />
               </section>
             )}
           </article>
