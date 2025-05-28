@@ -34,6 +34,8 @@ services:
       context: ./backend/
       dockerfile: Dockerfile.dev
     # image: ghcr.io/mattismoel/konnekt-backend:${BRANCH:-latest}
+    ports: 
+      - 8080:8080
     restart: unless-stopped
     volumes:
       - ./backend:/app
