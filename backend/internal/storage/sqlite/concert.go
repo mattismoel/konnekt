@@ -99,7 +99,12 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 }
 
 var concertBuilder = sq.
-	Select("id", "artist_id", "from_date", "to_date").
+	Select(
+		"concert.id",
+		"concert.artist_id",
+		"concert.from_date",
+		"concert.to_date",
+	).
 	From("concert")
 
 func scanConcert(s Scanner, dst *Concert) error {

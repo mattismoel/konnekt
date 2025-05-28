@@ -110,7 +110,12 @@ func insertSocial(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
 	return socialID, nil
 }
 
-var socialBuilder = sq.Select("id", "url").From("social")
+var socialBuilder = sq.
+	Select(
+		"social.id",
+		"social.url",
+	).
+	From("social")
 
 func scanSocial(s Scanner, dst *Social) error {
 	if err := s.Scan(&dst.ID, &dst.URL); err != nil {

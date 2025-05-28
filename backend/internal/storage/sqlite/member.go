@@ -410,13 +410,13 @@ func scanMember(s Scanner, dst *Member) error {
 
 var memberBuilder = sq.
 	Select(
-		"id",
-		"first_name",
-		"last_name",
-		"email",
-		"profile_picture_url",
-		"active",
-		"password_hash",
+		"member.id",
+		"member.first_name",
+		"member.last_name",
+		"member.email",
+		"member.profile_picture_url",
+		"member.active",
+		"member.password_hash",
 	).
 	From("member")
 

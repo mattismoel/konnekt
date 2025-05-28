@@ -311,14 +311,14 @@ func eventByID(ctx context.Context, tx *sql.Tx, eventID int64) (Event, error) {
 
 var eventBuilder = sq.
 	Select(
-		"e.id",
-		"e.title",
-		"e.description",
-		"e.ticket_url",
-		"e.image_url",
-		"e.venue_id",
+		"event.id",
+		"event.title",
+		"event.description",
+		"event.ticket_url",
+		"event.image_url",
+		"event.venue_id",
 	).
-	From("event e")
+	From("event")
 
 func scanEvent(s Scanner, dst *Event) error {
 	err := s.Scan(

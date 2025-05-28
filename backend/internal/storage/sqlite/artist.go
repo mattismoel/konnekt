@@ -319,7 +319,13 @@ func scanArtist(scanner Scanner, dst *Artist) error {
 }
 
 var artistBuilder = sq.
-	Select("id", "name", "description", "preview_url", "image_url").
+	Select(
+		"artist.id",
+		"artist.name",
+		"artist.description",
+		"artist.preview_url",
+		"artist.image_url",
+	).
 	From("artist")
 
 func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist, error) {

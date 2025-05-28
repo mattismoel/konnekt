@@ -243,7 +243,12 @@ func insertTeam(ctx context.Context, tx *sql.Tx, t Team) (int64, error) {
 }
 
 var teamBuilder = sq.
-	Select("id", "name", "description", "display_name").
+	Select(
+		"team.id",
+		"team.name",
+		"team.description",
+		"team.display_name",
+	).
 	From("team")
 
 func scanTeam(s Scanner, dst *Team) error {

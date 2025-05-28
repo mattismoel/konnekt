@@ -105,7 +105,12 @@ func (repo ArtistRepository) GenreByID(ctx context.Context, genreID int64) (arti
 	}, nil
 }
 
-var genreBuilder = sq.Select("id", "name").From("genre")
+var genreBuilder = sq.
+	Select(
+		"genre.id",
+		"genre.name",
+	).
+	From("genre")
 
 func scanGenre(s Scanner, dst *Genre) error {
 	err := s.Scan(&dst.ID, &dst.Name)

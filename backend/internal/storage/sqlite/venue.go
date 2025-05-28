@@ -158,7 +158,14 @@ func (repo VenueRepository) Delete(ctx context.Context, venueID int64) error {
 	return nil
 }
 
-var venueBuilder = sq.Select("id", "name", "country_code", "city").From("venue")
+var venueBuilder = sq.
+	Select(
+		"venue.id",
+		"venue.name",
+		"venue.country_code",
+		"venue.city",
+	).
+	From("venue")
 
 func scanVenue(s Scanner, dst *Venue) error {
 	err := s.Scan(&dst.ID, &dst.Name, &dst.CountryCode, &dst.City)
