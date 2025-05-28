@@ -425,26 +425,21 @@ func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCol
 
 	builder = withPagination(builder, params)
 
-
-	active := true
-
-	if filters, ok := params.Filters["active"]; ok {
-		for _, filter := range filters {
-			val := strings.ToUpper(filter.Value)
-			if val == "FALSE" {
-				active = false
-			} else if val == "TRUE" {
-				active = true
+	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
+		"active": func(f query.Filter) sq.Sqlizer {
+			if strings.ToUpper(f.Value) == "TRUE" {
+				return sq.Eq{"active": 1}
 			}
-		}
-	}
 
-	activeVal := "TRUE"
-	if !active {
-		activeVal = "FALSE"
-	}
-
-	builder = builder.Where(sq.Eq{"active": activeVal})
+			return sq.Eq{"active": 0}
+		},
+		"first_name": func(f query.Filter) sq.Sqlizer {
+			return contains("first_name", f.Value)
+		},
+		"last_name": func(f query.Filter) sq.Sqlizer {
+			return contains("last_name", f.Value)
+		},
+	})
 
 	query, args, err := builder.ToSql()
 	if err != nil {

@@ -329,38 +329,22 @@ func scanEvent(s Scanner, dst *Event) error {
 func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, error) {
 	builder := eventBuilder.
 		Distinct().
-	if filters, ok := params.Filters["title"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(sq.Like{"e.title": f.Value})
-		}
-	}
-
-	if filters, ok := params.Filters["from_date"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(fmt.Sprintf("c.from_date %s '%s'", f.Cmp, f.Value))
-		}
-	}
-
-	if filters, ok := params.Filters["to_date"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(fmt.Sprintf("c.to_date %s '%s'", f.Cmp, f.Value))
-		}
-	}
-
-	if filters, ok := params.Filters["id"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(sq.Eq{"e.id": f.Value})
-		}
-	}
-
-	if filters, ok := params.Filters["artist_id"]; ok {
-		for _, f := range filters {
-			builder = builder.Where(sq.Eq{"c.artist_id": f.Value})
-		}
-	}
-
 		Join("concert ON concert.event_id = event.id")
 
+	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
+		"title": func(f query.Filter) sq.Sqlizer {
+			return contains("title", f.Value)
+		},
+		"from_date": func(f query.Filter) sq.Sqlizer {
+			return sq.Expr(fmt.Sprintf("concert.from_date %s ?", f.Cmp), f.Value)
+		},
+		"to_date": func(f query.Filter) sq.Sqlizer {
+			return sq.Expr(fmt.Sprintf("concert.to_date %s ?", f.Cmp), f.Value)
+		},
+		"artist_id": func(f query.Filter) sq.Sqlizer {
+			return sq.Eq{"concert.artist_id": f.Value}
+		},
+	})
 
 	builder = withOrdering(builder, params.OrderBy, "from_date", "concert")
 	builder = withPagination(builder, params)
