@@ -23,7 +23,7 @@ const TeamDisplay = ({ members, allTeams }: Props) => {
 	return (
 		<div className="@container flex flex-col gap-16">
 			<div className="grid grid-cols-1 gap-8 @lg:grid-cols-2">
-				{includedMembers.map(member => <MemberInfo member={member} includedTeams={includedTeams} />)}
+				{includedMembers.map(member => <MemberInfo key={member.id} member={member} includedTeams={includedTeams} />)}
 			</div>
 		</div>
 	)
