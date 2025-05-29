@@ -95,8 +95,6 @@ function App() {
             <section className="z-0 flex w-full flex-col gap-8">
               <span className="text-center text-text/50">I samarbejde med</span>
               <div className="relative isolate w-full">
-                <Fader direction="right" className="absolute z-50 w-32 from-zinc-950" />
-                <Fader direction="left" className="absolute z-50 w-32 from-zinc-950" />
                 <SponsorDisplay
                   srcs={new Map<string, string>([
                     ['https://ungodense.dk/index.php?open=1283&menu_id=58', SpillestedetOdenseLogo],

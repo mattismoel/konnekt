@@ -4,7 +4,7 @@ testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
-  args_bin = ["-origin=http://nginx", "-host=0.0.0.0", "-port=8080", "-dbConnStr=/app/data/data.db"]
+  args_bin = ["-origin=http://nginx", "-host=0.0.0.0", "-port=8080", "-dbConnStr=/app/data/data.db", "-s3Bucket=konnekt-bucket-dev"]
   bin = "./tmp/main"
   cmd = "CGO_ENABLED=1 go build -o ./tmp/main ./cmd/http/..."
   delay = 1000
