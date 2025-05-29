@@ -15,7 +15,7 @@ func formatJPEG(img image.Image) (io.Reader, error) {
 	pr, pw := io.Pipe()
 	go func() {
 		defer pw.Close()
-		err := jpeg.Encode(pw, img, &jpeg.Options{Quality: jpeg.DefaultQuality})
+		err := jpeg.Encode(pw, img, &jpeg.Options{Quality: 35})
 		if err != nil {
 			pw.CloseWithError(err)
 		}

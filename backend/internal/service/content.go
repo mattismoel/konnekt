@@ -2,12 +2,10 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"image"
 	"io"
 	"path"
 
-	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/content"
 	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/nfnt/resize"
@@ -51,7 +49,7 @@ func (s ContentService) UploadLandingImage(ctx context.Context, r io.Reader) (in
 		return 0, err
 	}
 
-	fileName := fmt.Sprintf("%s.jpeg", uuid.NewString())
+	fileName := createRandomImageFileName("jpeg")
 
 	url, err := s.store.Upload(ctx, path.Join("/landing_images", fileName), formatedImg)
 	if err != nil {

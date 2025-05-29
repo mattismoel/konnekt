@@ -50,7 +50,7 @@ type SocialMediaListProps = {
 const SocialMediaList = ({ socialMap }: SocialMediaListProps) => (
 	<ul className="flex gap-4 items-center text-xl text-text/50">
 		{Array.from(socialMap).map(([href, Icon]) => (
-			<li className="hover:text-text">
+			<li key={href} className="hover:text-text">
 				<a href={href}><Icon /></a>
 			</li>
 		))}

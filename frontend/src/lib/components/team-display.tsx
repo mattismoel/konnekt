@@ -23,7 +23,7 @@ const TeamDisplay = ({ members, allTeams }: Props) => {
 	return (
 		<div className="@container flex flex-col gap-16">
 			<div className="grid grid-cols-1 gap-8 @lg:grid-cols-2">
-				{includedMembers.map(member => <MemberInfo member={member} includedTeams={includedTeams} />)}
+				{includedMembers.map(member => <MemberInfo key={member.id} member={member} includedTeams={includedTeams} />)}
 			</div>
 		</div>
 	)
@@ -40,10 +40,10 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 	return (
 		<div className="group bg-background flex flex-col border border-zinc-800 hover:border-zinc-700 rounded-sm overflow-hidden hover:bg-zinc-900 transition-colors">
 			<div className="overflow-hidden">
-				<img src={member.profilePictureUrl} className="brightness-75 h-48 w-full object-cover scale-100 group-hover:scale-100 group-hover:brightness-100 transition-[scale,filter] duration-500" />
+				<img src={member.profilePictureUrl} loading="lazy" className="brightness-75 h-48 w-full object-cover scale-100 group-hover:scale-100 group-hover:brightness-100 transition-[scale,filter] duration-500" />
 			</div>
 			<div className="relative p-4 @lg:p-6 flex flex-col gap-2 cursor-default w-full object-cover">
-				<img src={member.profilePictureUrl} className="pointer-events-none absolute h-full w-full blur-3xl opacity-0 group-hover:opacity-25 transition-opacity duration-1000" />
+				<img src={member.profilePictureUrl} loading="lazy" className="pointer-events-none absolute h-full w-full blur-3xl opacity-0 group-hover:opacity-25 transition-opacity duration-1000" />
 				<span className="font-semibold">{member.firstName} {member.lastName}</span>
 
 				<div className="flex flex-col text-text/50 text-sm">
