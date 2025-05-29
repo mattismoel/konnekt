@@ -2,13 +2,11 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"image"
 	"io"
 	"net/url"
 	"path"
 
-	"github.com/google/uuid"
 	"github.com/mattismoel/konnekt/internal/domain/member"
 	"github.com/mattismoel/konnekt/internal/domain/team"
 	"github.com/mattismoel/konnekt/internal/object"
@@ -65,7 +63,7 @@ func (srv MemberService) UploadProfilePicture(ctx context.Context, r io.Reader) 
 		return "", err
 	}
 
-	fileName := fmt.Sprintf("%s.jpeg", uuid.NewString())
+	fileName := createRandomImageFileName("jpeg")
 
 	url, err := srv.objectStore.Upload(ctx, path.Join("/members", fileName), formatedImg)
 	if err != nil {
