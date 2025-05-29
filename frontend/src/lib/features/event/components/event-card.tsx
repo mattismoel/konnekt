@@ -41,6 +41,7 @@ const EventCard = ({ event }: Props) => {
 				<img
 					src={event.imageUrl}
 					alt={event.title}
+					loading="lazy"
 					className="h-full w-full brightness-75 scale-110 object-cover transition-all duration-200 group-hover:scale-100 group-hover:brightness-100 md:brightness-90"
 				/>
 				<Fader direction="up" className="absolute h-48 from-black/80" />
