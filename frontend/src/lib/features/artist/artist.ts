@@ -14,7 +14,6 @@ import {
 	FaYoutube,
 } from "react-icons/fa";
 
-import { env } from "../../env";
 import { FaTiktok } from "react-icons/fa6";
 
 export const artistSchema = z.object({
