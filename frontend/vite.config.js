@@ -7,7 +7,11 @@ import { resolve } from "node:path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [TanStackRouterVite({ autoCodeSplitting: true }), viteReact(), tailwindcss()],
+  plugins: [
+    TanStackRouterVite({ autoCodeSplitting: true }),
+    viteReact(),
+    tailwindcss(),
+  ],
   test: {
     globals: true,
     environment: "jsdom",
@@ -22,7 +26,7 @@ export default defineConfig({
     strictPort: true,
     hmr: {
       host: "0.0.0.0",
-      clientPort: 3000
+      clientPort: 3000,
     },
     watch: {
       usePolling: true,
@@ -30,7 +34,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      "@": resolve(__dirname, "./src"),
     },
-  }
+  },
 });

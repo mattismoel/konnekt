@@ -5,6 +5,7 @@ import type { HTMLAttributes, PropsWithChildren } from 'react';
 
 const Navbar = ({ children }: PropsWithChildren) => {
 	const { y: scrollY } = useScroll()
+
 	return (
 		<nav
 			className={cn("h-nav px-auto fixed z-40 flex w-screen items-center justify-between bg-gradient-to-b from-black/80 outline outline-transparent transition-colors duration-500 [.scrolled]:from-zinc-950 [.scrolled]:to-zinc-950 [.scrolled]:outline-zinc-800", {

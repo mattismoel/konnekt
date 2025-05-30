@@ -30,7 +30,6 @@ function RouteComponent() {
   const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts)
 
   const filteredEvents = upcomingEvents.filter(({ id }) => id !== event.id)
-
   const fromDate = earliestConcert(event.concerts)?.from
 
   return (
@@ -44,6 +43,7 @@ function RouteComponent() {
         <article className="px-auto space-y-16 pt-8 pb-16">
           <section className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: event.description }} />
           <EventCalendar event={event} />
+
           {filteredEvents.length > 0 && (
             <section>
               <h1 className="mb-8 text-2xl font-bold">Se også</h1>
