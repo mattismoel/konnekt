@@ -75,6 +75,7 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 		TicketURL   string              `json:"ticketUrl"`
 		VenueID     int64               `json:"venueId"`
 		Concerts    []createConcertLoad `json:"concerts"`
+		IsPublic    bool                `json:"isPublic"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -102,6 +103,7 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 			ImageURL:    load.ImageURL,
 			VenueID:     load.VenueID,
 			Concerts:    concerts,
+			IsPublic:    load.IsPublic,
 		})
 
 		if err != nil {
@@ -127,6 +129,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 		ImageURL    string              `json:"imageUrl"`
 		Concerts    []updateConcertLoad `json:"concerts"`
 		VenueID     int64               `json:"venueId"`
+		IsPublic    bool                `json:"isPublic"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -163,6 +166,7 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 			ImageURL:    load.ImageURL,
 			VenueID:     load.VenueID,
 			Concerts:    concerts,
+			IsPublic:    load.IsPublic,
 		})
 
 		if err != nil {

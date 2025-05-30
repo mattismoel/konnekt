@@ -67,8 +67,12 @@ const EventForm = ({ event, venues, artists, disabled = false }: Props) => {
 					from: c.from,
 					to: c.to,
 					artistID: c.artist.id,
-				}))
-			} : undefined,
+				})),
+				isPublic: event.isPublic
+			} : {
+				isPublic: true,
+				venueId: venues.find(v => v.name === "Posten")?.id
+			},
 		resolver: zodResolver(eventForm),
 	})
 
@@ -146,6 +150,12 @@ const GeneralSection = () => {
 
 					<VenueSelector />
 				</div>
+				<FormField className="w-min">
+					<label className="flex gap-2 items-center">
+						<input type="checkbox" {...register("isPublic")} />
+						Offentlig
+					</label>
+				</FormField>
 			</div>
 		</section>
 	)

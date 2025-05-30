@@ -5,7 +5,6 @@ import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/
 import { createUrl, type Query } from "@/lib/url";
 import { createListResult, type ListResult } from "@/lib/query";
 import { startOfToday } from "date-fns";
-import { env } from "../../env";
 
 export const eventSchema = z.object({
 	id: idSchema,
@@ -14,7 +13,8 @@ export const eventSchema = z.object({
 	ticketUrl: z.string().url(),
 	imageUrl: z.string().optional().or(z.string().url().optional()),
 	concerts: concertSchema.array(),
-	venue: venueSchema
+	venue: venueSchema,
+	isPublic: z.boolean(),
 })
 
 export type Event = z.infer<typeof eventSchema>
@@ -25,7 +25,8 @@ export const eventForm = z.object({
 	ticketUrl: z.string().nonempty({ message: "Billet-URL skal være defineret" }),
 	venueId: idSchema,
 	concerts: concertForm.array().min(1, { message: "Et event skal have mindst én koncert" }),
-	image: z.instanceof(File).optional()
+	image: z.instanceof(File).optional(),
+	isPublic: z.boolean(),
 });
 
 export type EventFormValues = z.infer<typeof eventForm>
@@ -111,23 +112,14 @@ export const listEvents = async (query: Query,): Promise<ListResult<Event>> => {
 	return result
 }
 
-export const listUpcomingEvents = async (): Promise<ListResult<Event>> => {
-	return listEvents({ filter: ["from_date" + ">=" + startOfToday().toISOString()] })
+export const listUpcomingEvents = async (publicOnly: boolean = true): Promise<ListResult<Event>> => {
+	return listEvents({
+		filter: [
+			"from_date" + ">=" + startOfToday().toISOString(),
+			...(publicOnly) ? ["is_public=true"] : [],
+		],
+	})
 }
-
-// /**
-//  * @description Returns all upcoming events, if any.
-//  */
-// export const listUpcomingEvents = async (): Promise<ListResult<Event>> => {
-// 	const result = await listEvents(
-// 		fetchFn,
-// 		{
-// 			filter: ["from_date" + ">=" + startOfToday().toISOString()]
-// 		},
-// 	)
-//
-// 	return result
-// }
 
 /**
  * @description Returns all upcoming events, if any.

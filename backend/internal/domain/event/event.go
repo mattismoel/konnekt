@@ -29,6 +29,7 @@ type Event struct {
 	ImageURL    string            `json:"imageUrl"`
 	Venue       venue.Venue       `json:"venue"`
 	Concerts    []concert.Concert `json:"concerts"`
+	IsPublic    bool              `json:"isPublic"`
 }
 
 type CfgFunc func(e *Event) error
@@ -46,6 +47,7 @@ func (e *Event) WithCfgs(cfgs ...CfgFunc) error {
 func NewEvent(cfgs ...CfgFunc) (*Event, error) {
 	e := &Event{
 		Concerts: make([]concert.Concert, 0),
+		IsPublic: false,
 	}
 
 	if err := e.WithCfgs(cfgs...); err != nil {
@@ -147,6 +149,13 @@ func WithConcerts(concerts ...concert.Concert) CfgFunc {
 func WithVenue(v venue.Venue) CfgFunc {
 	return func(e *Event) error {
 		e.Venue = v
+		return nil
+	}
+}
+
+func WithIsPublic(isPublic bool) CfgFunc {
+	return func(e *Event) error {
+		e.IsPublic = isPublic
 		return nil
 	}
 }

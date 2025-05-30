@@ -48,6 +48,7 @@ type CreateEvent struct {
 	ImageURL    string
 	VenueID     int64
 	Concerts    []CreateConcert
+	IsPublic    bool
 }
 
 type CreateConcert struct {
@@ -98,6 +99,7 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (event.Event
 		event.WithVenue(venue),
 		event.WithImageURL(load.ImageURL),
 		event.WithConcerts(concerts...),
+		event.WithIsPublic(load.IsPublic),
 	)
 
 	if err != nil {
@@ -130,6 +132,7 @@ type UpdateEvent struct {
 	ImageURL    string
 	VenueID     int64
 	Concerts    []UpdateConcert
+	IsPublic    bool
 }
 
 func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEvent) (event.Event, error) {
@@ -172,6 +175,7 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 		event.WithTicketURL(load.TicketURL),
 		event.WithConcerts(concerts...),
 		event.WithVenue(venue),
+		event.WithIsPublic(load.IsPublic),
 	)
 
 	// If there is a cover image URL update, set it.

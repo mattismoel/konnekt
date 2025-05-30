@@ -9,12 +9,12 @@ import { createFileRoute } from '@tanstack/react-router'
 export const Route = createFileRoute('/_app/events/')({
   component: RouteComponent,
   loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(upcomingEventsQueryOpts)
+    queryClient.ensureQueryData(upcomingEventsQueryOpts())
   },
 })
 
 function RouteComponent() {
-  const { data: { records: events } } = useSuspenseQuery(upcomingEventsQueryOpts)
+  const { data: { records: events } } = useSuspenseQuery(upcomingEventsQueryOpts())
 
   const eventNames = events.map(e => e.title)
 

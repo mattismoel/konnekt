@@ -69,6 +69,16 @@ func (c Concert) ToInternal(a artist.Artist) concert.Concert {
 	}
 }
 
+func ConcertFromInternal(c concert.Concert, eventID int64) Concert {
+	return Concert{
+		ID:       c.ID,
+		From:     c.From,
+		To:       c.To,
+		ArtistID: c.Artist.ID,
+		EventID:  eventID,
+	}
+}
+
 func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 	query, args, err := sq.
 		Insert("concert").

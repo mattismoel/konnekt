@@ -24,7 +24,7 @@ import SponsorDisplay from '@/lib/components/sponsor-display';
 export const Route = createFileRoute('/_app/')({
   component: App,
   loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(upcomingEventsQueryOpts)
+    queryClient.ensureQueryData(upcomingEventsQueryOpts())
     queryClient.ensureQueryData(landingImagesQueryOptions)
     queryClient.ensureQueryData(teamsQueryOpts)
     queryClient.ensureQueryData(membersQueryOpts)
@@ -32,7 +32,7 @@ export const Route = createFileRoute('/_app/')({
 })
 
 function App() {
-  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts)
+  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts())
   const { data: landingImages } = useSuspenseQuery(landingImagesQueryOptions)
   const { data: { records: teams } } = useSuspenseQuery(teamsQueryOpts)
   const { data: { records: members } } = useSuspenseQuery(membersQueryOpts)

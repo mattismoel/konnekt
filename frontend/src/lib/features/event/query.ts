@@ -9,11 +9,16 @@ export const venuesQueryOpts =
 		queryFn: () => listVenues()
 	})
 
-export const upcomingEventsQueryOpts =
-	queryOptions({
-		queryKey: ["events", "upcoming"],
-		queryFn: listUpcomingEvents,
-	})
+export const upcomingEventsQueryOpts = (
+	publicOnly: boolean = true
+) => queryOptions({
+	queryKey: [
+		"events",
+		"upcoming",
+		...(publicOnly) ? ["public-only"] : [],
+	],
+	queryFn: () => listUpcomingEvents(publicOnly),
+})
 
 export const previousEventsQueryOpts =
 	queryOptions({
