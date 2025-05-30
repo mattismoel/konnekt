@@ -11,7 +11,7 @@ import EventList from '@/lib/features/event/components/event-list';
 export const Route = createFileRoute('/admin/events/')({
   component: RouteComponent,
   loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(upcomingEventsQueryOpts)
+    queryClient.ensureQueryData(upcomingEventsQueryOpts(false))
     queryClient.ensureQueryData(previousEventsQueryOpts)
   }
 })
@@ -19,7 +19,7 @@ export const Route = createFileRoute('/admin/events/')({
 function RouteComponent() {
   const { hasPermissions } = useAuth()
 
-  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts)
+  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts(false))
   const { data: { records: previousEvents } } = useSuspenseQuery(previousEventsQueryOpts)
 
   return (

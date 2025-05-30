@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -26,6 +27,19 @@ type Event struct {
 	TicketURL   string
 	ImageURL    string
 	VenueID     int64
+	IsPublic    bool
+}
+
+func EventFromInternal(e event.Event) Event {
+	return Event{
+		ID:          e.ID,
+		Title:       e.Title,
+		Description: e.Description,
+		TicketURL:   e.TicketURL,
+		ImageURL:    e.ImageURL,
+		VenueID:     e.Venue.ID,
+		IsPublic:    e.IsPublic,
+	}
 }
 
 func (e Event) ToInternal(venue venue.Venue, concerts []concert.Concert) event.Event {
@@ -37,6 +51,7 @@ func (e Event) ToInternal(venue venue.Venue, concerts []concert.Concert) event.E
 		ImageURL:    e.ImageURL,
 		Venue:       venue,
 		Concerts:    concerts,
+		IsPublic:    e.IsPublic,
 	}
 }
 
@@ -45,6 +60,7 @@ func NewEventRepository(db *sql.DB) (*EventRepository, error) {
 		db: db,
 	}, nil
 }
+
 func (repo EventRepository) ByID(ctx context.Context, eventID int64) (event.Event, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -96,14 +112,7 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 
 	defer tx.Rollback()
 
-	eventID, err := insertEvent(ctx, tx, Event{
-		Title:       e.Title,
-		Description: e.Description,
-		TicketURL:   e.TicketURL,
-		ImageURL:    e.ImageURL,
-		VenueID:     e.Venue.ID,
-	})
-
+	eventID, err := insertEvent(ctx, tx, EventFromInternal(e))
 	if err != nil {
 		return 0, err
 	}
@@ -114,13 +123,10 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 			return 0, err
 		}
 
-		_, err = insertConcert(ctx, tx, Concert{
-			ArtistID: dbArtist.ID,
-			EventID:  eventID,
-			From:     c.From,
-			To:       c.To,
-		})
+		dbConcert := ConcertFromInternal(c, eventID)
+		dbConcert.ArtistID = dbArtist.ID
 
+		_, err = insertConcert(ctx, tx, dbConcert)
 		if err != nil {
 			return 0, err
 		}
@@ -141,27 +147,14 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 
 	defer tx.Rollback()
 
-	err = updateEvent(ctx, tx, eventID, Event{
-		Title:       e.Title,
-		Description: e.Description,
-		TicketURL:   e.TicketURL,
-		ImageURL:    e.ImageURL,
-		VenueID:     e.Venue.ID,
-	})
-
+	err = updateEvent(ctx, tx, eventID, EventFromInternal(e))
 	if err != nil {
 		return err
 	}
 
 	concerts := make([]Concert, 0)
 	for _, c := range e.Concerts {
-		concerts = append(concerts, Concert{
-			ID:       c.ID,
-			EventID:  eventID,
-			ArtistID: c.Artist.ID,
-			From:     c.From,
-			To:       c.To,
-		})
+		concerts = append(concerts, ConcertFromInternal(c, eventID))
 	}
 
 	_, err = setEventConcerts(ctx, tx, eventID, concerts...)
@@ -306,6 +299,7 @@ var eventBuilder = sq.
 		"event.ticket_url",
 		"event.image_url",
 		"event.venue_id",
+		"event.is_public",
 	).
 	From("event")
 
@@ -317,6 +311,7 @@ func scanEvent(s Scanner, dst *Event) error {
 		&dst.TicketURL,
 		&dst.ImageURL,
 		&dst.VenueID,
+		&dst.IsPublic,
 	)
 
 	if err != nil {
@@ -334,6 +329,12 @@ func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, e
 	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
 		"title": func(f query.Filter) sq.Sqlizer {
 			return contains("title", f.Value)
+		},
+		"is_public": func(f query.Filter) sq.Sqlizer {
+			if strings.ToUpper(f.Value) == "TRUE" {
+				return sq.Eq{"is_public": true}
+			}
+			return sq.Eq{"is_public": false}
 		},
 		"from_date": func(f query.Filter) sq.Sqlizer {
 			return sq.Expr(fmt.Sprintf("concert.from_date %s ?", f.Cmp), f.Value)
@@ -380,8 +381,8 @@ func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, e
 
 func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
 	query, args, err := sq.Insert("event").
-		Columns("title", "description", "ticket_url", "image_url", "venue_id").
-		Values(e.Title, e.Description, e.TicketURL, e.ImageURL, e.VenueID).ToSql()
+		Columns("title", "description", "ticket_url", "image_url", "venue_id", "is_public").
+		Values(e.Title, e.Description, e.TicketURL, e.ImageURL, e.VenueID, e.IsPublic).ToSql()
 
 	if err != nil {
 		return 0, err
@@ -441,6 +442,8 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 	if e.VenueID != 0 {
 		builder = builder.Set("venue_id", e.VenueID)
 	}
+
+	builder = builder.Set("is_public", e.IsPublic)
 
 	query, args, err := builder.ToSql()
 	if err != nil {

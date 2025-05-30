@@ -24,7 +24,7 @@ import SponsorDisplay from '@/lib/components/sponsor-display';
 export const Route = createFileRoute('/_app/')({
   component: App,
   loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(upcomingEventsQueryOpts)
+    queryClient.ensureQueryData(upcomingEventsQueryOpts())
     queryClient.ensureQueryData(landingImagesQueryOptions)
     queryClient.ensureQueryData(teamsQueryOpts)
     queryClient.ensureQueryData(membersQueryOpts)
@@ -32,7 +32,7 @@ export const Route = createFileRoute('/_app/')({
 })
 
 function App() {
-  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts)
+  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts())
   const { data: landingImages } = useSuspenseQuery(landingImagesQueryOptions)
   const { data: { records: teams } } = useSuspenseQuery(teamsQueryOpts)
   const { data: { records: members } } = useSuspenseQuery(membersQueryOpts)
@@ -51,7 +51,12 @@ function App() {
             className="pointer-events-none absolute top-0 left-0 isolate -z-10 h-full w-full overflow-hidden"
           >
             <GlowCursor />
-            <Slideshow srcs={landingImages.map(({ url }) => ({ src: url }))} />
+            <Slideshow
+              srcs={landingImages.map(({ url }, index) => ({
+                src: url,
+                alt: `Baggrundsbillede ${index + 1}`
+              }))}
+            />
           </div>
           <section className="flex max-w-lg flex-col gap-16 overflow-hidden">
             <div className="flex flex-col gap-4">
@@ -96,12 +101,12 @@ function App() {
               <span className="text-center text-text/50">I samarbejde med</span>
               <div className="relative isolate w-full">
                 <SponsorDisplay
-                  srcs={new Map<string, string>([
-                    ['https://ungodense.dk/index.php?open=1283&menu_id=58', SpillestedetOdenseLogo],
-                    ['https://ungodense.dk/', UngOdenseLogo],
-                    ['https://postenlive.dk/', PostenLogo],
-                    ['https://kulturmaskinen.dk/', KulturMaskinenLogo],
-                    ['https://odense.dk', OdenseKommuneLogo]
+                  srcs={new Map([
+                    ['https://ungodense.dk/index.php?open=1283&menu_id=58', { src: SpillestedetOdenseLogo, alt: "Spillestedet" }],
+                    ['https://ungodense.dk/', { src: UngOdenseLogo, alt: "UngOdense" }],
+                    ['https://postenlive.dk/', { src: PostenLogo, alt: "Posten" }],
+                    ['https://kulturmaskinen.dk/', { src: KulturMaskinenLogo, alt: "Kulturmaskinen" }],
+                    ['https://odense.dk', { src: OdenseKommuneLogo, alt: "Odense Kommune" }]
                   ])}
                 />
               </div>

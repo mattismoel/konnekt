@@ -29,8 +29,9 @@ type CloseButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 const CloseButton = forwardRef<HTMLButtonElement, CloseButtonProps>(({ expanded, ...rest }, ref) => {
 	return (
 		<button
-			ref={ref}
 			{...rest}
+			ref={ref}
+			title="Close menu"
 			type="button"
 			className="absolute bottom-8 left-1/2 -translate-x-1/2 text-2xl"
 		>

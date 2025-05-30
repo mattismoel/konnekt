@@ -32,8 +32,6 @@ const querySchema = z.object({
 export type Query = z.infer<typeof querySchema>
 
 export const createUrl = (base: string, query?: Query): string => {
-  console.log("baseUrl", env().BASE_URL, "base", base, "query", query)
-
   if (env().DEV) {
     return base + (query ? "?" + createQueryParams(query) : "")
   }

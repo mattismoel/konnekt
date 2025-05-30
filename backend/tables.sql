@@ -47,6 +47,7 @@ CREATE TABLE event (
   ticket_url TEXT NOT NULL,
   image_url TEXT NOT NULL,
   venue_id INTEGER NOT NULL,
+  is_public BOOLEAN NOT NULL DEFAULT 'FALSE',
 
   FOREIGN KEY (venue_id) REFERENCES venue (id)
 );

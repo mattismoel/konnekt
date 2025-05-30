@@ -17,10 +17,7 @@ export const useScroll = () => {
     }
 
     window.addEventListener("scroll", handleScroll)
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   return scrollPos

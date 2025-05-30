@@ -23,11 +23,11 @@ function RouteComponent() {
     <>
       <Navbar>
         <Navbar.Header>
-          <button className='block md:hidden' onClick={() => setExpanded(true)}>
+          <button className='block md:hidden' aria-label="Navigation menu button" onClick={() => setExpanded(true)}>
             <BiMenu className='text-2xl' />
           </button>
           <Link to="/">
-            <Logo className='h-4' />
+            <Logo className='h-4' aria-label='Go to frontpage' />
           </Link>
         </Navbar.Header>
 
