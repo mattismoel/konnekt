@@ -37,7 +37,13 @@ func (s Server) handleGetSitemap() http.HandlerFunc {
 
 		sitemap.XMLNs = "http://www.sitemaps.org/schemas/sitemap/0.9"
 
-		eventQuery, err := query.NewListQuery()
+		eventFilters := query.FilterCollection{
+			"is_public": []query.Filter{{Cmp: query.Equal, Value: "true"}},
+		}
+
+		eventQuery, err := query.NewListQuery(
+			query.WithFilters(eventFilters),
+		)
 		if err != nil {
 			writeError(w, err)
 			return
