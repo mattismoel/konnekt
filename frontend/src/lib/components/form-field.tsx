@@ -12,8 +12,8 @@ type Props = HTMLAttributes<HTMLDivElement> & {
 }
 
 const FormField = ({ error, children, className }: Props) => (
-	<>
-		<div className={cn("flex gap-4 w-full", className)}>
+	<div className={cn("flex flex-col gap-2", className)}>
+		<div className="flex gap-4 w-full">
 			{children}
 		</div>
 
@@ -22,7 +22,7 @@ const FormField = ({ error, children, className }: Props) => (
 				{error?.message}
 			</span>
 		)}
-	</>
+	</div>
 )
 
 export default FormField
