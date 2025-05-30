@@ -3,10 +3,15 @@ import { Link } from '@tanstack/react-router';
 import { FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa6';
 import type { IconType } from 'react-icons/lib';
 
-const socialMap = new Map<string, IconType>([
-	["https://www.instagram.com/konnekt_odense/", FaInstagram],
-	["https://www.tiktok.com/konnekt_odense/", FaTiktok],
-	["https://www.facebook.com/profile.php?id=61574860865073", FaFacebook],
+type Src = {
+	icon: IconType;
+	title: string;
+}
+
+const socialMap = new Map<string, Src>([
+	["https://www.instagram.com/konnekt_odense/", { icon: FaInstagram, title: "Instagram" }],
+	["https://www.tiktok.com/konnekt_odense/", { icon: FaTiktok, title: "TikTok" }],
+	["https://www.facebook.com/profile.php?id=61574860865073", { icon: FaFacebook, title: "Facebook" }],
 ])
 
 const Footer = () => {
@@ -15,7 +20,7 @@ const Footer = () => {
 			<div className="mb-8 grid w-full grid-cols-1 gap-8 sm:grid-cols-2">
 				{/*  NAVIGATION  */}
 				<div className="flex-1">
-					<h3 className="font-heading mb-2 inline-block align-top leading-none font-bold">Find rundt</h3>
+					<span className="font-heading mb-2 inline-block align-top leading-none font-bold">Find rundt</span>
 					<ul className="text-text/50">
 						<li><Link to="/">Hjem</Link></li>
 						<li><Link to="/events">Events</Link></li>
@@ -26,7 +31,7 @@ const Footer = () => {
 				{/* CONTACT INFORMATION  */}
 				<div className="flex flex-1 flex-col items-start sm:items-end gap-4">
 					<Logo className="mb-2 hidden h-4 sm:block" />
-					<h3 className="font-heading mb-2 font-bold sm:hidden">Kontakt os</h3>
+					<span className="font-heading mb-2 font-bold sm:hidden">Kontakt os</span>
 					<address className="not-italic">
 						<div className="text-text/50 flex flex-col items-start sm:items-end gap-2">
 							<a href="mailto:konnekt.samarbejde@gmail.dk">konnekt.samarbejde@gmail.com</a>
@@ -44,14 +49,14 @@ const Footer = () => {
 }
 
 type SocialMediaListProps = {
-	socialMap: Map<string, IconType>
+	socialMap: Map<string, Src>
 }
 
 const SocialMediaList = ({ socialMap }: SocialMediaListProps) => (
 	<ul className="flex gap-4 items-center text-xl text-text/50">
-		{Array.from(socialMap).map(([href, Icon]) => (
+		{Array.from(socialMap).map(([href, { icon: Icon, title }]) => (
 			<li key={href} className="hover:text-text">
-				<a href={href}><Icon /></a>
+				<a title={title} href={href}><Icon /></a>
 			</li>
 		))}
 	</ul>

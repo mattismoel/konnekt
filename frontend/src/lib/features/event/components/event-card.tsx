@@ -53,7 +53,7 @@ const EventCard = ({ event }: Props) => {
 					text-text transition-all duration-100 md:translate-y-full 
 					md:group-hover:translate-y-0"
 				>
-					<h3 className="mb-2 text-3xl font-bold text-shadow-md">{event.title}</h3>
+					<span className="mb-2 text-3xl font-bold text-shadow-md">{event.title}</span>
 					<div className="text-text/75 flex flex-col text-shadow-sm">
 						{fromDate && (
 							<span>{format(fromDate, DATETIME_FORMAT)}</span>
