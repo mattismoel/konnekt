@@ -110,8 +110,6 @@ export const editMember = async (memberId: ID, form: MemberFormValues) => {
 		"PUT"
 	)
 
-	await setMemberTeams(memberId, form.memberTeams)
-
 	return member
 }
 
