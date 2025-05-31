@@ -190,40 +190,37 @@ const ConcertsSection = () => {
 }
 
 const VenueSelector = () => {
-	const { venues, formState: { disabled } } = useEventFormContext()
+	const { venues, control, formState: { disabled } } = useEventFormContext()
 	const isEditable = !disabled
 
-	const {
-		setValue,
-		getValues,
-		formState: { errors },
-	} = useEventFormContext()
-
 	return (
-		<FormField error={errors.venueId}>
-			<Selector
-				disabled={!isEditable}
-				onChange={e => setValue("venueId", parseInt(e.target.value))}
-				defaultValue={venues.find(v => v.id === getValues("venueId"))?.id}
-				placeholder="Vælg venue..."
-				className="w-full"
-			>
-				{venues.map(v => (
-					<option key={v.id} value={v.id}>{v.name}</option>
-				))}
-			</Selector>
+		<Controller
+			control={control}
+			name="venueId"
+			render={({ field: { onChange, ...rest }, fieldState: { error } }) => (
+				<FormField error={error}>
+					<Selector
+						{...rest}
+						onChange={e => onChange(parseInt(e.target.value))}
+						placeholder="Vælg venue..."
+						className="w-full"
+					>
+						{venues.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
+					</Selector>
 
-			{isEditable && (
-				<div className="flex gap-2">
-					<Button variant="ghost" className="aspect-square h-full">
-						<FaArrowsRotate />
-					</Button>
-					<LinkButton to="/admin/venues/create" className="aspect-square h-full">
-						<FaPlus />
-					</LinkButton>
-				</div>
+					{isEditable && (
+						<div className="flex gap-2">
+							<Button variant="ghost" className="aspect-square h-full">
+								<FaArrowsRotate />
+							</Button>
+							<LinkButton to="/admin/venues/create" className="aspect-square h-full">
+								<FaPlus />
+							</LinkButton>
+						</div>
+					)}
+				</FormField>
 			)}
-		</FormField>
+		/>
 	)
 }
 
