@@ -4,6 +4,7 @@ import Toolbar from "./toolbar";
 import type { Level } from "@tiptap/extension-heading";
 import { FaListOl, FaBold, FaItalic, FaListUl, FaUnderline } from "react-icons/fa";
 import Underline from "@tiptap/extension-underline"
+import { cn } from "@/lib/clsx";
 
 const HEADER_LEVELS: Level[] = [1, 2, 3]
 
@@ -12,17 +13,19 @@ const extensions = [StarterKit, Underline]
 type Props = {
 	content?: string | undefined;
 	onChange?: (html: string) => void;
+	disabled?: boolean;
 }
 
-const Tiptap = ({ content, onChange }: Props) => {
+const Tiptap = ({ content, disabled = false, onChange }: Props) => {
 	return (
 		<div className="w-full">
 			<EditorProvider
 				content={content}
 				extensions={extensions}
-				slotBefore={<div><CustomToolbar /></div>}
+				slotBefore={!disabled && <div><CustomToolbar /></div>}
 				onTransaction={({ editor }) => onChange?.(editor.getHTML())}
-				editorContainerProps={{ className: "max-w-none min-h-72 flex flex-col border border-zinc-900 prose prose-invert p-5 focus:outline-none rounded-b-md" }}
+				editorContainerProps={{ className: cn("max-w-none min-h-72 flex flex-col border border-zinc-900 prose prose-invert p-5 focus:outline-none rounded-b-md [.disabled]:rounded-t-md [.disabled]:text-text/50", { "disabled": disabled }) }}
+				editable={!disabled}
 				editorProps={{
 					attributes: { class: "focus:outline-none flex-1 w-full" }
 				}}
