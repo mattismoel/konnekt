@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -15,6 +16,10 @@ func (s *Server) setupRoutes() {
 	s.mux.Use(middleware.Timeout(60 * time.Second))
 
 	s.mux.Get("/sitemap", s.handleGetSitemap())
+
+	s.mux.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 
 	s.mux.Route("/content", func(r chi.Router) {
 		r.Route("/landing-images", func(r chi.Router) {
