@@ -4,7 +4,6 @@ import { editMember, memberForm, type Member, type MemberFormValues } from '../m
 import type { Team } from '../team';
 import { useAuth } from '@/lib/context/auth';
 import ProfilePictureSelector from '@/lib/components/profile-picture-selector';
-import MemberStatusIndicator from '@/lib/components/member-status-indicator';
 import FormField from '@/lib/components/form-field';
 import Input from '@/lib/components/ui/input';
 import Button from '@/lib/components/ui/button/button';
@@ -20,6 +19,8 @@ type MemberFormContext = {
 	member: Member;
 	memberTeams: Team[]
 	isCurrentMember: boolean;
+
+	isEditable: boolean;
 
 	teams: Team[]
 }
@@ -44,9 +45,10 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 	const queryClient = useQueryClient()
 	const navigate = useNavigate()
 
-	const { member: currentMember } = useAuth()
+	const { hasPermissions, member: currentMember } = useAuth()
 
-	let isCurrentMember = currentMember?.id === member.id;
+	const isEditable = hasPermissions(["edit:member"])
+	const isCurrentMember = currentMember?.id === member.id
 
 	const methods = useForm({
 		defaultValues: {
@@ -62,7 +64,6 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 	const {
 		formState: { errors, isDirty },
 		control,
-		setValue,
 		handleSubmit,
 	} = methods
 
@@ -80,22 +81,19 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 	})
 
 	return (
-		<MemberFormContext.Provider value={{ member, teams, memberTeams, isCurrentMember }}>
+		<MemberFormContext.Provider value={{ member, teams, memberTeams, isCurrentMember, isEditable }}>
 			<FormProvider {...methods}>
 				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
 					<div className="w-full flex flex-col items-center gap-8 md:flex-row">
-						<FormField error={errors.image} className='justify-center'>
-							<Controller
-								control={control}
-								name='image'
-								render={({ field: { onChange } }) => (
-									<ProfilePictureSelector
-										onChange={(newFile) => onChange(newFile)}
-										src={member.profilePictureUrl}
-									/>
-								)}
-							/>
-						</FormField>
+						<Controller
+							control={control}
+							name='image'
+							render={({ field }) => (
+								<FormField error={errors.image} className='justify-center'>
+									<ProfilePictureSelector {...field} src={member.profilePictureUrl} />
+								</FormField>
+							)}
+						/>
 						<div className="flex flex-col items-center space-y-4 md:items-start">
 							<div className="flex flex-col items-center space-y-1 md:items-start">
 								<h1 className="text-2xl font-semibold">{fullName}</h1>
@@ -103,14 +101,15 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 								>{memberTeams.map(({ displayName }) => displayName).join(', ')}</span
 								>
 							</div>
-							<MemberStatusIndicator status={member.active ? 'approved' : 'non-approved'} />
 						</div>
 					</div>
 
 					<GeneralSection />
 					<TeamsSection />
 
-					<Button type="submit" disabled={!isDirty}>Opdatér</Button>
+					{(isEditable || isCurrentMember) && (
+						<Button type="submit" disabled={!isDirty}>Opdatér</Button>
+					)}
 				</form>
 			</FormProvider>
 		</MemberFormContext.Provider>
@@ -144,8 +143,8 @@ const GeneralSection = () => {
 }
 
 const TeamsSection = () => {
-	const { control, formState: { errors }, watch } = useFormContext<MemberFormValues>()
-	const { teams } = useMemberFormContext()
+	const { control } = useFormContext<MemberFormValues>()
+	const { teams, isEditable } = useMemberFormContext()
 
 	const [showPicker, setShowPicker] = useState(false)
 
@@ -155,39 +154,49 @@ const TeamsSection = () => {
 		name: displayName,
 	}))
 
-	const selected = entries.filter(entry =>
-		watch("memberTeams").includes(parseInt(entry.value))
-	)
-
 	return (
 		<section>
 			<h1 className="font-bold font-heading mb-8 text-2xl">Hold</h1>
 
-			<FormField error={errors.memberTeams}>
-				<PillList entries={selected.map(entry => entry.name)}>
-					<Button variant="ghost" onClick={() => setShowPicker(true)} className="h-10 rounded-full px-4" ><FaPen />Vælg</Button>
-				</PillList>
-			</FormField>
+			<Controller
+				control={control}
+				name="memberTeams"
+				render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => {
+					const selectedEntries = entries.filter(e => value.includes(parseInt(e.value)))
 
-			<FormField error={errors.memberTeams}>
-				<Controller
-					control={control}
-					name="memberTeams"
-					render={({ field: { onChange } }) => (
-						<Picker
-							title="Vælg medlemshold..."
-							description="Her kan du vælge de medlemshold, som medlemmet associeres med."
-							entries={entries}
-							selected={selected}
-							show={showPicker}
-							onClose={() => setShowPicker(false)}
-							onChange={(selectedEntries) =>
-								onChange(selectedEntries.map(({ value }) => parseInt(value)))
-							}
-						/>
-					)}
-				/>
-			</FormField>
+					return (
+						<>
+							<PillList entries={selectedEntries.map(e => e.name)}>
+								{isEditable && (
+									<Button
+										variant="ghost"
+										onClick={() => setShowPicker(true)}
+										className="h-10 rounded-full px-4"
+									>
+										<FaPen />Vælg
+									</Button>
+								)}
+							</PillList>
+
+							<FormField error={error}>
+								<Picker
+									{...rest}
+									disabled={!isEditable}
+									title="Vælg medlemshold..."
+									description="Her kan du vælge de medlemshold, som medlemmet associeres med."
+									entries={entries}
+									selected={selectedEntries}
+									show={showPicker}
+									onClose={() => setShowPicker(false)}
+									onChange={(newEntries) =>
+										onChange(newEntries.map(({ value }) => parseInt(value)))
+									}
+								/>
+							</FormField>
+						</>
+					)
+				}}
+			/>
 		</section>
 	)
 }
