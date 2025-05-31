@@ -10,7 +10,7 @@ type Src = {
 
 const socialMap = new Map<string, Src>([
 	["https://www.instagram.com/konnekt_odense/", { icon: FaInstagram, title: "Instagram" }],
-	["https://www.tiktok.com/konnekt_odense/", { icon: FaTiktok, title: "TikTok" }],
+	["https://www.tiktok.com/@konnekt_", { icon: FaTiktok, title: "TikTok" }],
 	["https://www.facebook.com/profile.php?id=61574860865073", { icon: FaFacebook, title: "Facebook" }],
 ])
 
