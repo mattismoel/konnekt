@@ -2,10 +2,11 @@ import type { Member } from "../features/auth/member"
 import { type Team, type TeamType } from "../features/auth/team"
 
 const includedTeamNames: TeamType[] = [
+	"project-leader",
+	"public-relations",
 	"event-management",
 	"booking",
 	"visual-identity",
-	"public-relations"
 ]
 
 type Props = {

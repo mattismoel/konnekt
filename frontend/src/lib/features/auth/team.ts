@@ -10,7 +10,8 @@ export const teamTypes = z.union([
 	z.literal("booking"),
 	z.literal("public-relations"),
 	z.literal("visual-identity"),
-	z.literal("team-management")
+	z.literal("team-management"),
+	z.literal("project-leader"),
 ])
 
 export type TeamType = z.infer<typeof teamTypes>

@@ -1,4 +1,4 @@
-import { Controller, FormProvider, useForm, useFormContext, useFormState } from 'react-hook-form';
+import { Controller, FormProvider, useForm, useFormContext } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { editMember, memberForm, type Member, type MemberFormValues } from '../member';
 import type { Team } from '../team';
@@ -61,6 +61,7 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 
 	const {
 		formState: { errors, isDirty },
+		control,
 		setValue,
 		handleSubmit,
 	} = methods
@@ -84,9 +85,15 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
 					<div className="w-full flex flex-col items-center gap-8 md:flex-row">
 						<FormField error={errors.image} className='justify-center'>
-							<ProfilePictureSelector
-								onChange={(newFile) => setValue("image", newFile)}
-								src={member.profilePictureUrl}
+							<Controller
+								control={control}
+								name='image'
+								render={({ field: { onChange } }) => (
+									<ProfilePictureSelector
+										onChange={(newFile) => onChange(newFile)}
+										src={member.profilePictureUrl}
+									/>
+								)}
 							/>
 						</FormField>
 						<div className="flex flex-col items-center space-y-4 md:items-start">

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mattismoel/konnekt/internal/domain/artist"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
@@ -55,23 +56,19 @@ func (s Server) handleGetSitemap() http.HandlerFunc {
 			return
 		}
 
-		q, err := query.NewListQuery()
-		if err != nil {
-			writeError(w, err)
-			return
-		}
-
-		artistResult, err := s.artistService.List(ctx, q)
-		if err != nil {
-			writeError(w, err)
-			return
+		artists := make(map[int64]artist.Artist)
+		for _, e := range eventResult.Records {
+			for _, c := range e.Concerts {
+				artists[c.Artist.ID] = c.Artist
+			}
 		}
 
 		urls := baseURLs
 		for _, event := range eventResult.Records {
 			urls = append(urls, fmt.Sprintf("/events/%d", event.ID))
 		}
-		for _, artist := range artistResult.Records {
+
+		for _, artist := range artists {
 			urls = append(urls, fmt.Sprintf("/artists/%d", artist.ID))
 		}
 
