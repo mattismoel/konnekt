@@ -17,7 +17,7 @@ export const Route = createFileRoute('/_app/events/$eventId')({
     const eventOptions = createEventByIdOpts(eventId)
 
     queryClient.ensureQueryData(eventOptions)
-    queryClient.ensureQueryData(upcomingEventsQueryOpts)
+    queryClient.ensureQueryData(upcomingEventsQueryOpts())
 
     return { eventOptions }
   }
@@ -27,7 +27,7 @@ function RouteComponent() {
   const { eventOptions } = Route.useLoaderData()
 
   const { data: event } = useSuspenseQuery(eventOptions)
-  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts)
+  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts())
 
   const filteredEvents = upcomingEvents.filter(({ id }) => id !== event.id)
   const fromDate = earliestConcert(event.concerts)?.from
