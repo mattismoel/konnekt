@@ -16,6 +16,8 @@ type Props = {
 	description?: string;
 	show: boolean;
 
+	disabled?: boolean;
+
 	entries: Entry[]
 	selected: Entry[]
 
@@ -27,6 +29,8 @@ const Picker = ({
 	title = "Vælg...",
 	description,
 	show,
+
+	disabled = false,
 
 	entries,
 	selected,
@@ -60,7 +64,7 @@ const Picker = ({
 			<Modal.Content>
 				<div className="flex flex-col gap-1">
 					{entries.map(entry => (
-						<Entry key={entry.id} selected={selected.some(selectedEntry => selectedEntry.id === entry.id)} onToggle={() => onToggle(entry.id)}>
+						<Entry key={entry.id} disabled={disabled} selected={selected.some(selectedEntry => selectedEntry.id === entry.id)} onToggle={() => onToggle(entry.id)}>
 							{entry.name}
 						</Entry>
 					))}
@@ -68,7 +72,7 @@ const Picker = ({
 			</Modal.Content>
 
 			<Modal.Footer>
-				<Button onClick={onClose}>Vælg</Button>
+				<Button disabled={disabled} onClick={onClose}>Vælg</Button>
 			</Modal.Footer>
 		</Modal>
 	)
@@ -76,16 +80,18 @@ const Picker = ({
 
 type EntryProps = {
 	selected: boolean;
+	disabled?: boolean;
 	onToggle: () => void;
 };
 
-const Entry = ({ children, selected, onToggle }: PropsWithChildren<EntryProps>) => {
+const Entry = ({ children, selected, disabled = false, onToggle }: PropsWithChildren<EntryProps>) => {
 	return (
 		<button
+			disabled={disabled}
 			type="button"
 			onClick={onToggle}
 			className={cn(
-				'flex w-full text-text/50 items-center gap-4 rounded-sm border border-transparent bg-zinc-950 p-2 hover:border-zinc-800',
+				'flex w-full text-text/50 items-center gap-4 rounded-sm border border-transparent bg-zinc-950 p-2 hover:not-disabled:border-zinc-800',
 				{ 'border-zinc-800 text-text bg-zinc-900': selected }
 			)}
 		>

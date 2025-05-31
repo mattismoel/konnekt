@@ -12,7 +12,7 @@ type Props = HTMLAttributes<HTMLDivElement> & {
 }
 
 const FormField = ({ error, children, className }: Props) => (
-	<div className={cn("flex flex-col gap-2", className)}>
+	<div className={cn("flex flex-col gap-2 w-full", className)}>
 		<div className="flex gap-4 w-full">
 			{children}
 		</div>

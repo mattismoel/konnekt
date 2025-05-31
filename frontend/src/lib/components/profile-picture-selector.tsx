@@ -27,16 +27,18 @@ const ProfilePictureSelector = ({ src, accept = "image/jpeg,image/png", file, on
 	};
 
 	return (
-		<div className="relative w-fit">
-			<input ref={ref} hidden accept={accept} type="file" onChange={onFileChange} />
-			<img src={imgSrc || AvatarImage} alt="Profile" className="h-28 w-28 rounded-full object-cover" />
-			<button
-				type="button"
-				onClick={() => ref.current?.click()}
-				className="bg-text absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 rounded-sm px-2 py-1 text-sm text-zinc-950 shadow-sm"
-			>
-				Vælg
-			</button>
+		<div className="flex w-full justify-center">
+			<div className="relative">
+				<input ref={ref} hidden accept={accept} type="file" onChange={onFileChange} />
+				<img src={imgSrc || AvatarImage} alt="Profile" className="h-28 w-28 rounded-full object-cover" />
+				<button
+					type="button"
+					onClick={() => ref.current?.click()}
+					className="bg-text absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 rounded-sm px-2 py-1 text-sm text-zinc-950 shadow-sm"
+				>
+					Vælg
+				</button>
+			</div>
 		</div>
 	)
 }

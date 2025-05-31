@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react"
 import { z } from "zod"
 
-import { FormProvider, useFieldArray, useForm, type UseFieldArrayReturn, type UseFormReturn } from "react-hook-form"
+import { Controller, FormProvider, useFieldArray, useForm, type UseFieldArrayReturn, type UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { FaPlus, FaTrash, FaUpload, FaPen } from "react-icons/fa"
@@ -19,6 +19,7 @@ import PillList from "@/lib/components/pill-list"
 import Picker from "@/lib/components/ui/picker"
 import { createSubmitHandler } from "@/lib/api"
 import { useQueryClient } from "@tanstack/react-query"
+import { useAuth } from "@/lib/context/auth"
 
 const internalSocialSchema = z.object({ value: z.string().url() })
 
@@ -49,7 +50,11 @@ type Props = {
 }
 
 const ArtistForm = ({ artist, genres }: Props) => {
+	const { hasPermissions } = useAuth()
+	const isEditable = hasPermissions(["edit:artist"])
+
 	const methods = useForm<InternalArtistForm>({
+		disabled: !isEditable,
 		defaultValues: {
 			...artist,
 			genreIds: artist?.genres.map(genre => genre.id) || [],
@@ -58,7 +63,7 @@ const ArtistForm = ({ artist, genres }: Props) => {
 		resolver: zodResolver(internalArtistFormSchema),
 	})
 
-	const { control, formState: { errors }, handleSubmit, setValue } = methods
+	const { control, formState: { errors }, handleSubmit } = methods
 	const fieldArrayMethods = useFieldArray({ control, name: "socials" })
 
 	const queryClient = useQueryClient()
@@ -89,20 +94,29 @@ const ArtistForm = ({ artist, genres }: Props) => {
 		<ArtistFormContext.Provider value={{ ...methods, ...fieldArrayMethods, artist, genres }}>
 			<FormProvider {...methods}>
 				<form className="flex flex-col gap-16" onSubmit={handleSubmit(onSubmit)}>
-					<FormField error={errors.image}>
-						<ImagePreview
-							src={artist?.imageUrl}
-							accept="image/jpeg,image/png"
-							onChange={(file) => setValue("image", file)}
-						/>
-					</FormField>
+					<Controller
+						control={control}
+						name="image"
+						render={({ field }) => (
+							<FormField error={errors.image}>
+								<ImagePreview
+									{...field}
+									src={artist?.imageUrl}
+									accept="image/jpeg,image/png"
+								// onChange={(file) => setValue("image", file)}
+								/>
+							</FormField>
+						)}
+					/>
 
 					<GeneralSection />
 					<SpotifySection />
 					<GenreSection />
 					<SocialsSection />
 
-					<Button type="submit" className="w-full md:w-fit"><FaUpload />Offentligør</Button>
+					{isEditable && (
+						<Button type="submit" className="w-full md:w-fit"><FaUpload />Offentligør</Button>
+					)}
 				</form>
 			</FormProvider>
 		</ArtistFormContext.Provider>
@@ -110,7 +124,7 @@ const ArtistForm = ({ artist, genres }: Props) => {
 }
 
 const GeneralSection = () => {
-	const { register, setValue, formState: { errors, defaultValues } } = useArtistFormContext()
+	const { control, register, formState: { errors } } = useArtistFormContext()
 
 	return (
 		<section >
@@ -120,12 +134,15 @@ const GeneralSection = () => {
 					<Input placeholder="Kunstnernavn" {...register("name")} />
 				</FormField>
 
-				<FormField error={errors.description}>
-					<Tiptap
-						content={defaultValues?.description}
-						onChange={(html) => setValue("description", html)}
-					/>
-				</FormField>
+				<Controller
+					control={control}
+					name="description"
+					render={({ field: { value, ...rest } }) => (
+						<FormField error={errors.description}>
+							<Tiptap {...rest} content={value} />
+						</FormField>
+					)}
+				/>
 			</div>
 		</section>
 	)
@@ -149,8 +166,10 @@ const SpotifySection = () => {
 }
 
 const GenreSection = () => {
-	const { genres, setValue, formState: { errors }, watch } = useArtistFormContext()
+	const { genres, control, formState: { errors, disabled } } = useArtistFormContext()
 	const [showPicker, setShowPicker] = useState(false)
+
+	const isEditable = !disabled
 
 	const entries: Entry[] = genres.map(genre => ({
 		id: genre.id.toString(),
@@ -158,48 +177,73 @@ const GenreSection = () => {
 		name: genre.name,
 	}))
 
-	const selected = entries.filter(entry =>
-		watch("genreIds").includes(parseInt(entry.value))
-	)
-
 	return (
 		<section>
 			<h1 className="font-bold font-heading mb-8 text-2xl">Genrer</h1>
 
-			<FormField error={errors.genreIds}>
-				<PillList entries={selected.map(entry => entry.name)}>
-					<Button variant="ghost" onClick={() => setShowPicker(true)} className="h-10 rounded-full px-4" ><FaPen />Vælg</Button>
-				</PillList>
-			</FormField>
+			<Controller
+				control={control}
+				name="genreIds"
+				render={({ field: { value, onChange, ...rest } }) => {
+					const selectedEntries = entries.filter(e => value.includes(parseInt(e.value)))
 
-			<Picker
-				title="Vælg genrer..."
-				description="Her kan du vælge de genrer, som kunstneren associeres med."
-				entries={entries}
-				selected={selected}
-				show={showPicker}
-				onClose={() => setShowPicker(false)}
-				onChange={(selectedEntries) =>
-					setValue("genreIds", selectedEntries.map(entry => parseInt(entry.value)))
-				}
+					return (
+						<>
+							<FormField error={errors.genreIds}>
+								<PillList entries={selectedEntries.map(entry => entry.name)}>
+									{isEditable && (
+										<Button
+											variant="ghost"
+											onClick={() => setShowPicker(true)}
+											className="h-10 rounded-full px-4"
+										>
+											<FaPen />Vælg
+										</Button>
+									)}
+								</PillList>
+							</FormField>
+
+							<Picker
+								{...rest}
+								title="Vælg genrer..."
+								description="Her kan du vælge de genrer, som kunstneren associeres med."
+								entries={entries}
+								selected={selectedEntries}
+								show={showPicker}
+								onClose={() => setShowPicker(false)}
+								onChange={(newEntries) => onChange(
+									newEntries.map(e => parseInt(e.value))
+								)}
+							/>
+						</>
+					)
+				}}
 			/>
 		</section>
 	)
 }
 
 const SocialsSection = () => {
-	const { fields, formState: { errors }, append } = useArtistFormContext()
+	const { fields, formState: { errors, disabled }, append } = useArtistFormContext()
+	const isEditable = !disabled
 
 	const [input, setInput] = useState("")
+
+	const handleAdd = () => {
+		append({ value: input })
+		setInput("")
+	}
 
 	return (
 		<section>
 			<h1 className="font-heading font-bold text-2xl mb-4">Sociale medier</h1>
 
-			<div className="w-full flex gap-4 mb-8">
-				<Input placeholder="URL..." value={input} onChange={e => setInput(e.target.value)} />
-				<Button variant="secondary" onClick={() => append({ value: input })}><FaPlus /> Tilføj</Button>
-			</div>
+			{isEditable && (
+				<div className="w-full flex gap-4 mb-8">
+					<Input placeholder="URL..." value={input} onChange={e => setInput(e.target.value)} />
+					<Button variant="secondary" onClick={handleAdd}><FaPlus /> Tilføj</Button>
+				</div>
+			)}
 
 			<div className="flex flex-col gap-2">
 				{fields.map((field, index) => (

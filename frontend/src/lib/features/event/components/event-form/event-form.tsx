@@ -1,4 +1,4 @@
-import { FormProvider, useFieldArray, useForm, type UseFieldArrayReturn, type UseFormReturn } from "react-hook-form"
+import { Controller, FormProvider, useFieldArray, useForm, type UseFieldArrayReturn, type UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { FaArrowsRotate, FaPlus, FaUpload } from "react-icons/fa6"
 import { addMinutes, roundToNearestHours } from "date-fns"
@@ -16,6 +16,7 @@ import Selector from "@/lib/components/ui/selector"
 import LinkButton from "@/lib/components/ui/button/link-button"
 import { createSubmitHandler } from "@/lib/api"
 import { useQueryClient } from "@tanstack/react-query"
+import { useAuth } from "@/lib/context/auth"
 
 // We must include the fieldArray as part of the context, to not create another
 // instance in children.
@@ -31,7 +32,6 @@ type EventFormContext =
 
 		onAddConcert: () => void;
 		onDeleteConcert: (index: number) => void
-		disabled: boolean;
 	}
 
 const EventFormContext = createContext<EventFormContext | undefined>(undefined)
@@ -48,14 +48,17 @@ type Props = {
 	event?: Event;
 	venues: Venue[]
 	artists: Artist[]
-	disabled?: boolean;
 }
 
 
-const EventForm = ({ event, venues, artists, disabled = false }: Props) => {
+const EventForm = ({ event, venues, artists }: Props) => {
+	const { hasPermissions } = useAuth()
 	const queryClient = useQueryClient()
 
+	const isEditable = hasPermissions(["edit:event"])
+
 	const methods = useForm({
+		disabled: !isEditable,
 		defaultValues:
 			event ? {
 				title: event.title,
@@ -76,7 +79,7 @@ const EventForm = ({ event, venues, artists, disabled = false }: Props) => {
 		resolver: zodResolver(eventForm),
 	})
 
-	const { control, formState: { defaultValues, errors }, setValue, getValues, handleSubmit } = methods;
+	const { control, formState: { errors }, setValue, getValues, handleSubmit } = methods;
 
 	const fieldArrayMethods = useFieldArray({ control, name: "concerts" })
 	const { fields, remove, append } = fieldArrayMethods
@@ -110,21 +113,29 @@ const EventForm = ({ event, venues, artists, disabled = false }: Props) => {
 
 	return (
 		<FormProvider {...methods}>
-			<EventFormContext.Provider value={{ ...methods, ...fieldArrayMethods, artists, venues, event, disabled, onAddConcert, onDeleteConcert }}>
+			<EventFormContext.Provider value={{ ...methods, ...fieldArrayMethods, artists, venues, event, onAddConcert, onDeleteConcert }}>
 				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-16 @container">
 					<FormField error={errors.image}>
-						<ImagePreview src={event?.imageUrl} accept="image/jpeg,image/png" onChange={file => setValue("image", file)} />
+						<ImagePreview disabled={!isEditable} src={event?.imageUrl} accept="image/jpeg,image/png" onChange={file => setValue("image", file)} />
 					</FormField>
 
 					<GeneralSection />
 
 					<FormField error={errors.description}>
-						<Tiptap content={defaultValues?.description} onChange={(html) => setValue("description", html)} />
+						<Controller
+							control={control}
+							name="description"
+							render={({ field: { value, onChange } }) => (
+								<Tiptap disabled={!isEditable} content={value} onChange={onChange} />
+							)}
+						/>
 					</FormField>
 
 					<ConcertsSection />
 
-					<Button className="w-full md:w-fit" type="submit"><FaUpload />Offentliggør</Button>
+					{isEditable && (
+						<Button className="w-full md:w-fit" type="submit"><FaUpload />Offentliggør</Button>
+					)}
 				</form>
 			</EventFormContext.Provider>
 		</FormProvider>
@@ -132,7 +143,8 @@ const EventForm = ({ event, venues, artists, disabled = false }: Props) => {
 }
 
 const GeneralSection = () => {
-	const { register, formState: { errors } } = useEventFormContext()
+	const { register, formState: { errors, disabled } } = useEventFormContext()
+	const isEditable = !disabled
 
 	return (
 		<section>
@@ -150,12 +162,14 @@ const GeneralSection = () => {
 
 					<VenueSelector />
 				</div>
-				<FormField className="w-min">
-					<label className="flex gap-2 items-center">
-						<input type="checkbox" {...register("isPublic")} />
-						Offentlig
-					</label>
-				</FormField>
+				{isEditable && (
+					<FormField className="w-min">
+						<label className="flex gap-2 items-center">
+							<input type="checkbox" {...register("isPublic")} />
+							Offentlig
+						</label>
+					</FormField>
+				)}
 			</div>
 		</section>
 	)
@@ -176,38 +190,37 @@ const ConcertsSection = () => {
 }
 
 const VenueSelector = () => {
-	const { venues, disabled } = useEventFormContext()
-
-	const {
-		setValue,
-		getValues,
-		formState: { errors },
-	} = useEventFormContext()
+	const { venues, control, formState: { disabled } } = useEventFormContext()
+	const isEditable = !disabled
 
 	return (
-		<FormField error={errors.venueId}>
-			<Selector
-				onChange={e => setValue("venueId", parseInt(e.target.value))}
-				defaultValue={venues.find(v => v.id === getValues("venueId"))?.id}
-				placeholder="Vælg venue..."
-				className="w-full"
-			>
-				{venues.map(v => (
-					<option key={v.id} value={v.id}>{v.name}</option>
-				))}
-			</Selector>
+		<Controller
+			control={control}
+			name="venueId"
+			render={({ field: { onChange, ...rest }, fieldState: { error } }) => (
+				<FormField error={error}>
+					<Selector
+						{...rest}
+						onChange={e => onChange(parseInt(e.target.value))}
+						placeholder="Vælg venue..."
+						className="w-full"
+					>
+						{venues.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
+					</Selector>
 
-			{!disabled && (
-				<div className="flex gap-2">
-					<Button variant="ghost" className="aspect-square h-full">
-						<FaArrowsRotate />
-					</Button>
-					<LinkButton to="/admin/venues/create" className="aspect-square h-full">
-						<FaPlus />
-					</LinkButton>
-				</div>
+					{isEditable && (
+						<div className="flex gap-2">
+							<Button variant="ghost" className="aspect-square h-full">
+								<FaArrowsRotate />
+							</Button>
+							<LinkButton to="/admin/venues/create" className="aspect-square h-full">
+								<FaPlus />
+							</LinkButton>
+						</div>
+					)}
+				</FormField>
 			)}
-		</FormField>
+		/>
 	)
 }
 

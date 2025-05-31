@@ -9,12 +9,14 @@ import LinkButton from "@/lib/components/ui/button/link-button";
 import DatetimePicker from "@/lib/components/datetime-picker";
 
 const ConcertList = ({ children }: PropsWithChildren) => {
-	const { onAddConcert } = useEventFormContext()
+	const { onAddConcert, formState: { disabled } } = useEventFormContext()
 
 	return (
 		<div className="flex flex-col gap-4">
 			{children}
-			<Button variant="ghost" onClick={onAddConcert}><FaPlus />Tilføj</Button>
+			{!disabled && (
+				<Button variant="ghost" onClick={onAddConcert}><FaPlus />Tilføj</Button>
+			)}
 		</div>
 	)
 }
@@ -22,43 +24,53 @@ const ConcertList = ({ children }: PropsWithChildren) => {
 type EntryProps = { index: number }
 
 const Entry = ({ index }: EntryProps) => {
-	const { artists, fields, control, setValue, onDeleteConcert } = useEventFormContext()
+	const { artists, control, formState: { disabled }, onDeleteConcert } = useEventFormContext()
 
 	return (
 		<Card className="relative">
 			<Card.Header>
 				<Card.Title>#{index + 1}</Card.Title>
-				<button type="button" onClick={() => onDeleteConcert(index)} className="absolute top-4 right-4"><FaXmark /></button>
+				{!disabled && (
+					<button type="button" onClick={() => onDeleteConcert(index)} className="absolute top-4 right-4"><FaXmark /></button>
+				)}
 			</Card.Header>
+
 			<Card.Content className="gap-8 @container">
 				<div className="flex gap-4">
-					<Selector
-						onChange={(e) => setValue(`concerts.${index}.artistID`, parseInt(e.target.value))}
-						defaultValue={artists.find(artist => artist.id === fields[index].artistID)?.id} placeholder="Vælg kunstner..." className="w-full">
-						{artists.map(artist => (
-							<option value={artist.id} key={artist.id}>{artist.name}</option>
-						))}
-					</Selector>
-					<div className="flex gap-2">
-						<Button variant="ghost" className="aspect-square h-full"><FaArrowsRotate /></Button>
-						<LinkButton to="/admin/artists/create" className="aspect-square h-full"><FaPlus /></LinkButton>
-					</div>
+					<Controller
+						control={control}
+						name={`concerts.${index}.artistID`}
+						render={({ field: { onChange, ...rest } }) => (
+							<Selector
+								{...rest}
+								onChange={(e) => onChange(parseInt(e.target.value))}
+								placeholder="Vælg kunstner..."
+								className="w-full"
+							>
+								{artists.map(artist => (
+									<option value={artist.id} key={artist.id}>{artist.name}</option>
+								))}
+							</Selector>
+						)}
+					/>
+					{!disabled && (
+						<div className="flex gap-2">
+							<Button variant="ghost" className="aspect-square h-full"><FaArrowsRotate /></Button>
+							<LinkButton to="/admin/artists/create" className="aspect-square h-full"><FaPlus /></LinkButton>
+						</div>
+					)}
 				</div>
 				<div className="flex flex-col gap-4 @xl:flex-row @xl:gap-8 items-center">
 					<Controller
 						control={control}
 						name={`concerts.${index}.from`}
-						render={({ field: { onChange, value } }) => (
-							<DatetimePicker value={value} onChange={onChange} />
-						)}
+						render={({ field }) => <DatetimePicker {...field} />}
 					/>
 					<FaArrowRight className="hidden shrink-0 @xl:block" />
 					<Controller
 						control={control}
 						name={`concerts.${index}.to`}
-						render={({ field: { onChange, value } }) => (
-							<DatetimePicker value={value} onChange={onChange} />
-						)}
+						render={({ field }) => <DatetimePicker {...field} />}
 					/>
 				</div>
 			</Card.Content>

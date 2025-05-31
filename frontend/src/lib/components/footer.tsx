@@ -10,7 +10,7 @@ type Src = {
 
 const socialMap = new Map<string, Src>([
 	["https://www.instagram.com/konnekt_odense/", { icon: FaInstagram, title: "Instagram" }],
-	["https://www.tiktok.com/konnekt_odense/", { icon: FaTiktok, title: "TikTok" }],
+	["https://www.tiktok.com/@konnekt_", { icon: FaTiktok, title: "TikTok" }],
 	["https://www.facebook.com/profile.php?id=61574860865073", { icon: FaFacebook, title: "Facebook" }],
 ])
 
@@ -56,7 +56,7 @@ const SocialMediaList = ({ socialMap }: SocialMediaListProps) => (
 	<ul className="flex gap-4 items-center text-xl text-text/50">
 		{Array.from(socialMap).map(([href, { icon: Icon, title }]) => (
 			<li key={href} className="hover:text-text">
-				<a title={title} href={href}><Icon /></a>
+				<a title={title} href={href} target="_blank"><Icon /></a>
 			</li>
 		))}
 	</ul>

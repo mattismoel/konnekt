@@ -16,26 +16,29 @@ type Props = {
 	pendingMembers: Member[];
 };
 
-const MemberList = ({ members, pendingMembers }: Props) => (
-	<div className="space-y-8">
-		{pendingMembers.length > 0 && (
+const MemberList = ({ members, pendingMembers }: Props) => {
+	const { hasPermissions } = useAuth()
+
+	return (
+		<div className="space-y-8">
+			{hasPermissions(["edit:member"]) && pendingMembers.length > 0 && (
+				<section>
+					<h1 className="mb-4">Anmodninger ({pendingMembers.length})</h1>
+					<List>
+						{pendingMembers.map(member => <ApprovalEntry member={member} />)}
+					</List>
+				</section>
+			)}
 
 			<section>
-				<h1 className="mb-4">Anmodninger ({pendingMembers.length})</h1>
-				<List>
-					{pendingMembers.map(member => <ApprovalEntry member={member} />)}
+				<h1 className="mb-4">Medlemmer</h1>
+				<List className="space-y-2">
+					{members.map(member => <MemberEntry member={member} />)}
 				</List>
 			</section>
-		)}
-
-		<section>
-			<h1 className="mb-4">Medlemmer</h1>
-			<List className="space-y-2">
-				{members.map(member => <MemberEntry member={member} />)}
-			</List>
-		</section>
-	</div>
-)
+		</div>
+	)
+}
 
 
 type MemberEntryProps = {
