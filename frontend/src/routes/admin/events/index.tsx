@@ -28,12 +28,14 @@ function RouteComponent() {
         <AdminHeader.Title>Events</AdminHeader.Title>
         <AdminHeader.Description>Overblik over alle events.</AdminHeader.Description>
         <AdminHeader.Actions>
-          <LinkButton
-            to="/admin/events/create"
-            disabled={!hasPermissions(['edit:event'])}
-          >
-            <FaPlus />Tilføj
-          </LinkButton>
+          {hasPermissions(["edit:event"]) && (
+            <LinkButton
+              to="/admin/events/create"
+              disabled={!hasPermissions(['edit:event'])}
+            >
+              <FaPlus />Tilføj
+            </LinkButton>
+          )}
         </AdminHeader.Actions>
       </AdminHeader>
 

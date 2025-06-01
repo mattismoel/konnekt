@@ -29,12 +29,14 @@ function RouteComponent() {
         >Overblik over alle kunstnere, som er associerede med events.</AdminHeader.Description
         >
         <AdminHeader.Actions>
-          <LinkButton
-            to="/admin/artists/create"
-            disabled={!hasPermissions(['edit:artist'])}
-          >
-            <FaPlus />Tilføj
-          </LinkButton>
+          {hasPermissions(["edit:artist"]) && (
+            <LinkButton
+              to="/admin/artists/create"
+              disabled={!hasPermissions(['edit:artist'])}
+            >
+              <FaPlus />Tilføj
+            </LinkButton>
+          )}
         </AdminHeader.Actions>
       </AdminHeader>
 
