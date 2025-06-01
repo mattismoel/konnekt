@@ -1,12 +1,10 @@
 import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
 import { QueryClient } from "@tanstack/react-query"
 
-export const Route = createRootRouteWithContext<{
-  queryClient: QueryClient;
-}>()({
-  component: () => (
-    <>
-      <Outlet />
-    </>
-  ),
+type RouteProps = {
+  queryClient: QueryClient
+}
+
+export const Route = createRootRouteWithContext<RouteProps>()({
+  component: Outlet,
 })
