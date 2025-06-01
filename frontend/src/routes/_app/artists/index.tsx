@@ -79,33 +79,36 @@ function RouteComponent() {
         description="Se alle aktuelle kunstnere der medvirker i Konnekts kommende events"
       />
 
-      <main className="px-auto h-svh pb-32 pt-24 md:pt-32">
-        {artists.map(artist => (
-          <img
-            key={artist.id}
-            src={artist.imageUrl}
-            alt={artist.name}
-            className={cn("pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-50 transition-all duration-1000", {
-              "opacity-100 scale-105": selected?.id === artist.id
-            })}
-          />
-        ))}
+      {artists.length > 0 ? (
+        <main className="px-auto h-svh pb-32 pt-24 md:pt-32">
+          {artists.map(artist => (
+            <img
+              key={artist.id}
+              src={artist.imageUrl}
+              alt={artist.name}
+              className={cn("pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-50 transition-all duration-1000", {
+                "opacity-100 scale-105": selected?.id === artist.id
+              })}
+            />
+          ))}
 
-        <div className="space-y-16 h-full flex flex-col">
-          <section className="flex flex-col">
-            <h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl text-shadow-md/15">Kunstnere</h1>
-            <span className="text-text/75 text-shadow-sm">
-              Her kan du se alle kunstnere, som medvirker i kommende events.
-            </span>
-          </section>
+          <div className="space-y-16 h-full flex flex-col">
+            <section className="flex flex-col">
+              <h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl text-shadow-md/15">Kunstnere</h1>
+              <span className="text-text/75 text-shadow-sm">
+                Her kan du se alle kunstnere, som medvirker i kommende events.
+              </span>
+            </section>
 
-          {artists.length <= 0 && (
-            <span>Der er ingen aktuelle kunstnere i øjeblikket...</span>
-          )}
+            <ArtistList />
+          </div>
+        </main>
 
-          <ArtistList />
-        </div>
-      </main>
+      ) : (
+        <main className="min-h-svh flex flex-col justify-center items-center px-auto">
+          <span className="italic text-text/75 text-center">Der er ingen aktuelle kunstnere i øjeblikket...</span>
+        </main>
+      )}
     </ArtistsContext.Provider>
   )
 }
