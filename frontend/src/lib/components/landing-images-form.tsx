@@ -7,14 +7,18 @@ import { useToast } from "../context/toast"
 import { useQueryClient } from "@tanstack/react-query"
 import ImageList from "./image-list"
 import { FaUpload } from "react-icons/fa6"
+import { useAuth } from "../context/auth"
 
 type Props = {
 	images: Image[]
 }
 
 const LandingImagesForm = ({ images }: Props) => {
+	const { hasPermissions } = useAuth()
 	const { addToast } = useToast()
 	const queryClient = useQueryClient()
+
+	const isEditable = hasPermissions(["edit:content", "delete:content"])
 
 	const [file, setFile] = useState<File | null>(null)
 
@@ -68,10 +72,12 @@ const LandingImagesForm = ({ images }: Props) => {
 
 	return (
 		<form>
-			<div className="flex justify-between gap-4 mb-16">
-				<FilePicker onChange={changeFile} />
-				<Button type="button" variant="secondary" onClick={handleUpload}><FaUpload />Upload</Button>
-			</div>
+			{isEditable && (
+				<div className="flex justify-between gap-4 mb-16">
+					<FilePicker onChange={changeFile} />
+					<Button type="button" variant="secondary" onClick={handleUpload}><FaUpload />Upload</Button>
+				</div>
+			)}
 
 			<ImageList images={images} onDelete={handleDelete} />
 		</form >

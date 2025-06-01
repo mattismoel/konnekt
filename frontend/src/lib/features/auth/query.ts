@@ -6,14 +6,20 @@ import type { ID } from "@/lib/api";
 export const membersQueryOpts = queryOptions({
 	queryKey: ["members"],
 	queryFn: () => listMembers({
-		filter: ["active=true"]
+		filter: ["active=true"],
+		orderBy: new Map([
+			["first_name", "ASC"],
+		]),
 	})
 })
 
 export const pendingMembersQueryOpts = queryOptions({
 	queryKey: ["members", "non-approved"],
 	queryFn: () => listMembers({
-		filter: ["active=false"]
+		filter: ["active=false"],
+		orderBy: new Map([
+			["first_name", "ASC"],
+		]),
 	})
 })
 

@@ -26,12 +26,14 @@ function RouteComponent() {
         >Overblik over alle venues, som er associerede med events for Konnekt.</AdminHeader.Description
         >
         <AdminHeader.Actions>
-          <LinkButton
-            to="/admin/venues/create"
-            disabled={!hasPermissions(['edit:venue'])}
-          >
-            <FaPlus />Tilføj
-          </LinkButton>
+          {hasPermissions(["edit:venue"]) && (
+            <LinkButton
+              to="/admin/venues/create"
+              disabled={!hasPermissions(['edit:venue'])}
+            >
+              <FaPlus />Tilføj
+            </LinkButton>
+          )}
         </AdminHeader.Actions>
       </AdminHeader>
 

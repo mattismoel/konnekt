@@ -424,6 +424,7 @@ func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCol
 	builder := memberBuilder
 
 	builder = withPagination(builder, params)
+	builder = withOrdering(builder, params.OrderBy, "first_name", "member")
 
 	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
 		"active": func(f query.Filter) sq.Sqlizer {
