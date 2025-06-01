@@ -25,18 +25,20 @@ function RouteComponent() {
         description={`Her kan du se Konnekts kommende events. Oplev blandt andet events som ${eventNames.join(", ")}`}
       />
 
-      <main className="min-h-svh">
-        {(events.length > 0) && (
+      {(events.length > 0) ? (
+        <main className="min-h-svh">
           <EventDetails event={events[0]} prefix="Næste event:" />
-        )}
-        <div className="px-auto flex flex-col pt-16 md:pt-16 pb-16">
-          <h1 className="font-heading mb-8 font-bold text-4xl">Kommende events</h1>
-          {(events.length <= 0) && (
-            <span className="text-text/50 italic">Der er ingen kommende events i øjeblikket...</span>
-          )}
-          <EventGrid events={events} />
-        </div>
-      </main>
+
+          <div className="px-auto flex flex-col pt-16 md:pt-16 pb-16">
+            <h1 className="font-heading mb-8 text-4xl font-bold text-shadow-md/15">Kommende events</h1>
+            <EventGrid events={events} />
+          </div>
+        </main>
+      ) : (
+        <main className="flex flex-col justify-center items-center min-h-svh px-auto">
+          <span className="italic text-text/75 text-center">Der er ingen aktuelle events i øjeblikket...</span>
+        </main>
+      )}
     </>
   )
 }

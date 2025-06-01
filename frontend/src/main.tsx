@@ -8,6 +8,8 @@ import { routeTree } from './routeTree.gen'
 import './main.css'
 import reportWebVitals from './reportWebVitals.ts'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import NotFoundComponent from './lib/components/not-found.tsx'
+import ErrorComponent from './lib/components/error.tsx'
 
 const queryClient = new QueryClient()
 
@@ -19,6 +21,9 @@ const router = createRouter({
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
+  notFoundMode: "root",
+  defaultNotFoundComponent: NotFoundComponent,
+  defaultErrorComponent: ErrorComponent,
 })
 
 // Register the router instance for type safety
