@@ -54,7 +54,7 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 
 				<div className="flex flex-col text-text/50 text-sm">
 					<span>{memberTeams.map(t => t.displayName).join(", ")}</span>
-					<span>{member.email}</span>
+					<a href={`mailto:${member.email}`} target="_blank">{member.email}</a>
 				</div>
 			</div>
 		</div>
