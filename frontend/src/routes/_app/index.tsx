@@ -83,7 +83,7 @@ function App() {
           <section className="px-auto flex flex-col gap-32 py-16">
             <section>
               <h1 className="font-heading mb-8 text-2xl font-bold">Vores mission</h1>
-              <p className="text-text/75">
+              <p className="text-text/75 leading-loose">
                 Foreningen Konnekt har som formål at støtte unge musikere og skabe en platform, hvor de
                 kan vise deres talent frem og få vigtig erfaring med liveoptrædener. Projektet skal gøre
                 det nemmere for spirende talenter at finde deres plads i musikmiljøet og opbygge et

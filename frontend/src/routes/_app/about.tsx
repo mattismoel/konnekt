@@ -29,7 +29,7 @@ function RouteComponent() {
       <main className='min-h-svh py-32 px-auto flex flex-col gap-32'>
         <Section>
           <h1>Hvem er vi?</h1>
-          <p>
+          <p className="leading-loose">
             Konnekt er et projekt med henblik på unge musikere.
             Det danske musikmiljø er for svært at bryde igennem - især for unge
             aspirerende musikere og det skal ændres.
@@ -38,7 +38,7 @@ function RouteComponent() {
 
         <Section>
           <h1>Missionen</h1>
-          <p>
+          <p className="leading-loose">
             Konnekt giver unge musikere og upcoming bands en scene og et
             publikum gennem koncertarrangementer. Hver koncert har to hovednavne:
             én ny og én mere etableret upcoming kunstner.
