@@ -103,5 +103,5 @@ CREATE TABLE artists_genres (
 
 CREATE TABLE landing_image (
   id INTEGER PRIMARY KEY,
-  url TEXT UNIQUE NOT NULL,
+  url TEXT UNIQUE NOT NULL
 );
