@@ -25,6 +25,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), MAX_STARTUP_DURATION)
 	defer cancel()
 
+	ctx.Deadline()
+
 	dbConnStr := flag.String("dbConnStr", "file:./local.db", "The database connection string")
 	origin := flag.String("origin", "http://localhost:4000", "The origin of the proxy web server")
 	host := flag.String("host", "127.0.0.1", "The host of the web server")
@@ -120,7 +122,7 @@ func main() {
 		server.WithVenueService(venueService),
 	)
 
-	slog.Info("Started server", "host", *host, "port", *port)
+	slog.Info("Started server", "host", *host, "port", *port, "origin", *origin)
 	if err := srv.Start(); err != nil {
 		log.Fatal(err)
 	}
