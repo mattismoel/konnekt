@@ -429,10 +429,10 @@ func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCol
 	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
 		"active": func(f query.Filter) sq.Sqlizer {
 			if strings.ToUpper(f.Value) == "TRUE" {
-				return sq.Eq{"active": "TRUE"}
+				return sq.Eq{"active": true}
 			}
 
-			return sq.Eq{"active": "FALSE"}
+			return sq.Eq{"active": false}
 		},
 		"first_name": func(f query.Filter) sq.Sqlizer {
 			return contains("first_name", f.Value)
