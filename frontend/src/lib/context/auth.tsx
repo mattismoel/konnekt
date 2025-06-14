@@ -76,7 +76,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
 	const refetch = async () => {
 		try {
-
 			const member = await memberSession()
 			const permissions = await memberPermissions(member.id)
 			const teams = await memberTeams(member.id)
