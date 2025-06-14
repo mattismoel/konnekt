@@ -38,6 +38,8 @@ function App() {
   const { data: { records: teams } } = useSuspenseQuery(teamsQueryOpts)
   const { data: { records: members } } = useSuspenseQuery(membersQueryOpts)
 
+  console.log(members)
+
   return (
     <>
       <PageMeta
