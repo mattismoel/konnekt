@@ -1,12 +1,14 @@
 knnkt.dk {
-	log
+	log {
+    output file /var/log/caddy/knnkt.dk-access.log
+  }
 
 	handle_path /api/* {
 		reverse_proxy backend:8080
 	}
 
 	handle {
-		root * /srv
+		root * /usr/share/caddy
 		try_files {path} /index.html
 		file_server
 	}
