@@ -2,7 +2,7 @@ import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/
 import { createListResult } from "@/lib/query"
 import { createUrl, type Query } from "@/lib/url"
 import { z } from "zod"
-import { setMemberTeams, teamSchema } from "./team"
+import { teamSchema } from "./team"
 
 export const memberSchema = z.object({
 	id: idSchema,

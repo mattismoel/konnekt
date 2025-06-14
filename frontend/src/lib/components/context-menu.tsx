@@ -9,7 +9,7 @@ import {
 import { useOnClickOutside } from '../hooks/useClickOutside';
 import { cn } from '../clsx';
 import { createLink } from '@tanstack/react-router';
-import { FaBars, FaEllipsis } from 'react-icons/fa6';
+import { FaEllipsis } from 'react-icons/fa6';
 
 type Props = HTMLAttributes<HTMLDivElement> & {
 	show: boolean;

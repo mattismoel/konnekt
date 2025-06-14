@@ -3,7 +3,6 @@ import { createListResult, type ListResult } from "@/lib/query"
 import { createUrl, type Query } from "@/lib/url"
 import { z } from "zod"
 import type { Event } from "../event/event"
-import { eventsArtists } from "./events-artists"
 
 export const genreSchema = z.object({
 	id: idSchema,

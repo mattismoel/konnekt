@@ -2,7 +2,6 @@ import { requestAndParse } from "@/lib/api";
 import { createUrl } from "@/lib/url";
 import { z } from "zod";
 import { memberSchema, uploadMemberProfilePicture } from "./member";
-import { env } from "../../env";
 
 const MINIMUM_PASSWORD_LENGTH = 8
 const MAXIMUM_PASSWORD_LENGTH = 24

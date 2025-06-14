@@ -88,6 +88,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 			setMember(null)
 			setPermissions([])
 			setTeams([])
+			throw e
 		}
 	}
 

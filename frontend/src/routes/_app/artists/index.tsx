@@ -4,7 +4,7 @@ import { pickRandom } from '@/lib/array';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/clsx';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { artistsQueryOpts, upcomingArtistsQueryOpts } from '@/lib/features/artist/query';
+import { upcomingArtistsQueryOpts } from '@/lib/features/artist/query';
 import PageMeta from '@/lib/components/page-meta';
 
 /** @description The rate of which artist auto display changes artist. */
