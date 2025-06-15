@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS member (
   last_name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   profile_picture_url TEXT,
-  active BOOLEAN NOT NULL DEFAULT "FALSE"
+  active BOOLEAN NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS session (
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS event (
   ticket_url TEXT NOT NULL,
   image_url TEXT NOT NULL,
   venue_id INTEGER NOT NULL,
-  is_public BOOLEAN NOT NULL DEFAULT 'FALSE',
+  is_public BOOLEAN NOT NULL DEFAULT 0,
 
   FOREIGN KEY (venue_id) REFERENCES venue (id)
 );

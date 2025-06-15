@@ -516,7 +516,7 @@ func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) err
 func approveMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
 	query, args, err := sq.
 		Update("member").
-		Set("active", "TRUE").
+		Set("active", 1).
 		Where(sq.Eq{"id": memberID}).
 		ToSql()
 
