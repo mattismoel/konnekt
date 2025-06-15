@@ -14,7 +14,7 @@ import (
 	"github.com/nfnt/resize"
 )
 
-const PROFILE_PICTURE_WIDTH_PX = 512
+const PROFILE_PICTURE_WIDTH_PX = 2048
 
 type MemberService struct {
 	memberRepo  member.Repository
