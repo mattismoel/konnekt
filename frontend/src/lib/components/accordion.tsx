@@ -16,7 +16,7 @@ const Accordion = ({ title, children }: PropsWithChildren<Props>) => {
 				className="flex items-center gap-4 px-8 py-4 bg-background w-full 
 				text-left hover:bg-zinc-900 group-[.expanded]:bg-zinc-900 transition-colors"
 				onClick={() => setExpanded(prev => !prev)}>
-				<FaChevronDown className="group-[.expanded]:rotate-180 transition-transform" />
+				<FaChevronDown className="group-[.expanded]:rotate-180 transition-transform shrink-0" />
 				<span className="font-medium">{title}</span>
 			</button>
 
