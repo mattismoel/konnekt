@@ -113,7 +113,7 @@ function RouteComponent() {
 						</Accordion>
 					</FAQSection>
 					<FAQSection title="Til samarbejdspartnere">
-						<Accordion title="Hvordan kan man samarbejde med Konnekt?">
+						<Accordion title="Hvordan kan vi samarbejde?">
 							Konnekt er bygget på et grundlag af stærke samarbejdspartnere, og vi er altid åbne
 							for nye samarbejder – særligt med koncertsteder og kulturaktører, der deler vores
 							vision om at styrke unges adgang til musik og fællesskab. Vi søger kommercielle
