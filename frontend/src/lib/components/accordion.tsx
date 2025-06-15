@@ -21,7 +21,7 @@ const Accordion = ({ title, children }: PropsWithChildren<Props>) => {
 			</button>
 
 			<div className="px-8 py-8 hidden overflow-hidden group-[.expanded]:block cursor-default">
-				<p className="prose prose-invert">{children}</p>
+				<p className="prose prose-invert leading-loose">{children}</p>
 			</div>
 		</div>
 	)
