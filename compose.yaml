@@ -10,7 +10,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
   backend:
-    image: ghcr.io/mattismoel/konnekt/konnekt-backend:main
+    image: ghcr.io/mattismoel/konnekt/konnekt-backend:latest
     restart: unless-stopped
     ports:
       - 8080:8080

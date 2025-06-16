@@ -7,8 +7,8 @@ env:
 on:
   push:
     branches: [ "main" ]
-    # paths:
-    # - 'frontend/**'
+    paths:
+    - 'frontend/**'
 
 jobs:
   publish-webserver:
