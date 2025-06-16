@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/mattismoel/konnekt/internal/domain/venue"
 	"github.com/mattismoel/konnekt/internal/query"
@@ -18,27 +19,16 @@ func NewVenueService(venueRepo venue.Repository) *VenueService {
 func (s VenueService) List(ctx context.Context, q venue.Query) (query.ListResult[venue.Venue], error) {
 	result, err := s.venueRepo.List(ctx, q)
 	if err != nil {
-		return query.ListResult[venue.Venue]{}, err
+		return query.ListResult[venue.Venue]{}, fmt.Errorf("Could not list venues: %v", err)
 	}
 
 	return result, nil
 }
 
-type CreateVenue struct {
-	Name        string
-	City        string
-	CountryCode string
-}
-
-func (s VenueService) Create(ctx context.Context, load CreateVenue) (int64, error) {
-	v, err := venue.NewVenue(load.Name, load.CountryCode, load.City)
-	if err != nil {
-		return 0, err
-	}
-
+func (s VenueService) Create(ctx context.Context, v venue.Venue) (int64, error) {
 	venueID, err := s.venueRepo.Insert(ctx, v)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not insert venue into repository: %v", err)
 	}
 
 	return venueID, nil
@@ -47,31 +37,20 @@ func (s VenueService) Create(ctx context.Context, load CreateVenue) (int64, erro
 func (s VenueService) Delete(ctx context.Context, venueID int64) error {
 	err := s.venueRepo.Delete(ctx, venueID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete venue from repository %d: %v", venueID, err)
 	}
 
 	return nil
 }
 
-type UpdateVenue struct {
-	Name        string
-	City        string
-	CountryCode string
-}
-
-func (s VenueService) Update(ctx context.Context, id int64, load UpdateVenue) (venue.Venue, error) {
-	v, err := venue.NewVenue(load.Name, load.CountryCode, load.City)
-	if err != nil {
-		return venue.Venue{}, err
+func (s VenueService) Update(ctx context.Context, venueID int64, v venue.Venue) (venue.Venue, error) {
+	if err := s.venueRepo.Update(ctx, venueID, v); err != nil {
+		return venue.Venue{}, fmt.Errorf("Could not update venue %d: %v", venueID, err)
 	}
 
-	if err := s.venueRepo.Update(ctx, id, v); err != nil {
-		return venue.Venue{}, err
-	}
-
-	updatedVenue, err := s.venueRepo.ByID(ctx, id)
+	updatedVenue, err := s.venueRepo.ByID(ctx, venueID)
 	if err != nil {
-		return venue.Venue{}, err
+		return venue.Venue{}, fmt.Errorf("Could not get updated venue: %v", err)
 	}
 
 	return updatedVenue, nil
@@ -80,7 +59,7 @@ func (s VenueService) Update(ctx context.Context, id int64, load UpdateVenue) (v
 func (s VenueService) ByID(ctx context.Context, venueID int64) (venue.Venue, error) {
 	v, err := s.venueRepo.ByID(ctx, venueID)
 	if err != nil {
-		return venue.Venue{}, err
+		return venue.Venue{}, fmt.Errorf("Could not get venue by id %d: %v", venueID, err)
 	}
 
 	return v, nil
