@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
@@ -57,7 +58,7 @@ func (repo MemberRepository) Insert(ctx context.Context, m member.Member) (int64
 		case errors.Is(err, ErrAlreadyExists):
 			return 0, member.ErrAlreadyExists
 		}
-		return 0, err
+		return 0, fmt.Errorf("Could not insert member: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -81,13 +82,13 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 		case errors.Is(err, sql.ErrNoRows):
 			return member.Member{}, ErrNotFound
 		default:
-			return member.Member{}, err
+			return member.Member{}, fmt.Errorf("Could not get member with ID %d: %v", memberID, err)
 		}
 	}
 
 	dbTeams, err := memberTeams(ctx, tx, memberID)
 	if err != nil {
-		return member.Member{}, err
+		return member.Member{}, fmt.Errorf("Could not get member teams: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -106,7 +107,7 @@ func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error 
 	defer tx.Rollback()
 
 	if err := approveMember(ctx, tx, memberID); err != nil {
-		return err
+		return fmt.Errorf("Could not approve member with ID: %d: %v", memberID, err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -125,12 +126,12 @@ func (repo MemberRepository) SetMemberTeams(ctx context.Context, memberID int64,
 	defer tx.Rollback()
 
 	if err := deleteMemberTeams(ctx, tx, memberID); err != nil {
-		return err
+		return fmt.Errorf("Could not delete member teams for member with ID %d: %v", memberID, err)
 	}
 
 	for _, teamID := range teamIDs {
 		if err := associateMemberWithTeam(ctx, tx, memberID, teamID); err != nil {
-			return err
+			return fmt.Errorf("Could not associate member %d with team %d: %v", memberID, teamID, err)
 		}
 	}
 
@@ -157,7 +158,7 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 	})
 
 	if err != nil {
-		return query.ListResult[member.Member]{}, err
+		return query.ListResult[member.Member]{}, fmt.Errorf("Could not list members: %v", err)
 	}
 
 	members := make([]member.Member, 0)
@@ -165,7 +166,7 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 	for _, dbMember := range dbMembers {
 		dbTeams, err := memberTeams(ctx, tx, dbMember.ID)
 		if err != nil {
-			return query.ListResult[member.Member]{}, err
+			return query.ListResult[member.Member]{}, fmt.Errorf("Could not get member teams for member with ID %d: %v", dbMember.ID, err)
 		}
 
 		members = append(members, dbMember.ToInternal(dbTeams))
@@ -173,7 +174,7 @@ func (repo MemberRepository) List(ctx context.Context, q query.ListQuery) (query
 
 	totalCount, err := count(ctx, tx, "member")
 	if err != nil {
-		return query.ListResult[member.Member]{}, err
+		return query.ListResult[member.Member]{}, fmt.Errorf("Could not count members: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -205,7 +206,7 @@ func (repo MemberRepository) Update(ctx context.Context, memberID int64, m membe
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not update member: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -229,12 +230,12 @@ func (repo MemberRepository) ByEmail(ctx context.Context, email string) (member.
 			return member.Member{}, member.ErrNotFound
 		}
 
-		return member.Member{}, err
+		return member.Member{}, fmt.Errorf("Could not get member with email %q: %v", email, err)
 	}
 
 	dbTeams, err := memberTeams(ctx, tx, dbMember.ID)
 	if err != nil {
-		return member.Member{}, err
+		return member.Member{}, fmt.Errorf("Could not get member teams: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -253,11 +254,11 @@ func (repo MemberRepository) Delete(ctx context.Context, memberID int64) error {
 	defer tx.Rollback()
 
 	if err := deleteMember(ctx, tx, memberID); err != nil {
-		return err
+		return fmt.Errorf("Could not delete member: %v", err)
 	}
 
 	if err := deleteMemberTeams(ctx, tx, memberID); err != nil {
-		return err
+		return fmt.Errorf("Could not delete member teams: %v", err)
 	}
 
 	if err := deleteMemberSession(ctx, tx, memberID); err != nil {
@@ -284,7 +285,7 @@ func (repo MemberRepository) PasswordHash(ctx context.Context, memberID int64) (
 			return nil, member.ErrNotFound
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("Could not get password hash for member with ID %d: %v", memberID, err)
 	}
 
 	if err := tx.Commit(); err != nil {
