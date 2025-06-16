@@ -1,47 +1,32 @@
-
 services:
-  caddy:
-    image: caddy:2.10-alpine
-    restart: unless-stopped
-    ports:
-      - 4000:80
-      - 443:443
-      - 443:443/udp
-      - "3000:3000"
-      - "24678:24678"
-    volumes:
-      - ./Caddyfile.dev:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-
   frontend:
-    build:
-      context: ./frontend/
-      dockerfile: Dockerfile.dev
-    restart: unless-stopped
-    # ports:
-      # - "3000:3000"
-      # - "24678:24678"
-    # environment:
-      # - BASE_URL=http://127.0.0.1:4000
+    image: oven/bun:1
+    working_dir: /app
     volumes:
       - ./frontend:/app
-      - ./frontend/node_modules:/app/node_modules
-      
-  # Golang backend set-up.
+      - /app/node_modules
+    command: sh -c "bun install && bun run dev -- --host 0.0.0.0"
+    ports:
+      - 3000:3000
+    environment:
+    - NODE_ENV=development
+
   backend:
-    build:
-      context: ./backend/
-      dockerfile: Dockerfile.dev
-    # image: ghcr.io/mattismoel/konnekt-backend:${BRANCH:-latest}
-    ports: 
-      - 8080:8080
-    restart: unless-stopped
+    image: golang:1.24
+    working_dir: /app
     volumes:
       - ./backend:/app
-      - ${DB_LOCAL_DIR:-./data}:${DB_DIR:-/app/data}
-      - /home/mattiskristensen/.aws:/root/.aws
-
-volumes:
-  caddy_data:
-  caddy_config:
+    command: sh -c "go mod tidy && go install github.com/air-verse/air@latest && air"
+    ports:
+      - 8080:8080
+  caddy:
+    image: caddy:latest
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    volumes:
+    - ./Caddyfile.dev:/etc/caddy/Caddyfile
+    depends_on:
+      - frontend
+      - backend
