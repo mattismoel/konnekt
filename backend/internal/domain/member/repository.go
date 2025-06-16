@@ -16,5 +16,4 @@ type Repository interface {
 	SetMemberTeams(ctx context.Context, memberID int64, teamIDs ...int64) error
 	Approve(ctx context.Context, memberID int64) error
 	Delete(ctx context.Context, memberID int64) error
-	SetProfilePictureURL(ctx context.Context, memberID int64, url string) error
 }

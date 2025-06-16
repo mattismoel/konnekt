@@ -116,11 +116,6 @@ func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error 
 	return nil
 }
 
-// TODO: Implement...
-func (repo MemberRepository) SetProfilePictureURL(ctx context.Context, memberID int64, url string) error {
-	return nil
-}
-
 func (repo MemberRepository) SetMemberTeams(ctx context.Context, memberID int64, teamIDs ...int64) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
