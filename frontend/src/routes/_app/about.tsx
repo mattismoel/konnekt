@@ -30,24 +30,36 @@ function RouteComponent() {
 				<Section>
 					<h1>Hvem er vi?</h1>
 					<p className="leading-loose">
-						Konnekt er et projekt med henblik på unge musikere.
-						Det danske musikmiljø er for svært at bryde igennem - især for unge
-						aspirerende musikere og det skal ændres.
+						Konnekt er en ungedrevet forening og et koncertinitiativ, der
+						arbejder for at give unge musikere mulighed for at komme på
+						scenen og få kontakt til et publikum. Vi arrangerer koncerter,
+						hvor nye artister spiller sammen med mere etablerede
+						upcoming-navne, og hvor publikum får adgang til musik, de ellers
+						ikke ville have mødt.
+						<br />
+						<br />
+						Men Konnekt handler ikke kun om musik – det handler om
+						fællesskab og deltagelse. Vi skaber rum for unge, der vil være
+						med som frivillige, arrangører eller idéfolk, og vi samarbejder
+						med lokale aktører for at skabe synlighed, netværk og udvikling
+						i Odenses kulturliv.
+						<br />
+						<br />
+						Hos os er alle med til at forme oplevelsen – både på og bag
+						scenen.
 					</p>
 				</Section>
-
 				<Section>
-					<h1>Missionen</h1>
+					<h1>Hvad vil vi?</h1>
 					<p className="leading-loose">
-						Konnekt giver unge musikere og upcoming bands en scene og et
-						publikum gennem koncertarrangementer. Hver koncert har to hovednavne:
-						én ny og én mere etableret upcoming kunstner.
-						Derudover optræder unge, lokale talenter som opvarmning.
+						Foreningen Konnekt arbejder for at styrke unges muligheder i
+						musiklivet ved at skabe en scene, hvor nye musikere kan få erfaring,
+						synlighed og møde et publikum i øjenhøjde.
 
-						Formålet er at engagere flere unge i Odenses kulturliv ved at
-						præsentere ny musik inden for genrer, de allerede interesserer sig
-						for, samt skabe rum for inspiration, rådgivning og udvikling gennem
-						talks.
+						Vi tror på, at stærke kulturelle fællesskaber starter med plads og
+						tillid. Derfor inviterer vi unge ind som medskabere, ikke bare
+						deltagere. Gennem samarbejde, frivillighed og lokale partnerskaber
+						skaber vi en model for fremtidens kulturarbejde.
 					</p>
 				</Section>
 
@@ -60,8 +72,14 @@ function RouteComponent() {
 					<div className="mb-8">
 						<h1 className="font-heading text-4xl font-bold mb-8">Ofte stillede spørgsmål</h1>
 						<p className="text-text/75">
-							Her kan du læse om diverse spørgsmål, som ofte stilles.
-							Har du yderligere spørgsmål, så <a className="underline" href="mailto:konnekt.samarbejde@gmail.com">send os endelig en mail.</a>
+							Her kan se diverse spørgsmål, som vi ofte stilles.
+							Har du yderligere spørgsmål, så&nbsp;
+							<a
+								className="underline"
+								href="mailto:konnekt.samarbejde@gmail.com"
+							>
+								send os endelig en mail.
+							</a>
 						</p>
 					</div>
 
