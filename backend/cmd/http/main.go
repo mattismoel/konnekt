@@ -120,6 +120,10 @@ func main() {
 		server.WithVenueService(venueService),
 	)
 
+	if err != nil {
+		log.Fatal("Could not create server", "error", err)
+	}
+
 	slog.Info("Started server", "host", *host, "port", *port, "origin", *origin)
 	if err := srv.Start(); err != nil {
 		log.Fatal("Could not start server", "error", err)
