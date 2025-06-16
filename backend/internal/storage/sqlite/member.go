@@ -266,7 +266,7 @@ func (repo MemberRepository) Delete(ctx context.Context, memberID int64) error {
 	}
 
 	if err := deleteMemberSession(ctx, tx, memberID); err != nil {
-		return err
+		return fmt.Errorf("Could nto delete member session: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {

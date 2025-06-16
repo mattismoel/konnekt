@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -53,7 +54,7 @@ func (repo AuthRepository) InsertSession(ctx context.Context, session auth.Sessi
 	}
 
 	if err := insertSession(ctx, tx, dbSession); err != nil {
-		return err
+		return fmt.Errorf("Could not insert session: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -72,6 +73,8 @@ func (repo AuthRepository) Session(ctx context.Context, sessionID auth.SessionID
 		if errors.Is(err, sql.ErrNoRows) {
 			return auth.Session{}, auth.ErrNoSession
 		}
+
+		return auth.Session{}, fmt.Errorf("Could not get session: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -91,7 +94,7 @@ func (repo AuthRepository) SetSessionExpiry(ctx context.Context, sessionID auth.
 
 	err = setSessionExpiry(ctx, tx, string(sessionID), newExpiry)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not set session expiry: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -110,7 +113,7 @@ func (repo AuthRepository) DeleteMemberSession(ctx context.Context, memberID int
 	defer tx.Rollback()
 
 	if err := deleteMemberSession(ctx, tx, memberID); err != nil {
-		return err
+		return fmt.Errorf("Could not delete member session for member with id %d: %v", memberID, err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -201,7 +204,7 @@ var sessionBuilder = sq.
 func scanSession(s Scanner, dst *Session) error {
 	err := s.Scan(&dst.ID, &dst.MemberID, &dst.ExpiresAt)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not scan into session struct: %v", err)
 	}
 
 	return nil

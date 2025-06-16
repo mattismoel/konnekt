@@ -6,6 +6,7 @@ import (
 	"encoding/base32"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -37,7 +38,7 @@ func NewSessionToken() (SessionToken, error) {
 	bytes := make([]byte, 20)
 	_, err := rand.Read(bytes)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Could not read random bytes into buffer: %v", err)
 	}
 
 	encoder := base32.StdEncoding.WithPadding(base32.NoPadding)

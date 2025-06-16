@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -110,12 +111,12 @@ func (srv AuthService) Login(ctx context.Context, email string, password []byte)
 
 	err = srv.clearMemberSession(ctx, m.ID)
 	if err != nil {
-		return "", time.Time{}, err
+		return "", time.Time{}, fmt.Errorf("Could not clear member session: %v", err)
 	}
 
 	token, expiry, err := srv.createSession(ctx, m.ID)
 	if err != nil {
-		return "", time.Time{}, err
+		return "", time.Time{}, fmt.Errorf("Could not create session: %v", err)
 	}
 
 	return token, expiry, nil
@@ -126,12 +127,12 @@ func (srv AuthService) LogOut(ctx context.Context, token auth.SessionToken) erro
 
 	session, err := srv.authRepo.Session(ctx, sessionID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not get session: %v", err)
 	}
 
 	err = srv.authRepo.DeleteMemberSession(ctx, session.MemberID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete member session: %v", err)
 	}
 
 	return nil
@@ -142,7 +143,7 @@ func (srv AuthService) ValidateSession(ctx context.Context, token auth.SessionTo
 
 	session, err := srv.authRepo.Session(ctx, sessionID)
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, fmt.Errorf("Could not get session: %v", err)
 	}
 
 	if session.IsExpired() {
@@ -153,7 +154,7 @@ func (srv AuthService) ValidateSession(ctx context.Context, token auth.SessionTo
 		newExpiry := time.Now().Add(SESSION_LIFETIME)
 		err := srv.authRepo.SetSessionExpiry(ctx, sessionID, newExpiry)
 		if err != nil {
-			return time.Time{}, err
+			return time.Time{}, fmt.Errorf("Could not set expiry: %v", err)
 		}
 
 		return newExpiry, nil
@@ -164,7 +165,7 @@ func (srv AuthService) ValidateSession(ctx context.Context, token auth.SessionTo
 func (srv AuthService) Session(ctx context.Context, id auth.SessionID) (auth.Session, error) {
 	session, err := srv.authRepo.Session(ctx, id)
 	if err != nil {
-		return auth.Session{}, err
+		return auth.Session{}, fmt.Errorf("Could not get session: %v", err)
 	}
 
 	return session, nil
