@@ -65,5 +65,5 @@ jobs:
           context: ./backend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.actor }}/${{ env.PACKAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ github.actor }}/${{ env.PACKAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ github.actor }}/${{ github.event.repository.name }}/${{ env.PACKAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ github.actor }}/${{ github.event.repository.name }}/${{ env.PACKAGE_NAME }}:${{ github.sha }}
