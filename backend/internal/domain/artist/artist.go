@@ -9,13 +9,13 @@ import (
 
 var (
 	ErrInvalidID              = errors.New("ID must be a positive integer")
-	ErrEmptyName              = errors.New("Name must not be empty")
-	ErrEmptyDescription       = errors.New("Description must not be empty")
+	ErrInvalidName            = errors.New("Name must not be empty")
+	ErrInvalidDescription     = errors.New("Description must not be empty")
 	ErrInvalidImageURL        = errors.New("Image URL must be valid")
-	ErrImageURLInaccessible   = errors.New("Image URL must be accessible")
+	ErrInaccessibleImageURL   = errors.New("Image URL must be accessible")
 	ErrNoGenres               = errors.New("Artist must have at least one genre")
-	ErrPreviewURLInvalid      = errors.New("Artist preview URL must be a valid URL")
-	ErrPreviewURLInaccessible = errors.New("Artist preview URL must be accessible")
+	ErrInvalidPreviewURL      = errors.New("Artist preview URL must be a valid URL")
+	ErrInaccessiblePreviewURL = errors.New("Artist preview URL must be accessible")
 )
 
 type ArtistCfg func(a *Artist) error
@@ -65,7 +65,7 @@ func WithID(id int64) ArtistCfg {
 func WithName(name string) ArtistCfg {
 	return func(a *Artist) error {
 		if strings.TrimSpace(name) == "" {
-			return ErrEmptyName
+			return ErrInvalidName
 		}
 
 		a.Name = name
@@ -77,7 +77,7 @@ func WithName(name string) ArtistCfg {
 func WithDescription(desc string) ArtistCfg {
 	return func(a *Artist) error {
 		if strings.TrimSpace(desc) == "" {
-			return ErrEmptyDescription
+			return ErrInvalidDescription
 		}
 
 		a.Description = desc
@@ -95,11 +95,11 @@ func WithImageURL(u string) ArtistCfg {
 
 		resp, err := http.Get(url.String())
 		if err != nil {
-			return ErrImageURLInaccessible
+			return ErrInaccessibleImageURL
 		}
 
 		if !(resp.StatusCode >= 200) || !(resp.StatusCode < 400) {
-			return ErrImageURLInaccessible
+			return ErrInaccessibleImageURL
 		}
 
 		a.ImageURL = url.String()
@@ -112,16 +112,16 @@ func WithPreviewURL(u string) ArtistCfg {
 	return func(a *Artist) error {
 		url, err := url.ParseRequestURI(u)
 		if err != nil {
-			return ErrPreviewURLInvalid
+			return ErrInvalidPreviewURL
 		}
 
 		resp, err := http.Get(url.String())
 		if err != nil {
-			return ErrPreviewURLInaccessible
+			return ErrInaccessiblePreviewURL
 		}
 
 		if !(resp.StatusCode >= 200) || !(resp.StatusCode < 400) {
-			return ErrPreviewURLInvalid
+			return ErrInvalidPreviewURL
 		}
 
 		a.PreviewURL = url.String()
@@ -132,6 +132,10 @@ func WithPreviewURL(u string) ArtistCfg {
 
 func WithGenres(genres ...Genre) ArtistCfg {
 	return func(a *Artist) error {
+		if len(genres) <= 0 {
+			return ErrNoGenres
+		}
+
 		a.Genres = genres
 		return nil
 	}

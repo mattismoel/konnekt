@@ -32,7 +32,7 @@ func NewS3ObjectStore(region string, bucket string) (*S3ObjectStore, error) {
 
 	sess, err := session.NewSession(config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not create AWS session: %v", err)
 	}
 
 	return &S3ObjectStore{
@@ -54,7 +54,7 @@ func (s S3ObjectStore) Upload(ctx context.Context, key string, body io.Reader) (
 	})
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Could not upload object %q: %v", key, err)
 	}
 
 	return output.Location, nil
@@ -67,7 +67,7 @@ func (s S3ObjectStore) Get(ctx context.Context, key string) (io.ReadCloser, erro
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not get object %q: %v", key, err)
 	}
 
 	return output.Body, nil
@@ -80,7 +80,7 @@ func (s S3ObjectStore) Delete(ctx context.Context, key string) error {
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete object %q: %v", key, err)
 	}
 
 	return nil

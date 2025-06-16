@@ -2,6 +2,7 @@ package concert
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -25,7 +26,7 @@ type Concert struct {
 func (c *Concert) WithCfgs(cfgs ...CfgFunc) error {
 	for _, cfg := range cfgs {
 		if err := cfg(c); err != nil {
-			return err
+			return fmt.Errorf("Could not use concert config: %v", err)
 		}
 	}
 
@@ -36,7 +37,7 @@ func NewConcert(cfgs ...CfgFunc) (Concert, error) {
 	c := &Concert{}
 
 	if err := c.WithCfgs(cfgs...); err != nil {
-		return Concert{}, err
+		return Concert{}, fmt.Errorf("Could not create concert: %v", err)
 	}
 
 	return *c, nil

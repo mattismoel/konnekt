@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -39,7 +40,7 @@ func New(cfgs ...CfgFunc) (*Server, error) {
 
 	for _, cfg := range cfgs {
 		if err := cfg(s); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Could not use server config: %v", err)
 		}
 	}
 

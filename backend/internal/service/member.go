@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"image"
 	"io"
 	"net/url"
@@ -33,7 +34,7 @@ func NewMemberService(memberRepo member.Repository, teamRepo team.Repository, ob
 func (srv MemberService) ByID(ctx context.Context, memberID int64) (member.Member, error) {
 	u, err := srv.memberRepo.ByID(ctx, memberID)
 	if err != nil {
-		return member.Member{}, err
+		return member.Member{}, fmt.Errorf("Could not get member %d: %v", memberID, err)
 	}
 
 	return u, nil
@@ -42,7 +43,7 @@ func (srv MemberService) ByID(ctx context.Context, memberID int64) (member.Membe
 func (srv MemberService) List(ctx context.Context, q query.ListQuery) (query.ListResult[member.Member], error) {
 	result, err := srv.memberRepo.List(ctx, q)
 	if err != nil {
-		return query.ListResult[member.Member]{}, err
+		return query.ListResult[member.Member]{}, fmt.Errorf("Could not list members: %v", err)
 	}
 
 	return result, nil
@@ -51,7 +52,7 @@ func (srv MemberService) List(ctx context.Context, q query.ListQuery) (query.Lis
 func (srv MemberService) UploadProfilePicture(ctx context.Context, r io.Reader) (string, error) {
 	img, _, err := image.Decode(r)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Could not decode member profile picture: %v", err)
 	}
 
 	if img.Bounds().Max.X > PROFILE_PICTURE_WIDTH_PX {
@@ -60,14 +61,14 @@ func (srv MemberService) UploadProfilePicture(ctx context.Context, r io.Reader) 
 
 	formatedImg, err := formatJPEG(img)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Could not format member profile picture: %v", err)
 	}
 
 	fileName := createRandomImageFileName("jpeg")
 
 	url, err := srv.objectStore.Upload(ctx, path.Join("/members", fileName), formatedImg)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Could not upload member profile picture to object store: %v", err)
 	}
 
 	return url, nil
@@ -76,7 +77,7 @@ func (srv MemberService) UploadProfilePicture(ctx context.Context, r io.Reader) 
 func (srv MemberService) DeleteProfilePicture(ctx context.Context, url string) error {
 	err := srv.objectStore.Delete(ctx, url)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete profile picture from object store: %v", err)
 	}
 
 	return nil
@@ -85,7 +86,7 @@ func (srv MemberService) DeleteProfilePicture(ctx context.Context, url string) e
 func (srv MemberService) Approve(ctx context.Context, memberID int64) error {
 	err := srv.memberRepo.Approve(ctx, memberID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not approve member: %v", err)
 	}
 
 	return nil
@@ -94,22 +95,22 @@ func (srv MemberService) Approve(ctx context.Context, memberID int64) error {
 func (srv MemberService) Delete(ctx context.Context, memberID int64) error {
 	m, err := srv.memberRepo.ByID(ctx, memberID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not find user (%d) to be deleted", err)
 	}
 
 	url, err := url.Parse(m.ProfilePictureURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not parse member profile picture URL: %v", err)
 	}
 
 	err = srv.objectStore.Delete(ctx, url.Path)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete member profile picture from object store: %v", err)
 	}
 
 	err = srv.memberRepo.Delete(ctx, memberID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete member from repository: %v", err)
 	}
 
 	return nil
@@ -117,7 +118,7 @@ func (srv MemberService) Delete(ctx context.Context, memberID int64) error {
 
 func (srv MemberService) Update(ctx context.Context, memberID int64, m member.Member) error {
 	if err := srv.memberRepo.Update(ctx, memberID, m); err != nil {
-		return err
+		return fmt.Errorf("Could not update member %d: %v", memberID, err)
 	}
 
 	return nil
@@ -130,7 +131,7 @@ func (srv MemberService) SetMemberTeams(ctx context.Context, memberID int64, tea
 	for _, teamID := range teamIDs {
 		team, err := srv.teamRepo.ByID(ctx, teamID)
 		if err != nil {
-			return err
+			return fmt.Errorf("Could not get member %d: %v", memberID, err)
 		}
 
 		teams = append(teams, team)
@@ -138,7 +139,7 @@ func (srv MemberService) SetMemberTeams(ctx context.Context, memberID int64, tea
 
 	err := srv.memberRepo.SetMemberTeams(ctx, memberID, teamIDs...)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not set member teams: %v", err)
 	}
 
 	return nil

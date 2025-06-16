@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/team"
@@ -61,6 +62,10 @@ func (repo TeamRepository) Insert(ctx context.Context, t team.Team) (int64, erro
 		Description: t.Description,
 	})
 
+	if err != nil {
+		return 0, fmt.Errorf("Could not insert team: %v", err)
+	}
+
 	if err := tx.Commit(); err != nil {
 		return 0, err
 	}
@@ -86,12 +91,12 @@ func (repo TeamRepository) List(ctx context.Context, q query.ListQuery) (query.L
 	})
 
 	if err != nil {
-		return query.ListResult[team.Team]{}, err
+		return query.ListResult[team.Team]{}, fmt.Errorf("Could not list teams: %v", err)
 	}
 
 	totalCount, err := count(ctx, tx, "team")
 	if err != nil {
-		return query.ListResult[team.Team]{}, err
+		return query.ListResult[team.Team]{}, fmt.Errorf("Could not count teams: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -121,7 +126,7 @@ func (repo TeamRepository) ByID(ctx context.Context, id int64) (team.Team, error
 
 	dbTeam, err := teamByID(ctx, tx, id)
 	if err != nil {
-		return team.Team{}, err
+		return team.Team{}, fmt.Errorf("Could not find team with ID %d: %v", id, err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -141,7 +146,7 @@ func (repo TeamRepository) ByName(ctx context.Context, name string) (team.Team, 
 
 	dbTeam, err := teamByName(ctx, tx, name)
 	if err != nil {
-		return team.Team{}, err
+		return team.Team{}, fmt.Errorf("Could not find team with name %q: %v", name, err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -160,7 +165,7 @@ func (repo TeamRepository) Delete(ctx context.Context, teamID int64) error {
 	defer tx.Rollback()
 
 	if err := deleteTeam(ctx, tx, teamID); err != nil {
-		return err
+		return fmt.Errorf("Could not delete team: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -181,7 +186,7 @@ func (repo TeamRepository) AddMemberTeams(ctx context.Context, memberID int64, t
 	for _, teamID := range teamIDs {
 		err := associateMemberWithTeam(ctx, tx, memberID, teamID)
 		if err != nil {
-			return err
+			return fmt.Errorf("Could not associate member %d with team %d: %v", memberID, teamID, err)
 		}
 	}
 
@@ -202,7 +207,7 @@ func (repo TeamRepository) MemberTeams(ctx context.Context, memberID int64) (tea
 
 	dbTeams, err := memberTeams(ctx, tx, memberID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not get member teams: %v", err)
 	}
 
 	teams := make([]team.Team, 0)

@@ -2,6 +2,7 @@ package event
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -37,7 +38,7 @@ type CfgFunc func(e *Event) error
 func (e *Event) WithCfgs(cfgs ...CfgFunc) error {
 	for _, cfg := range cfgs {
 		if err := cfg(e); err != nil {
-			return err
+			return fmt.Errorf("Could not use event config: %v", err)
 		}
 	}
 
@@ -51,7 +52,7 @@ func NewEvent(cfgs ...CfgFunc) (*Event, error) {
 	}
 
 	if err := e.WithCfgs(cfgs...); err != nil {
-		return &Event{}, err
+		return &Event{}, fmt.Errorf("Could not create event: %v", err)
 	}
 
 	return e, nil

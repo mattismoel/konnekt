@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
-	"github.com/mattismoel/konnekt/internal/service"
 )
 
 func (s Server) handleListVenues() http.HandlerFunc {
@@ -50,12 +49,17 @@ func (s Server) handleCreateVenue() http.HandlerFunc {
 			return
 		}
 
-		venueID, err := s.venueService.Create(ctx, service.CreateVenue{
-			Name:        load.Name,
-			CountryCode: load.CountryCode,
-			City:        load.City,
-		})
+		v, err := venue.NewVenue(
+			venue.WithName(load.Name),
+			venue.WithCity(load.City),
+			venue.WithCountryCode(load.CountryCode),
+		)
 
+		if err != nil {
+			writeError(w, err)
+		}
+
+		venueID, err := s.venueService.Create(ctx, v)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -116,12 +120,18 @@ func (s Server) handleUpdateVenue() http.HandlerFunc {
 			return
 		}
 
-		venue, err := s.venueService.Update(ctx, int64(venueID), service.UpdateVenue{
-			Name:        load.Name,
-			City:        load.City,
-			CountryCode: load.CountryCode,
-		})
+		v, err := venue.NewVenue(
+			venue.WithName(load.Name),
+			venue.WithCity(load.City),
+			venue.WithCountryCode(load.CountryCode),
+		)
 
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		venue, err := s.venueService.Update(ctx, int64(venueID), v)
 		if err != nil {
 			writeError(w, err)
 			return

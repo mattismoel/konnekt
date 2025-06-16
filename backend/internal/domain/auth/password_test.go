@@ -7,7 +7,7 @@ import (
 	"github.com/mattismoel/konnekt/internal/domain/auth"
 )
 
-func TestDoPasswordsMatch(t *testing.T) {
+func TestMatches(t *testing.T) {
 	type test struct {
 		p1  []byte
 		p2  []byte
@@ -51,6 +51,37 @@ func TestDoPasswordsMatch(t *testing.T) {
 			err := p.Matches(tt.p2)
 			if !errors.Is(err, tt.err) {
 				t.Fatal("want %w, got %w", tt.err, err)
+			}
+		})
+	}
+}
+
+func TestValidate(t *testing.T) {
+	type test struct {
+		password auth.Password
+		wantErr  error
+	}
+
+	tests := map[string]test{
+		"Valid password": {
+			password: []byte("Password123!"),
+			wantErr:  nil,
+		},
+		"Too short": {
+			password: []byte("P123!"),
+			wantErr:  auth.ErrPasswordTooShort,
+		},
+		"Too long": {
+			password: []byte("ThisIsAVeryLongPasswordThatShouldNotPassChecks!"),
+			wantErr:  auth.ErrPasswordTooLong,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			err := tt.password.Validate()
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("got %v, want %v\n", err, tt.wantErr)
 			}
 		})
 	}

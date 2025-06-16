@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
@@ -42,12 +43,12 @@ func (repo VenueRepository) List(ctx context.Context, q venue.Query) (query.List
 	})
 
 	if err != nil {
-		return query.ListResult[venue.Venue]{}, err
+		return query.ListResult[venue.Venue]{}, fmt.Errorf("Could not list venues: %v", err)
 	}
 
 	totalCount, err := count(ctx, tx, "venue")
 	if err != nil {
-		return query.ListResult[venue.Venue]{}, err
+		return query.ListResult[venue.Venue]{}, fmt.Errorf("Could not count venues: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -78,7 +79,7 @@ func (repo VenueRepository) ByID(ctx context.Context, venueID int64) (venue.Venu
 
 	dbVenue, err := venueByID(ctx, tx, venueID)
 	if err != nil {
-		return venue.Venue{}, err
+		return venue.Venue{}, fmt.Errorf("Could not get venue with ID %d: %v", venueID, err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -102,6 +103,10 @@ func (repo VenueRepository) Insert(ctx context.Context, v venue.Venue) (int64, e
 		CountryCode: v.CountryCode,
 	})
 
+	if err != nil {
+		return 0, fmt.Errorf("Could not insert venue: %v", err)
+	}
+
 	if err := tx.Commit(); err != nil {
 		return 0, err
 	}
@@ -117,12 +122,14 @@ func (repo VenueRepository) Update(ctx context.Context, venueID int64, v venue.V
 
 	defer tx.Rollback()
 
-	if err := updateVenue(ctx, tx, venueID, Venue{
+	err = updateVenue(ctx, tx, venueID, Venue{
 		Name:        v.Name,
 		City:        v.City,
 		CountryCode: v.CountryCode,
-	}); err != nil {
-		return err
+	})
+
+	if err != nil {
+		return fmt.Errorf("Could not update venue: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -142,7 +149,7 @@ func (repo VenueRepository) Delete(ctx context.Context, venueID int64) error {
 
 	err = deleteVenue(ctx, tx, venueID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete venue with ID %d: %v", venueID, err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -164,7 +171,7 @@ var venueBuilder = sq.
 func scanVenue(s Scanner, dst *Venue) error {
 	err := s.Scan(&dst.ID, &dst.Name, &dst.CountryCode, &dst.City)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not scan venue into venue struct: %v", err)
 	}
 
 	return nil

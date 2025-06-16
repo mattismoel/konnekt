@@ -75,22 +75,22 @@ func (repo EventRepository) ByID(ctx context.Context, eventID int64) (event.Even
 			return event.Event{}, event.ErrNoExist
 		}
 
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not get event by id %d: %v", eventID, err)
 	}
 
 	dbConcerts, err := eventConcerts(ctx, tx, eventID)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not get event concerts: %v", err)
 	}
 
 	concerts, err := dbConcerts.Internalize(ctx, tx)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not internalize concerts: %v", err)
 	}
 
 	dbVenue, err := venueByID(ctx, tx, dbEvent.VenueID)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not get venue with id %d: %v", dbEvent.VenueID, err)
 	}
 
 	venue := dbVenue.ToInternal()
@@ -114,13 +114,13 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 
 	eventID, err := insertEvent(ctx, tx, EventFromInternal(e))
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not insert event: %v", err)
 	}
 
 	for _, c := range e.Concerts {
 		dbArtist, err := artistByID(ctx, tx, c.Artist.ID)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("Could not get concert artist: %v", err)
 		}
 
 		dbConcert := ConcertFromInternal(c, eventID)
@@ -128,7 +128,7 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 
 		_, err = insertConcert(ctx, tx, dbConcert)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("Could not insert concert: %v", err)
 		}
 	}
 
@@ -149,7 +149,7 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 
 	err = updateEvent(ctx, tx, eventID, EventFromInternal(e))
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not update event: %v", err)
 	}
 
 	concerts := make([]Concert, 0)
@@ -159,7 +159,7 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 
 	_, err = setEventConcerts(ctx, tx, eventID, concerts...)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not set event concerts: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -178,11 +178,11 @@ func (repo EventRepository) Delete(ctx context.Context, eventID int64) error {
 	defer tx.Rollback()
 
 	if err := deleteEventConcerts(ctx, tx, eventID); err != nil {
-		return err
+		return fmt.Errorf("Could not delete event concerts: %v", err)
 	}
 
 	if err := deleteEvent(ctx, tx, eventID); err != nil {
-		return err
+		return fmt.Errorf("Could not delete event: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -202,7 +202,7 @@ func (repo EventRepository) SetImageURL(ctx context.Context, eventID int64, cove
 
 	err = setEventImageURL(ctx, tx, eventID, coverImageURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not set event image URL: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -228,12 +228,12 @@ func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.
 	})
 
 	if err != nil {
-		return query.ListResult[event.Event]{}, err
+		return query.ListResult[event.Event]{}, fmt.Errorf("Could not list events: %v", err)
 	}
 
 	totalCount, err := count(ctx, tx, "event")
 	if err != nil {
-		return query.ListResult[event.Event]{}, err
+		return query.ListResult[event.Event]{}, fmt.Errorf("Could not count events: %v", err)
 	}
 
 	events := make([]event.Event, 0)
@@ -241,19 +241,19 @@ func (repo EventRepository) List(ctx context.Context, q query.ListQuery) (query.
 	for _, dbEvent := range dbEvents {
 		dbVenue, err := venueByID(ctx, tx, dbEvent.VenueID)
 		if err != nil {
-			return query.ListResult[event.Event]{}, err
+			return query.ListResult[event.Event]{}, fmt.Errorf("Could not get venue with ID %d: %v", dbEvent.VenueID, err)
 		}
 
 		venue := dbVenue.ToInternal()
 
 		dbConcerts, err := eventConcerts(ctx, tx, dbEvent.ID)
 		if err != nil {
-			return query.ListResult[event.Event]{}, err
+			return query.ListResult[event.Event]{}, fmt.Errorf("Could not get event concerts for event with id %d: %v", dbEvent.ID, err)
 		}
 
 		concerts, err := dbConcerts.Internalize(ctx, tx)
 		if err != nil {
-			return query.ListResult[event.Event]{}, err
+			return query.ListResult[event.Event]{}, fmt.Errorf("Could not internalise event concert: %v", err)
 		}
 
 		event := dbEvent.ToInternal(venue, concerts)

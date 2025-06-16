@@ -2,6 +2,7 @@ package member
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/mail"
 	"net/url"
@@ -46,7 +47,7 @@ func NewMember(cfgs ...cfgFunc) (Member, error) {
 	}
 
 	if err := m.WithCfgs(cfgs...); err != nil {
-		return Member{}, err
+		return Member{}, fmt.Errorf("Could not create member: %v", err)
 	}
 
 	return *m, nil
@@ -55,7 +56,7 @@ func NewMember(cfgs ...cfgFunc) (Member, error) {
 func (m *Member) WithCfgs(cfgs ...cfgFunc) error {
 	for _, cfg := range cfgs {
 		if err := cfg(m); err != nil {
-			return err
+			return fmt.Errorf("Could not use member config: %v", err)
 		}
 	}
 

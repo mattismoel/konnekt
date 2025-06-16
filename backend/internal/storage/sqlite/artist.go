@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -58,13 +59,13 @@ func (repo ArtistRepository) List(ctx context.Context, q query.ListQuery) (query
 		Filters: q.Filters,
 	})
 	if err != nil {
-		return query.ListResult[artist.Artist]{}, err
+		return query.ListResult[artist.Artist]{}, fmt.Errorf("Could not list artists: %v", err)
 	}
 
 	for _, dbArtist := range dbArtists {
 		dbGenres, err := artistGenres(ctx, tx, dbArtist.ID)
 		if err != nil {
-			return query.ListResult[artist.Artist]{}, err
+			return query.ListResult[artist.Artist]{}, fmt.Errorf("Could not list artist genres: %v", err)
 		}
 
 		genres := make([]artist.Genre, 0)
@@ -77,7 +78,7 @@ func (repo ArtistRepository) List(ctx context.Context, q query.ListQuery) (query
 
 		dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
 		if err != nil {
-			return query.ListResult[artist.Artist]{}, err
+			return query.ListResult[artist.Artist]{}, fmt.Errorf("Could not list artist socials: %v", err)
 		}
 
 		socials := make([]artist.Social, 0)
@@ -90,7 +91,7 @@ func (repo ArtistRepository) List(ctx context.Context, q query.ListQuery) (query
 
 	totalCount, err := count(ctx, tx, "artist")
 	if err != nil {
-		return query.ListResult[artist.Artist]{}, err
+		return query.ListResult[artist.Artist]{}, fmt.Errorf("Could not count artists: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -120,30 +121,30 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 	})
 
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not insert artist: %v", err)
 	}
 
 	for _, genre := range a.Genres {
 		genreID, err := insertGenre(ctx, tx, genre.Name)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("Could not insert genre: %v", err)
 		}
 
 		err = associateArtistWithGenre(ctx, tx, artistID, genreID)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("Could not associate artist %d with genre %d: %v", artistID, genreID, err)
 		}
 	}
 
 	for _, social := range a.Socials {
 		socialID, err := insertSocial(ctx, tx, string(social))
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("Could not insert social: %v", err)
 		}
 
 		err = associateArtistWithSocial(ctx, tx, artistID, socialID)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("Could not associate artist %d with social %q: %v", artistID, social, err)
 		}
 	}
 
@@ -172,7 +173,7 @@ func (repo ArtistRepository) Update(ctx context.Context, artistID int64, a artis
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not update artist: %v", err)
 	}
 
 	socials := make([]Social, 0)
@@ -182,7 +183,7 @@ func (repo ArtistRepository) Update(ctx context.Context, artistID int64, a artis
 
 	err = setArtistSocials(ctx, tx, artistID, socials...)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not set artist socials: %v", err)
 	}
 
 	genres := make([]Genre, 0)
@@ -192,7 +193,7 @@ func (repo ArtistRepository) Update(ctx context.Context, artistID int64, a artis
 
 	err = setArtistGenres(ctx, tx, artistID, genres...)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not set artist genres: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -212,7 +213,7 @@ func (repo ArtistRepository) SetImageURL(ctx context.Context, artistID int64, ur
 
 	err = setArtistImageURL(ctx, tx, artistID, url)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not set artist image url: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -232,17 +233,17 @@ func (repo ArtistRepository) ByID(ctx context.Context, artistID int64) (artist.A
 
 	dbArtist, err := artistByID(ctx, tx, artistID)
 	if err != nil {
-		return artist.Artist{}, err
+		return artist.Artist{}, fmt.Errorf("Could not get artist %d: %v", artistID, err)
 	}
 
 	dbGenres, err := artistGenres(ctx, tx, artistID)
 	if err != nil {
-		return artist.Artist{}, err
+		return artist.Artist{}, fmt.Errorf("Could not get artist genres: %v", err)
 	}
 
 	dbSocials, err := artistSocials(ctx, tx, artistID)
 	if err != nil {
-		return artist.Artist{}, err
+		return artist.Artist{}, fmt.Errorf("Could not get artist socials: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -275,24 +276,24 @@ func (repo ArtistRepository) Delete(ctx context.Context, artistID int64) error {
 
 	artist, err := artistByID(ctx, tx, artistID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not get artist with id %d: %v", artistID, err)
 	}
 
 	socials, err := artistSocials(ctx, tx, artist.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not get artist socials: %v", err)
 	}
 
 	for _, social := range socials {
 		err := deleteSocial(ctx, tx, social.ID)
 		if err != nil {
-			return err
+			return fmt.Errorf("Could not delete social: %v", err)
 		}
 	}
 
 	err = deleteArtist(ctx, tx, artist.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete artist: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -312,7 +313,7 @@ func scanArtist(scanner Scanner, dst *Artist) error {
 	)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not scan into artist struct: %v", err)
 	}
 
 	return nil

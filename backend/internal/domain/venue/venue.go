@@ -1,10 +1,21 @@
 package venue
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/mattismoel/konnekt/internal/query"
 )
+
+var (
+	ErrInvalidID          = errors.New("Venue ID must be valid")
+	ErrInvalidName        = errors.New("Venue name must be valid")
+	ErrInvalidCity        = errors.New("City must be valid")
+	ErrInvalidCountryCode = errors.New("Country code must be valid")
+)
+
+type cfgFunc func(v *Venue) error
 
 type Venue struct {
 	ID          int64  `json:"id"`
@@ -12,15 +23,71 @@ type Venue struct {
 	CountryCode string `json:"countryCode"`
 	City        string `json:"city"`
 }
-
 type Query struct {
 	query.ListQuery
 }
 
-func NewVenue(name, countryCode, city string) (Venue, error) {
-	return Venue{
-		Name:        strings.TrimSpace(name),
-		CountryCode: strings.TrimSpace(countryCode),
-		City:        strings.TrimSpace(city),
-	}, nil
+func NewVenue(cfgs ...cfgFunc) (Venue, error) {
+	v := Venue{}
+
+	err := v.WithCfgs(cfgs...)
+	if err != nil {
+		return Venue{}, fmt.Errorf("Could not create venue: %v", err)
+	}
+
+	return v, nil
+}
+
+func (v *Venue) WithCfgs(cfgs ...cfgFunc) error {
+	for _, cfg := range cfgs {
+		if err := cfg(v); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func WithID(id int64) cfgFunc {
+	return func(v *Venue) error {
+		if id <= 0 {
+			return ErrInvalidID
+		}
+
+		v.ID = id
+		return nil
+	}
+}
+
+func WithName(name string) cfgFunc {
+	return func(v *Venue) error {
+		if strings.TrimSpace(name) == "" {
+			return ErrInvalidName
+		}
+
+		v.Name = name
+		return nil
+	}
+}
+
+func WithCity(city string) cfgFunc {
+	return func(v *Venue) error {
+		if strings.TrimSpace(city) == "" {
+			return ErrInvalidCity
+		}
+
+		v.City = city
+		return nil
+	}
+}
+
+func WithCountryCode(countryCode string) cfgFunc {
+	return func(v *Venue) error {
+		if strings.TrimSpace(countryCode) == "" {
+			return ErrInvalidCountryCode
+		}
+
+		v.CountryCode = countryCode
+		return nil
+	}
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -54,7 +55,7 @@ func (srv AuthService) Register(ctx context.Context, load RegisterLoad) (int64, 
 	}
 
 	if err := load.Password.Validate(); err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not validate passwords: %v", err)
 	}
 
 	if err := load.Password.Matches(load.PasswordConfirm); err != nil {
@@ -63,7 +64,7 @@ func (srv AuthService) Register(ctx context.Context, load RegisterLoad) (int64, 
 
 	hash, err := bcrypt.GenerateFromPassword(load.Password, bcrypt.DefaultCost)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not generate password hash: %v", err)
 	}
 
 	m, err := member.NewMember(
@@ -80,23 +81,23 @@ func (srv AuthService) Register(ctx context.Context, load RegisterLoad) (int64, 
 	if strings.TrimSpace(load.ProfilePictureURL) != "" {
 		err := m.WithCfgs(member.WithProfilePictureURL(load.ProfilePictureURL))
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("Could not use profile picture URL: %v", err)
 		}
 	}
 
 	memberID, err := srv.memberRepo.Insert(ctx, m)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not insert member into repository: %v", err)
 	}
 
 	team, err := srv.teamRepo.ByName(ctx, "member")
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not get team %q: %v", "member", err)
 	}
 
 	err = srv.teamRepo.AddMemberTeams(ctx, memberID, team.ID)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not add member teams: %v", err)
 	}
 
 	return memberID, nil
@@ -105,17 +106,17 @@ func (srv AuthService) Register(ctx context.Context, load RegisterLoad) (int64, 
 func (srv AuthService) Login(ctx context.Context, email string, password []byte) (auth.SessionToken, time.Time, error) {
 	m, err := srv.validateMember(ctx, email, password)
 	if err != nil {
-		return "", time.Time{}, err
+		return "", time.Time{}, fmt.Errorf("Could not validate member: %v", err)
 	}
 
 	err = srv.clearMemberSession(ctx, m.ID)
 	if err != nil {
-		return "", time.Time{}, err
+		return "", time.Time{}, fmt.Errorf("Could not clear member session: %v", err)
 	}
 
 	token, expiry, err := srv.createSession(ctx, m.ID)
 	if err != nil {
-		return "", time.Time{}, err
+		return "", time.Time{}, fmt.Errorf("Could not create session: %v", err)
 	}
 
 	return token, expiry, nil
@@ -126,12 +127,12 @@ func (srv AuthService) LogOut(ctx context.Context, token auth.SessionToken) erro
 
 	session, err := srv.authRepo.Session(ctx, sessionID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not get session: %v", err)
 	}
 
 	err = srv.authRepo.DeleteMemberSession(ctx, session.MemberID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete member session: %v", err)
 	}
 
 	return nil
@@ -142,7 +143,7 @@ func (srv AuthService) ValidateSession(ctx context.Context, token auth.SessionTo
 
 	session, err := srv.authRepo.Session(ctx, sessionID)
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, fmt.Errorf("Could not get session: %v", err)
 	}
 
 	if session.IsExpired() {
@@ -153,7 +154,7 @@ func (srv AuthService) ValidateSession(ctx context.Context, token auth.SessionTo
 		newExpiry := time.Now().Add(SESSION_LIFETIME)
 		err := srv.authRepo.SetSessionExpiry(ctx, sessionID, newExpiry)
 		if err != nil {
-			return time.Time{}, err
+			return time.Time{}, fmt.Errorf("Could not set expiry: %v", err)
 		}
 
 		return newExpiry, nil
@@ -164,7 +165,7 @@ func (srv AuthService) ValidateSession(ctx context.Context, token auth.SessionTo
 func (srv AuthService) Session(ctx context.Context, id auth.SessionID) (auth.Session, error) {
 	session, err := srv.authRepo.Session(ctx, id)
 	if err != nil {
-		return auth.Session{}, err
+		return auth.Session{}, fmt.Errorf("Could not get session: %v", err)
 	}
 
 	return session, nil
@@ -174,7 +175,7 @@ func (srv AuthService) Session(ctx context.Context, id auth.SessionID) (auth.Ses
 func (srv AuthService) HasPermission(ctx context.Context, memberID int64, permNames ...string) error {
 	memberPerms, err := srv.MemberPermissions(ctx, memberID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not get member permissions: %v", err)
 	}
 
 	err = memberPerms.ContainsAll(permNames...)
@@ -250,7 +251,15 @@ func (srv AuthService) createSession(ctx context.Context, memberID int64) (auth.
 		return "", time.Time{}, err
 	}
 
-	session := auth.NewSession(token, memberID, SESSION_LIFETIME)
+	session, err := auth.NewSession(
+		auth.WithToken(token),
+		auth.WithMemberID(memberID),
+		auth.WithLifetime(SESSION_LIFETIME),
+	)
+
+	if err != nil {
+		return "", time.Time{}, fmt.Errorf("Could not create session: %v", err)
+	}
 
 	err = srv.authRepo.InsertSession(ctx, session)
 	if err != nil {

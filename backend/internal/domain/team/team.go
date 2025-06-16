@@ -2,6 +2,7 @@ package team
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -26,13 +27,21 @@ type teamCfgFunc func(t *Team) error
 func NewTeam(cfgs ...teamCfgFunc) (Team, error) {
 	t := &Team{}
 
+	err := t.WithCfgs(cfgs...)
+	if err != nil {
+		return Team{}, fmt.Errorf("Could not create team: %v", err)
+	}
+	return *t, nil
+}
+
+func (t *Team) WithCfgs(cfgs ...teamCfgFunc) error {
 	for _, cfg := range cfgs {
 		if err := cfg(t); err != nil {
-			return Team{}, err
+			return fmt.Errorf("Could not create team: %v", err)
 		}
 	}
 
-	return *t, nil
+	return nil
 }
 
 func WithID(id int64) teamCfgFunc {
