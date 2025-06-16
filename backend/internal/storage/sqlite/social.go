@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 )
@@ -16,18 +17,18 @@ type Social struct {
 func setArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64, socials ...Social) error {
 	err := deleteArtistSocials(ctx, tx, artistID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete artist socials: %v", err)
 	}
 
 	for _, social := range socials {
 		socialID, err := insertSocial(ctx, tx, social.URL)
 		if err != nil {
-			return err
+			return fmt.Errorf("Could not insert social: %v", err)
 		}
 
 		err = associateArtistWithSocial(ctx, tx, artistID, socialID)
 		if err != nil {
-			return err
+			return fmt.Errorf("Could not associate artist %d with social %d: %v", artistID, socialID, err)
 		}
 	}
 
@@ -38,7 +39,7 @@ func setArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64, socials .
 func deleteArtistSocials(ctx context.Context, tx *sql.Tx, artistID int64) error {
 	socials, err := artistSocials(ctx, tx, artistID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not get artist socials: %v", err)
 	}
 
 	query, args, err := sq.

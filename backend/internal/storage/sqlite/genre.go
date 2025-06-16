@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -24,7 +25,7 @@ func (repo ArtistRepository) InsertGenre(ctx context.Context, name string) (int6
 
 	genreID, err := insertGenre(ctx, tx, name)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not insert genre: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -50,7 +51,7 @@ func (repo ArtistRepository) ListGenres(ctx context.Context, q artist.GenreQuery
 	})
 
 	if err != nil {
-		return query.ListResult[artist.Genre]{}, err
+		return query.ListResult[artist.Genre]{}, fmt.Errorf("Could not list genres: %v", err)
 	}
 
 	genres := make([]artist.Genre, 0)
@@ -63,7 +64,7 @@ func (repo ArtistRepository) ListGenres(ctx context.Context, q artist.GenreQuery
 
 	totalCount, err := count(ctx, tx, "genre")
 	if err != nil {
-		return query.ListResult[artist.Genre]{}, err
+		return query.ListResult[artist.Genre]{}, fmt.Errorf("Could not count genres: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -89,7 +90,7 @@ func (repo ArtistRepository) GenreByID(ctx context.Context, genreID int64) (arti
 
 	dbGenre, err := genreByID(ctx, tx, genreID)
 	if err != nil {
-		return artist.Genre{}, err
+		return artist.Genre{}, fmt.Errorf("Could not get genre with ID %d: %v", genreID, err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -112,7 +113,7 @@ var genreBuilder = sq.
 func scanGenre(s Scanner, dst *Genre) error {
 	err := s.Scan(&dst.ID, &dst.Name)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not scan genre into genre struct: %v", err)
 	}
 
 	return nil
@@ -126,7 +127,7 @@ func listGenres(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Genre, e
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not build genre query: %v", err)
 	}
 
 	rows, err := tx.QueryContext(ctx, query, args...)
