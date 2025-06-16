@@ -18,8 +18,8 @@
 	--animate-fade-in: fade-in 0.5s;
 }
 
-.px-auto {
-	@apply px-6 sm:px-16 md:px-32 lg:px-48 xl:px-64;
+@utility px-auto {
+	@apply px-6 sm:px-16 md:px-32 lg:px-48 xl:px-96;
 }
 
 @keyframes slide {
