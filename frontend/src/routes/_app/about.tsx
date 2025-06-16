@@ -61,7 +61,7 @@ function RouteComponent() {
 						<h1 className="font-heading text-4xl font-bold mb-8">Ofte stillede spørgsmål</h1>
 						<p className="text-text/75">
 							Her kan du læse om diverse spørgsmål, som ofte stilles.
-							Hvis du synes har yderligere spørgsmål, så <a className="underline" href="mailto:konnekt.samarbejde@gmail.com">send os endelig en mail.</a>
+							Har du yderligere spørgsmål, så <a className="underline" href="mailto:konnekt.samarbejde@gmail.com">send os endelig en mail.</a>
 						</p>
 					</div>
 
