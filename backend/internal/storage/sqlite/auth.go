@@ -140,7 +140,7 @@ func (repo AuthRepository) ListPermissions(ctx context.Context, q query.ListQuer
 	})
 
 	if err != nil {
-		return query.ListResult[auth.Permission]{}, err
+		return query.ListResult[auth.Permission]{}, fmt.Errorf("Could not list permissions: %v", err)
 	}
 
 	permissions := make([]auth.Permission, 0)
@@ -150,7 +150,7 @@ func (repo AuthRepository) ListPermissions(ctx context.Context, q query.ListQuer
 
 	totalCount, err := count(ctx, tx, "permission")
 	if err != nil {
-		return query.ListResult[auth.Permission]{}, err
+		return query.ListResult[auth.Permission]{}, fmt.Errorf("Could not count permissions: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -176,7 +176,7 @@ func (repo AuthRepository) TeamPermissions(ctx context.Context, teamID int64) (a
 
 	dbPermissions, err := teamPermissions(ctx, tx, teamID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not get team permissions: %v", err)
 	}
 
 	collection := make(auth.PermissionCollection, 0)
