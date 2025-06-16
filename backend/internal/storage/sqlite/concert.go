@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -26,12 +27,12 @@ func (cs Concerts) Internalize(ctx context.Context, tx *sql.Tx) ([]concert.Conce
 	for _, dbConcert := range cs {
 		dbArtist, err := artistByID(ctx, tx, dbConcert.ArtistID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Could not get artist with id %d: %v", dbConcert.ArtistID, err)
 		}
 
 		dbGenres, err := artistGenres(ctx, tx, dbArtist.ID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Could not get artist genres: %v", err)
 		}
 
 		genres := make([]artist.Genre, 0)
@@ -44,7 +45,7 @@ func (cs Concerts) Internalize(ctx context.Context, tx *sql.Tx) ([]concert.Conce
 
 		dbSocials, err := artistSocials(ctx, tx, dbArtist.ID)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Could not get artist socials: %v", err)
 		}
 
 		socials := make([]artist.Social, 0)
