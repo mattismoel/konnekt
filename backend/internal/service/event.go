@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"image"
 	"io"
 	"net/url"
@@ -60,7 +61,7 @@ type CreateConcert struct {
 func (s EventService) ByID(ctx context.Context, eventID int64) (event.Event, error) {
 	e, err := s.eventRepo.ByID(ctx, eventID)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not get event %d: %v", eventID, err)
 	}
 
 	return e, nil
@@ -69,14 +70,14 @@ func (s EventService) ByID(ctx context.Context, eventID int64) (event.Event, err
 func (s EventService) Create(ctx context.Context, load CreateEvent) (event.Event, error) {
 	venue, err := s.venueRepo.ByID(ctx, load.VenueID)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not find event by ID: %v", err)
 	}
 
 	concerts := make([]concert.Concert, 0)
 	for _, c := range load.Concerts {
 		artist, err := s.artistRepo.ByID(ctx, c.ArtistID)
 		if err != nil {
-			return event.Event{}, err
+			return event.Event{}, fmt.Errorf("Could not find artist %d: %v", c.ArtistID, err)
 		}
 
 		c, err := concert.NewConcert(
@@ -86,7 +87,7 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (event.Event
 		)
 
 		if err != nil {
-			return event.Event{}, err
+			return event.Event{}, fmt.Errorf("Could not create event concert: %v", err)
 		}
 
 		concerts = append(concerts, c)
@@ -103,17 +104,17 @@ func (s EventService) Create(ctx context.Context, load CreateEvent) (event.Event
 	)
 
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not create event: %v", err)
 	}
 
 	eventID, err := s.eventRepo.Insert(ctx, *e)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not insert event into repository: %v", err)
 	}
 
 	createdEvent, err := s.eventRepo.ByID(ctx, eventID)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not get event %d: %v", eventID, err)
 	}
 
 	return createdEvent, nil
@@ -139,19 +140,19 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 	// Return if event does not exist.
 	prevEvent, err := s.eventRepo.ByID(ctx, eventID)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not find event %d: %v", eventID, err)
 	}
 
 	venue, err := s.venueRepo.ByID(ctx, load.VenueID)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not get venue %d: %v", load.VenueID, err)
 	}
 
 	concerts := make([]concert.Concert, 0)
 	for _, c := range load.Concerts {
 		artist, err := s.artistRepo.ByID(ctx, c.ArtistID)
 		if err != nil {
-			return event.Event{}, err
+			return event.Event{}, fmt.Errorf("Could not find artist %d: %v", c.ArtistID, err)
 		}
 
 		concert, err := concert.NewConcert(
@@ -162,7 +163,7 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 		)
 
 		if err != nil {
-			return event.Event{}, err
+			return event.Event{}, fmt.Errorf("Could not create concert: %v", err)
 		}
 
 		concerts = append(concerts, concert)
@@ -178,34 +179,34 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 		event.WithIsPublic(load.IsPublic),
 	)
 
+	if err != nil {
+		return event.Event{}, fmt.Errorf("Could not create event: %v", err)
+	}
+
 	// If there is a cover image URL update, set it.
 	if strings.TrimSpace(load.ImageURL) != "" {
 		url, err := url.Parse(prevEvent.ImageURL)
 		if err != nil {
-			return event.Event{}, err
+			return event.Event{}, fmt.Errorf("Could not parse previous image URL: %v", err)
 		}
 
 		if err := s.objectStore.Delete(ctx, url.Path); err != nil {
-			return event.Event{}, err
+			return event.Event{}, fmt.Errorf("Could not delete previous event cover image: %v", err)
 		}
 
 		if err := e.WithCfgs(event.WithImageURL(load.ImageURL)); err != nil {
-			return event.Event{}, err
+			return event.Event{}, fmt.Errorf("Could not use event cover image: %v", err)
 		}
-	}
-
-	if err != nil {
-		return event.Event{}, err
 	}
 
 	err = s.eventRepo.Update(ctx, eventID, *e)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not update event: %v", err)
 	}
 
 	updatedEvent, err := s.eventRepo.ByID(ctx, eventID)
 	if err != nil {
-		return event.Event{}, err
+		return event.Event{}, fmt.Errorf("Could not find created event: %v", err)
 	}
 
 	return updatedEvent, nil
@@ -213,22 +214,24 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 
 func (s EventService) UploadImage(ctx context.Context, r io.Reader) (string, error) {
 	img, _, err := image.Decode(r)
+	if err != nil {
+		return "", fmt.Errorf("Could not decode event cover image: %v", err)
+	}
 
 	fileName := createRandomImageFileName("jpeg")
 
 	if img.Bounds().Max.X > EVENT_COVER_IMAGE_WIDTH_PX {
 		img = resize.Resize(EVENT_COVER_IMAGE_WIDTH_PX, 0, img, resize.Lanczos2)
-
 	}
 
 	formattedImg, err := formatJPEG(img)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Could not format event cover image: %v", err)
 	}
 
 	url, err := s.objectStore.Upload(ctx, path.Join("/events", fileName), formattedImg)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Could not upload event cover image to object store: %v", err)
 	}
 
 	return url, nil
@@ -237,7 +240,7 @@ func (s EventService) UploadImage(ctx context.Context, r io.Reader) (string, err
 func (s EventService) List(ctx context.Context, q query.ListQuery) (query.ListResult[event.Event], error) {
 	result, err := s.eventRepo.List(ctx, q)
 	if err != nil {
-		return query.ListResult[event.Event]{}, err
+		return query.ListResult[event.Event]{}, fmt.Errorf("Could not list events: %v", err)
 	}
 
 	return result, nil
@@ -246,22 +249,22 @@ func (s EventService) List(ctx context.Context, q query.ListQuery) (query.ListRe
 func (s EventService) Delete(ctx context.Context, eventID int64) error {
 	e, err := s.eventRepo.ByID(ctx, eventID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not find event %d: %v", eventID, err)
 	}
 
 	url, err := url.Parse(e.ImageURL)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not parse event cover image URL to be deleted")
 	}
 
 	err = s.objectStore.Delete(ctx, url.Path)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete event cover image from object store: %v", err)
 	}
 
 	err = s.eventRepo.Delete(ctx, eventID)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not delete event from repository: %v", err)
 	}
 
 	return nil
