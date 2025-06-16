@@ -25,8 +25,6 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), MAX_STARTUP_DURATION)
 	defer cancel()
 
-	ctx.Deadline()
-
 	dbConnStr := flag.String("dbConnStr", "file:./local.db", "The database connection string")
 	origin := flag.String("origin", "http://localhost:4000", "The origin of the proxy web server")
 	host := flag.String("host", "127.0.0.1", "The host of the web server")
