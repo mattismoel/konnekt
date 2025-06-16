@@ -251,7 +251,15 @@ func (srv AuthService) createSession(ctx context.Context, memberID int64) (auth.
 		return "", time.Time{}, err
 	}
 
-	session := auth.NewSession(token, memberID, SESSION_LIFETIME)
+	session, err := auth.NewSession(
+		auth.WithToken(token),
+		auth.WithMemberID(memberID),
+		auth.WithLifetime(SESSION_LIFETIME),
+	)
+
+	if err != nil {
+		return "", time.Time{}, fmt.Errorf("Could not create session: %v", err)
+	}
 
 	err = srv.authRepo.InsertSession(ctx, session)
 	if err != nil {
