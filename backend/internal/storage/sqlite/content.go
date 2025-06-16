@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/content"
@@ -38,7 +39,7 @@ func (r *ContentRepository) InsertLandingImage(ctx context.Context, url string) 
 
 	id, err := insertLandingImage(ctx, tx, url)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("Could not insert landing image: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -59,7 +60,7 @@ func (r ContentRepository) LandingImageByID(ctx context.Context, id int64) (cont
 
 	dbImg, err := landingImageByID(ctx, tx, id)
 	if err != nil {
-		return content.LandingImage{}, err
+		return content.LandingImage{}, fmt.Errorf("Could not find landing image with id %d: %v", id, err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -80,7 +81,7 @@ func (r *ContentRepository) LandingImages(ctx context.Context) ([]content.Landin
 
 	dbImages, err := landingImages(ctx, tx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not list landing images: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -106,7 +107,7 @@ func (r ContentRepository) DeleteLandingImage(ctx context.Context, id int64) err
 	defer tx.Rollback()
 
 	if err := deleteLandingImage(ctx, tx, id); err != nil {
-		return err
+		return fmt.Errorf("Could not delete landing image with id %d: %v", id, err)
 	}
 
 	if err := tx.Commit(); err != nil {
