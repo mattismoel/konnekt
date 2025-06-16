@@ -10,7 +10,7 @@ type Social string
 
 var (
 	ErrInvalidSocialURL      = errors.New("Social URL must be valid")
-	ErrSocialURLInaccessible = errors.New("Social URL must be accessible")
+	ErrInaccessibleSocialURL = errors.New("Social URL must be accessible")
 )
 
 func NewSocial(urlString string) (Social, error) {
@@ -21,11 +21,11 @@ func NewSocial(urlString string) (Social, error) {
 
 	resp, err := http.Get(url.String())
 	if err != nil {
-		return "", ErrSocialURLInaccessible
+		return "", ErrInaccessibleSocialURL
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
-		return "", ErrSocialURLInaccessible
+		return "", ErrInaccessibleSocialURL
 	}
 
 	return Social(url.String()), nil
