@@ -1,24 +1,53 @@
-name: Publish Backend
+name: Backend
 
 env:
   REGISTRY: ghcr.io
 
 on:
-  workflow_run:
-    workflows: [ "Test Backend" ]
+  pull_request:
     branches: [ "main" ]
-    types:
-    - completed
-
+    paths:
+    - 'backend/**'
   push:
     branches: [ "main" ]
     paths:
     - 'backend/**'
 
 jobs:
-  publish-webserver:
+  test-and-build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup up Go
+      uses: actions/setup-go@v4
+
+    - name: Format
+      run: gofmt -s -w . && git diff --exit-code
+
+    - name: Tidy
+      run: go mod tidy && git diff --exit-code
+
+    - name: Vet
+      run: go vet ./...
+
+    - name: Mod mod download
+      run: go mod download
+
+    - name: Build
+      run: go build -o /dev/null -v ./...
+
+    - name: Test
+      run: go test -v -count=1 -race -shuffle=on ./...
+
+  publish-webserver:
+    if: github.event_name == 'push'
+    needs: test-and-build
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -64,3 +93,4 @@ jobs:
             TAGS: ${{ steps.meta.outputs.tags }}
             DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
