@@ -1,4 +1,4 @@
-import { useRouterState, type ErrorComponentProps } from "@tanstack/react-router"
+import { type ErrorComponentProps } from "@tanstack/react-router"
 import { APIError } from "../api"
 import type { PropsWithChildren } from "react"
 import NotFoundComponent from "./not-found"

@@ -16,6 +16,7 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
   },
+  base: "https://knnkt.dk",
   preview: {
     port: 3000,
     strictPort: true,

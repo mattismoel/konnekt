@@ -1,0 +1,14 @@
+@hostname=localhost
+@port=8080
+@addr=http://{{hostname}}:{{port}}
+
+GET {{addr}}/events?filter=title=onn
+
+###
+
+GET {{addr}}/artists?order_by=name%20DESC
+
+
+###
+
+GET {{addr}}/members?filter=first_name=matt

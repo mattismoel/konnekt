@@ -27,6 +27,10 @@ function RouteComponent() {
   const { data: { records: venues } } = useSuspenseQuery(venuesQueryOpts)
 
   return (
-    <EventForm event={event} venues={venues} artists={artists} />
+    <EventForm
+      event={event}
+      venues={venues}
+      artists={artists}
+    />
   )
 }

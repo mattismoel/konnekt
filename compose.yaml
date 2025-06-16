@@ -1,15 +1,27 @@
 services:
+  web_server:
+    image: ghcr.io/mattismoel/konnekt-web-server:main
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
   backend:
     image: ghcr.io/mattismoel/konnekt-backend:main
     restart: unless-stopped
     ports:
       - 8080:8080
     environment:
+      - AWS_SHARED_CREDENTIALS_FILE=/app/aws/credentials
       - DB_DIR=${DB_DIR:-/app/data}
-      - DB_FILE_NAME=${DB_FILE_NAME:-data.db} 
-      - ORIGIN=${ORIGIN:-http://localhost:4000}
+      - DB_FILE_NAME=${DB_FILE_NAME:-data.db}
+      - ORIGIN=${ORIGIN:-https://knnkt.dk}
     volumes:
       - db_data:/app/data
+      - aws:/app/aws
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
       interval: 60s
@@ -18,3 +30,6 @@ services:
 
 volumes:
   db_data:
+  aws:
+  caddy_data:
+  caddy_config:

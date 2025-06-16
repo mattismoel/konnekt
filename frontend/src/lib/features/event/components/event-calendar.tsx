@@ -4,8 +4,8 @@ import { cn } from '@/lib/clsx';
 
 import type { Event } from '@/lib/features/event/event';
 import { useMemo, type HTMLAttributes } from 'react';
-import type { Concert } from '../features/event/concert';
 import { Link } from '@tanstack/react-router';
+import type { Concert } from '../concert';
 
 type Props = HTMLAttributes<HTMLDivElement> & {
 	event: Event;

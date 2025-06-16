@@ -22,7 +22,6 @@ function RouteComponent() {
     <EventForm
       venues={venues}
       artists={artists}
-      disabled={false}
     />
   )
 }

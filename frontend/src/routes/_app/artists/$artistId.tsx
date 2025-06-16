@@ -3,7 +3,6 @@ import PageMeta from '@/lib/components/page-meta';
 import SpotifyPreview from '@/lib/components/spotify-preview';
 import { socialUrlToIcon } from '@/lib/features/artist/artist';
 import { createArtistByIdOpts, createArtistEventsOpts } from '@/lib/features/artist/query';
-import EventCard from '@/lib/features/event/components/event-card';
 import EventGrid from '@/lib/features/event/components/event-grid';
 import { trackIdFromUrl } from '@/lib/spotify';
 import { useSuspenseQuery } from '@tanstack/react-query';
