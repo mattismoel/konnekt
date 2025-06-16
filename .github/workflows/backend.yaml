@@ -2,6 +2,7 @@ name: Backend
 
 env:
   REGISTRY: ghcr.io
+  PACKAGE_NAME: konnekt-backend
 
 on:
   pull_request:

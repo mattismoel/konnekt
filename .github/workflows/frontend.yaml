@@ -2,7 +2,7 @@ name: Publish Web Server Image
 
 env:
   REGISTRY: ghcr.io
-  PACKAGEP_NAME: konnekt-web-server
+  PACKAGE_NAME: konnekt-web-server
 
 on:
   push:
