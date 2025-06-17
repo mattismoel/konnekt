@@ -2,7 +2,6 @@ package event
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,13 +12,14 @@ import (
 
 var (
 	ErrInvalidID            = errors.New("Event ID must be a positive integer")
-	ErrEmptyTitle           = errors.New("Event title must not be empty")
-	ErrEmptyDescription     = errors.New("Event description must not be empty")
+	ErrInvalidTitle         = errors.New("Event title must not be valid")
+	ErrInvalidDescription   = errors.New("Event description must be valid")
 	ErrInvalidImageURL      = errors.New("Event image URL must be valid")
 	ErrImageURLInaccessible = errors.New("Image URL must be accessible")
 
 	ErrTicketURLInvalid      = errors.New("Ticket URL must be valid")
 	ErrTicketURLInaccessible = errors.New("Ticket URL must be accessible")
+	ErrNoConcerts            = errors.New("Event must have at least one concert")
 )
 
 type Event struct {
@@ -38,7 +38,7 @@ type CfgFunc func(e *Event) error
 func (e *Event) WithCfgs(cfgs ...CfgFunc) error {
 	for _, cfg := range cfgs {
 		if err := cfg(e); err != nil {
-			return fmt.Errorf("Could not use event config: %v", err)
+			return err
 		}
 	}
 
@@ -52,7 +52,7 @@ func NewEvent(cfgs ...CfgFunc) (*Event, error) {
 	}
 
 	if err := e.WithCfgs(cfgs...); err != nil {
-		return &Event{}, fmt.Errorf("Could not create event: %v", err)
+		return &Event{}, err
 	}
 
 	return e, nil
@@ -74,7 +74,7 @@ func WithTitle(title string) CfgFunc {
 		title = strings.TrimSpace(title)
 
 		if title == "" {
-			return ErrEmptyTitle
+			return ErrInvalidTitle
 		}
 
 		e.Title = title
@@ -87,7 +87,7 @@ func WithDescription(description string) CfgFunc {
 		description = strings.TrimSpace(description)
 
 		if description == "" {
-			return ErrEmptyDescription
+			return ErrInvalidDescription
 		}
 
 		e.Description = description
@@ -142,7 +142,11 @@ func WithImageURL(u string) CfgFunc {
 
 func WithConcerts(concerts ...concert.Concert) CfgFunc {
 	return func(e *Event) error {
-		e.Concerts = append(e.Concerts, concerts...)
+		if len(concerts) <= 0 {
+			return ErrNoConcerts
+		}
+
+		e.Concerts = concerts
 		return nil
 	}
 }

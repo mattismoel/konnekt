@@ -2,7 +2,6 @@ package member
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"net/mail"
 	"net/url"
@@ -47,7 +46,7 @@ func NewMember(cfgs ...cfgFunc) (Member, error) {
 	}
 
 	if err := m.WithCfgs(cfgs...); err != nil {
-		return Member{}, fmt.Errorf("Could not create member: %v", err)
+		return Member{}, err
 	}
 
 	return *m, nil
@@ -56,7 +55,7 @@ func NewMember(cfgs ...cfgFunc) (Member, error) {
 func (m *Member) WithCfgs(cfgs ...cfgFunc) error {
 	for _, cfg := range cfgs {
 		if err := cfg(m); err != nil {
-			return fmt.Errorf("Could not use member config: %v", err)
+			return err
 		}
 	}
 
@@ -103,9 +102,9 @@ func WithLastName(lastName string) cfgFunc {
 }
 
 func WithEmail(email string) cfgFunc {
-	email = strings.TrimSpace(email)
-
 	return func(m *Member) error {
+
+		email = strings.TrimSpace(email)
 		if email == "" {
 			return ErrEmailInvalid
 		}
@@ -142,6 +141,10 @@ func WithPasswordHash(hash []byte) cfgFunc {
 
 func WithProfilePictureURL(imageUrl string) cfgFunc {
 	return func(m *Member) error {
+		if strings.TrimSpace(imageUrl) == "" {
+			return ErrProfileImageURLInvalid
+		}
+
 		u, err := url.Parse(imageUrl)
 		if err != nil {
 			return ErrProfileImageURLInvalid
@@ -149,7 +152,7 @@ func WithProfilePictureURL(imageUrl string) cfgFunc {
 
 		resp, err := http.Get(u.String())
 		if err != nil {
-			return err
+			return ErrProfileImageURLInaccessible
 		}
 
 		if resp.StatusCode < 200 || resp.StatusCode >= 400 {
