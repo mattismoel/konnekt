@@ -122,7 +122,7 @@ func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, er
 		}
 	}
 
-	artistID, err := s.artistRepo.Insert(ctx, *a)
+	artistID, err := s.artistRepo.Insert(ctx, a)
 	if err != nil {
 		return 0, fmt.Errorf("Could not insert artist: %v", err)
 	}
@@ -191,12 +191,12 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 		}
 	}
 
-	err = s.artistRepo.Update(ctx, artistID, *a)
+	err = s.artistRepo.Update(ctx, artistID, a)
 	if err != nil {
 		return artist.Artist{}, fmt.Errorf("Could not update artist: %v", err)
 	}
 
-	return *a, nil
+	return a, nil
 }
 
 func (s ArtistService) Delete(ctx context.Context, artistID int64) error {
