@@ -7,12 +7,12 @@ env:
 on:
   pull_request:
     branches: [ "main" ]
-    paths:
-    - 'backend/**'
+    # paths:
+    # - 'backend/**'
   push:
     branches: [ "main" ]
-    paths:
-    - 'backend/**'
+    # paths:
+    # - 'backend/**'
 
 jobs:
   test-and-build:
@@ -41,7 +41,6 @@ jobs:
 
   publish-webserver:
     if: github.event_name == 'push'
-    needs: test-and-build
     runs-on: ubuntu-latest
     permissions:
       contents: read
