@@ -2,7 +2,6 @@ package venue
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/mattismoel/konnekt/internal/query"
@@ -32,7 +31,7 @@ func NewVenue(cfgs ...cfgFunc) (Venue, error) {
 
 	err := v.WithCfgs(cfgs...)
 	if err != nil {
-		return Venue{}, fmt.Errorf("Could not create venue: %v", err)
+		return Venue{}, err
 	}
 
 	return v, nil

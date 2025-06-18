@@ -30,12 +30,12 @@ type Artist struct {
 	Socials     []Social `json:"socials"`
 }
 
-func NewArtist(cfgs ...ArtistCfg) (*Artist, error) {
-	a := &Artist{}
+func NewArtist(cfgs ...ArtistCfg) (Artist, error) {
+	a := Artist{}
 
 	err := a.WithCfgs(cfgs...)
 	if err != nil {
-		return &Artist{}, err
+		return Artist{}, err
 	}
 
 	return a, nil

@@ -2,7 +2,6 @@ package team
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 )
 
@@ -29,7 +28,7 @@ func NewTeam(cfgs ...teamCfgFunc) (Team, error) {
 
 	err := t.WithCfgs(cfgs...)
 	if err != nil {
-		return Team{}, fmt.Errorf("Could not create team: %v", err)
+		return Team{}, err
 	}
 	return *t, nil
 }
@@ -37,7 +36,7 @@ func NewTeam(cfgs ...teamCfgFunc) (Team, error) {
 func (t *Team) WithCfgs(cfgs ...teamCfgFunc) error {
 	for _, cfg := range cfgs {
 		if err := cfg(t); err != nil {
-			return fmt.Errorf("Could not create team: %v", err)
+			return err
 		}
 	}
 
@@ -78,6 +77,7 @@ func WithDisplayName(displayName string) teamCfgFunc {
 		return nil
 	}
 }
+
 func WithDescription(desc string) teamCfgFunc {
 	desc = strings.TrimSpace(desc)
 	return func(t *Team) error {
