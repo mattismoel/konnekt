@@ -92,7 +92,7 @@ func main() {
 		return
 	}
 
-	s3Store, err := s3.NewS3ObjectStore(*s3Region, *s3Bucket)
+	s3Store, err := s3.NewS3ObjectStore(ctx, *s3Region, *s3Bucket)
 	if err != nil {
 		slog.Error("Could not create S3 store", "error", err)
 		return

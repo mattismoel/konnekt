@@ -2,9 +2,11 @@ package s3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -14,20 +16,36 @@ import (
 	"github.com/mattismoel/konnekt/internal/object"
 )
 
+var (
+	ErrInavlidRegion      = errors.New("S3 bucket region must be valid")
+	ErrInvalidBucket      = errors.New("S3 bucket name must be valid")
+	ErrInaccessibleBucket = errors.New("S3 bucket is inaccessible")
+)
+
 var DEFAULT_CACHE_CONTROL_MS = 2 * time.Hour.Milliseconds()
 
 var _ object.Store = (*S3ObjectStore)(nil)
 
 type S3ObjectStore struct {
-	bucket     string
-	region     string
+	Bucket string
+	Region string
+
 	uploader   *s3manager.Uploader
 	downloader *s3manager.Downloader
 	client     *s3.S3
 }
 
-func NewS3ObjectStore(region string, bucket string) (*S3ObjectStore, error) {
-	config := aws.NewConfig().
+func NewS3ObjectStore(ctx context.Context, region string, bucket string) (*S3ObjectStore, error) {
+	if strings.TrimSpace(region) == "" {
+		return nil, ErrInavlidRegion
+	}
+
+	if strings.TrimSpace(bucket) == "" {
+		return nil, ErrInvalidBucket
+	}
+
+	config := aws.
+		NewConfig().
 		WithRegion(region)
 
 	sess, err := session.NewSession(config)
@@ -35,20 +53,32 @@ func NewS3ObjectStore(region string, bucket string) (*S3ObjectStore, error) {
 		return nil, fmt.Errorf("Could not create AWS session: %v", err)
 	}
 
-	return &S3ObjectStore{
-		region: region,
-		bucket: bucket,
+	uploader := s3manager.NewUploader(sess)
+	downloader := s3manager.NewDownloader(sess)
+	client := s3.New(sess)
 
-		client:     s3.New(sess),
-		uploader:   s3manager.NewUploader(sess),
-		downloader: s3manager.NewDownloader(sess),
+	_, err = client.HeadBucketWithContext(ctx, &s3.HeadBucketInput{
+		Bucket: aws.String(bucket),
+	})
+
+	if err != nil {
+		return nil, ErrInaccessibleBucket
+	}
+
+	return &S3ObjectStore{
+		Region: region,
+		Bucket: bucket,
+
+		client:     client,
+		uploader:   uploader,
+		downloader: downloader,
 	}, nil
 }
 
 func (s S3ObjectStore) Upload(ctx context.Context, key string, body io.Reader) (string, error) {
 	output, err := s.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Key:          aws.String(key),
-		Bucket:       aws.String(s.bucket),
+		Bucket:       aws.String(s.Bucket),
 		Body:         body,
 		CacheControl: aws.String(fmt.Sprintf("Max-Age=%d", DEFAULT_CACHE_CONTROL_MS)),
 	})
@@ -63,7 +93,7 @@ func (s S3ObjectStore) Upload(ctx context.Context, key string, body io.Reader) (
 func (s S3ObjectStore) Get(ctx context.Context, key string) (io.ReadCloser, error) {
 	output, err := s.client.GetObjectWithContext(ctx, &s3.GetObjectInput{
 		Key:    aws.String(key),
-		Bucket: aws.String(s.bucket),
+		Bucket: aws.String(s.Bucket),
 	})
 
 	if err != nil {
@@ -76,7 +106,7 @@ func (s S3ObjectStore) Get(ctx context.Context, key string) (io.ReadCloser, erro
 func (s S3ObjectStore) Delete(ctx context.Context, key string) error {
 	_, err := s.client.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
 		Key:    aws.String(key),
-		Bucket: aws.String(s.bucket),
+		Bucket: aws.String(s.Bucket),
 	})
 
 	if err != nil {
@@ -89,5 +119,5 @@ func (s S3ObjectStore) Delete(ctx context.Context, key string) error {
 func (s S3ObjectStore) ObjectPath(key string) string {
 	key = path.Clean(key)
 
-	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.bucket, s.region, key)
+	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", s.Bucket, s.Region, key)
 }
