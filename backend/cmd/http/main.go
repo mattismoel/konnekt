@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"log"
 	"log/slog"
 	"net"
 	"strconv"
@@ -36,71 +35,85 @@ func main() {
 
 	db, err := sql.Open("sqlite", *dbConnStr)
 	if err != nil {
-		log.Fatal("Could not open database connection", "error", err)
+		slog.Error("Could not create database connection", "error", err)
+		return
 	}
 
 	if err := db.PingContext(ctx); err != nil {
-		log.Fatal("Could not ping database", "error", err)
+		slog.Error("Could not ping database", "error", err)
+		return
 	}
 
 	contentRepo, err := sqlite.NewContentRepository(db)
 	if err != nil {
-		log.Fatal("Could not create content repository", "error", err)
+		slog.Error("Could not create content repository", "error", err)
+		return
 	}
 
 	memberRepo, err := sqlite.NewMemberRepository(db)
 	if err != nil {
-		log.Fatal("Could not create member repository", "error", err)
+		slog.Error("Could not create member repository", "error", err)
+		return
 	}
 
 	authRepo, err := sqlite.NewAuthRepository(db)
 	if err != nil {
-		log.Fatal("Could not create auth repository", "error", err)
+		slog.Error("Could not create auth repository", "error", err)
+		return
 	}
 
 	eventRepo, err := sqlite.NewEventRepository(db)
 	if err != nil {
-		log.Fatal("Could not create event repository", "error", err)
+		slog.Error("Could not create event repository", "error", err)
+		return
 	}
 
 	artistRepo, err := sqlite.NewArtistRepository(db)
 	if err != nil {
-		log.Fatal("Could not create artist repository", "error", err)
+		slog.Error("Could not create artist repository", "error", err)
+		return
 	}
 
 	venueRepo, err := sqlite.NewVenueRepository(db)
 	if err != nil {
-		log.Fatal("Could not create venue repository", "error", err)
+		slog.Error("Could not create venue repository", "error", err)
+		return
 	}
 
 	teamRepo, err := sqlite.NewTeamRepository(db)
 	if err != nil {
-		log.Fatal("Could not create team repository", "error", err)
+		slog.Error("Could not create team repository", "error", err)
+		return
 	}
 
 	authService, err := service.NewAuthService(memberRepo, authRepo, teamRepo)
 	if err != nil {
-		log.Fatal("Could not create auth service", "error", err)
+		slog.Error("Could not create auth service", "error", err)
+		return
 	}
 
 	s3Store, err := s3.NewS3ObjectStore(*s3Region, *s3Bucket)
 	if err != nil {
-		log.Fatal("Could not create S3 store", "error", err)
+		slog.Error("Could not create S3 store", "error", err)
+		return
 	}
 
 	memberService, err := service.NewMemberService(memberRepo, teamRepo, s3Store)
 	if err != nil {
-		log.Fatal("Could not create member service", "error", err)
+		slog.Error("Could not create member service", "error", err)
+		return
 	}
 
 	eventService, err := service.NewEventService(eventRepo, artistRepo, venueRepo, s3Store)
 	if err != nil {
-		log.Fatal("Could not create event service", "error", err)
+		slog.Error("Could not create event service", "error", err)
+		return
 	}
 
 	artistService, err := service.NewArtistService(artistRepo, eventRepo, s3Store)
 	if err != nil {
-		log.Fatal("Could not create artist service", "error", err)
+		slog.Error("Could not create artist service", "error", err)
+		return
 	}
 
 	venueService := service.NewVenueService(venueRepo)
@@ -121,11 +134,13 @@ func main() {
 	)
 
 	if err != nil {
-		log.Fatal("Could not create server", "error", err)
+		slog.Error("Could not create server", "error", err)
+		return
 	}
 
 	slog.Info("Started server", "host", *host, "port", *port, "origin", *origin)
 	if err := srv.Start(); err != nil {
-		log.Fatal("Could not start server", "error", err)
+		slog.Error("Could not start server", "error", err)
+		return
 	}
 }
