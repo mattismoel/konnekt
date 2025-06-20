@@ -147,12 +147,12 @@ func TestWithImageURL(t *testing.T) {
 
 	tests := map[string]test{
 		"Valid URL": {
-			url:     "https://konnekt-bucket.s3.eu-north-1.amazonaws.com/events/128.png",
-			wantURL: "https://konnekt-bucket.s3.eu-north-1.amazonaws.com/events/128.png",
+			url:     "https://example.com",
+			wantURL: "https://example.com",
 			wantErr: nil,
 		},
 		"Inaccessible URL": {
-			url:     "https://konnekt-bucket.s3.eu-north-1.amazonaws.com/events/no-exist.png",
+			url:     "https://example.com/inaccessible",
 			wantURL: "",
 			wantErr: event.ErrImageURLInaccessible,
 		},

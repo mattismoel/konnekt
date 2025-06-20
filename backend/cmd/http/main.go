@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	MAX_STARTUP_DURATION = 10 * time.Second
+	MAX_STARTUP_DURATION = 60 * time.Second
 )
 
 func main() {
@@ -89,10 +89,10 @@ func main() {
 	authService, err := service.NewAuthService(memberRepo, authRepo, teamRepo)
 	if err != nil {
 		slog.Error("Could not create auth service", "error", err)
-		return
 	}
 
 	s3Store, err := s3.NewS3ObjectStore(ctx, *s3Region, *s3Bucket)
+
 	if err != nil {
 		slog.Error("Could not create S3 store", "error", err)
 		return

@@ -46,11 +46,17 @@ func NewS3ObjectStore(ctx context.Context, region string, bucket string) (*S3Obj
 
 	config := aws.
 		NewConfig().
-		WithRegion(region)
+		WithRegion(region).
+		WithCredentialsChainVerboseErrors(true)
 
 	sess, err := session.NewSession(config)
 	if err != nil {
 		return nil, fmt.Errorf("Could not create AWS session: %v", err)
+	}
+
+	_, err = sess.Config.Credentials.Get()
+	if err != nil {
+		return nil, fmt.Errorf("Could not get AWS credentials: %v", err)
 	}
 
 	uploader := s3manager.NewUploader(sess)
