@@ -23,8 +23,8 @@ const RegisterForm = ({ onSubmit }: Props) => {
 					<Card.Description>Her kan du tilmelde dig som medlem af foreningen Konnekt.</Card.Description>
 				</Card.Header>
 
-				<Card.Content className="gap-16">
-					<div className="flex w-full justify-center">
+				<Card.Content className="gap-8">
+					<div className="flex w-full justify-center mb-8">
 						<FormField error={errors.profilePictureFile}>
 							<div className="flex w-full justify-center">
 								<ProfilePictureSelector
