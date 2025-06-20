@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	MAX_STARTUP_DURATION = 10 * time.Second
+	MAX_STARTUP_DURATION = 60 * time.Second
 )
 
 func main() {
