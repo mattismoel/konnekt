@@ -6,7 +6,6 @@ import { useToast } from "@/lib/context/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { APIError } from "@/lib/api";
 import { FaCheckDouble, FaTrash } from "react-icons/fa";
-import MemberStatusIndicator from "@/lib/components/member-status-indicator";
 import { useState } from "react";
 import ContextMenu from "@/lib/components/context-menu";
 import { useAuth } from "@/lib/context/auth";
@@ -87,10 +86,6 @@ const MemberEntry = ({ member }: MemberEntryProps) => {
 			</List.Entry.LinkSection>
 
 			<List.Entry.Section className="flex-row items-center gap-4 w-min">
-				<MemberStatusIndicator
-					status={member.active ? 'approved' : 'non-approved'}
-					className="hidden md:flex"
-				/>
 				<ContextMenu.Button onClick={() => setShowContextMenu(true)} />
 			</List.Entry.Section>
 
@@ -168,7 +163,6 @@ const ApprovalEntry = ({ member }: ApprovalEntryProps) => {
 			</List.Entry.LinkSection>
 
 			<List.Entry.Section className="w-min flex-row gap-6">
-				<MemberStatusIndicator status="non-approved" className="hidden md:block" />
 				<div className="text-text/75 flex gap-2">
 					<button className="p-1 hover:text-green-500" onClick={approve}><FaCheckDouble /></button>
 					<button className="p-1 hover:text-red-500" onClick={disapprove}><FaTrash /></button>
