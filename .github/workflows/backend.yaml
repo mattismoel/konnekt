@@ -7,12 +7,12 @@ env:
 on:
   pull_request:
     branches: [ "main" ]
-    # paths:
-    # - 'backend/**'
+    paths:
+    - 'backend/**'
   push:
     branches: [ "main" ]
-    # paths:
-    # - 'backend/**'
+    paths:
+    - 'backend/**'
 
 jobs:
   test-and-build:

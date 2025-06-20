@@ -41,7 +41,7 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 	return (
 		<div className="group bg-background flex flex-col border border-zinc-800 hover:border-zinc-700 rounded-sm overflow-hidden hover:bg-zinc-900 transition-colors">
 			<div className="overflow-hidden">
-				<img aria-disabled alt="Background blur" src={member.profilePictureUrl} loading="lazy" className="brightness-75 h-48 w-full object-cover scale-100 group-hover:scale-100 group-hover:brightness-100 transition-[scale,filter] duration-500" />
+				<img aria-disabled alt="Background blur" src={member.profilePictureUrl} loading="lazy" className="brightness-100 sm:brightness-75 h-48 w-full object-cover scale-100 group-hover:scale-100 group-hover:brightness-100 transition-[scale,filter] duration-500" />
 			</div>
 			<div className="relative p-4 @lg:p-6 flex flex-col gap-2 cursor-default w-full object-cover">
 				<img
