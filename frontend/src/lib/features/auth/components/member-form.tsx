@@ -84,7 +84,7 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 		<MemberFormContext.Provider value={{ member, teams, memberTeams, isCurrentMember, isEditable }}>
 			<FormProvider {...methods}>
 				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
-					<div className="w-full flex flex-col items-center gap-8 md:flex-row">
+					<div className="w-full flex flex-col items-center gap-8">
 						<Controller
 							control={control}
 							name='image'
@@ -95,7 +95,7 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 							)}
 						/>
 						<div className="flex flex-col items-center space-y-4 md:items-start">
-							<div className="flex flex-col items-center space-y-1 md:items-start">
+							<div className="flex flex-col items-center space-y-1">
 								<h1 className="text-2xl font-semibold">{fullName}</h1>
 								<span className="text-text/50 text-center md:text-left"
 								>{memberTeams.map(({ displayName }) => displayName).join(', ')}</span
