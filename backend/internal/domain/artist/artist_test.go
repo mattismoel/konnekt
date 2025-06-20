@@ -153,9 +153,9 @@ func TestWithImageURL(t *testing.T) {
 			wantURL: "",
 		},
 		"Valid URL": {
-			url:     "https://konnekt-bucket.s3.eu-north-1.amazonaws.com/artists/128.png",
+			url:     "https://example.com",
 			err:     nil,
-			wantURL: "https://konnekt-bucket.s3.eu-north-1.amazonaws.com/artists/128.png",
+			wantURL: "https://example.com",
 		},
 	}
 
