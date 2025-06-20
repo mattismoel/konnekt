@@ -7,6 +7,7 @@ const includedTeamNames: TeamType[] = [
 	"event-management",
 	"booking",
 	"visual-identity",
+	"economy",
 ]
 
 type Props = {
