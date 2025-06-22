@@ -16,6 +16,7 @@ export const memberSchema = z.object({
 		.optional(),
 
 	active: z.boolean(),
+	specialRole: z.string().optional()
 })
 
 export type Member = z.infer<typeof memberSchema>
@@ -35,6 +36,9 @@ export const memberForm = z.object({
 		.int()
 		.positive()
 		.array(),
+	specialRole: z
+		.string()
+		.optional(),
 	image: z.instanceof(File).optional()
 })
 
