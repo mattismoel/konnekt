@@ -38,6 +38,7 @@ type MemberInfoProps = {
 
 const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 	const memberTeams = member.teams.filter(team => includedTeams.some(t => t.name === team.name))
+	const teamsString = memberTeams.map(t => t.displayName).join(", ")
 
 	return (
 		<div className="group bg-background flex flex-col border border-zinc-800 hover:border-zinc-700 rounded-sm overflow-hidden hover:bg-zinc-900 transition-colors">
@@ -54,7 +55,12 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 				<span className="font-semibold">{member.firstName} {member.lastName}</span>
 
 				<div className="flex flex-col text-text/50 text-sm">
-					<span>{memberTeams.map(t => t.displayName).join(", ")}</span>
+					<span>
+						{member.specialRole
+							? `${member.specialRole} / ${teamsString}`
+							: teamsString}
+					</span>
+
 					<a href={`mailto:${member.email}`} target="_blank">{member.email}</a>
 				</div>
 			</div>

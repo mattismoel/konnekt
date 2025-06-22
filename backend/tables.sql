@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS member (
   last_name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   profile_picture_url TEXT,
+  special_role TEXT NOT NULL,
   active BOOLEAN NOT NULL DEFAULT 0
 );
 

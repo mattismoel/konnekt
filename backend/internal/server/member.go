@@ -101,6 +101,7 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 		FirstName         string  `json:"firstName"`
 		LastName          string  `json:"lastName"`
 		ProfilePictureURL string  `json:"profilePictureUrl"`
+		SpecialRole       string  `json:"specialRole"`
 		MemberTeamIDs     []int64 `json:"memberTeams"`
 	}
 
@@ -154,6 +155,14 @@ func (s Server) handleUpdateMember() http.HandlerFunc {
 		if err != nil {
 			writeError(w, err)
 			return
+		}
+
+		if strings.TrimSpace(load.SpecialRole) != "" {
+			err := m.WithCfgs(member.WithSpecialRole(load.SpecialRole))
+			if err != nil {
+				writeError(w, err)
+				return
+			}
 		}
 
 		if strings.TrimSpace(load.ProfilePictureURL) != "" {

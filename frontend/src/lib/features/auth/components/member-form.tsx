@@ -56,6 +56,7 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 			firstName: member.firstName,
 			lastName: member.lastName,
 			email: member.email,
+			specialRole: member.specialRole,
 			memberTeams: memberTeams.map(({ id }) => id),
 		},
 		resolver: zodResolver(memberForm),
@@ -143,7 +144,7 @@ const GeneralSection = () => {
 }
 
 const TeamsSection = () => {
-	const { control } = useFormContext<MemberFormValues>()
+	const { control, formState: { errors }, register } = useFormContext<MemberFormValues>()
 	const { teams, isEditable } = useMemberFormContext()
 
 	const [showPicker, setShowPicker] = useState(false)
@@ -158,45 +159,53 @@ const TeamsSection = () => {
 		<section>
 			<h1 className="font-bold font-heading mb-8 text-2xl">Hold</h1>
 
-			<Controller
-				control={control}
-				name="memberTeams"
-				render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => {
-					const selectedEntries = entries.filter(e => value.includes(parseInt(e.value)))
+			<div className="flex flex-col gap-8">
 
-					return (
-						<>
-							<PillList entries={selectedEntries.map(e => e.name)}>
-								{isEditable && (
-									<Button
-										variant="ghost"
-										onClick={() => setShowPicker(true)}
-										className="h-10 rounded-full px-4"
-									>
-										<FaPen />Vælg
-									</Button>
-								)}
-							</PillList>
+				<FormField error={errors.specialRole}>
+					<Input placeholder='Specialtitel' {...register("specialRole")} />
+				</FormField>
 
-							<FormField error={error}>
-								<Picker
-									{...rest}
-									disabled={!isEditable}
-									title="Vælg medlemshold..."
-									description="Her kan du vælge de medlemshold, som medlemmet associeres med."
-									entries={entries}
-									selected={selectedEntries}
-									show={showPicker}
-									onClose={() => setShowPicker(false)}
-									onChange={(newEntries) =>
-										onChange(newEntries.map(({ value }) => parseInt(value)))
-									}
-								/>
-							</FormField>
-						</>
-					)
-				}}
-			/>
+				<Controller
+					control={control}
+					name="memberTeams"
+					render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => {
+						const selectedEntries = entries.filter(e => value.includes(parseInt(e.value)))
+
+						return (
+							<>
+								<PillList entries={selectedEntries.map(e => e.name)}>
+									{isEditable && (
+										<Button
+											variant="ghost"
+											onClick={() => setShowPicker(true)}
+											className="h-10 rounded-full px-4"
+										>
+											<FaPen />Vælg
+										</Button>
+									)}
+								</PillList>
+
+								<FormField error={error}>
+									<Picker
+										{...rest}
+										disabled={!isEditable}
+										title="Vælg medlemshold..."
+										description="Her kan du vælge de medlemshold, som medlemmet associeres med."
+										entries={entries}
+										selected={selectedEntries}
+										show={showPicker}
+										onClose={() => setShowPicker(false)}
+										onChange={(newEntries) =>
+											onChange(newEntries.map(({ value }) => parseInt(value)))
+										}
+									/>
+								</FormField>
+							</>
+						)
+					}}
+				/>
+			</div>
+
 		</section>
 	)
 }

@@ -23,16 +23,19 @@ var (
 
 	ErrProfileImageURLInvalid      = errors.New("Profile image URL must be valid")
 	ErrProfileImageURLInaccessible = errors.New("Profile image URL must be accessible")
+	ErrInvalidSpecialRole          = errors.New("Special role name must be valid")
 )
 
 type Member struct {
-	ID                int64               `json:"id"`
-	FirstName         string              `json:"firstName"`
-	LastName          string              `json:"lastName"`
-	Email             string              `json:"email"`
-	ProfilePictureURL string              `json:"profilePictureUrl"`
-	Teams             team.TeamCollection `json:"teams"`
-	Active            bool                `json:"active"`
+	ID                int64  `json:"id"`
+	FirstName         string `json:"firstName"`
+	LastName          string `json:"lastName"`
+	Email             string `json:"email"`
+	ProfilePictureURL string `json:"profilePictureUrl"`
+	SpecialRole       string `json:"specialRole"` // An optional special role of a member. I.e. "Production Manager".
+	Active            bool   `json:"active"`
+
+	Teams team.TeamCollection `json:"teams"`
 
 	PasswordHash PasswordHash `json:"-"`
 }
@@ -160,6 +163,18 @@ func WithProfilePictureURL(imageUrl string) cfgFunc {
 		}
 
 		m.ProfilePictureURL = u.String()
+
+		return nil
+	}
+}
+
+func WithSpecialRole(name string) cfgFunc {
+	return func(m *Member) error {
+		if strings.TrimSpace(name) == "" {
+			return ErrInvalidSpecialRole
+		}
+
+		m.SpecialRole = name
 
 		return nil
 	}

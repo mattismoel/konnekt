@@ -20,8 +20,9 @@ type Member struct {
 	FirstName         string
 	LastName          string
 	PasswordHash      []byte
-	Active            bool
 	ProfilePictureURL string
+	SpecialRole       string
+	Active            bool
 }
 
 type MemberCollection []Member
@@ -203,6 +204,7 @@ func (repo MemberRepository) Update(ctx context.Context, memberID int64, m membe
 		LastName:          m.LastName,
 		Email:             m.Email,
 		ProfilePictureURL: m.ProfilePictureURL,
+		SpecialRole:       m.SpecialRole,
 	})
 
 	if err != nil {
@@ -395,6 +397,7 @@ func scanMember(s Scanner, dst *Member) error {
 		&dst.ProfilePictureURL,
 		&dst.Active,
 		&dst.PasswordHash,
+		&dst.SpecialRole,
 	)
 
 	if err != nil {
@@ -413,6 +416,7 @@ var memberBuilder = sq.
 		"member.profile_picture_url",
 		"member.active",
 		"member.password_hash",
+		"member.special_role",
 	).
 	From("member")
 
@@ -486,6 +490,10 @@ func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) err
 	if m.ProfilePictureURL != "" {
 		builder = builder.Set("profile_picture_url", m.ProfilePictureURL)
 	}
+
+	// The special_role field shall always be set, as it can assume an empty
+	// string value (no special role name).
+	builder = builder.Set("special_role", m.SpecialRole)
 
 	query, args, err := builder.ToSql()
 	if err != nil {
@@ -581,6 +589,7 @@ func (m Member) ToInternal(teams TeamCollection) member.Member {
 		Email:             m.Email,
 		PasswordHash:      m.PasswordHash,
 		ProfilePictureURL: m.ProfilePictureURL,
+		SpecialRole:       m.SpecialRole,
 
 		Teams: teams.ToInternal(),
 
