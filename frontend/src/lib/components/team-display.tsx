@@ -52,16 +52,12 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 					loading="lazy"
 					className="pointer-events-none absolute h-full w-full blur-3xl opacity-0 group-hover:opacity-25 transition-opacity duration-1000"
 				/>
+
 				<span className="font-semibold">{member.firstName} {member.lastName}</span>
 
 				<div className="flex flex-col text-text/50 text-sm">
-					<span>
-						{member.specialRole
-							? `${member.specialRole} / ${teamsString}`
-							: teamsString}
-					</span>
-
-					<a href={`mailto:${member.email}`} target="_blank">{member.email}</a>
+					{member.specialRole && <span>{member.specialRole}</span>}
+					<span className="line-clamp-1">{teamsString}</span>
 				</div>
 			</div>
 		</div>
