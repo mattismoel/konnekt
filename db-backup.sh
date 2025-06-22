@@ -43,8 +43,8 @@ CONTAINER_ID=$(docker run -d -v ${VOLUME_NAME}:/app/data busybox true)
 echo "Copying ${FILE_PATH} from volume '${VOLUME_NAME}'..."
 docker cp "${CONTAINER_ID}:/app/data/${FILE_PATH}" "${TMP_DIR}/backup.db"
 
-if [! -f "${TMP_DIR}/backup.db" ]; then
-	echo "Failed to cipy file '${FILE_PATH}'. Exiting..."
+if [ ! -f "${TMP_DIR}/backup.db" ]; then
+	echo "Failed to copy file '${FILE_PATH}'. Exiting..."
 	exit 1
 fi
 
