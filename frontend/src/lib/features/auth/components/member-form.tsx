@@ -162,7 +162,7 @@ const TeamsSection = () => {
 			<div className="flex flex-col gap-8">
 
 				<FormField error={errors.specialRole}>
-					<Input placeholder='Specialtitel' {...register("specialRole")} />
+					<Input placeholder='Specialtitel' {...register("specialRole")} disabled={!isEditable} />
 				</FormField>
 
 				<Controller
