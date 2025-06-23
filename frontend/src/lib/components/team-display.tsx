@@ -24,7 +24,7 @@ const TeamDisplay = ({ members, allTeams }: Props) => {
 
 	return (
 		<div className="@container flex flex-col gap-16">
-			<div className="grid grid-cols-1 gap-8">
+			<div className="grid grid-cols-1 gap-8 @3xl:grid-cols-2">
 				{includedMembers.map(member => <MemberInfo key={member.id} member={member} includedTeams={includedTeams} />)}
 			</div>
 		</div>
@@ -48,7 +48,7 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 					<div className="flex flex-col gap-2">
 						<span className="font-semibold line-clamp-1">{member.firstName} {member.lastName}</span>
 						<div className="text-text/50 flex flex-col">
-							<span>
+							<span className="line-clamp-1">
 								{member.specialRole
 									? `${member.specialRole} / ${teamsString}`
 									: teamsString}
