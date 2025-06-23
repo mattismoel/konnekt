@@ -18,14 +18,21 @@ type Props = {
 const TeamDisplay = ({ members, allTeams }: Props) => {
 	const includedTeams = allTeams.filter(team => includedTeamNames.includes(team.name))
 
-	const includedMembers = members.filter(member => member.teams.some(team =>
-		includedTeams.some(includedTeam => includedTeam.name === team.name)
-	))
+	const includedMembers = members
+		.filter(member => member.teams.some(team =>
+			includedTeams.some(includedTeam => includedTeam.name === team.name)
+		))
+
+	const specialMembers: Member[] = []
+	const regularMembers: Member[] = []
+
+	includedMembers.forEach(m => m.specialRole ? specialMembers.push(m) : regularMembers.push(m))
 
 	return (
 		<div className="@container flex flex-col gap-16">
 			<div className="grid grid-cols-1 gap-8 @3xl:grid-cols-2">
-				{includedMembers.map(member => <MemberInfo key={member.id} member={member} includedTeams={includedTeams} />)}
+				{specialMembers.map(member => <MemberInfo key={member.id} member={member} includedTeams={includedTeams} />)}
+				{regularMembers.map(member => <MemberInfo key={member.id} member={member} includedTeams={includedTeams} />)}
 			</div>
 		</div>
 	)
