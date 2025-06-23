@@ -59,9 +59,7 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 						<span className="font-semibold line-clamp-1">{member.firstName} {member.lastName}</span>
 						<div className="text-text/50 flex flex-col">
 							<span className="line-clamp-1">
-								{member.specialRole
-									? `${member.specialRole} / ${teamsString}`
-									: teamsString}
+								{member.specialRole ? member.specialRole : teamsString}
 							</span>
 							<span className="line-clamp-1">{member.email}</span>
 						</div>
