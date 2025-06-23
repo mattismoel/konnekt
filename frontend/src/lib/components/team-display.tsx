@@ -42,8 +42,11 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 
 	return (
 		<a href={`mailto:${member.email}`} className="group rounded-sm overflow-hidden bg-gradient-to-br from-zinc-700 to-zinc-900 p-[1px] transition-colors hover:from-zinc-600 hover:to-zinc-900">
-			<div className="flex bg-gradient-to-tl from-zinc-950 to-zinc-950 rounded-sm overflow-hidden transition-colors group-hover:to-zinc-900">
-				<img src={member.profilePictureUrl} className="size-32 object-cover" />
+			<div className="flex flex-col @lg:flex-row bg-gradient-to-tl from-zinc-950 to-zinc-950 rounded-sm overflow-hidden transition-colors group-hover:to-zinc-900">
+				<img
+					src={member.profilePictureUrl}
+					className="w-full aspect-video @lg:w-32 @lg:block object-cover shrink-0"
+				/>
 				<div className="py-4 px-8">
 					<div className="flex flex-col gap-2">
 						<span className="font-semibold line-clamp-1">{member.firstName} {member.lastName}</span>
@@ -53,7 +56,7 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 									? `${member.specialRole} / ${teamsString}`
 									: teamsString}
 							</span>
-							<span>{member.email}</span>
+							<span className="line-clamp-1">{member.email}</span>
 						</div>
 					</div>
 				</div>
