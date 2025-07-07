@@ -8,12 +8,15 @@ import FormField from '@/lib/components/form-field';
 import Input from '@/lib/components/ui/input';
 import Button from '@/lib/components/ui/button/button';
 import { createSubmitHandler } from '@/lib/api';
-import Picker, { type Entry } from '@/lib/components/ui/picker';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 import PillList from '@/lib/components/pill-list';
 import { FaPen } from 'react-icons/fa6';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import Modal from '@/lib/components/ui/modal';
+import type { Entry as EntryType } from '@/lib/components/ui/picker/entry';
+import MultiPicker from '@/lib/components/ui/picker/multi-picker';
+import Searchbar from '@/lib/components/searchbar';
 
 type MemberFormContext = {
 	member: Member;
@@ -147,13 +150,18 @@ const TeamsSection = () => {
 	const { control, formState: { errors }, register } = useFormContext<MemberFormValues>()
 	const { teams, isEditable } = useMemberFormContext()
 
+	const [search, setSearch] = useState("")
 	const [showPicker, setShowPicker] = useState(false)
 
-	const entries: Entry[] = teams.map(({ id, displayName }) => ({
+	const entries: EntryType[] = teams.map(({ id, displayName }) => ({
 		id: id.toString(),
 		value: id.toString(),
 		name: displayName,
 	}))
+
+	const filteredEntries = useMemo(() => entries.filter(e =>
+		e.name.toLowerCase().includes(search.toLowerCase())
+	), [search, entries])
 
 	return (
 		<section>
@@ -168,7 +176,7 @@ const TeamsSection = () => {
 				<Controller
 					control={control}
 					name="memberTeams"
-					render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => {
+					render={({ field: { value, onChange }, fieldState: { error } }) => {
 						const selectedEntries = entries.filter(e => value.includes(parseInt(e.value)))
 
 						return (
@@ -186,19 +194,22 @@ const TeamsSection = () => {
 								</PillList>
 
 								<FormField error={error}>
-									<Picker
-										{...rest}
-										disabled={!isEditable}
-										title="Vælg medlemshold..."
-										description="Her kan du vælge de medlemshold, som medlemmet associeres med."
-										entries={entries}
-										selected={selectedEntries}
-										show={showPicker}
-										onClose={() => setShowPicker(false)}
-										onChange={(newEntries) =>
-											onChange(newEntries.map(({ value }) => parseInt(value)))
-										}
-									/>
+									<Modal show={showPicker} onClose={() => setShowPicker(false)}>
+										<Modal.Header>
+											<Modal.Title>Vælg medlemshold...</Modal.Title>
+											<Modal.Description>
+												Her kan du vælge de medlemshold, som medlemmet associeres med.
+											</Modal.Description>
+										</Modal.Header>
+										<Modal.Content className="flex flex-col gap-4">
+											<Searchbar search={search} onChange={(s) => setSearch(s)} />
+											<MultiPicker
+												selected={selectedEntries}
+												entries={filteredEntries}
+												onChange={newEntries => onChange(newEntries.map(e => parseInt(e.value)))}
+											/>
+										</Modal.Content>
+									</Modal>
 								</FormField>
 							</>
 						)
