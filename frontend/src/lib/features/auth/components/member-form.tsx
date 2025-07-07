@@ -209,6 +209,11 @@ const TeamsSection = () => {
 												onChange={newEntries => onChange(newEntries.map(e => parseInt(e.value)))}
 											/>
 										</Modal.Content>
+										<Modal.Footer>
+											<Button type="button" onClick={() => setShowPicker(false)}>
+												Vælg
+											</Button>
+										</Modal.Footer>
 									</Modal>
 								</FormField>
 							</>
