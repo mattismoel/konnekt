@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useMemo, useState } from "react"
 import { z } from "zod"
 
 import { Controller, FormProvider, useFieldArray, useForm, type UseFieldArrayReturn, type UseFormReturn } from "react-hook-form"
@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 
 import { FaPlus, FaTrash, FaUpload, FaPen } from "react-icons/fa"
 import { artistForm, createArtist, socialUrlToIcon, updateArtist, type Artist, type ArtistFormValues } from "../artist"
-import type { Genre } from "../genre"
+import { createGenre, genreSchema, type Genre } from "../genre"
 import FormField from "@/lib/components/form-field"
 import ImagePreview from "@/lib/components/image-preview"
 import Button from "@/lib/components/ui/button/button"
@@ -14,12 +14,15 @@ import Input from "@/lib/components/ui/input"
 import Tiptap from "@/lib/components/tiptap/tiptap"
 import { trackIdFromUrl } from "@/lib/spotify"
 import SpotifyPreview from "@/lib/components/spotify-preview"
-import type { Entry } from "@/lib/components/ui/picker"
 import PillList from "@/lib/components/pill-list"
-import Picker from "@/lib/components/ui/picker"
 import { createSubmitHandler } from "@/lib/api"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/lib/context/auth"
+import type { Entry as EntryType } from "@/lib/components/ui/picker/entry"
+import Modal from "@/lib/components/ui/modal"
+import MultiPicker from "@/lib/components/ui/picker/multi-picker"
+import Searchbar from "@/lib/components/searchbar"
+import { useToast } from "@/lib/context/toast"
 
 const internalSocialSchema = z.object({ value: z.string().url() })
 
@@ -166,16 +169,39 @@ const SpotifySection = () => {
 }
 
 const GenreSection = () => {
+	const queryClient = useQueryClient()
+	const { addToast } = useToast()
 	const { genres, control, formState: { errors, disabled } } = useArtistFormContext()
 	const [showPicker, setShowPicker] = useState(false)
 
+	const [search, setSearch] = useState("")
 	const isEditable = !disabled
 
-	const entries: Entry[] = genres.map(genre => ({
+	const entries: EntryType[] = genres.map(genre => ({
 		id: genre.id.toString(),
 		value: genre.id.toString(),
 		name: genre.name,
 	}))
+
+	const filteredEntries = useMemo(() => entries.filter(entry =>
+		entry.name.toLowerCase().includes(search.toLowerCase())
+	), [search, entries])
+
+	const handleCreateGenre = async () => {
+		const { data, success, error } = genreSchema.pick({ name: true }).safeParse({ name: search })
+		if (!success) {
+			addToast("Kunne ikke lave genre", "Noget gik galt...", "error")
+			throw error
+		}
+
+		try {
+			await createGenre(data.name)
+			addToast("Genre skabt")
+			await queryClient.invalidateQueries({ queryKey: ["genres"] })
+		} catch (e) {
+			throw e
+		}
+	}
 
 	return (
 		<section>
@@ -184,7 +210,7 @@ const GenreSection = () => {
 			<Controller
 				control={control}
 				name="genreIds"
-				render={({ field: { value, onChange, ...rest } }) => {
+				render={({ field: { value, onChange } }) => {
 					const selectedEntries = entries.filter(e => value.includes(parseInt(e.value)))
 
 					return (
@@ -203,18 +229,30 @@ const GenreSection = () => {
 								</PillList>
 							</FormField>
 
-							<Picker
-								{...rest}
-								title="Vælg genrer..."
-								description="Her kan du vælge de genrer, som kunstneren associeres med."
-								entries={entries}
-								selected={selectedEntries}
-								show={showPicker}
-								onClose={() => setShowPicker(false)}
-								onChange={(newEntries) => onChange(
-									newEntries.map(e => parseInt(e.value))
-								)}
-							/>
+							<Modal show={showPicker} onClose={() => setShowPicker(false)}>
+								<Modal.Header>
+									<Modal.Title>Vælg genrer...</Modal.Title>
+									<Modal.Description>
+										Her kan du vælge de genrer, som kunstneren associeres med.
+									</Modal.Description>
+								</Modal.Header>
+								<Modal.Content className="flex flex-col gap-8">
+									<div className="flex gap-2">
+										<Searchbar search={search} onChange={(s) => setSearch(s)} />
+										<Button type="button" onClick={handleCreateGenre}>
+											<FaPlus />Tilføj
+										</Button>
+									</div>
+									<MultiPicker
+										entries={filteredEntries}
+										selected={selectedEntries}
+										onChange={newSelected => onChange(newSelected.map(e => parseInt(e.value)))}
+									/>
+								</Modal.Content>
+								<Modal.Footer>
+									<Button>Vælg</Button>
+								</Modal.Footer>
+							</Modal>
 						</>
 					)
 				}}
