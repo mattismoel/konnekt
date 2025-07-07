@@ -250,7 +250,9 @@ const GenreSection = () => {
 									/>
 								</Modal.Content>
 								<Modal.Footer>
-									<Button>Vælg</Button>
+									<Button type="button" onClick={() => setShowPicker(false)}>
+										Vælg
+									</Button>
 								</Modal.Footer>
 							</Modal>
 						</>
