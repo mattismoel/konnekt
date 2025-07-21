@@ -17,7 +17,7 @@ type Props = {
 }
 
 const Slideshow = ({ srcs }: Props) => {
-	let [indexHistory, setIndexHistory] = useState([0]);
+	let [indexHistory, setIndexHistory] = useState([Math.floor(Math.random() * srcs.length)]);
 	const currentIdx = indexHistory[indexHistory.length - 1]
 
 	useEffect(() => {
