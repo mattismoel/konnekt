@@ -12,7 +12,7 @@ import (
 	"github.com/nfnt/resize"
 )
 
-const LANDING_IMAGE_WIDTH_PX = 2048
+const LANDING_IMAGE_WIDTH_PX = 4096
 
 type ContentService struct {
 	store       object.Store
