@@ -1,7 +1,10 @@
 import { useEffect, useState, type ImgHTMLAttributes } from "react";
 import { cn } from "../clsx";
 
-const RATE_MS = 1000 / (1 / 4);
+// The amount of seconds each image is to be shown.
+const IMAGE_HOLD_SECS = 4.0
+
+const rate = 1 / (1 / IMAGE_HOLD_SECS)
 
 type Src = Pick<ImgHTMLAttributes<HTMLImageElement>, "alt" | "src">
 
@@ -19,7 +22,7 @@ const Slideshow = ({ srcs }: Props) => {
 		const interval = setInterval(() => {
 			setCurrentIdx(prev => (prev + 1) % srcs.length)
 			// Logic here...
-		}, RATE_MS)
+		}, rate * 1000)
 
 		return () => clearInterval(interval);
 	}, [srcs.length])
