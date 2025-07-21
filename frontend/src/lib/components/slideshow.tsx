@@ -1,7 +1,14 @@
 import { useEffect, useState, type ImgHTMLAttributes } from "react";
 import { cn } from "../clsx";
 
-const RATE_MS = 1000 / (1 / 4);
+// The amount of images to have passed, before the same image can be shown 
+// again.
+const HISTORY_SIZE = 3;
+
+// The amount of seconds each image is to be shown.
+const IMAGE_HOLD_SECS = 4.0
+
+const rate = 1 / (1 / IMAGE_HOLD_SECS)
 
 type Src = Pick<ImgHTMLAttributes<HTMLImageElement>, "alt" | "src">
 
@@ -10,16 +17,25 @@ type Props = {
 }
 
 const Slideshow = ({ srcs }: Props) => {
-	const [currentIdx, setCurrentIdx] = useState(0)
-
+	let [indexHistory, setIndexHistory] = useState([0]);
+	const currentIdx = indexHistory[indexHistory.length - 1]
 
 	useEffect(() => {
 		if (srcs.length <= 0) return
 
 		const interval = setInterval(() => {
-			setCurrentIdx(prev => (prev + 1) % srcs.length)
-			// Logic here...
-		}, RATE_MS)
+			setIndexHistory(prevHistory => {
+				let nextIdx: number;
+
+				do {
+					nextIdx = Math.floor(Math.random() * srcs.length)
+				} while (prevHistory.includes(nextIdx))
+
+				const newHistory = [...prevHistory, nextIdx].slice(-HISTORY_SIZE);
+
+				return newHistory
+			})
+		}, rate * 1000)
 
 		return () => clearInterval(interval);
 	}, [srcs.length])
