@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	ErrNotExists              = errors.New("Artist does not exist")
 	ErrInvalidID              = errors.New("ID must be a positive integer")
 	ErrInvalidName            = errors.New("Name must not be empty")
 	ErrInvalidDescription     = errors.New("Description must not be empty")
