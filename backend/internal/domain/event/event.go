@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/mattismoel/konnekt/internal/cfg"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/venue"
 )
@@ -33,9 +34,7 @@ type Event struct {
 	IsPublic    bool              `json:"isPublic"`
 }
 
-type CfgFunc func(e *Event) error
-
-func (e *Event) WithCfgs(cfgs ...CfgFunc) error {
+func (e *Event) WithCfgs(cfgs ...cfg.Func[Event]) error {
 	for _, cfg := range cfgs {
 		if err := cfg(e); err != nil {
 			return err
@@ -45,7 +44,7 @@ func (e *Event) WithCfgs(cfgs ...CfgFunc) error {
 	return nil
 }
 
-func NewEvent(cfgs ...CfgFunc) (*Event, error) {
+func NewEvent(cfgs ...cfg.Func[Event]) (*Event, error) {
 	e := &Event{
 		Concerts: make([]concert.Concert, 0),
 		IsPublic: false,
@@ -58,7 +57,7 @@ func NewEvent(cfgs ...CfgFunc) (*Event, error) {
 	return e, nil
 }
 
-func WithID(id int64) CfgFunc {
+func WithID(id int64) cfg.Func[Event] {
 	return func(e *Event) error {
 		if id <= 0 {
 			return ErrInvalidID
@@ -69,7 +68,7 @@ func WithID(id int64) CfgFunc {
 	}
 }
 
-func WithTitle(title string) CfgFunc {
+func WithTitle(title string) cfg.Func[Event] {
 	return func(e *Event) error {
 		title = strings.TrimSpace(title)
 
@@ -82,7 +81,7 @@ func WithTitle(title string) CfgFunc {
 	}
 }
 
-func WithDescription(description string) CfgFunc {
+func WithDescription(description string) cfg.Func[Event] {
 	return func(e *Event) error {
 		description = strings.TrimSpace(description)
 
@@ -96,7 +95,7 @@ func WithDescription(description string) CfgFunc {
 	}
 }
 
-func WithTicketURL(u string) CfgFunc {
+func WithTicketURL(u string) cfg.Func[Event] {
 	return func(e *Event) error {
 		url, err := url.ParseRequestURI(u)
 		if err != nil {
@@ -117,7 +116,7 @@ func WithTicketURL(u string) CfgFunc {
 	}
 }
 
-func WithImageURL(u string) CfgFunc {
+func WithImageURL(u string) cfg.Func[Event] {
 	return func(e *Event) error {
 		url, err := url.ParseRequestURI(u)
 		if err != nil {
@@ -140,7 +139,7 @@ func WithImageURL(u string) CfgFunc {
 	}
 }
 
-func WithConcerts(concerts ...concert.Concert) CfgFunc {
+func WithConcerts(concerts ...concert.Concert) cfg.Func[Event] {
 	return func(e *Event) error {
 		if len(concerts) <= 0 {
 			return ErrNoConcerts
@@ -151,14 +150,14 @@ func WithConcerts(concerts ...concert.Concert) CfgFunc {
 	}
 }
 
-func WithVenue(v venue.Venue) CfgFunc {
+func WithVenue(v venue.Venue) cfg.Func[Event] {
 	return func(e *Event) error {
 		e.Venue = v
 		return nil
 	}
 }
 
-func WithIsPublic(isPublic bool) CfgFunc {
+func WithIsPublic(isPublic bool) cfg.Func[Event] {
 	return func(e *Event) error {
 		e.IsPublic = isPublic
 		return nil

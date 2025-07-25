@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/mattismoel/konnekt/internal/cfg"
 )
 
 var (
@@ -18,8 +20,6 @@ var (
 	ErrInaccessiblePreviewURL = errors.New("Artist preview URL must be accessible")
 )
 
-type ArtistCfg func(a *Artist) error
-
 type Artist struct {
 	ID          int64    `json:"id"`
 	Name        string   `json:"name"`
@@ -30,7 +30,7 @@ type Artist struct {
 	Socials     []Social `json:"socials"`
 }
 
-func NewArtist(cfgs ...ArtistCfg) (Artist, error) {
+func NewArtist(cfgs ...cfg.Func[Artist]) (Artist, error) {
 	a := Artist{}
 
 	err := a.WithCfgs(cfgs...)
@@ -41,7 +41,7 @@ func NewArtist(cfgs ...ArtistCfg) (Artist, error) {
 	return a, nil
 }
 
-func (a *Artist) WithCfgs(cfgs ...ArtistCfg) error {
+func (a *Artist) WithCfgs(cfgs ...cfg.Func[Artist]) error {
 	for _, cfg := range cfgs {
 		if err := cfg(a); err != nil {
 			return err
@@ -51,7 +51,7 @@ func (a *Artist) WithCfgs(cfgs ...ArtistCfg) error {
 	return nil
 }
 
-func WithID(id int64) ArtistCfg {
+func WithID(id int64) cfg.Func[Artist] {
 	return func(a *Artist) error {
 		if id <= 0 {
 			return ErrInvalidID
@@ -62,7 +62,7 @@ func WithID(id int64) ArtistCfg {
 	}
 }
 
-func WithName(name string) ArtistCfg {
+func WithName(name string) cfg.Func[Artist] {
 	return func(a *Artist) error {
 		if strings.TrimSpace(name) == "" {
 			return ErrInvalidName
@@ -74,7 +74,7 @@ func WithName(name string) ArtistCfg {
 	}
 }
 
-func WithDescription(desc string) ArtistCfg {
+func WithDescription(desc string) cfg.Func[Artist] {
 	return func(a *Artist) error {
 		if strings.TrimSpace(desc) == "" {
 			return ErrInvalidDescription
@@ -86,7 +86,7 @@ func WithDescription(desc string) ArtistCfg {
 	}
 }
 
-func WithImageURL(u string) ArtistCfg {
+func WithImageURL(u string) cfg.Func[Artist] {
 	return func(a *Artist) error {
 		url, err := url.ParseRequestURI(u)
 		if err != nil {
@@ -108,7 +108,7 @@ func WithImageURL(u string) ArtistCfg {
 	}
 }
 
-func WithPreviewURL(u string) ArtistCfg {
+func WithPreviewURL(u string) cfg.Func[Artist] {
 	return func(a *Artist) error {
 		url, err := url.ParseRequestURI(u)
 		if err != nil {
@@ -130,7 +130,7 @@ func WithPreviewURL(u string) ArtistCfg {
 	}
 }
 
-func WithGenres(genres ...Genre) ArtistCfg {
+func WithGenres(genres ...Genre) cfg.Func[Artist] {
 	return func(a *Artist) error {
 		if len(genres) <= 0 {
 			return ErrNoGenres
@@ -141,7 +141,7 @@ func WithGenres(genres ...Genre) ArtistCfg {
 	}
 }
 
-func WithSocials(socials ...Social) ArtistCfg {
+func WithSocials(socials ...Social) cfg.Func[Artist] {
 	return func(a *Artist) error {
 		a.Socials = socials
 		return nil

@@ -3,6 +3,8 @@ package query
 import (
 	"slices"
 	"strings"
+
+	"github.com/mattismoel/konnekt/internal/cfg"
 )
 
 const (
@@ -64,10 +66,8 @@ type ListResult[T any] struct {
 	Records []T `json:"records"`
 }
 
-type CfgFunc func(q *ListQuery) error
-
 // Creates a new list query.
-func NewListQuery(cfgs ...CfgFunc) (ListQuery, error) {
+func NewListQuery(cfgs ...cfg.Func[ListQuery]) (ListQuery, error) {
 	q := &ListQuery{
 		Page:    DEFAULT_PAGE,
 		PerPage: DEFAULT_PER_PAGE,
@@ -85,7 +85,7 @@ func NewListQuery(cfgs ...CfgFunc) (ListQuery, error) {
 	return *q, nil
 }
 
-func WithPage(page int) CfgFunc {
+func WithPage(page int) cfg.Func[ListQuery] {
 	return func(q *ListQuery) error {
 		if page <= 0 {
 			q.Page = DEFAULT_PAGE
@@ -98,7 +98,7 @@ func WithPage(page int) CfgFunc {
 	}
 }
 
-func WithPerPage(perPage int) CfgFunc {
+func WithPerPage(perPage int) cfg.Func[ListQuery] {
 	return func(q *ListQuery) error {
 		if perPage <= 0 {
 			q.PerPage = DEFAULT_PER_PAGE
@@ -116,7 +116,7 @@ func WithPerPage(perPage int) CfgFunc {
 	}
 }
 
-func WithLimit(limit int) CfgFunc {
+func WithLimit(limit int) cfg.Func[ListQuery] {
 	return func(q *ListQuery) error {
 		if limit < 0 {
 			q.Limit = DEFAULT_LIMIT
@@ -136,7 +136,7 @@ func WithLimit(limit int) CfgFunc {
 //		"name": OrderAscending,
 //		"created", OrderDescending,
 //	})
-func WithOrders(orderMap map[string]Order) CfgFunc {
+func WithOrders(orderMap map[string]Order) cfg.Func[ListQuery] {
 	return func(q *ListQuery) error {
 		for key, order := range orderMap {
 			// Set to ascending order on invalid ordering

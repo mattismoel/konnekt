@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/mattismoel/konnekt/internal/cfg"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
@@ -14,19 +15,18 @@ var (
 	ErrInvalidCountryCode = errors.New("Country code must be valid")
 )
 
-type cfgFunc func(v *Venue) error
-
 type Venue struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
 	CountryCode string `json:"countryCode"`
 	City        string `json:"city"`
 }
+
 type Query struct {
 	query.ListQuery
 }
 
-func NewVenue(cfgs ...cfgFunc) (Venue, error) {
+func NewVenue(cfgs ...cfg.Func[Venue]) (Venue, error) {
 	v := Venue{}
 
 	err := v.WithCfgs(cfgs...)
@@ -37,7 +37,7 @@ func NewVenue(cfgs ...cfgFunc) (Venue, error) {
 	return v, nil
 }
 
-func (v *Venue) WithCfgs(cfgs ...cfgFunc) error {
+func (v *Venue) WithCfgs(cfgs ...cfg.Func[Venue]) error {
 	for _, cfg := range cfgs {
 		if err := cfg(v); err != nil {
 			return err
@@ -47,7 +47,7 @@ func (v *Venue) WithCfgs(cfgs ...cfgFunc) error {
 	return nil
 }
 
-func WithID(id int64) cfgFunc {
+func WithID(id int64) cfg.Func[Venue] {
 	return func(v *Venue) error {
 		if id <= 0 {
 			return ErrInvalidID
@@ -58,7 +58,7 @@ func WithID(id int64) cfgFunc {
 	}
 }
 
-func WithName(name string) cfgFunc {
+func WithName(name string) cfg.Func[Venue] {
 	return func(v *Venue) error {
 		if strings.TrimSpace(name) == "" {
 			return ErrInvalidName
@@ -69,7 +69,7 @@ func WithName(name string) cfgFunc {
 	}
 }
 
-func WithCity(city string) cfgFunc {
+func WithCity(city string) cfg.Func[Venue] {
 	return func(v *Venue) error {
 		if strings.TrimSpace(city) == "" {
 			return ErrInvalidCity
@@ -80,7 +80,7 @@ func WithCity(city string) cfgFunc {
 	}
 }
 
-func WithCountryCode(countryCode string) cfgFunc {
+func WithCountryCode(countryCode string) cfg.Func[Venue] {
 	return func(v *Venue) error {
 		if strings.TrimSpace(countryCode) == "" {
 			return ErrInvalidCountryCode

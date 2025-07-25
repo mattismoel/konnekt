@@ -3,6 +3,8 @@ package team
 import (
 	"errors"
 	"strings"
+
+	"github.com/mattismoel/konnekt/internal/cfg"
 )
 
 var (
@@ -21,9 +23,7 @@ type Team struct {
 
 type TeamCollection []Team
 
-type teamCfgFunc func(t *Team) error
-
-func NewTeam(cfgs ...teamCfgFunc) (Team, error) {
+func NewTeam(cfgs ...cfg.Func[Team]) (Team, error) {
 	t := &Team{}
 
 	err := t.WithCfgs(cfgs...)
@@ -33,7 +33,7 @@ func NewTeam(cfgs ...teamCfgFunc) (Team, error) {
 	return *t, nil
 }
 
-func (t *Team) WithCfgs(cfgs ...teamCfgFunc) error {
+func (t *Team) WithCfgs(cfgs ...cfg.Func[Team]) error {
 	for _, cfg := range cfgs {
 		if err := cfg(t); err != nil {
 			return err
@@ -43,7 +43,7 @@ func (t *Team) WithCfgs(cfgs ...teamCfgFunc) error {
 	return nil
 }
 
-func WithID(id int64) teamCfgFunc {
+func WithID(id int64) cfg.Func[Team] {
 	return func(t *Team) error {
 		if id <= 0 {
 			return ErrTeamIDInvalid
@@ -54,7 +54,7 @@ func WithID(id int64) teamCfgFunc {
 	}
 }
 
-func WithName(name string) teamCfgFunc {
+func WithName(name string) cfg.Func[Team] {
 	name = strings.TrimSpace(name)
 	return func(t *Team) error {
 		if name == "" {
@@ -66,7 +66,7 @@ func WithName(name string) teamCfgFunc {
 	}
 }
 
-func WithDisplayName(displayName string) teamCfgFunc {
+func WithDisplayName(displayName string) cfg.Func[Team] {
 	displayName = strings.TrimSpace(displayName)
 	return func(t *Team) error {
 		if displayName == "" {
@@ -78,7 +78,7 @@ func WithDisplayName(displayName string) teamCfgFunc {
 	}
 }
 
-func WithDescription(desc string) teamCfgFunc {
+func WithDescription(desc string) cfg.Func[Team] {
 	desc = strings.TrimSpace(desc)
 	return func(t *Team) error {
 		if desc == "" {

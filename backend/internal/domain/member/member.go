@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/mattismoel/konnekt/internal/cfg"
 	"github.com/mattismoel/konnekt/internal/domain/team"
 )
 
@@ -40,9 +41,7 @@ type Member struct {
 	PasswordHash PasswordHash `json:"-"`
 }
 
-type cfgFunc func(m *Member) error
-
-func NewMember(cfgs ...cfgFunc) (Member, error) {
+func NewMember(cfgs ...cfg.Func[Member]) (Member, error) {
 	m := &Member{
 		Teams:  make(team.TeamCollection, 0),
 		Active: false,
@@ -55,7 +54,7 @@ func NewMember(cfgs ...cfgFunc) (Member, error) {
 	return *m, nil
 }
 
-func (m *Member) WithCfgs(cfgs ...cfgFunc) error {
+func (m *Member) WithCfgs(cfgs ...cfg.Func[Member]) error {
 	for _, cfg := range cfgs {
 		if err := cfg(m); err != nil {
 			return err
@@ -65,7 +64,7 @@ func (m *Member) WithCfgs(cfgs ...cfgFunc) error {
 	return nil
 }
 
-func WithID(id int64) cfgFunc {
+func WithID(id int64) cfg.Func[Member] {
 	return func(m *Member) error {
 		if id <= 0 {
 			return ErrIDInvalid
@@ -77,7 +76,7 @@ func WithID(id int64) cfgFunc {
 	}
 }
 
-func WithFirstName(firstName string) cfgFunc {
+func WithFirstName(firstName string) cfg.Func[Member] {
 	firstName = strings.TrimSpace(firstName)
 	return func(m *Member) error {
 		if firstName == "" {
@@ -90,7 +89,7 @@ func WithFirstName(firstName string) cfgFunc {
 	}
 }
 
-func WithLastName(lastName string) cfgFunc {
+func WithLastName(lastName string) cfg.Func[Member] {
 	lastName = strings.TrimSpace(lastName)
 
 	return func(m *Member) error {
@@ -104,7 +103,7 @@ func WithLastName(lastName string) cfgFunc {
 	}
 }
 
-func WithEmail(email string) cfgFunc {
+func WithEmail(email string) cfg.Func[Member] {
 	return func(m *Member) error {
 
 		email = strings.TrimSpace(email)
@@ -123,14 +122,14 @@ func WithEmail(email string) cfgFunc {
 	}
 }
 
-func WithTeams(teams team.TeamCollection) cfgFunc {
+func WithTeams(teams team.TeamCollection) cfg.Func[Member] {
 	return func(m *Member) error {
 		m.Teams = append(m.Teams, teams...)
 		return nil
 	}
 }
 
-func WithPasswordHash(hash []byte) cfgFunc {
+func WithPasswordHash(hash []byte) cfg.Func[Member] {
 	return func(m *Member) error {
 		if len(hash) <= 0 {
 			return ErrPasswordHashInvalid
@@ -142,7 +141,7 @@ func WithPasswordHash(hash []byte) cfgFunc {
 	}
 }
 
-func WithProfilePictureURL(imageUrl string) cfgFunc {
+func WithProfilePictureURL(imageUrl string) cfg.Func[Member] {
 	return func(m *Member) error {
 		if strings.TrimSpace(imageUrl) == "" {
 			return ErrProfileImageURLInvalid
@@ -168,7 +167,7 @@ func WithProfilePictureURL(imageUrl string) cfgFunc {
 	}
 }
 
-func WithSpecialRole(name string) cfgFunc {
+func WithSpecialRole(name string) cfg.Func[Member] {
 	return func(m *Member) error {
 		if strings.TrimSpace(name) == "" {
 			return ErrInvalidSpecialRole
