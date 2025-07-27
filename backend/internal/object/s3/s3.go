@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"path"
 	"strings"
 	"time"
@@ -63,6 +64,7 @@ func NewS3ObjectStore(ctx context.Context, region string, bucket string) (*S3Obj
 	downloader := s3manager.NewDownloader(sess)
 	client := s3.New(sess)
 
+	log.Printf("Connecting to %q\n", bucket)
 	_, err = client.HeadBucketWithContext(ctx, &s3.HeadBucketInput{
 		Bucket: aws.String(bucket),
 	})
