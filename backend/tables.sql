@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS member (
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
-  profile_picture_url TEXT,
+  profile_picture_url TEXT NOT NULL,
   special_role TEXT NOT NULL,
   active BOOLEAN NOT NULL DEFAULT 0
 );
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS team (
   id INTEGER PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL,
-  description TEXT
+  description TEXT NOT NULL,
 );
 
 CREATE TABLE IF NOT EXISTS members_teams (
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS permission (
   id INTEGER PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL,
-  description TEXT
+  description TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS teams_permissions (
