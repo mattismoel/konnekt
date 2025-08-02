@@ -15,10 +15,15 @@ import { Route as AdminRouteImport } from './routes/admin/route'
 import { Route as AppRouteImport } from './routes/_app/route'
 import { Route as AppIndexImport } from './routes/_app/index'
 import { Route as AppAboutImport } from './routes/_app/about'
+import { Route as AppAuthRouteImport } from './routes/_app/auth/route'
+import { Route as AdminVenuesIndexImport } from './routes/admin/venues/index'
+import { Route as AdminMembersIndexImport } from './routes/admin/members/index'
 import { Route as AdminEventsIndexImport } from './routes/admin/events/index'
+import { Route as AdminContentIndexImport } from './routes/admin/content/index'
 import { Route as AdminArtistsIndexImport } from './routes/admin/artists/index'
 import { Route as AppEventsIndexImport } from './routes/_app/events/index'
 import { Route as AppArtistsIndexImport } from './routes/_app/artists/index'
+import { Route as AdminVenuesCreateImport } from './routes/admin/venues/create'
 import { Route as AdminMembersMemberIdImport } from './routes/admin/members/$memberId'
 import { Route as AdminEventsCreateImport } from './routes/admin/events/create'
 import { Route as AdminArtistsCreateImport } from './routes/admin/artists/create'
@@ -26,6 +31,7 @@ import { Route as AppEventsEventIdImport } from './routes/_app/events/$eventId'
 import { Route as AppAuthRegisterImport } from './routes/_app/auth/register'
 import { Route as AppAuthLoginImport } from './routes/_app/auth/login'
 import { Route as AppArtistsArtistIdImport } from './routes/_app/artists/$artistId'
+import { Route as AdminVenuesVenueIdEditImport } from './routes/admin/venues/$venueId/edit'
 import { Route as AdminEventsEventIdEditImport } from './routes/admin/events/$eventId/edit'
 import { Route as AdminArtistsArtistIdEditImport } from './routes/admin/artists/$artistId/edit'
 
@@ -54,9 +60,33 @@ const AppAboutRoute = AppAboutImport.update({
   getParentRoute: () => AppRouteRoute,
 } as any)
 
+const AppAuthRouteRoute = AppAuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+
+const AdminVenuesIndexRoute = AdminVenuesIndexImport.update({
+  id: '/venues/',
+  path: '/venues/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+
+const AdminMembersIndexRoute = AdminMembersIndexImport.update({
+  id: '/members/',
+  path: '/members/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+
 const AdminEventsIndexRoute = AdminEventsIndexImport.update({
   id: '/events/',
   path: '/events/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+
+const AdminContentIndexRoute = AdminContentIndexImport.update({
+  id: '/content/',
+  path: '/content/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 
@@ -76,6 +106,12 @@ const AppArtistsIndexRoute = AppArtistsIndexImport.update({
   id: '/artists/',
   path: '/artists/',
   getParentRoute: () => AppRouteRoute,
+} as any)
+
+const AdminVenuesCreateRoute = AdminVenuesCreateImport.update({
+  id: '/venues/create',
+  path: '/venues/create',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 
 const AdminMembersMemberIdRoute = AdminMembersMemberIdImport.update({
@@ -103,21 +139,27 @@ const AppEventsEventIdRoute = AppEventsEventIdImport.update({
 } as any)
 
 const AppAuthRegisterRoute = AppAuthRegisterImport.update({
-  id: '/auth/register',
-  path: '/auth/register',
-  getParentRoute: () => AppRouteRoute,
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AppAuthRouteRoute,
 } as any)
 
 const AppAuthLoginRoute = AppAuthLoginImport.update({
-  id: '/auth/login',
-  path: '/auth/login',
-  getParentRoute: () => AppRouteRoute,
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AppAuthRouteRoute,
 } as any)
 
 const AppArtistsArtistIdRoute = AppArtistsArtistIdImport.update({
   id: '/artists/$artistId',
   path: '/artists/$artistId',
   getParentRoute: () => AppRouteRoute,
+} as any)
+
+const AdminVenuesVenueIdEditRoute = AdminVenuesVenueIdEditImport.update({
+  id: '/venues/$venueId/edit',
+  path: '/venues/$venueId/edit',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 
 const AdminEventsEventIdEditRoute = AdminEventsEventIdEditImport.update({
@@ -150,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRoute
     }
+    '/_app/auth': {
+      id: '/_app/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AppAuthRouteImport
+      parentRoute: typeof AppRouteImport
+    }
     '/_app/about': {
       id: '/_app/about'
       path: '/about'
@@ -173,17 +222,17 @@ declare module '@tanstack/react-router' {
     }
     '/_app/auth/login': {
       id: '/_app/auth/login'
-      path: '/auth/login'
+      path: '/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof AppAuthLoginImport
-      parentRoute: typeof AppRouteImport
+      parentRoute: typeof AppAuthRouteImport
     }
     '/_app/auth/register': {
       id: '/_app/auth/register'
-      path: '/auth/register'
+      path: '/register'
       fullPath: '/auth/register'
       preLoaderRoute: typeof AppAuthRegisterImport
-      parentRoute: typeof AppRouteImport
+      parentRoute: typeof AppAuthRouteImport
     }
     '/_app/events/$eventId': {
       id: '/_app/events/$eventId'
@@ -213,6 +262,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMembersMemberIdImport
       parentRoute: typeof AdminRouteImport
     }
+    '/admin/venues/create': {
+      id: '/admin/venues/create'
+      path: '/venues/create'
+      fullPath: '/admin/venues/create'
+      preLoaderRoute: typeof AdminVenuesCreateImport
+      parentRoute: typeof AdminRouteImport
+    }
     '/_app/artists/': {
       id: '/_app/artists/'
       path: '/artists'
@@ -234,11 +290,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminArtistsIndexImport
       parentRoute: typeof AdminRouteImport
     }
+    '/admin/content/': {
+      id: '/admin/content/'
+      path: '/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AdminContentIndexImport
+      parentRoute: typeof AdminRouteImport
+    }
     '/admin/events/': {
       id: '/admin/events/'
       path: '/events'
       fullPath: '/admin/events'
       preLoaderRoute: typeof AdminEventsIndexImport
+      parentRoute: typeof AdminRouteImport
+    }
+    '/admin/members/': {
+      id: '/admin/members/'
+      path: '/members'
+      fullPath: '/admin/members'
+      preLoaderRoute: typeof AdminMembersIndexImport
+      parentRoute: typeof AdminRouteImport
+    }
+    '/admin/venues/': {
+      id: '/admin/venues/'
+      path: '/venues'
+      fullPath: '/admin/venues'
+      preLoaderRoute: typeof AdminVenuesIndexImport
       parentRoute: typeof AdminRouteImport
     }
     '/admin/artists/$artistId/edit': {
@@ -255,28 +332,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEventsEventIdEditImport
       parentRoute: typeof AdminRouteImport
     }
+    '/admin/venues/$venueId/edit': {
+      id: '/admin/venues/$venueId/edit'
+      path: '/venues/$venueId/edit'
+      fullPath: '/admin/venues/$venueId/edit'
+      preLoaderRoute: typeof AdminVenuesVenueIdEditImport
+      parentRoute: typeof AdminRouteImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface AppAuthRouteRouteChildren {
+  AppAuthLoginRoute: typeof AppAuthLoginRoute
+  AppAuthRegisterRoute: typeof AppAuthRegisterRoute
+}
+
+const AppAuthRouteRouteChildren: AppAuthRouteRouteChildren = {
+  AppAuthLoginRoute: AppAuthLoginRoute,
+  AppAuthRegisterRoute: AppAuthRegisterRoute,
+}
+
+const AppAuthRouteRouteWithChildren = AppAuthRouteRoute._addFileChildren(
+  AppAuthRouteRouteChildren,
+)
+
 interface AppRouteRouteChildren {
+  AppAuthRouteRoute: typeof AppAuthRouteRouteWithChildren
   AppAboutRoute: typeof AppAboutRoute
   AppIndexRoute: typeof AppIndexRoute
   AppArtistsArtistIdRoute: typeof AppArtistsArtistIdRoute
-  AppAuthLoginRoute: typeof AppAuthLoginRoute
-  AppAuthRegisterRoute: typeof AppAuthRegisterRoute
   AppEventsEventIdRoute: typeof AppEventsEventIdRoute
   AppArtistsIndexRoute: typeof AppArtistsIndexRoute
   AppEventsIndexRoute: typeof AppEventsIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppAuthRouteRoute: AppAuthRouteRouteWithChildren,
   AppAboutRoute: AppAboutRoute,
   AppIndexRoute: AppIndexRoute,
   AppArtistsArtistIdRoute: AppArtistsArtistIdRoute,
-  AppAuthLoginRoute: AppAuthLoginRoute,
-  AppAuthRegisterRoute: AppAuthRegisterRoute,
   AppEventsEventIdRoute: AppEventsEventIdRoute,
   AppArtistsIndexRoute: AppArtistsIndexRoute,
   AppEventsIndexRoute: AppEventsIndexRoute,
@@ -290,20 +386,30 @@ interface AdminRouteRouteChildren {
   AdminArtistsCreateRoute: typeof AdminArtistsCreateRoute
   AdminEventsCreateRoute: typeof AdminEventsCreateRoute
   AdminMembersMemberIdRoute: typeof AdminMembersMemberIdRoute
+  AdminVenuesCreateRoute: typeof AdminVenuesCreateRoute
   AdminArtistsIndexRoute: typeof AdminArtistsIndexRoute
+  AdminContentIndexRoute: typeof AdminContentIndexRoute
   AdminEventsIndexRoute: typeof AdminEventsIndexRoute
+  AdminMembersIndexRoute: typeof AdminMembersIndexRoute
+  AdminVenuesIndexRoute: typeof AdminVenuesIndexRoute
   AdminArtistsArtistIdEditRoute: typeof AdminArtistsArtistIdEditRoute
   AdminEventsEventIdEditRoute: typeof AdminEventsEventIdEditRoute
+  AdminVenuesVenueIdEditRoute: typeof AdminVenuesVenueIdEditRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminArtistsCreateRoute: AdminArtistsCreateRoute,
   AdminEventsCreateRoute: AdminEventsCreateRoute,
   AdminMembersMemberIdRoute: AdminMembersMemberIdRoute,
+  AdminVenuesCreateRoute: AdminVenuesCreateRoute,
   AdminArtistsIndexRoute: AdminArtistsIndexRoute,
+  AdminContentIndexRoute: AdminContentIndexRoute,
   AdminEventsIndexRoute: AdminEventsIndexRoute,
+  AdminMembersIndexRoute: AdminMembersIndexRoute,
+  AdminVenuesIndexRoute: AdminVenuesIndexRoute,
   AdminArtistsArtistIdEditRoute: AdminArtistsArtistIdEditRoute,
   AdminEventsEventIdEditRoute: AdminEventsEventIdEditRoute,
+  AdminVenuesVenueIdEditRoute: AdminVenuesVenueIdEditRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
@@ -313,6 +419,7 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '': typeof AppRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
+  '/auth': typeof AppAuthRouteRouteWithChildren
   '/about': typeof AppAboutRoute
   '/': typeof AppIndexRoute
   '/artists/$artistId': typeof AppArtistsArtistIdRoute
@@ -322,16 +429,22 @@ export interface FileRoutesByFullPath {
   '/admin/artists/create': typeof AdminArtistsCreateRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/members/$memberId': typeof AdminMembersMemberIdRoute
+  '/admin/venues/create': typeof AdminVenuesCreateRoute
   '/artists': typeof AppArtistsIndexRoute
   '/events': typeof AppEventsIndexRoute
   '/admin/artists': typeof AdminArtistsIndexRoute
+  '/admin/content': typeof AdminContentIndexRoute
   '/admin/events': typeof AdminEventsIndexRoute
+  '/admin/members': typeof AdminMembersIndexRoute
+  '/admin/venues': typeof AdminVenuesIndexRoute
   '/admin/artists/$artistId/edit': typeof AdminArtistsArtistIdEditRoute
   '/admin/events/$eventId/edit': typeof AdminEventsEventIdEditRoute
+  '/admin/venues/$venueId/edit': typeof AdminVenuesVenueIdEditRoute
 }
 
 export interface FileRoutesByTo {
   '/admin': typeof AdminRouteRouteWithChildren
+  '/auth': typeof AppAuthRouteRouteWithChildren
   '/about': typeof AppAboutRoute
   '/': typeof AppIndexRoute
   '/artists/$artistId': typeof AppArtistsArtistIdRoute
@@ -341,18 +454,24 @@ export interface FileRoutesByTo {
   '/admin/artists/create': typeof AdminArtistsCreateRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/members/$memberId': typeof AdminMembersMemberIdRoute
+  '/admin/venues/create': typeof AdminVenuesCreateRoute
   '/artists': typeof AppArtistsIndexRoute
   '/events': typeof AppEventsIndexRoute
   '/admin/artists': typeof AdminArtistsIndexRoute
+  '/admin/content': typeof AdminContentIndexRoute
   '/admin/events': typeof AdminEventsIndexRoute
+  '/admin/members': typeof AdminMembersIndexRoute
+  '/admin/venues': typeof AdminVenuesIndexRoute
   '/admin/artists/$artistId/edit': typeof AdminArtistsArtistIdEditRoute
   '/admin/events/$eventId/edit': typeof AdminEventsEventIdEditRoute
+  '/admin/venues/$venueId/edit': typeof AdminVenuesVenueIdEditRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_app': typeof AppRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
+  '/_app/auth': typeof AppAuthRouteRouteWithChildren
   '/_app/about': typeof AppAboutRoute
   '/_app/': typeof AppIndexRoute
   '/_app/artists/$artistId': typeof AppArtistsArtistIdRoute
@@ -362,12 +481,17 @@ export interface FileRoutesById {
   '/admin/artists/create': typeof AdminArtistsCreateRoute
   '/admin/events/create': typeof AdminEventsCreateRoute
   '/admin/members/$memberId': typeof AdminMembersMemberIdRoute
+  '/admin/venues/create': typeof AdminVenuesCreateRoute
   '/_app/artists/': typeof AppArtistsIndexRoute
   '/_app/events/': typeof AppEventsIndexRoute
   '/admin/artists/': typeof AdminArtistsIndexRoute
+  '/admin/content/': typeof AdminContentIndexRoute
   '/admin/events/': typeof AdminEventsIndexRoute
+  '/admin/members/': typeof AdminMembersIndexRoute
+  '/admin/venues/': typeof AdminVenuesIndexRoute
   '/admin/artists/$artistId/edit': typeof AdminArtistsArtistIdEditRoute
   '/admin/events/$eventId/edit': typeof AdminEventsEventIdEditRoute
+  '/admin/venues/$venueId/edit': typeof AdminVenuesVenueIdEditRoute
 }
 
 export interface FileRouteTypes {
@@ -375,6 +499,7 @@ export interface FileRouteTypes {
   fullPaths:
     | ''
     | '/admin'
+    | '/auth'
     | '/about'
     | '/'
     | '/artists/$artistId'
@@ -384,15 +509,21 @@ export interface FileRouteTypes {
     | '/admin/artists/create'
     | '/admin/events/create'
     | '/admin/members/$memberId'
+    | '/admin/venues/create'
     | '/artists'
     | '/events'
     | '/admin/artists'
+    | '/admin/content'
     | '/admin/events'
+    | '/admin/members'
+    | '/admin/venues'
     | '/admin/artists/$artistId/edit'
     | '/admin/events/$eventId/edit'
+    | '/admin/venues/$venueId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/admin'
+    | '/auth'
     | '/about'
     | '/'
     | '/artists/$artistId'
@@ -402,16 +533,22 @@ export interface FileRouteTypes {
     | '/admin/artists/create'
     | '/admin/events/create'
     | '/admin/members/$memberId'
+    | '/admin/venues/create'
     | '/artists'
     | '/events'
     | '/admin/artists'
+    | '/admin/content'
     | '/admin/events'
+    | '/admin/members'
+    | '/admin/venues'
     | '/admin/artists/$artistId/edit'
     | '/admin/events/$eventId/edit'
+    | '/admin/venues/$venueId/edit'
   id:
     | '__root__'
     | '/_app'
     | '/admin'
+    | '/_app/auth'
     | '/_app/about'
     | '/_app/'
     | '/_app/artists/$artistId'
@@ -421,12 +558,17 @@ export interface FileRouteTypes {
     | '/admin/artists/create'
     | '/admin/events/create'
     | '/admin/members/$memberId'
+    | '/admin/venues/create'
     | '/_app/artists/'
     | '/_app/events/'
     | '/admin/artists/'
+    | '/admin/content/'
     | '/admin/events/'
+    | '/admin/members/'
+    | '/admin/venues/'
     | '/admin/artists/$artistId/edit'
     | '/admin/events/$eventId/edit'
+    | '/admin/venues/$venueId/edit'
   fileRoutesById: FileRoutesById
 }
 
@@ -457,11 +599,10 @@ export const routeTree = rootRoute
     "/_app": {
       "filePath": "_app/route.tsx",
       "children": [
+        "/_app/auth",
         "/_app/about",
         "/_app/",
         "/_app/artists/$artistId",
-        "/_app/auth/login",
-        "/_app/auth/register",
         "/_app/events/$eventId",
         "/_app/artists/",
         "/_app/events/"
@@ -473,10 +614,23 @@ export const routeTree = rootRoute
         "/admin/artists/create",
         "/admin/events/create",
         "/admin/members/$memberId",
+        "/admin/venues/create",
         "/admin/artists/",
+        "/admin/content/",
         "/admin/events/",
+        "/admin/members/",
+        "/admin/venues/",
         "/admin/artists/$artistId/edit",
-        "/admin/events/$eventId/edit"
+        "/admin/events/$eventId/edit",
+        "/admin/venues/$venueId/edit"
+      ]
+    },
+    "/_app/auth": {
+      "filePath": "_app/auth/route.tsx",
+      "parent": "/_app",
+      "children": [
+        "/_app/auth/login",
+        "/_app/auth/register"
       ]
     },
     "/_app/about": {
@@ -493,11 +647,11 @@ export const routeTree = rootRoute
     },
     "/_app/auth/login": {
       "filePath": "_app/auth/login.tsx",
-      "parent": "/_app"
+      "parent": "/_app/auth"
     },
     "/_app/auth/register": {
       "filePath": "_app/auth/register.tsx",
-      "parent": "/_app"
+      "parent": "/_app/auth"
     },
     "/_app/events/$eventId": {
       "filePath": "_app/events/$eventId.tsx",
@@ -515,6 +669,10 @@ export const routeTree = rootRoute
       "filePath": "admin/members/$memberId.tsx",
       "parent": "/admin"
     },
+    "/admin/venues/create": {
+      "filePath": "admin/venues/create.tsx",
+      "parent": "/admin"
+    },
     "/_app/artists/": {
       "filePath": "_app/artists/index.tsx",
       "parent": "/_app"
@@ -527,8 +685,20 @@ export const routeTree = rootRoute
       "filePath": "admin/artists/index.tsx",
       "parent": "/admin"
     },
+    "/admin/content/": {
+      "filePath": "admin/content/index.tsx",
+      "parent": "/admin"
+    },
     "/admin/events/": {
       "filePath": "admin/events/index.tsx",
+      "parent": "/admin"
+    },
+    "/admin/members/": {
+      "filePath": "admin/members/index.tsx",
+      "parent": "/admin"
+    },
+    "/admin/venues/": {
+      "filePath": "admin/venues/index.tsx",
       "parent": "/admin"
     },
     "/admin/artists/$artistId/edit": {
@@ -537,6 +707,10 @@ export const routeTree = rootRoute
     },
     "/admin/events/$eventId/edit": {
       "filePath": "admin/events/$eventId/edit.tsx",
+      "parent": "/admin"
+    },
+    "/admin/venues/$venueId/edit": {
+      "filePath": "admin/venues/$venueId/edit.tsx",
       "parent": "/admin"
     }
   }
