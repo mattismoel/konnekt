@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/mattismoel/konnekt/internal/cfg"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -31,9 +32,7 @@ type Server struct {
 	venueService   *service.VenueService
 }
 
-type CfgFunc func(s *Server) error
-
-func New(cfgs ...CfgFunc) (*Server, error) {
+func New(cfgs ...cfg.Func[Server]) (*Server, error) {
 	s := &Server{
 		mux: chi.NewMux(),
 	}
@@ -49,7 +48,7 @@ func New(cfgs ...CfgFunc) (*Server, error) {
 	return s, nil
 }
 
-func WithCORSOrigins(allowedOrigins ...string) CfgFunc {
+func WithCORSOrigins(allowedOrigins ...string) cfg.Func[Server] {
 	return func(s *Server) error {
 		s.mux.Use(cors.Handler(cors.Options{
 			AllowedOrigins:   allowedOrigins,
@@ -64,56 +63,56 @@ func WithCORSOrigins(allowedOrigins ...string) CfgFunc {
 	}
 }
 
-func WithContentService(contentService *service.ContentService) CfgFunc {
+func WithContentService(contentService *service.ContentService) cfg.Func[Server] {
 	return func(s *Server) error {
 		s.contentService = contentService
 		return nil
 	}
 }
 
-func WithTeamService(teamService *service.TeamService) CfgFunc {
+func WithTeamService(teamService *service.TeamService) cfg.Func[Server] {
 	return func(s *Server) error {
 		s.teamService = teamService
 		return nil
 	}
 }
 
-func WithAuthService(authService *service.AuthService) CfgFunc {
+func WithAuthService(authService *service.AuthService) cfg.Func[Server] {
 	return func(s *Server) error {
 		s.authService = authService
 		return nil
 	}
 }
 
-func WithEventService(eventService *service.EventService) CfgFunc {
+func WithEventService(eventService *service.EventService) cfg.Func[Server] {
 	return func(s *Server) error {
 		s.eventService = eventService
 		return nil
 	}
 }
 
-func WithArtistService(artistService *service.ArtistService) CfgFunc {
+func WithArtistService(artistService *service.ArtistService) cfg.Func[Server] {
 	return func(s *Server) error {
 		s.artistService = artistService
 		return nil
 	}
 }
 
-func WithMemberService(memberService *service.MemberService) CfgFunc {
+func WithMemberService(memberService *service.MemberService) cfg.Func[Server] {
 	return func(s *Server) error {
 		s.memberService = memberService
 		return nil
 	}
 }
 
-func WithVenueService(venueService *service.VenueService) CfgFunc {
+func WithVenueService(venueService *service.VenueService) cfg.Func[Server] {
 	return func(s *Server) error {
 		s.venueService = venueService
 		return nil
 	}
 }
 
-func WithAddress(addr string) CfgFunc {
+func WithAddress(addr string) cfg.Func[Server] {
 	return func(s *Server) error {
 		s.addr = addr
 		return nil

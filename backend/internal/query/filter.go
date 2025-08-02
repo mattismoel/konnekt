@@ -3,6 +3,8 @@ package query
 import (
 	"errors"
 	"strings"
+
+	"github.com/mattismoel/konnekt/internal/cfg"
 )
 
 var (
@@ -87,7 +89,7 @@ func validateFilterValue(value string) error {
 	return nil
 }
 
-func WithFilters(fc FilterCollection) CfgFunc {
+func WithFilters(fc FilterCollection) cfg.Func[ListQuery] {
 	return func(q *ListQuery) error {
 		for key, filters := range fc {
 			if err := validateFilterKey(key); err != nil {

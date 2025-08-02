@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/mattismoel/konnekt/internal/cfg"
 )
 
 var (
@@ -20,7 +22,6 @@ const (
 	MAX_LIFETIME = 30 * 24 * time.Hour // 30 days.
 )
 
-type sessionCfgFunc func(s *Session) error
 type SessionToken string
 type SessionID string
 
@@ -30,7 +31,7 @@ type Session struct {
 	ExpiresAt time.Time
 }
 
-func NewSession(cfgs ...sessionCfgFunc) (Session, error) {
+func NewSession(cfgs ...cfg.Func[Session]) (Session, error) {
 	s := Session{}
 
 	if err := s.WithCfgs(cfgs...); err != nil {
@@ -40,7 +41,7 @@ func NewSession(cfgs ...sessionCfgFunc) (Session, error) {
 	return s, nil
 }
 
-func (s *Session) WithCfgs(cfgs ...sessionCfgFunc) error {
+func (s *Session) WithCfgs(cfgs ...cfg.Func[Session]) error {
 	for _, cfg := range cfgs {
 		if err := cfg(s); err != nil {
 			return err
@@ -50,7 +51,7 @@ func (s *Session) WithCfgs(cfgs ...sessionCfgFunc) error {
 	return nil
 }
 
-func WithToken(t SessionToken) sessionCfgFunc {
+func WithToken(t SessionToken) cfg.Func[Session] {
 	return func(s *Session) error {
 		sessionID := t.SessionID()
 		s.ID = sessionID
@@ -58,7 +59,7 @@ func WithToken(t SessionToken) sessionCfgFunc {
 	}
 }
 
-func WithMemberID(id int64) sessionCfgFunc {
+func WithMemberID(id int64) cfg.Func[Session] {
 	return func(s *Session) error {
 		if id <= 0 {
 			return ErrInvalidMemberID
@@ -69,7 +70,7 @@ func WithMemberID(id int64) sessionCfgFunc {
 	}
 }
 
-func WithLifetime(d time.Duration) sessionCfgFunc {
+func WithLifetime(d time.Duration) cfg.Func[Session] {
 	return func(s *Session) error {
 		if d > MAX_LIFETIME {
 			d = MAX_LIFETIME

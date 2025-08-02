@@ -7,49 +7,49 @@ import { useEffect, useState } from 'react'
 import { BiMenu } from 'react-icons/bi'
 
 export const Route = createFileRoute('/_app')({
-  component: RouteComponent,
+	component: RouteComponent,
 })
 
 function RouteComponent() {
-  const [expanded, setExpanded] = useState(false)
+	const [expanded, setExpanded] = useState(false)
 
-  const { pathname } = useLocation()
+	const { pathname } = useLocation()
 
-  useEffect(() => {
-    setExpanded(false)
-  }, [pathname])
+	useEffect(() => {
+		setExpanded(false)
+	}, [pathname])
 
-  return (
-    <>
-      <Navbar>
-        <Navbar.Header>
-          <button className='block md:hidden' aria-label="Navigation menu button" onClick={() => setExpanded(true)}>
-            <BiMenu className='text-2xl' />
-          </button>
-          <Link to="/">
-            <Logo className='h-4' aria-label='Go to frontpage' />
-          </Link>
-        </Navbar.Header>
+	return (
+		<>
+			<Navbar>
+				<Navbar.Header>
+					<button className='block md:hidden' aria-label="Navigation menu button" onClick={() => setExpanded(true)}>
+						<BiMenu className='text-2xl' />
+					</button>
+					<Link to="/">
+						<Logo className='h-4' aria-label='Go to frontpage' />
+					</Link>
+				</Navbar.Header>
 
-        <Navbar.RouteList>
-          <Navbar.RouteEntry pathname="/events" name="Events" />
-          <Navbar.RouteEntry pathname="/artists" name="Kunstnere" />
-          <Navbar.RouteEntry pathname="/about" name="Om os" />
-        </Navbar.RouteList>
-      </Navbar>
+				<Navbar.RouteList>
+					<Navbar.RouteEntry pathname="/events" name="Events" />
+					<Navbar.RouteEntry pathname="/artists" name="Kunstnere" />
+					<Navbar.RouteEntry pathname="/about" name="Om os" />
+				</Navbar.RouteList>
+			</Navbar>
 
-      <NavMenu expanded={expanded} onClose={() => setExpanded(false)}>
-        <NavMenu.RouteList>
-          <NavMenu.RouteEntry to="/">Forside</NavMenu.RouteEntry>
-          <NavMenu.RouteEntry to="/events">Events</NavMenu.RouteEntry>
-          <NavMenu.RouteEntry to="/artists">Kunstnere</NavMenu.RouteEntry>
-          <NavMenu.RouteEntry to="/about">Om os</NavMenu.RouteEntry>
-        </NavMenu.RouteList>
-      </NavMenu>
+			<NavMenu expanded={expanded} onClose={() => setExpanded(false)}>
+				<NavMenu.RouteList>
+					<NavMenu.RouteEntry to="/">Forside</NavMenu.RouteEntry>
+					<NavMenu.RouteEntry to="/events">Events</NavMenu.RouteEntry>
+					<NavMenu.RouteEntry to="/artists">Kunstnere</NavMenu.RouteEntry>
+					<NavMenu.RouteEntry to="/about">Om os</NavMenu.RouteEntry>
+				</NavMenu.RouteList>
+			</NavMenu>
 
-      <Outlet />
+			<Outlet />
 
-      <Footer />
-    </>
-  )
+			<Footer />
+		</>
+	)
 }

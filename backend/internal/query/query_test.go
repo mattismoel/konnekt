@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/mattismoel/konnekt/internal/cfg"
 	"github.com/mattismoel/konnekt/internal/query"
 )
 
@@ -20,14 +21,14 @@ func TestNewListQuery(t *testing.T) {
 	t.Logf("DEFAULT %+v\n", defaultQuery)
 
 	type test struct {
-		cfgs         []query.CfgFunc
+		cfgs         []cfg.Func[query.ListQuery]
 		wantQueryMod modFunc
 		wantErr      error
 	}
 
 	tests := map[string]test{
 		"With valid page": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithPage(4),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -37,7 +38,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With page zero": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithPage(0),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -47,7 +48,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With negative page": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithPage(-1),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -57,7 +58,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With valid per page": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithPerPage(16),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -67,7 +68,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With zero per page": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithPerPage(0),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -77,7 +78,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With negative per page": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithPerPage(-1),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -87,7 +88,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With valid limit": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithLimit(4),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -97,7 +98,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With negative limit": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithLimit(-1),
 			},
 			wantQueryMod: func(q query.ListQuery) query.ListQuery {
@@ -107,7 +108,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With valid filters": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithFilters(map[string][]query.Filter{
 					"prop_a": {{Cmp: query.GreaterThan, Value: "2"}},
 					"prop_b": {{Cmp: query.Equal, Value: "hello_world"}},
@@ -125,7 +126,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With invalid filter key": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithFilters(map[string][]query.Filter{
 					"": {{Cmp: query.GreaterThan, Value: "2"}},
 				}),
@@ -136,7 +137,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: query.ErrFilterKeyInvalid,
 		},
 		"With invalid filter cmp": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithFilters(map[string][]query.Filter{
 					"prop_a": {{Cmp: query.Comparator(""), Value: "2"}},
 				}),
@@ -147,7 +148,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: query.ErrFilterCmpInvalid,
 		},
 		"With invalid filter value": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithFilters(map[string][]query.Filter{
 					"prop_a": {{Cmp: query.GreaterThan, Value: ""}},
 				}),
@@ -158,7 +159,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: query.ErrFilterValueInvalid,
 		},
 		"With valid ordering": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithOrders(map[string]query.Order{
 					"prop_a": query.OrderDescending,
 				}),
@@ -170,7 +171,7 @@ func TestNewListQuery(t *testing.T) {
 			wantErr: nil,
 		},
 		"With invalid order": {
-			cfgs: []query.CfgFunc{
+			cfgs: []cfg.Func[query.ListQuery]{
 				query.WithOrders(map[string]query.Order{
 					"prop_a": query.Order(""),
 				}),

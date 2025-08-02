@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	ErrGenreNotExist    = errors.New("Genre does not exist")
 	ErrInvalidGenreName = errors.New("Genre name must not be valid")
 )
 

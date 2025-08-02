@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/mattismoel/konnekt/internal/cfg"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
 )
 
@@ -13,8 +14,6 @@ var (
 	ErrInvalidDate             = errors.New("One or more dates are invalid or empty")
 )
 
-type CfgFunc func(c *Concert) error
-
 type Concert struct {
 	ID     int64         `json:"id"`
 	From   time.Time     `json:"from"`
@@ -22,7 +21,7 @@ type Concert struct {
 	Artist artist.Artist `json:"artist"`
 }
 
-func (c *Concert) WithCfgs(cfgs ...CfgFunc) error {
+func (c *Concert) WithCfgs(cfgs ...cfg.Func[Concert]) error {
 	for _, cfg := range cfgs {
 		if err := cfg(c); err != nil {
 			return err
@@ -32,7 +31,7 @@ func (c *Concert) WithCfgs(cfgs ...CfgFunc) error {
 	return nil
 }
 
-func NewConcert(cfgs ...CfgFunc) (Concert, error) {
+func NewConcert(cfgs ...cfg.Func[Concert]) (Concert, error) {
 	c := &Concert{}
 
 	if err := c.WithCfgs(cfgs...); err != nil {
@@ -42,7 +41,7 @@ func NewConcert(cfgs ...CfgFunc) (Concert, error) {
 	return *c, nil
 }
 
-func WithID(id int64) CfgFunc {
+func WithID(id int64) cfg.Func[Concert] {
 	return func(c *Concert) error {
 		if id <= 0 {
 			return ErrInvalidID
@@ -53,14 +52,14 @@ func WithID(id int64) CfgFunc {
 	}
 }
 
-func WithArtist(a artist.Artist) CfgFunc {
+func WithArtist(a artist.Artist) cfg.Func[Concert] {
 	return func(c *Concert) error {
 		c.Artist = a
 		return nil
 	}
 }
 
-func WithFrom(from time.Time) CfgFunc {
+func WithFrom(from time.Time) cfg.Func[Concert] {
 	return func(c *Concert) error {
 		if from.IsZero() {
 			return ErrInvalidDate
@@ -76,7 +75,7 @@ func WithFrom(from time.Time) CfgFunc {
 	}
 }
 
-func WithTo(to time.Time) CfgFunc {
+func WithTo(to time.Time) cfg.Func[Concert] {
 	return func(c *Concert) error {
 		if to.IsZero() {
 			return ErrInvalidDate
