@@ -6,7 +6,7 @@ const envSchema = z.object({
     z.literal("production"),
   ])
     .default("development"),
-  BASE_URL: z.union([z.string().url(), z.literal("/")]),
+  BASE_URL: z.string().default("/"),
   PROD: z.boolean(),
   DEV: z.boolean(),
   SSR: z.boolean(),
