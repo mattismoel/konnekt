@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS member (
   last_name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   profile_picture_url TEXT NOT NULL,
-  special_role TEXT NOT NULL,
   active BOOLEAN NOT NULL DEFAULT 0
+  special_role TEXT,
 );
 
 CREATE TABLE IF NOT EXISTS session (

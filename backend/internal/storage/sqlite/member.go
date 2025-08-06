@@ -21,7 +21,7 @@ type Member struct {
 	LastName          string
 	PasswordHash      []byte
 	ProfilePictureURL string
-	SpecialRole       string
+	SpecialRole       sql.NullString
 	Active            bool
 }
 
@@ -45,6 +45,11 @@ func (repo MemberRepository) Insert(ctx context.Context, m member.Member) (int64
 
 	defer tx.Rollback()
 
+	specialRole := sql.NullString{
+		String: m.SpecialRole,
+		Valid:  strings.TrimSpace(m.SpecialRole) != "",
+	}
+
 	memberID, err := insertMember(ctx, tx, Member{
 		ID:                m.ID,
 		Email:             m.Email,
@@ -52,6 +57,7 @@ func (repo MemberRepository) Insert(ctx context.Context, m member.Member) (int64
 		LastName:          m.LastName,
 		PasswordHash:      m.PasswordHash,
 		ProfilePictureURL: m.ProfilePictureURL,
+		SpecialRole:       specialRole,
 	})
 
 	if err != nil {
@@ -199,12 +205,17 @@ func (repo MemberRepository) Update(ctx context.Context, memberID int64, m membe
 
 	defer tx.Rollback()
 
+	specialRole := sql.NullString{
+		String: m.SpecialRole,
+		Valid:  strings.TrimSpace(m.SpecialRole) != "",
+	}
+
 	err = updateMember(ctx, tx, memberID, Member{
 		FirstName:         m.FirstName,
 		LastName:          m.LastName,
 		Email:             m.Email,
 		ProfilePictureURL: m.ProfilePictureURL,
-		SpecialRole:       m.SpecialRole,
+		SpecialRole:       specialRole,
 	})
 
 	if err != nil {
@@ -300,9 +311,8 @@ func (repo MemberRepository) PasswordHash(ctx context.Context, memberID int64) (
 func insertMember(ctx context.Context, tx *sql.Tx, m Member) (int64, error) {
 	query, args, err := sq.
 		Insert("member").
-		Options("OR IGNORE").
-		Columns("email", "first_name", "last_name", "password_hash", "profile_picture_url").
-		Values(m.Email, m.FirstName, m.LastName, m.PasswordHash, m.ProfilePictureURL).
+		Columns("email", "first_name", "last_name", "special_role", "password_hash", "profile_picture_url").
+		Values(m.Email, m.FirstName, m.LastName, m.SpecialRole, m.PasswordHash, m.ProfilePictureURL).
 		ToSql()
 
 	if err != nil {
@@ -582,6 +592,11 @@ func deleteMemberTeams(ctx context.Context, tx *sql.Tx, memberID int64) error {
 }
 
 func (m Member) ToInternal(teams TeamCollection) member.Member {
+	var specialRole string
+	if m.SpecialRole.Valid {
+		specialRole = m.SpecialRole.String
+	}
+
 	return member.Member{
 		ID:                m.ID,
 		FirstName:         m.FirstName,
@@ -589,7 +604,7 @@ func (m Member) ToInternal(teams TeamCollection) member.Member {
 		Email:             m.Email,
 		PasswordHash:      m.PasswordHash,
 		ProfilePictureURL: m.ProfilePictureURL,
-		SpecialRole:       m.SpecialRole,
+		SpecialRole:       specialRole,
 
 		Teams: teams.ToInternal(),
 
