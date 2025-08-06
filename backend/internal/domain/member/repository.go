@@ -14,6 +14,6 @@ type Repository interface {
 	Insert(ctx context.Context, m Member) (int64, error)
 	Update(ctx context.Context, memberID int64, m Member) error
 	SetMemberTeams(ctx context.Context, memberID int64, teamIDs ...int64) error
-	Approve(ctx context.Context, memberID int64) error
+	Approve(ctx context.Context, memberID int64, approvedByMemberID int64) error
 	Delete(ctx context.Context, memberID int64) error
 }

@@ -23,6 +23,8 @@ type Member struct {
 	ProfilePictureURL string
 	SpecialRole       sql.NullString
 	Active            bool
+
+	ApprovedBy sql.NullInt64
 }
 
 type MemberCollection []Member
@@ -105,7 +107,7 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 	return dbMember.ToInternal(dbTeams), nil
 }
 
-func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error {
+func (repo MemberRepository) Approve(ctx context.Context, memberID int64, approvedByMemberID int64) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -113,7 +115,7 @@ func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error 
 
 	defer tx.Rollback()
 
-	if err := approveMember(ctx, tx, memberID); err != nil {
+	if err := approveMember(ctx, tx, memberID, approvedByMemberID); err != nil {
 		return fmt.Errorf("Could not approve member with ID: %d: %v", memberID, err)
 	}
 
@@ -398,25 +400,6 @@ func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte
 	return passwordHash, nil
 }
 
-func scanMember(s Scanner, dst *Member) error {
-	err := s.Scan(
-		&dst.ID,
-		&dst.FirstName,
-		&dst.LastName,
-		&dst.Email,
-		&dst.ProfilePictureURL,
-		&dst.Active,
-		&dst.PasswordHash,
-		&dst.SpecialRole,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 var memberBuilder = sq.
 	Select(
 		"member.id",
@@ -427,8 +410,29 @@ var memberBuilder = sq.
 		"member.active",
 		"member.password_hash",
 		"member.special_role",
+		"member.approved_by",
 	).
 	From("member")
+
+func scanMember(s Scanner, dst *Member) error {
+	err := s.Scan(
+		&dst.ID,
+		&dst.FirstName,
+		&dst.LastName,
+		&dst.Email,
+		&dst.ProfilePictureURL,
+		&dst.Active,
+		&dst.PasswordHash,
+		&dst.SpecialRole,
+		&dst.ApprovedBy,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCollection, error) {
 	builder := memberBuilder
@@ -527,10 +531,18 @@ func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) err
 	return nil
 }
 
-func approveMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
+func approveMember(ctx context.Context, tx *sql.Tx, memberID int64, approvedByMemberID int64) error {
+	// Make sure the member approving another member exists before allowing to
+	// approve.
+	_, err := memberByID(ctx, tx, approvedByMemberID)
+	if err != nil {
+		return err
+	}
+
 	query, args, err := sq.
 		Update("member").
 		Set("active", 1).
+		Set("approved_by", approvedByMemberID).
 		Where(sq.Eq{"id": memberID}).
 		ToSql()
 
@@ -597,6 +609,11 @@ func (m Member) ToInternal(teams TeamCollection) member.Member {
 		specialRole = m.SpecialRole.String
 	}
 
+	var approvedByMemberID *int64 = nil
+	if m.ApprovedBy.Valid {
+		approvedByMemberID = &m.ApprovedBy.Int64
+	}
+
 	return member.Member{
 		ID:                m.ID,
 		FirstName:         m.FirstName,
@@ -609,5 +626,6 @@ func (m Member) ToInternal(teams TeamCollection) member.Member {
 		Teams: teams.ToInternal(),
 
 		Active: m.Active,
+		ApprovedByID: approvedByMemberID,
 	}
 }

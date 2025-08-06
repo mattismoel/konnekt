@@ -1,12 +1,27 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
 
 	"github.com/mattismoel/konnekt/internal/domain/member"
 )
+
+func (s Server) memberFromRequest(ctx context.Context, w http.ResponseWriter, r *http.Request) (member.Member, error) {
+	session, err := s.memberSession(ctx, w, r)
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	m, err := s.memberService.ByID(ctx, session.MemberID)
+	if err != nil {
+		return member.Member{}, err
+	}
+
+	return m, nil
+}
 
 func (s Server) handleListMembers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +57,13 @@ func (s Server) handleApproveMember() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		err = s.memberService.Approve(ctx, memberID)
+		requestMember, err := s.memberFromRequest(ctx, w, r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		err = s.memberService.Approve(ctx, memberID, requestMember.ID)
 		if err != nil {
 			writeError(w, err)
 			return

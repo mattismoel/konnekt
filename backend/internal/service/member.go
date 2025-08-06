@@ -83,8 +83,8 @@ func (srv MemberService) DeleteProfilePicture(ctx context.Context, url string) e
 	return nil
 }
 
-func (srv MemberService) Approve(ctx context.Context, memberID int64) error {
-	err := srv.memberRepo.Approve(ctx, memberID)
+func (srv MemberService) Approve(ctx context.Context, memberID int64, approvedByMemberID int64) error {
+	err := srv.memberRepo.Approve(ctx, memberID, approvedByMemberID)
 	if err != nil {
 		return fmt.Errorf("Could not approve member: %v", err)
 	}

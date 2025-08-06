@@ -38,6 +38,7 @@ type Member struct {
 
 	Teams team.TeamCollection `json:"teams"`
 
+	ApprovedByID *int64 `json:"approvedById,omitempty"`
 	PasswordHash PasswordHash `json:"-"`
 }
 
