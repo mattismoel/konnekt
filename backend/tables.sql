@@ -92,8 +92,13 @@ CREATE TABLE IF NOT EXISTS artist (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   image_url TEXT NOT NULL,
-  preview_url TEXT NOT NULL,
-  description TEXT NOT NULL
+  preview_url TEXT,
+  description TEXT NOT NULL,
+	created_by INTEGER NOT NULL,
+	updated_by INTEGER NOT NULL,
+
+	FOREIGN KEY (created_by) REFERENCES member(id),
+	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
 
 CREATE TABLE IF NOT EXISTS social (

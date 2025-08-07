@@ -35,7 +35,7 @@ func (repo ArtistRepository) InsertGenre(ctx context.Context, name string) (int6
 	return genreID, nil
 }
 
-func (repo ArtistRepository) ListGenres(ctx context.Context, q artist.GenreQuery) (query.ListResult[artist.Genre], error) {
+func (repo ArtistRepository) ListGenres(ctx context.Context, q query.ListQuery) (query.ListResult[artist.Genre], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return query.ListResult[artist.Genre]{}, err

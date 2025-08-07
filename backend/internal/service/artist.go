@@ -82,46 +82,7 @@ func (s ArtistService) List(ctx context.Context, q query.ListQuery) (query.ListR
 	return result, nil
 }
 
-func (s ArtistService) Create(ctx context.Context, load CreateArtist) (int64, error) {
-	socials := make([]artist.Social, 0)
-	for _, social := range load.Socials {
-		s, err := artist.NewSocial(social)
-		if err != nil {
-			return 0, fmt.Errorf("Could not create artist social: %v", err)
-		}
-
-		socials = append(socials, s)
-	}
-
-	genres := make([]artist.Genre, 0)
-	for _, genreID := range load.GenreIDs {
-		genre, err := s.artistRepo.GenreByID(ctx, genreID)
-		if err != nil {
-			return 0, fmt.Errorf("Could not get genre: %v", err)
-		}
-
-		genres = append(genres, genre)
-	}
-
-	a, err := artist.NewArtist(
-		artist.WithName(load.Name),
-		artist.WithDescription(load.Description),
-		artist.WithImageURL(load.ImageURL),
-		artist.WithGenres(genres...),
-		artist.WithSocials(socials...),
-	)
-
-	if err != nil {
-		return 0, fmt.Errorf("Could not create artist: %v", err)
-	}
-
-	if strings.TrimSpace(load.PreviewURL) != "" {
-		err := a.WithCfgs(artist.WithPreviewURL(load.PreviewURL))
-		if err != nil {
-			return 0, fmt.Errorf("Could not use artist preview URL: %v", err)
-		}
-	}
-
+func (s ArtistService) Create(ctx context.Context, a artist.Artist) (int64, error) {
 	artistID, err := s.artistRepo.Insert(ctx, a)
 	if err != nil {
 		return 0, fmt.Errorf("Could not insert artist: %v", err)
@@ -232,7 +193,7 @@ func (s ArtistService) Delete(ctx context.Context, artistID int64) error {
 	return nil
 }
 
-func (s ArtistService) ListGenres(ctx context.Context, q artist.GenreQuery) (query.ListResult[artist.Genre], error) {
+func (s ArtistService) ListGenres(ctx context.Context, q query.ListQuery) (query.ListResult[artist.Genre], error) {
 	result, err := s.artistRepo.ListGenres(ctx, q)
 	if err != nil {
 		return query.ListResult[artist.Genre]{}, fmt.Errorf("Could not list genres: %v", err)

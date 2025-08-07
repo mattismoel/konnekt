@@ -29,6 +29,8 @@ type Artist struct {
 	PreviewURL  string   `json:"previewUrl,omitempty"`
 	Genres      []Genre  `json:"genres"`
 	Socials     []Social `json:"socials"`
+	CreatedBy int64     `json:"createdBy"`
+	UpdatedBy int64     `json:"updatedBy"`
 }
 
 func NewArtist(cfgs ...cfg.Func[Artist]) (Artist, error) {
@@ -145,6 +147,20 @@ func WithGenres(genres ...Genre) cfg.Func[Artist] {
 func WithSocials(socials ...Social) cfg.Func[Artist] {
 	return func(a *Artist) error {
 		a.Socials = socials
+		return nil
+	}
+}
+
+func WithCreatedBy(memberID int64) cfg.Func[Artist] {
+	return func(a *Artist) error {
+		a.CreatedBy = memberID
+		return nil
+	}
+}
+
+func WithUpdatedBy(memberID int64) cfg.Func[Artist] {
+	return func(a *Artist) error {
+		a.UpdatedBy = memberID
 		return nil
 	}
 }

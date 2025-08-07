@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -16,6 +17,7 @@ type Artist struct {
 	Description string
 	PreviewURL  string
 	ImageURL    string
+	AuditFields
 }
 
 func (a Artist) ToInternal(genres []artist.Genre, socials []artist.Social) artist.Artist {
@@ -27,6 +29,8 @@ func (a Artist) ToInternal(genres []artist.Genre, socials []artist.Social) artis
 		ImageURL:    a.ImageURL,
 		Genres:      genres,
 		Socials:     socials,
+		CreatedBy:   a.CreatedBy,
+		UpdatedBy:   a.UpdatedBy,
 	}
 }
 
@@ -118,6 +122,10 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 		Description: a.Description,
 		PreviewURL:  a.PreviewURL,
 		ImageURL:    a.ImageURL,
+		AuditFields: AuditFields{
+			CreatedBy: a.CreatedBy,
+			UpdatedBy: a.UpdatedBy,
+		},
 	})
 
 	if err != nil {
@@ -310,6 +318,8 @@ func scanArtist(scanner Scanner, dst *Artist) error {
 		&dst.Description,
 		&dst.PreviewURL,
 		&dst.ImageURL,
+		&dst.CreatedBy,
+		&dst.UpdatedBy,
 	)
 
 	if err != nil {
@@ -326,6 +336,8 @@ var artistBuilder = sq.
 		"artist.description",
 		"artist.preview_url",
 		"artist.image_url",
+		"artist.created_by",
+		"artist.updated_by",
 	).
 	From("artist")
 
@@ -365,8 +377,8 @@ func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist,
 func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 	query, args, err := sq.
 		Insert("artist").
-		Columns("name", "description", "preview_url", "image_url").
-		Values(a.Name, a.Description, a.PreviewURL, a.ImageURL).
+		Columns("name", "description", "preview_url", "image_url", "created_by", "updated_by").
+		Values(a.Name, a.Description, a.PreviewURL, a.ImageURL, a.CreatedBy, a.UpdatedBy).
 		ToSql()
 
 	res, err := tx.ExecContext(ctx, query, args...)
