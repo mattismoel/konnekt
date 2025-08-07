@@ -15,7 +15,7 @@ type Artist struct {
 	ID          int64
 	Name        string
 	Description string
-	PreviewURL  string
+	PreviewURL  sql.NullString
 	ImageURL    string
 
 	UnixTimestamps
@@ -23,11 +23,16 @@ type Artist struct {
 }
 
 func (a Artist) ToInternal(genres []artist.Genre, socials []artist.Social) artist.Artist {
+	var previewUrl string
+	if a.PreviewURL.Valid {
+		previewUrl = a.PreviewURL.String
+	}
+
 	return artist.Artist{
 		ID:          a.ID,
 		Name:        a.Name,
 		Description: a.Description,
-		PreviewURL:  a.PreviewURL,
+		PreviewURL:  previewUrl,
 		ImageURL:    a.ImageURL,
 		Genres:      genres,
 		Socials:     socials,
@@ -124,8 +129,11 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 	artistID, err := insertArtist(ctx, tx, Artist{
 		Name:        a.Name,
 		Description: a.Description,
-		PreviewURL:  a.PreviewURL,
-		ImageURL:    a.ImageURL,
+		PreviewURL: sql.NullString{
+			String: a.PreviewURL,
+			Valid:  strings.TrimSpace(a.PreviewURL) != "",
+		},
+		ImageURL: a.ImageURL,
 		AuditFields: AuditFields{
 			CreatedBy: a.CreatedBy,
 			UpdatedBy: a.UpdatedBy,
@@ -180,8 +188,11 @@ func (repo ArtistRepository) Update(ctx context.Context, artistID int64, a artis
 	err = updateArtist(ctx, tx, artistID, Artist{
 		Name:        a.Name,
 		Description: a.Description,
-		PreviewURL:  a.PreviewURL,
-		ImageURL:    a.ImageURL,
+		PreviewURL: sql.NullString{
+			String: a.PreviewURL,
+			Valid:  strings.TrimSpace(a.PreviewURL) != "",
+		},
+		ImageURL: a.ImageURL,
 	})
 
 	if err != nil {
@@ -484,7 +495,7 @@ func updateArtist(ctx context.Context, tx *sql.Tx, artistID int64, a Artist) err
 		builder = builder.Set("description", a.Description)
 	}
 
-	if a.PreviewURL != "" {
+	if a.PreviewURL.Valid {
 		builder = builder.Set("preview_url", a.PreviewURL)
 	}
 
