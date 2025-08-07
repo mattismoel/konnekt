@@ -28,7 +28,7 @@ var (
 )
 
 var (
-	ErrInvalidImageFiletype = errors.New(fmt.Sprintf("Image file must be of format %s", strings.Join(AllowedImageFiletypes, ", ")))
+	ErrInvalidImageFiletype = fmt.Errorf("Image file must be of format %s", strings.Join(AllowedImageFiletypes, ", "))
 	ErrArtistInEvent        = errors.New("Artist must not be part of an event to be deleted")
 )
 
