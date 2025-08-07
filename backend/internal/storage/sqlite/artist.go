@@ -17,6 +17,8 @@ type Artist struct {
 	Description string
 	PreviewURL  string
 	ImageURL    string
+
+	UnixTimestamps
 	AuditFields
 }
 
@@ -31,6 +33,8 @@ func (a Artist) ToInternal(genres []artist.Genre, socials []artist.Social) artis
 		Socials:     socials,
 		CreatedBy:   a.CreatedBy,
 		UpdatedBy:   a.UpdatedBy,
+		CreatedAt:   a.CreatedAt.Time(),
+		UpdatedAt:   a.UpdatedAt.Time(),
 	}
 }
 
@@ -320,6 +324,8 @@ func scanArtist(scanner Scanner, dst *Artist) error {
 		&dst.ImageURL,
 		&dst.CreatedBy,
 		&dst.UpdatedBy,
+		&dst.CreatedAt,
+		&dst.UpdatedAt,
 	)
 
 	if err != nil {
@@ -338,6 +344,8 @@ var artistBuilder = sq.
 		"artist.image_url",
 		"artist.created_by",
 		"artist.updated_by",
+		"artist.created_at",
+		"artist.updated_at",
 	).
 	From("artist")
 

@@ -94,12 +94,24 @@ CREATE TABLE IF NOT EXISTS artist (
   image_url TEXT NOT NULL,
   preview_url TEXT,
   description TEXT NOT NULL,
+
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
 	created_by INTEGER NOT NULL,
 	updated_by INTEGER NOT NULL,
 
 	FOREIGN KEY (created_by) REFERENCES member(id),
 	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
+
+-- Trigger for updating artists 'updated_at' field on any update of that member.
+CREATE TRIGGER update_artists_updated_at
+AFTER UPDATE ON artist
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE artist SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS social (
   id INTEGER PRIMARY KEY,

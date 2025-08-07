@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/mattismoel/konnekt/internal/cfg"
 )
@@ -29,6 +30,9 @@ type Artist struct {
 	PreviewURL  string   `json:"previewUrl,omitempty"`
 	Genres      []Genre  `json:"genres"`
 	Socials     []Social `json:"socials"`
+
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 	CreatedBy int64     `json:"createdBy"`
 	UpdatedBy int64     `json:"updatedBy"`
 }
