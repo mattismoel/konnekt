@@ -6,6 +6,7 @@ import (
 	"net/mail"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/mattismoel/konnekt/internal/cfg"
 	"github.com/mattismoel/konnekt/internal/domain/team"
@@ -39,6 +40,10 @@ type Member struct {
 	Teams team.TeamCollection `json:"teams"`
 
 	ApprovedByID *int64 `json:"approvedById,omitempty"`
+
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+
 	PasswordHash PasswordHash `json:"-"`
 }
 

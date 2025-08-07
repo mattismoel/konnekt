@@ -25,6 +25,8 @@ type Member struct {
 	Active            bool
 
 	ApprovedBy sql.NullInt64
+
+	UnixTimestamps
 }
 
 type MemberCollection []Member
@@ -411,6 +413,8 @@ var memberBuilder = sq.
 		"member.password_hash",
 		"member.special_role",
 		"member.approved_by",
+		"member.created_at",
+		"member.updated_at",
 	).
 	From("member")
 
@@ -425,6 +429,8 @@ func scanMember(s Scanner, dst *Member) error {
 		&dst.PasswordHash,
 		&dst.SpecialRole,
 		&dst.ApprovedBy,
+		&dst.CreatedAt,
+		&dst.UpdatedAt,
 	)
 
 	if err != nil {
@@ -626,6 +632,9 @@ func (m Member) ToInternal(teams TeamCollection) member.Member {
 		Teams: teams.ToInternal(),
 
 		Active: m.Active,
+
 		ApprovedByID: approvedByMemberID,
+		CreatedAt:    m.CreatedAt.Time(),
+		UpdatedAt:    m.UpdatedAt.Time(),
 	}
 }

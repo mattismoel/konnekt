@@ -12,8 +12,19 @@ CREATE TABLE IF NOT EXISTS member (
 
 	approved_by INTEGER,
 
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
 	FOREIGN KEY (approved_by) REFERENCES member (id)
 );
+
+-- Trigger for updating members 'updated_at' field on any update of that member.
+CREATE TRIGGER update_members_updated_at
+AFTER UPDATE ON member
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE member SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS session (
   id TEXT PRIMARY KEY,
