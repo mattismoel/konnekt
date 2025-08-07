@@ -67,57 +67,13 @@ func (s EventService) ByID(ctx context.Context, eventID int64) (event.Event, err
 	return e, nil
 }
 
-func (s EventService) Create(ctx context.Context, load CreateEvent) (event.Event, error) {
-	venue, err := s.venueRepo.ByID(ctx, load.VenueID)
+func (s EventService) Create(ctx context.Context, e event.Event) (int64, error) {
+	eventID, err := s.eventRepo.Insert(ctx, e)
 	if err != nil {
-		return event.Event{}, fmt.Errorf("Could not find event by ID: %v", err)
+		return 0, fmt.Errorf("Could not insert event into repository: %v", err)
 	}
 
-	concerts := make([]concert.Concert, 0)
-	for _, c := range load.Concerts {
-		artist, err := s.artistRepo.ByID(ctx, c.ArtistID)
-		if err != nil {
-			return event.Event{}, fmt.Errorf("Could not find artist %d: %v", c.ArtistID, err)
-		}
-
-		c, err := concert.NewConcert(
-			concert.WithArtist(artist),
-			concert.WithFrom(c.From),
-			concert.WithTo(c.To),
-		)
-
-		if err != nil {
-			return event.Event{}, fmt.Errorf("Could not create event concert: %v", err)
-		}
-
-		concerts = append(concerts, c)
-	}
-
-	e, err := event.NewEvent(
-		event.WithTitle(load.Title),
-		event.WithDescription(load.Description),
-		event.WithTicketURL(load.TicketURL),
-		event.WithVenue(venue),
-		event.WithImageURL(load.ImageURL),
-		event.WithConcerts(concerts...),
-		event.WithIsPublic(load.IsPublic),
-	)
-
-	if err != nil {
-		return event.Event{}, fmt.Errorf("Could not create event: %v", err)
-	}
-
-	eventID, err := s.eventRepo.Insert(ctx, *e)
-	if err != nil {
-		return event.Event{}, fmt.Errorf("Could not insert event into repository: %v", err)
-	}
-
-	createdEvent, err := s.eventRepo.ByID(ctx, eventID)
-	if err != nil {
-		return event.Event{}, fmt.Errorf("Could not get event %d: %v", eventID, err)
-	}
-
-	return createdEvent, nil
+	return eventID, nil
 }
 
 type UpdateConcert struct {
@@ -199,7 +155,7 @@ func (s EventService) Update(ctx context.Context, eventID int64, load UpdateEven
 		}
 	}
 
-	err = s.eventRepo.Update(ctx, eventID, *e)
+	err = s.eventRepo.Update(ctx, eventID, e)
 	if err != nil {
 		return event.Event{}, fmt.Errorf("Could not update event: %v", err)
 	}

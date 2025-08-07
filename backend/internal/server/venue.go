@@ -49,10 +49,18 @@ func (s Server) handleCreateVenue() http.HandlerFunc {
 			return
 		}
 
+		requestMember, err := s.memberFromRequest(ctx, w, r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
 		v, err := venue.NewVenue(
 			venue.WithName(load.Name),
 			venue.WithCity(load.City),
 			venue.WithCountryCode(load.CountryCode),
+			venue.WithCreatedBy(requestMember.ID),
+			venue.WithUpdatedBy(requestMember.ID),
 		)
 
 		if err != nil {

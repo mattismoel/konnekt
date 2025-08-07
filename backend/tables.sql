@@ -67,8 +67,23 @@ CREATE TABLE IF NOT EXISTS event (
   venue_id INTEGER NOT NULL,
   is_public BOOLEAN NOT NULL DEFAULT 0,
 
-  FOREIGN KEY (venue_id) REFERENCES venue (id)
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
+	created_by INTEGER NOT NULL,
+	updated_by INTEGER NOT NULL,
+
+  FOREIGN KEY (venue_id) REFERENCES venue (id),
+	FOREIGN KEY (created_by) REFERENCES member(id),
+	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
+
+CREATE TRIGGER update_events_updated_at
+AFTER UPDATE ON event
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE event SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS concert (
   id INTEGER PRIMARY KEY,
@@ -77,16 +92,47 @@ CREATE TABLE IF NOT EXISTS concert (
   event_id INTEGER NOT NULL,
   artist_id INTEGER NOT NULL,
 
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
+	created_by INTEGER NOT NULL,
+	updated_by INTEGER NOT NULL,
+
   FOREIGN KEY (event_id) REFERENCES event (id),
-  FOREIGN KEY (artist_id) REFERENCES artist (id)
+  FOREIGN KEY (artist_id) REFERENCES artist (id),
+	FOREIGN KEY (created_by) REFERENCES member(id),
+	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
+
+CREATE TRIGGER update_concerts_updated_at
+AFTER UPDATE ON concert
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE concert SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS venue (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   country_code TEXT NOT NULL,
-  city TEXT NOT NULL
+  city TEXT NOT NULL,
+
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
+	created_by INTEGER NOT NULL,
+	updated_by INTEGER NOT NULL,
+
+	FOREIGN KEY (created_by) REFERENCES member(id),
+	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
+
+CREATE TRIGGER update_venues_updated_at
+AFTER UPDATE ON venue
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE venue SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS artist (
   id INTEGER PRIMARY KEY,

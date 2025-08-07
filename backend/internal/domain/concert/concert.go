@@ -19,6 +19,11 @@ type Concert struct {
 	From   time.Time     `json:"from"`
 	To     time.Time     `json:"to"`
 	Artist artist.Artist `json:"artist"`
+
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedBy int64     `json:"createdBy"`
+	UpdatedBy int64     `json:"updatedBy"`
 }
 
 func (c *Concert) WithCfgs(cfgs ...cfg.Func[Concert]) error {
@@ -87,6 +92,20 @@ func WithTo(to time.Time) cfg.Func[Concert] {
 
 		c.To = to
 
+		return nil
+	}
+}
+
+func WithCreatedBy(memberID int64) cfg.Func[Concert] {
+	return func(c *Concert) error {
+		c.CreatedBy = memberID
+		return nil
+	}
+}
+
+func WithUpdatedBy(memberID int64) cfg.Func[Concert] {
+	return func(c *Concert) error {
+		c.UpdatedBy = memberID
 		return nil
 	}
 }

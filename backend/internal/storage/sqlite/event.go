@@ -28,6 +28,9 @@ type Event struct {
 	ImageURL    string
 	VenueID     int64
 	IsPublic    bool
+
+	UnixTimestamps
+	AuditFields
 }
 
 func EventFromInternal(e event.Event) Event {
@@ -39,6 +42,14 @@ func EventFromInternal(e event.Event) Event {
 		ImageURL:    e.ImageURL,
 		VenueID:     e.Venue.ID,
 		IsPublic:    e.IsPublic,
+		UnixTimestamps: UnixTimestamps{
+			CreatedAt: UnixTime(e.CreatedAt.Unix()),
+			UpdatedAt: UnixTime(e.UpdatedAt.Unix()),
+		},
+		AuditFields: AuditFields{
+			CreatedBy: e.CreatedBy,
+			UpdatedBy: e.UpdatedBy,
+		},
 	}
 }
 
@@ -52,6 +63,11 @@ func (e Event) ToInternal(venue venue.Venue, concerts []concert.Concert) event.E
 		Venue:       venue,
 		Concerts:    concerts,
 		IsPublic:    e.IsPublic,
+
+		CreatedAt: e.CreatedAt.Time(),
+		UpdatedAt: e.UpdatedAt.Time(),
+		CreatedBy: e.CreatedBy,
+		UpdatedBy: e.UpdatedBy,
 	}
 }
 
@@ -300,6 +316,10 @@ var eventBuilder = sq.
 		"event.image_url",
 		"event.venue_id",
 		"event.is_public",
+		"event.created_at",
+		"event.updated_at",
+		"event.created_by",
+		"event.updated_by",
 	).
 	From("event")
 
@@ -312,6 +332,10 @@ func scanEvent(s Scanner, dst *Event) error {
 		&dst.ImageURL,
 		&dst.VenueID,
 		&dst.IsPublic,
+		&dst.CreatedAt,
+		&dst.UpdatedAt,
+		&dst.CreatedBy,
+		&dst.UpdatedBy,
 	)
 
 	if err != nil {
@@ -381,8 +405,27 @@ func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, e
 
 func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
 	query, args, err := sq.Insert("event").
-		Columns("title", "description", "ticket_url", "image_url", "venue_id", "is_public").
-		Values(e.Title, e.Description, e.TicketURL, e.ImageURL, e.VenueID, e.IsPublic).ToSql()
+		Columns(
+			"title",
+			"description",
+			"ticket_url",
+			"image_url",
+			"venue_id",
+			"is_public",
+			"created_by",
+			"updated_by",
+		).
+		Values(
+			e.Title,
+			e.Description,
+			e.TicketURL,
+			e.ImageURL,
+			e.VenueID,
+			e.IsPublic,
+			e.CreatedBy,
+			e.UpdatedBy,
+		).
+		ToSql()
 
 	if err != nil {
 		return 0, err

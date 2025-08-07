@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -13,10 +12,13 @@ import (
 
 type Concert struct {
 	ID       int64
-	From     time.Time
-	To       time.Time
+	From     UnixTime
+	To       UnixTime
 	ArtistID int64
 	EventID  int64
+
+	UnixTimestamps
+	AuditFields
 }
 
 type Concerts []Concert
@@ -63,32 +65,53 @@ func (cs Concerts) Internalize(ctx context.Context, tx *sql.Tx) ([]concert.Conce
 
 func (c Concert) ToInternal(a artist.Artist) concert.Concert {
 	return concert.Concert{
-		ID:     c.ID,
-		Artist: a,
-		From:   c.From,
-		To:     c.To,
+		ID:        c.ID,
+		Artist:    a,
+		From:      c.From.Time(),
+		To:        c.To.Time(),
+		CreatedAt: c.CreatedAt.Time(),
+		UpdatedAt: c.UpdatedAt.Time(),
+		CreatedBy: c.CreatedBy,
+		UpdatedBy: c.UpdatedBy,
 	}
 }
 
 func ConcertFromInternal(c concert.Concert, eventID int64) Concert {
 	return Concert{
 		ID:       c.ID,
-		From:     c.From,
-		To:       c.To,
+		From:     UnixTime(c.From.Unix()),
+		To:       UnixTime(c.To.Unix()),
 		ArtistID: c.Artist.ID,
 		EventID:  eventID,
+		UnixTimestamps: UnixTimestamps{
+			CreatedAt: UnixTime(c.CreatedAt.Unix()),
+			UpdatedAt: UnixTime(c.CreatedAt.Unix()),
+		},
+		AuditFields: AuditFields{
+			CreatedBy: c.CreatedBy,
+			UpdatedBy: c.UpdatedBy,
+		},
 	}
 }
 
 func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 	query, args, err := sq.
 		Insert("concert").
-		Columns("event_id", "artist_id", "from_date", "to_date").
+		Columns(
+			"event_id",
+			"artist_id",
+			"from_date",
+			"to_date",
+			"created_by",
+			"updated_by",
+		).
 		Values(
 			c.EventID,
 			c.ArtistID,
-			c.From.UTC().Format(time.RFC3339),
-			c.To.UTC().Format(time.RFC3339),
+			c.From,
+			c.To,
+			c.CreatedBy,
+			c.UpdatedBy,
 		).
 		ToSql()
 
@@ -115,11 +138,25 @@ var concertBuilder = sq.
 		"concert.artist_id",
 		"concert.from_date",
 		"concert.to_date",
+		"concert.created_at",
+		"concert.updated_at",
+		"concert.created_by",
+		"concert.updated_by",
 	).
 	From("concert")
 
 func scanConcert(s Scanner, dst *Concert) error {
-	err := s.Scan(&dst.ID, &dst.ArtistID, &dst.From, &dst.To)
+	err := s.Scan(
+		&dst.ID,
+		&dst.ArtistID,
+		&dst.From,
+		&dst.To,
+		&dst.CreatedAt,
+		&dst.UpdatedAt,
+		&dst.CreatedBy,
+		&dst.UpdatedBy,
+	)
+
 	if err != nil {
 		return err
 	}

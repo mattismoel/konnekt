@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
 	"github.com/mattismoel/konnekt/internal/service"
 )
@@ -81,37 +82,75 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var load createEventLoad
 
-		if err := json.NewDecoder(r.Body).Decode(&load); err != nil {
-			writeError(w, err)
-			return
-		}
+		ctx := r.Context()
 
-		concerts := make([]service.CreateConcert, 0)
-
-		for _, conc := range load.Concerts {
-			concerts = append(concerts, service.CreateConcert{
-				ArtistID: conc.ArtistID,
-				From:     conc.From,
-				To:       conc.To,
-			})
-		}
-
-		e, err := s.eventService.Create(r.Context(), service.CreateEvent{
-			Title:       load.Title,
-			Description: load.Description,
-			TicketURL:   load.TicketURL,
-			ImageURL:    load.ImageURL,
-			VenueID:     load.VenueID,
-			Concerts:    concerts,
-			IsPublic:    load.IsPublic,
-		})
-
+		requestMember, err := s.memberFromRequest(ctx, w, r)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		writeJSON(w, http.StatusOK, e)
+		if err := json.NewDecoder(r.Body).Decode(&load); err != nil {
+			writeError(w, err)
+			return
+		}
+
+		concerts := make([]concert.Concert, 0)
+
+		for _, loadConcert := range load.Concerts {
+			a, err := s.artistService.ByID(ctx, loadConcert.ArtistID)
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+			c, err := concert.NewConcert(
+				concert.WithArtist(a),
+				concert.WithFrom(loadConcert.From),
+				concert.WithTo(loadConcert.To),
+				concert.WithCreatedBy(requestMember.ID),
+				concert.WithUpdatedBy(requestMember.ID),
+			)
+
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+			concerts = append(concerts, c)
+		}
+
+		v, err := s.venueService.ByID(ctx, load.VenueID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		e, err := event.NewEvent(
+			event.WithTitle(load.Title),
+			event.WithDescription(load.Description),
+			event.WithTicketURL(load.TicketURL),
+			event.WithVenue(v),
+			event.WithImageURL(load.ImageURL),
+			event.WithConcerts(concerts...),
+			event.WithIsPublic(load.IsPublic),
+			event.WithCreatedBy(requestMember.ID),
+			event.WithUpdatedBy(requestMember.ID),
+		)
+
+		eventID, err := s.eventService.Create(ctx, e)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		createdEvent, err := s.eventService.ByID(ctx, eventID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, createdEvent)
 	}
 }
 

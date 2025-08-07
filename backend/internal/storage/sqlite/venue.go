@@ -15,6 +15,9 @@ type Venue struct {
 	Name        string
 	CountryCode string
 	City        string
+
+	UnixTimestamps
+	AuditFields
 }
 
 var _ venue.Repository = (*VenueRepository)(nil)
@@ -101,6 +104,10 @@ func (repo VenueRepository) Insert(ctx context.Context, v venue.Venue) (int64, e
 		Name:        v.Name,
 		City:        v.City,
 		CountryCode: v.CountryCode,
+		AuditFields: AuditFields{
+			CreatedBy: v.CreatedBy,
+			UpdatedBy: v.UpdatedBy,
+		},
 	})
 
 	if err != nil {
@@ -165,11 +172,25 @@ var venueBuilder = sq.
 		"venue.name",
 		"venue.country_code",
 		"venue.city",
+		"venue.created_at",
+		"venue.updated_at",
+		"venue.created_by",
+		"venue.updated_by",
 	).
 	From("venue")
 
 func scanVenue(s Scanner, dst *Venue) error {
-	err := s.Scan(&dst.ID, &dst.Name, &dst.CountryCode, &dst.City)
+	err := s.Scan(
+		&dst.ID,
+		&dst.Name,
+		&dst.CountryCode,
+		&dst.City,
+		&dst.CreatedAt,
+		&dst.UpdatedAt,
+		&dst.CreatedBy,
+		&dst.UpdatedBy,
+	)
+
 	if err != nil {
 		return fmt.Errorf("Could not scan venue into venue struct: %v", err)
 	}
@@ -211,8 +232,8 @@ func listVenues(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Venue, e
 func insertVenue(ctx context.Context, tx *sql.Tx, v Venue) (int64, error) {
 	query, args, err := sq.
 		Insert("venue").
-		Columns("name", "country_code", "city").
-		Values(v.Name, v.CountryCode, v.City).
+		Columns("name", "country_code", "city", "created_by", "updated_by").
+		Values(v.Name, v.CountryCode, v.City, v.CreatedBy, v.UpdatedBy).
 		ToSql()
 
 	if err != nil {
@@ -309,5 +330,9 @@ func (v Venue) ToInternal() venue.Venue {
 		Name:        v.Name,
 		CountryCode: v.CountryCode,
 		City:        v.City,
+		CreatedAt:   v.CreatedAt.Time(),
+		UpdatedAt:   v.UpdatedAt.Time(),
+		CreatedBy:   v.CreatedBy,
+		UpdatedBy:   v.UpdatedBy,
 	}
 }

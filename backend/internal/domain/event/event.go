@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/mattismoel/konnekt/internal/cfg"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -32,6 +33,11 @@ type Event struct {
 	Venue       venue.Venue       `json:"venue"`
 	Concerts    []concert.Concert `json:"concerts"`
 	IsPublic    bool              `json:"isPublic"`
+
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedBy int64     `json:"createdBy"`
+	UpdatedBy int64     `json:"updatedBy"`
 }
 
 func (e *Event) WithCfgs(cfgs ...cfg.Func[Event]) error {
@@ -44,14 +50,14 @@ func (e *Event) WithCfgs(cfgs ...cfg.Func[Event]) error {
 	return nil
 }
 
-func NewEvent(cfgs ...cfg.Func[Event]) (*Event, error) {
-	e := &Event{
+func NewEvent(cfgs ...cfg.Func[Event]) (Event, error) {
+	e := Event{
 		Concerts: make([]concert.Concert, 0),
 		IsPublic: false,
 	}
 
 	if err := e.WithCfgs(cfgs...); err != nil {
-		return &Event{}, err
+		return Event{}, err
 	}
 
 	return e, nil
@@ -160,6 +166,20 @@ func WithVenue(v venue.Venue) cfg.Func[Event] {
 func WithIsPublic(isPublic bool) cfg.Func[Event] {
 	return func(e *Event) error {
 		e.IsPublic = isPublic
+		return nil
+	}
+}
+
+func WithCreatedBy(memberID int64) cfg.Func[Event] {
+	return func(e *Event) error {
+		e.CreatedBy = memberID
+		return nil
+	}
+}
+
+func WithUpdatedBy(memberID int64) cfg.Func[Event] {
+	return func(e *Event) error {
+		e.UpdatedBy = memberID
 		return nil
 	}
 }
