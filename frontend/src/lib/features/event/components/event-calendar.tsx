@@ -44,7 +44,7 @@ const EventCalendar = ({ event, ...rest }: Props) => {
 			</div>
 
 			<div className="overflow-y-scroll">
-				<div className="grid h-full min-h-72 flex-1 grid-cols-[48px_1fr] gap-4">
+				<div className="grid h-full min-h-96 flex-1 grid-cols-[48px_1fr] gap-4">
 					{/*  Timeline */}
 					<div className="relative">
 						{timeMarkers.map((marker, i) => {
