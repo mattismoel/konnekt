@@ -14,7 +14,6 @@ export const Route = createFileRoute('/admin/artists/$artistId/edit')({
 		const artist = await queryClient.ensureQueryData(artistQueryOptions)
 		const updatedByMemberQueryOpts = createMemberByIdQueryOpts(artist.updatedBy)
 
-		queryClient.ensureQueryData(artistQueryOptions)
 		queryClient.ensureQueryData(genresQueryOpts)
 		queryClient.ensureQueryData(updatedByMemberQueryOpts)
 
