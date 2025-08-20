@@ -211,8 +211,6 @@ func landingImageByID(ctx context.Context, tx *sql.Tx, id int64) (Image, error) 
 		return Image{}, err
 	}
 
-	fmt.Printf("createdBY: %d, createdAt: %v\n", createdByID, createdAtUnix)
-
 	return Image{
 		ID:        id,
 		URL:       url,
