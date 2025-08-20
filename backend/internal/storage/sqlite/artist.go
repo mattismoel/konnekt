@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/artist"
@@ -14,19 +15,31 @@ type Artist struct {
 	ID          int64
 	Name        string
 	Description string
-	PreviewURL  string
+	PreviewURL  sql.NullString
 	ImageURL    string
+
+	UnixTimestamps
+	AuditFields
 }
 
 func (a Artist) ToInternal(genres []artist.Genre, socials []artist.Social) artist.Artist {
+	var previewUrl string
+	if a.PreviewURL.Valid {
+		previewUrl = a.PreviewURL.String
+	}
+
 	return artist.Artist{
 		ID:          a.ID,
 		Name:        a.Name,
 		Description: a.Description,
-		PreviewURL:  a.PreviewURL,
+		PreviewURL:  previewUrl,
 		ImageURL:    a.ImageURL,
 		Genres:      genres,
 		Socials:     socials,
+		CreatedBy:   a.CreatedBy,
+		UpdatedBy:   a.UpdatedBy,
+		CreatedAt:   a.CreatedAt.Time(),
+		UpdatedAt:   a.UpdatedAt.Time(),
 	}
 }
 
@@ -116,8 +129,15 @@ func (repo ArtistRepository) Insert(ctx context.Context, a artist.Artist) (int64
 	artistID, err := insertArtist(ctx, tx, Artist{
 		Name:        a.Name,
 		Description: a.Description,
-		PreviewURL:  a.PreviewURL,
-		ImageURL:    a.ImageURL,
+		PreviewURL: sql.NullString{
+			String: a.PreviewURL,
+			Valid:  strings.TrimSpace(a.PreviewURL) != "",
+		},
+		ImageURL: a.ImageURL,
+		AuditFields: AuditFields{
+			CreatedBy: a.CreatedBy,
+			UpdatedBy: a.UpdatedBy,
+		},
 	})
 
 	if err != nil {
@@ -168,8 +188,11 @@ func (repo ArtistRepository) Update(ctx context.Context, artistID int64, a artis
 	err = updateArtist(ctx, tx, artistID, Artist{
 		Name:        a.Name,
 		Description: a.Description,
-		PreviewURL:  a.PreviewURL,
-		ImageURL:    a.ImageURL,
+		PreviewURL: sql.NullString{
+			String: a.PreviewURL,
+			Valid:  strings.TrimSpace(a.PreviewURL) != "",
+		},
+		ImageURL: a.ImageURL,
 	})
 
 	if err != nil {
@@ -310,6 +333,10 @@ func scanArtist(scanner Scanner, dst *Artist) error {
 		&dst.Description,
 		&dst.PreviewURL,
 		&dst.ImageURL,
+		&dst.CreatedBy,
+		&dst.UpdatedBy,
+		&dst.CreatedAt,
+		&dst.UpdatedAt,
 	)
 
 	if err != nil {
@@ -326,6 +353,10 @@ var artistBuilder = sq.
 		"artist.description",
 		"artist.preview_url",
 		"artist.image_url",
+		"artist.created_by",
+		"artist.updated_by",
+		"artist.created_at",
+		"artist.updated_at",
 	).
 	From("artist")
 
@@ -365,8 +396,8 @@ func listArtists(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Artist,
 func insertArtist(ctx context.Context, tx *sql.Tx, a Artist) (int64, error) {
 	query, args, err := sq.
 		Insert("artist").
-		Columns("name", "description", "preview_url", "image_url").
-		Values(a.Name, a.Description, a.PreviewURL, a.ImageURL).
+		Columns("name", "description", "preview_url", "image_url", "created_by", "updated_by").
+		Values(a.Name, a.Description, a.PreviewURL, a.ImageURL, a.CreatedBy, a.UpdatedBy).
 		ToSql()
 
 	res, err := tx.ExecContext(ctx, query, args...)
@@ -464,7 +495,7 @@ func updateArtist(ctx context.Context, tx *sql.Tx, artistID int64, a Artist) err
 		builder = builder.Set("description", a.Description)
 	}
 
-	if a.PreviewURL != "" {
+	if a.PreviewURL.Valid {
 		builder = builder.Set("preview_url", a.PreviewURL)
 	}
 

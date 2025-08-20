@@ -67,21 +67,28 @@ func withOrdering(
 	return b
 }
 
-type filterFunc = func(query.Filter) sq.Sqlizer
+type filterFunc = func(query.Filter) (sq.Sqlizer, error)
 
-func withFiltering(b sq.SelectBuilder, fc query.FilterCollection, fm map[string]filterFunc) sq.SelectBuilder {
+func withFiltering(b sq.SelectBuilder, fc query.FilterCollection, fm map[string]filterFunc) (sq.SelectBuilder, error) {
 	for key, fs := range fc {
-		applyFn, ok := fm[key]
+		fn, ok := fm[key]
 		if !ok {
 			continue
 		}
 
 		for _, f := range fs {
-			b = b.Where(applyFn(f))
+			sqlizer, err := fn(f)
+			if err != nil {
+				return b, err
+			}
+
+			if sqlizer != nil {
+				b = b.Where(fn(f))
+			}
 		}
 	}
 
-	return b
+	return b, nil
 }
 
 func contains(column string, value any) sq.Like {

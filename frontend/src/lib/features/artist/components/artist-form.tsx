@@ -4,7 +4,7 @@ import { z } from "zod"
 import { Controller, FormProvider, useFieldArray, useForm, type UseFieldArrayReturn, type UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { FaPlus, FaTrash, FaUpload, FaPen } from "react-icons/fa"
+import { FaPlus, FaTrash, FaPen } from "react-icons/fa"
 import { artistForm, createArtist, socialUrlToIcon, updateArtist, type Artist, type ArtistFormValues } from "../artist"
 import { createGenre, genreSchema, type Genre } from "../genre"
 import FormField from "@/lib/components/form-field"
@@ -23,6 +23,8 @@ import Modal from "@/lib/components/ui/modal"
 import MultiPicker from "@/lib/components/ui/picker/multi-picker"
 import Searchbar from "@/lib/components/searchbar"
 import { useToast } from "@/lib/context/toast"
+import Audit from "@/lib/components/audit"
+import type { Member } from "../../auth/member"
 
 const internalSocialSchema = z.object({ value: z.string().url() })
 
@@ -35,7 +37,7 @@ type InternalArtistForm = z.infer<typeof internalArtistFormSchema>
 type ArtistFormContext =
 	UseFormReturn<InternalArtistForm> &
 	UseFieldArrayReturn<InternalArtistForm> & {
-		artist: Artist | undefined;
+		artist?: Artist | null;
 		genres: Genre[]
 	}
 
@@ -48,11 +50,16 @@ export const useArtistFormContext = () => {
 }
 
 type Props = {
-	artist?: Artist;
 	genres: Genre[]
-}
+} & ({
+	artist: Artist;
+	updatedByMember: Member;
+} | {
+	artist?: null;
+	updatedByMember: null;
+})
 
-const ArtistForm = ({ artist, genres }: Props) => {
+const ArtistForm = ({ artist, genres, updatedByMember }: Props) => {
 	const { hasPermissions } = useAuth()
 	const isEditable = hasPermissions(["edit:artist"])
 
@@ -117,9 +124,19 @@ const ArtistForm = ({ artist, genres }: Props) => {
 					<GenreSection />
 					<SocialsSection />
 
-					{isEditable && (
-						<Button type="submit" className="w-full md:w-fit"><FaUpload />Offentligør</Button>
-					)}
+
+					<div className="flex flex-col gap-4">
+						{isEditable && (
+							<Button type="submit" className="w-full md:w-fit">
+								{artist ? <FaPen /> : <FaPlus />}
+								{artist ? "Redigér" : "Tilføj"}
+							</Button>
+						)}
+
+						{artist && (
+							<Audit updatedByMember={updatedByMember} updatedAt={artist.updatedAt} />
+						)}
+					</div>
 				</form>
 			</FormProvider>
 		</ArtistFormContext.Provider>

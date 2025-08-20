@@ -17,6 +17,7 @@ import Modal from '@/lib/components/ui/modal';
 import type { Entry as EntryType } from '@/lib/components/ui/picker/entry';
 import MultiPicker from '@/lib/components/ui/picker/multi-picker';
 import Searchbar from '@/lib/components/searchbar';
+import { formatRelative } from 'date-fns';
 
 type MemberFormContext = {
 	member: Member;
@@ -101,9 +102,9 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 						<div className="flex flex-col items-center space-y-4 md:items-start">
 							<div className="flex flex-col items-center space-y-1">
 								<h1 className="text-2xl font-semibold">{fullName}</h1>
-								<span className="text-text/50 text-center md:text-left"
-								>{memberTeams.map(({ displayName }) => displayName).join(', ')}</span
-								>
+								<span className="text-text/75 text-center md:text-left">
+									{memberTeams.map(({ displayName }) => displayName).join(', ')}
+								</span>
 							</div>
 						</div>
 					</div>
@@ -114,6 +115,9 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
 					{(isEditable || isCurrentMember) && (
 						<Button type="submit" disabled={!isDirty}>Opdatér</Button>
 					)}
+					<span className="text-text/50">
+						Medlem siden {formatRelative(member.createdAt, new Date())}
+					</span>
 				</form>
 			</FormProvider>
 		</MemberFormContext.Provider>

@@ -2,9 +2,13 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/mattismoel/konnekt/internal/domain/artist"
-	"github.com/mattismoel/konnekt/internal/service"
 	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/mattismoel/konnekt/internal/domain/artist"
+	"github.com/mattismoel/konnekt/internal/query"
+	"github.com/mattismoel/konnekt/internal/service"
 )
 
 func (s Server) handleListArtists() http.HandlerFunc {
@@ -69,15 +73,73 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		artistID, err := s.artistService.Create(ctx, service.CreateArtist{
-			Name:        load.Name,
-			Description: load.Description,
-			ImageURL:    load.ImageURL,
-			PreviewURL:  load.PreviewURL,
-			GenreIDs:    load.GenreIDs,
-			Socials:     load.Socials,
-		})
+		requestMember, err := s.memberFromRequest(ctx, w, r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
 
+		filters := make(query.FilterCollection)
+		for _, genreID := range load.GenreIDs {
+			err := filters.Add("id", query.Filter{
+				Cmp:   query.Equal,
+				Value: strconv.Itoa(int(genreID)),
+			})
+
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+		}
+
+		q, err := query.NewListQuery(query.WithFilters(filters))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		genresResult, err := s.artistService.ListGenres(ctx, q)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		socials := make([]artist.Social, 0)
+		for _, social := range load.Socials {
+			s, err := artist.NewSocial(social)
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+			socials = append(socials, s)
+		}
+
+		a, err := artist.NewArtist(
+			artist.WithName(load.Name),
+			artist.WithDescription(load.Description),
+			artist.WithGenres(genresResult.Records...),
+			artist.WithImageURL(load.ImageURL),
+			artist.WithSocials(socials...),
+			artist.WithCreatedBy(requestMember.ID),
+			artist.WithUpdatedBy(requestMember.ID),
+		)
+
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		if strings.TrimSpace(load.PreviewURL) != "" {
+			err := a.WithCfgs(artist.WithPreviewURL(load.PreviewURL))
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+		}
+
+		artistID, err := s.artistService.Create(ctx, a)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -120,7 +182,7 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 			return
 		}
 
-		a, err := s.artistService.Update(ctx, artistID, service.UpdateArtist{
+		err = s.artistService.Update(ctx, artistID, service.UpdateArtist{
 			Name:        load.Name,
 			Description: load.Description,
 			PreviewURL:  load.PreviewURL,
@@ -134,13 +196,13 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 			return
 		}
 
-		err = a.WithCfgs(artist.WithID(artistID))
+		updatedArtist, err := s.artistService.ByID(ctx, artistID)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		writeJSON(w, http.StatusOK, a)
+		writeJSON(w, http.StatusOK, updatedArtist)
 	}
 }
 
@@ -190,16 +252,13 @@ func (s Server) handleListGenres() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		baseQuery, err := NewListQueryFromURL(r.URL.Query())
+		q, err := NewListQueryFromURL(r.URL.Query())
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		result, err := s.artistService.ListGenres(ctx, artist.GenreQuery{
-			ListQuery: baseQuery,
-		})
-
+		result, err := s.artistService.ListGenres(ctx, q)
 		if err != nil {
 			writeError(w, err)
 			return

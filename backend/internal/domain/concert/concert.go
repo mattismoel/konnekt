@@ -19,6 +19,9 @@ type Concert struct {
 	From   time.Time     `json:"from"`
 	To     time.Time     `json:"to"`
 	Artist artist.Artist `json:"artist"`
+
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (c *Concert) WithCfgs(cfgs ...cfg.Func[Concert]) error {

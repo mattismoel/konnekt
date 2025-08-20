@@ -5,8 +5,11 @@ import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/
 import { createUrl, type Query } from "@/lib/url";
 import { createListResult, type ListResult } from "@/lib/query";
 import { startOfToday } from "date-fns";
+import { auditDates, auditMembers } from "@/lib/audit";
 
 export const eventSchema = z.object({
+	...auditMembers.shape,
+	...auditDates.shape,
 	id: idSchema,
 	title: z.string().nonempty(),
 	description: z.string().nonempty(),

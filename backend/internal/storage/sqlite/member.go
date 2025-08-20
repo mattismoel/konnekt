@@ -21,8 +21,12 @@ type Member struct {
 	LastName          string
 	PasswordHash      []byte
 	ProfilePictureURL string
-	SpecialRole       string
+	SpecialRole       sql.NullString
 	Active            bool
+
+	ApprovedBy sql.NullInt64
+
+	UnixTimestamps
 }
 
 type MemberCollection []Member
@@ -45,6 +49,11 @@ func (repo MemberRepository) Insert(ctx context.Context, m member.Member) (int64
 
 	defer tx.Rollback()
 
+	specialRole := sql.NullString{
+		String: m.SpecialRole,
+		Valid:  strings.TrimSpace(m.SpecialRole) != "",
+	}
+
 	memberID, err := insertMember(ctx, tx, Member{
 		ID:                m.ID,
 		Email:             m.Email,
@@ -52,6 +61,7 @@ func (repo MemberRepository) Insert(ctx context.Context, m member.Member) (int64
 		LastName:          m.LastName,
 		PasswordHash:      m.PasswordHash,
 		ProfilePictureURL: m.ProfilePictureURL,
+		SpecialRole:       specialRole,
 	})
 
 	if err != nil {
@@ -99,7 +109,7 @@ func (repo MemberRepository) ByID(ctx context.Context, memberID int64) (member.M
 	return dbMember.ToInternal(dbTeams), nil
 }
 
-func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error {
+func (repo MemberRepository) Approve(ctx context.Context, memberID int64, approvedByMemberID int64) error {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -107,7 +117,7 @@ func (repo MemberRepository) Approve(ctx context.Context, memberID int64) error 
 
 	defer tx.Rollback()
 
-	if err := approveMember(ctx, tx, memberID); err != nil {
+	if err := approveMember(ctx, tx, memberID, approvedByMemberID); err != nil {
 		return fmt.Errorf("Could not approve member with ID: %d: %v", memberID, err)
 	}
 
@@ -199,12 +209,17 @@ func (repo MemberRepository) Update(ctx context.Context, memberID int64, m membe
 
 	defer tx.Rollback()
 
+	specialRole := sql.NullString{
+		String: m.SpecialRole,
+		Valid:  strings.TrimSpace(m.SpecialRole) != "",
+	}
+
 	err = updateMember(ctx, tx, memberID, Member{
 		FirstName:         m.FirstName,
 		LastName:          m.LastName,
 		Email:             m.Email,
 		ProfilePictureURL: m.ProfilePictureURL,
-		SpecialRole:       m.SpecialRole,
+		SpecialRole:       specialRole,
 	})
 
 	if err != nil {
@@ -300,9 +315,8 @@ func (repo MemberRepository) PasswordHash(ctx context.Context, memberID int64) (
 func insertMember(ctx context.Context, tx *sql.Tx, m Member) (int64, error) {
 	query, args, err := sq.
 		Insert("member").
-		Options("OR IGNORE").
-		Columns("email", "first_name", "last_name", "password_hash", "profile_picture_url").
-		Values(m.Email, m.FirstName, m.LastName, m.PasswordHash, m.ProfilePictureURL).
+		Columns("email", "first_name", "last_name", "special_role", "password_hash", "profile_picture_url").
+		Values(m.Email, m.FirstName, m.LastName, m.SpecialRole, m.PasswordHash, m.ProfilePictureURL).
 		ToSql()
 
 	if err != nil {
@@ -388,25 +402,6 @@ func memberPasswordHash(ctx context.Context, tx *sql.Tx, memberID int64) ([]byte
 	return passwordHash, nil
 }
 
-func scanMember(s Scanner, dst *Member) error {
-	err := s.Scan(
-		&dst.ID,
-		&dst.FirstName,
-		&dst.LastName,
-		&dst.Email,
-		&dst.ProfilePictureURL,
-		&dst.Active,
-		&dst.PasswordHash,
-		&dst.SpecialRole,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 var memberBuilder = sq.
 	Select(
 		"member.id",
@@ -417,8 +412,33 @@ var memberBuilder = sq.
 		"member.active",
 		"member.password_hash",
 		"member.special_role",
+		"member.approved_by",
+		"member.created_at",
+		"member.updated_at",
 	).
 	From("member")
+
+func scanMember(s Scanner, dst *Member) error {
+	err := s.Scan(
+		&dst.ID,
+		&dst.FirstName,
+		&dst.LastName,
+		&dst.Email,
+		&dst.ProfilePictureURL,
+		&dst.Active,
+		&dst.PasswordHash,
+		&dst.SpecialRole,
+		&dst.ApprovedBy,
+		&dst.CreatedAt,
+		&dst.UpdatedAt,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCollection, error) {
 	builder := memberBuilder
@@ -426,21 +446,25 @@ func listMembers(ctx context.Context, tx *sql.Tx, params QueryParams) (MemberCol
 	builder = withPagination(builder, params)
 	builder = withOrdering(builder, params.OrderBy, "first_name", "member")
 
-	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
-		"active": func(f query.Filter) sq.Sqlizer {
+	builder, err := withFiltering(builder, params.Filters, map[string]filterFunc{
+		"active": func(f query.Filter) (sq.Sqlizer, error) {
 			if strings.ToUpper(f.Value) == "TRUE" {
-				return sq.Eq{"active": true}
+				return sq.Eq{"active": true}, nil
 			}
 
-			return sq.Eq{"active": false}
+			return sq.Eq{"active": false}, nil
 		},
-		"first_name": func(f query.Filter) sq.Sqlizer {
-			return contains("first_name", f.Value)
+		"first_name": func(f query.Filter) (sq.Sqlizer, error) {
+			return contains("first_name", f.Value), nil
 		},
-		"last_name": func(f query.Filter) sq.Sqlizer {
-			return contains("last_name", f.Value)
+		"last_name": func(f query.Filter) (sq.Sqlizer, error) {
+			return contains("last_name", f.Value), nil
 		},
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	query, args, err := builder.ToSql()
 	if err != nil {
@@ -517,10 +541,18 @@ func updateMember(ctx context.Context, tx *sql.Tx, memberID int64, m Member) err
 	return nil
 }
 
-func approveMember(ctx context.Context, tx *sql.Tx, memberID int64) error {
+func approveMember(ctx context.Context, tx *sql.Tx, memberID int64, approvedByMemberID int64) error {
+	// Make sure the member approving another member exists before allowing to
+	// approve.
+	_, err := memberByID(ctx, tx, approvedByMemberID)
+	if err != nil {
+		return err
+	}
+
 	query, args, err := sq.
 		Update("member").
 		Set("active", 1).
+		Set("approved_by", approvedByMemberID).
 		Where(sq.Eq{"id": memberID}).
 		ToSql()
 
@@ -582,6 +614,16 @@ func deleteMemberTeams(ctx context.Context, tx *sql.Tx, memberID int64) error {
 }
 
 func (m Member) ToInternal(teams TeamCollection) member.Member {
+	var specialRole string
+	if m.SpecialRole.Valid {
+		specialRole = m.SpecialRole.String
+	}
+
+	var approvedByMemberID *int64 = nil
+	if m.ApprovedBy.Valid {
+		approvedByMemberID = &m.ApprovedBy.Int64
+	}
+
 	return member.Member{
 		ID:                m.ID,
 		FirstName:         m.FirstName,
@@ -589,10 +631,14 @@ func (m Member) ToInternal(teams TeamCollection) member.Member {
 		Email:             m.Email,
 		PasswordHash:      m.PasswordHash,
 		ProfilePictureURL: m.ProfilePictureURL,
-		SpecialRole:       m.SpecialRole,
+		SpecialRole:       specialRole,
 
 		Teams: teams.ToInternal(),
 
 		Active: m.Active,
+
+		ApprovedByID: approvedByMemberID,
+		CreatedAt:    m.CreatedAt.Time(),
+		UpdatedAt:    m.UpdatedAt.Time(),
 	}
 }

@@ -3,6 +3,7 @@ package venue
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/mattismoel/konnekt/internal/cfg"
 	"github.com/mattismoel/konnekt/internal/query"
@@ -20,6 +21,11 @@ type Venue struct {
 	Name        string `json:"name"`
 	CountryCode string `json:"countryCode"`
 	City        string `json:"city"`
+
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	CreatedBy int64     `json:"createdBy"`
+	UpdatedBy int64     `json:"updatedBy"`
 }
 
 type Query struct {
@@ -87,6 +93,20 @@ func WithCountryCode(countryCode string) cfg.Func[Venue] {
 		}
 
 		v.CountryCode = countryCode
+		return nil
+	}
+}
+
+func WithCreatedBy(memberID int64) cfg.Func[Venue] {
+	return func(v *Venue) error {
+		v.CreatedBy = memberID
+		return nil
+	}
+}
+
+func WithUpdatedBy(memberID int64) cfg.Func[Venue] {
+	return func(v *Venue) error {
+		v.UpdatedBy = memberID
 		return nil
 	}
 }

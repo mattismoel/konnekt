@@ -44,7 +44,6 @@ func (s *Server) setupRoutes() {
 		r.Post("/{memberID}/approve", s.withPermissions(s.handleApproveMember(), "edit:member"))
 
 		r.Post("/picture", s.handleUploadMemberProfilePicture())
-		// r.Get("/{memberID}", s.withPermissions(s.handleListUser(), "view:user", "view:team", "view:permission"))
 	})
 
 	s.mux.Route("/teams", func(r chi.Router) {
@@ -64,8 +63,6 @@ func (s *Server) setupRoutes() {
 
 		r.Route("/permissions", func(r chi.Router) {
 			r.Get("/{teamID}", s.withPermissions(s.handleListTeamPermissions(), "view:team", "view:permission"))
-			// r.Get("/", s.withPermissions(s.handleListPermissions(), "view:permission"))
-			// r.Get("/{memberID}", s.withPermissions(s.handleListMemberPermissions(), "view:permission"))
 		})
 	})
 

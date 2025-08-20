@@ -6,6 +6,7 @@ import PostenLogo from '@/lib/assets/logos/posten-logo.svg';
 import KulturMaskinenLogo from '@/lib/assets/logos/kulturmaskinen-logo.svg';
 import SpillestedetOdenseLogo from '@/lib/assets/logos/spillestedet-odense-logo.svg';
 import StormsPakhusLogo from "@/lib/assets/logos/storms-pakhus-logo.svg"
+import NoctivagaLogo from "@/lib/assets/logos/noctivaga-logo.svg"
 
 import Fader from '@/lib/components/fader';
 import GlowCursor from '@/lib/components/glow-cursor';
@@ -116,9 +117,10 @@ function App() {
 										['https://postenlive.dk/', { src: PostenLogo, alt: "Posten" }],
 										["https://stormspakhus.dk/", { src: StormsPakhusLogo, alt: "Storms Pakhus" }],
 										['https://ungodense.dk/', { src: UngOdenseLogo, alt: "UngOdense" }],
-										['https://ungodense.dk/index.php?open=1283&menu_id=58', { src: SpillestedetOdenseLogo, alt: "Spillestedet" }],
 										['https://odense.dk', { src: OdenseKommuneLogo, alt: "Odense Kommune" }],
+										['https://ungodense.dk/index.php?open=1283&menu_id=58', { src: SpillestedetOdenseLogo, alt: "Spillestedet" }],
 										['https://kulturmaskinen.dk/', { src: KulturMaskinenLogo, alt: "Kulturmaskinen" }],
+										['https://www.noctivaga.dk/', { src: NoctivagaLogo, alt: "Noctivaga" }],
 									])}
 								/>
 							</div>

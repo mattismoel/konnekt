@@ -15,6 +15,23 @@ type Genre struct {
 	Name string
 }
 
+type GenreCollection []Genre
+
+func (gc GenreCollection) ToInternal() ([]artist.Genre, error) {
+	var genres []artist.Genre
+
+	for _, dbGenre := range gc {
+		g, err := artist.NewGenre(dbGenre.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		genres = append(genres, g)
+	}
+
+	return genres, nil
+}
+
 func (repo ArtistRepository) InsertGenre(ctx context.Context, name string) (int64, error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -35,7 +52,7 @@ func (repo ArtistRepository) InsertGenre(ctx context.Context, name string) (int6
 	return genreID, nil
 }
 
-func (repo ArtistRepository) ListGenres(ctx context.Context, q artist.GenreQuery) (query.ListResult[artist.Genre], error) {
+func (repo ArtistRepository) ListGenres(ctx context.Context, q query.ListQuery) (query.ListResult[artist.Genre], error) {
 	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return query.ListResult[artist.Genre]{}, err
@@ -278,7 +295,7 @@ func dissasociateArtistFromGenre(ctx context.Context, tx *sql.Tx, artistID int64
 }
 
 // Lists all genres associated with an artist.
-func artistGenres(ctx context.Context, tx *sql.Tx, artistID int64) ([]Genre, error) {
+func artistGenres(ctx context.Context, tx *sql.Tx, artistID int64) (GenreCollection, error) {
 	query, args, err := genreBuilder.
 		Join("artists_genres ag on ag.genre_id = genre.id").
 		Where(sq.Eq{"ag.artist_id": artistID}).

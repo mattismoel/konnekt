@@ -131,6 +131,7 @@ func main() {
 		server.WithEventService(eventService),
 		server.WithArtistService(artistService),
 		server.WithVenueService(venueService),
+		server.WithObjectStore(s3Store),
 	)
 
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -28,6 +29,9 @@ type Event struct {
 	ImageURL    string
 	VenueID     int64
 	IsPublic    bool
+
+	UnixTimestamps
+	AuditFields
 }
 
 func EventFromInternal(e event.Event) Event {
@@ -39,6 +43,14 @@ func EventFromInternal(e event.Event) Event {
 		ImageURL:    e.ImageURL,
 		VenueID:     e.Venue.ID,
 		IsPublic:    e.IsPublic,
+		UnixTimestamps: UnixTimestamps{
+			CreatedAt: UnixTime(e.CreatedAt.Unix()),
+			UpdatedAt: UnixTime(e.UpdatedAt.Unix()),
+		},
+		AuditFields: AuditFields{
+			CreatedBy: e.CreatedBy,
+			UpdatedBy: e.UpdatedBy,
+		},
 	}
 }
 
@@ -52,6 +64,11 @@ func (e Event) ToInternal(venue venue.Venue, concerts []concert.Concert) event.E
 		Venue:       venue,
 		Concerts:    concerts,
 		IsPublic:    e.IsPublic,
+
+		CreatedAt: e.CreatedAt.Time(),
+		UpdatedAt: e.UpdatedAt.Time(),
+		CreatedBy: e.CreatedBy,
+		UpdatedBy: e.UpdatedBy,
 	}
 }
 
@@ -300,6 +317,10 @@ var eventBuilder = sq.
 		"event.image_url",
 		"event.venue_id",
 		"event.is_public",
+		"event.created_at",
+		"event.updated_at",
+		"event.created_by",
+		"event.updated_by",
 	).
 	From("event")
 
@@ -312,6 +333,10 @@ func scanEvent(s Scanner, dst *Event) error {
 		&dst.ImageURL,
 		&dst.VenueID,
 		&dst.IsPublic,
+		&dst.CreatedAt,
+		&dst.UpdatedAt,
+		&dst.CreatedBy,
+		&dst.UpdatedBy,
 	)
 
 	if err != nil {
@@ -326,26 +351,38 @@ func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, e
 		Distinct().
 		Join("concert ON concert.event_id = event.id")
 
-	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
-		"title": func(f query.Filter) sq.Sqlizer {
-			return contains("title", f.Value)
+	builder, err := withFiltering(builder, params.Filters, map[string]filterFunc{
+		"title": func(f query.Filter) (sq.Sqlizer, error) {
+			return contains("title", f.Value), nil
 		},
-		"is_public": func(f query.Filter) sq.Sqlizer {
+		"is_public": func(f query.Filter) (sq.Sqlizer, error) {
 			if strings.ToUpper(f.Value) == "TRUE" {
-				return sq.Eq{"is_public": true}
+				return sq.Eq{"is_public": true}, nil
 			}
-			return sq.Eq{"is_public": false}
+			return sq.Eq{"is_public": false}, nil
 		},
-		"from_date": func(f query.Filter) sq.Sqlizer {
-			return sq.Expr(fmt.Sprintf("concert.from_date %s ?", f.Cmp), f.Value)
+		"from_date": func(f query.Filter) (sq.Sqlizer, error) {
+			fromDate, err := time.Parse(time.RFC3339, f.Value)
+			if err != nil {
+				return nil, err
+			}
+			return sq.Expr(fmt.Sprintf("concert.from_date %s ?", f.Cmp), fromDate.Unix()), nil
 		},
-		"to_date": func(f query.Filter) sq.Sqlizer {
-			return sq.Expr(fmt.Sprintf("concert.to_date %s ?", f.Cmp), f.Value)
+		"to_date": func(f query.Filter) (sq.Sqlizer, error) {
+			toDate, err := time.Parse(time.RFC3339, f.Value)
+			if err != nil {
+				return nil, err
+			}
+			return sq.Expr(fmt.Sprintf("concert.to_date %s ?", f.Cmp), toDate.Unix()), nil
 		},
-		"artist_id": func(f query.Filter) sq.Sqlizer {
-			return sq.Eq{"concert.artist_id": f.Value}
+		"artist_id": func(f query.Filter) (sq.Sqlizer, error) {
+			return sq.Eq{"concert.artist_id": f.Value}, nil
 		},
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	builder = withOrdering(builder, params.OrderBy, "from_date", "concert")
 	builder = withPagination(builder, params)
@@ -381,8 +418,27 @@ func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, e
 
 func insertEvent(ctx context.Context, tx *sql.Tx, e Event) (int64, error) {
 	query, args, err := sq.Insert("event").
-		Columns("title", "description", "ticket_url", "image_url", "venue_id", "is_public").
-		Values(e.Title, e.Description, e.TicketURL, e.ImageURL, e.VenueID, e.IsPublic).ToSql()
+		Columns(
+			"title",
+			"description",
+			"ticket_url",
+			"image_url",
+			"venue_id",
+			"is_public",
+			"created_by",
+			"updated_by",
+		).
+		Values(
+			e.Title,
+			e.Description,
+			e.TicketURL,
+			e.ImageURL,
+			e.VenueID,
+			e.IsPublic,
+			e.CreatedBy,
+			e.UpdatedBy,
+		).
+		ToSql()
 
 	if err != nil {
 		return 0, err
@@ -441,6 +497,10 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 
 	if e.VenueID != 0 {
 		builder = builder.Set("venue_id", e.VenueID)
+	}
+
+	if e.UpdatedBy != 0 {
+		builder = builder.Set("updated_by", e.UpdatedBy)
 	}
 
 	builder = builder.Set("is_public", e.IsPublic)

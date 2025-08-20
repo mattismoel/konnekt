@@ -3,9 +3,12 @@ import { createListResult } from "@/lib/query"
 import { createUrl, type Query } from "@/lib/url"
 import { z } from "zod"
 import { teamSchema } from "./team"
+import { auditDates } from "@/lib/audit"
 
 export const memberSchema = z.object({
+	...auditDates.shape,
 	id: idSchema,
+	approvedById: idSchema.optional(),
 	email: z.string().email(),
 	firstName: z.string(),
 	lastName: z.string(),

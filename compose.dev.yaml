@@ -16,6 +16,7 @@ services:
     working_dir: /app
     volumes:
       - ./backend:/app
+      - ~/.aws:/root/.aws:ro"
     command: sh -c "go mod tidy && go install github.com/air-verse/air@latest && air"
     ports:
       - 8080:8080

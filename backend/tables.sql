@@ -7,9 +7,24 @@ CREATE TABLE IF NOT EXISTS member (
   last_name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
   profile_picture_url TEXT NOT NULL,
-  special_role TEXT NOT NULL,
-  active BOOLEAN NOT NULL DEFAULT 0
+  special_role TEXT,
+  active BOOLEAN NOT NULL DEFAULT 0,
+
+	approved_by INTEGER,
+
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
+	FOREIGN KEY (approved_by) REFERENCES member (id)
 );
+
+-- Trigger for updating members 'updated_at' field on any update of that member.
+CREATE TRIGGER update_members_updated_at
+AFTER UPDATE ON member
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE member SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS session (
   id TEXT PRIMARY KEY,
@@ -21,7 +36,7 @@ CREATE TABLE IF NOT EXISTS team (
   id INTEGER PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL,
-  description TEXT NOT NULL,
+  description TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS members_teams (
@@ -50,10 +65,25 @@ CREATE TABLE IF NOT EXISTS event (
   ticket_url TEXT NOT NULL,
   image_url TEXT NOT NULL,
   venue_id INTEGER NOT NULL,
-  is_public BOOLEAN NOT NULL DEFAULT 0,
+  is_public BOOLEAN DEFAULT 0,
 
-  FOREIGN KEY (venue_id) REFERENCES venue (id)
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
+	created_by INTEGER NOT NULL,
+	updated_by INTEGER NOT NULL,
+
+  FOREIGN KEY (venue_id) REFERENCES venue (id),
+	FOREIGN KEY (created_by) REFERENCES member(id),
+	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
+
+CREATE TRIGGER update_events_updated_at
+AFTER UPDATE ON event
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE event SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS concert (
   id INTEGER PRIMARY KEY,
@@ -62,24 +92,69 @@ CREATE TABLE IF NOT EXISTS concert (
   event_id INTEGER NOT NULL,
   artist_id INTEGER NOT NULL,
 
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
   FOREIGN KEY (event_id) REFERENCES event (id),
-  FOREIGN KEY (artist_id) REFERENCES artist (id)
+  FOREIGN KEY (artist_id) REFERENCES artist (id),
+	FOREIGN KEY (created_by) REFERENCES member(id),
+	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
+
+CREATE TRIGGER update_concerts_updated_at
+AFTER UPDATE ON concert
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE concert SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS venue (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   country_code TEXT NOT NULL,
-  city TEXT NOT NULL
+  city TEXT NOT NULL,
+
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
+	created_by INTEGER NOT NULL,
+	updated_by INTEGER NOT NULL,
+
+	FOREIGN KEY (created_by) REFERENCES member(id),
+	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
+
+CREATE TRIGGER update_venues_updated_at
+AFTER UPDATE ON venue
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE venue SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS artist (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   image_url TEXT NOT NULL,
-  preview_url TEXT NOT NULL,
-  description TEXT NOT NULL
+  preview_url TEXT,
+  description TEXT NOT NULL,
+
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+
+	created_by INTEGER NOT NULL,
+	updated_by INTEGER NOT NULL,
+
+	FOREIGN KEY (created_by) REFERENCES member(id),
+	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
+
+-- Trigger for updating artists 'updated_at' field on any update of that member.
+CREATE TRIGGER update_artists_updated_at
+AFTER UPDATE ON artist
+FOR EACH ROW WHEN NEW.id = OLD.id
+BEGIN
+	UPDATE artist SET updated_at = (strftime('%s', 'now')) WHERE id = OLD.id;
+END;
 
 CREATE TABLE IF NOT EXISTS social (
   id INTEGER PRIMARY KEY,
@@ -106,7 +181,12 @@ CREATE TABLE IF NOT EXISTS artists_genres (
 
 CREATE TABLE IF NOT EXISTS landing_image (
   id INTEGER PRIMARY KEY,
-  url TEXT UNIQUE NOT NULL
+  url TEXT UNIQUE NOT NULL,
+
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	created_by INTEGER NOT NULL,
+
+	FOREIGN KEY (created_by) REFERENCES member(id)
 );
 
 COMMIT;

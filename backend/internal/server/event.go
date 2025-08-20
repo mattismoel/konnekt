@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
-	"github.com/mattismoel/konnekt/internal/service"
 )
 
 const COVER_IMAGE_WIDTH = 2048
@@ -81,37 +82,78 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var load createEventLoad
 
+		ctx := r.Context()
+
+		requestMember, err := s.memberFromRequest(ctx, w, r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
 		if err := json.NewDecoder(r.Body).Decode(&load); err != nil {
 			writeError(w, err)
 			return
 		}
 
-		concerts := make([]service.CreateConcert, 0)
+		concerts := make([]concert.Concert, 0)
 
-		for _, conc := range load.Concerts {
-			concerts = append(concerts, service.CreateConcert{
-				ArtistID: conc.ArtistID,
-				From:     conc.From,
-				To:       conc.To,
-			})
+		for _, loadConcert := range load.Concerts {
+			a, err := s.artistService.ByID(ctx, loadConcert.ArtistID)
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+			c, err := concert.NewConcert(
+				concert.WithArtist(a),
+				concert.WithFrom(loadConcert.From),
+				concert.WithTo(loadConcert.To),
+			)
+
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+			concerts = append(concerts, c)
 		}
 
-		e, err := s.eventService.Create(r.Context(), service.CreateEvent{
-			Title:       load.Title,
-			Description: load.Description,
-			TicketURL:   load.TicketURL,
-			ImageURL:    load.ImageURL,
-			VenueID:     load.VenueID,
-			Concerts:    concerts,
-			IsPublic:    load.IsPublic,
-		})
+		v, err := s.venueService.ByID(ctx, load.VenueID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		e, err := event.NewEvent(
+			event.WithTitle(load.Title),
+			event.WithDescription(load.Description),
+			event.WithTicketURL(load.TicketURL),
+			event.WithVenue(v),
+			event.WithImageURL(load.ImageURL),
+			event.WithConcerts(concerts...),
+			event.WithIsPublic(load.IsPublic),
+			event.WithCreatedBy(requestMember.ID),
+			event.WithUpdatedBy(requestMember.ID),
+		)
 
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		writeJSON(w, http.StatusOK, e)
+		eventID, err := s.eventService.Create(ctx, e)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		createdEvent, err := s.eventService.ByID(ctx, eventID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, createdEvent)
 	}
 }
 
@@ -149,26 +191,88 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		concerts := make([]service.UpdateConcert, 0)
-
-		for _, c := range load.Concerts {
-			concerts = append(concerts, service.UpdateConcert{
-				ArtistID: c.ArtistID,
-				From:     c.From,
-				To:       c.To,
-			})
+		requestMember, err := s.memberFromRequest(ctx, w, r)
+		if err != nil {
+			writeError(w, err)
+			return
 		}
 
-		e, err := s.eventService.Update(ctx, eventID, service.UpdateEvent{
-			Title:       load.Title,
-			Description: load.Description,
-			TicketURL:   load.TicketURL,
-			ImageURL:    load.ImageURL,
-			VenueID:     load.VenueID,
-			Concerts:    concerts,
-			IsPublic:    load.IsPublic,
-		})
+		// concerts := make([]service.UpdateConcert, 0)
+		//
+		// for _, c := range load.Concerts {
+		// 	concerts = append(concerts, service.UpdateConcert{
+		// 		ArtistID: c.ArtistID,
+		// 		From:     c.From,
+		// 		To:       c.To,
+		// 	})
+		// }
 
+		// Return if event does not exist.
+		prevEvent, err := s.eventService.ByID(ctx, eventID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		venue, err := s.venueService.ByID(ctx, load.VenueID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		concerts := make([]concert.Concert, 0)
+		for _, loadConcert := range load.Concerts {
+			artist, err := s.artistService.ByID(ctx, loadConcert.ArtistID)
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+			c, err := concert.NewConcert(
+				concert.WithID(eventID),
+				concert.WithArtist(artist),
+				concert.WithFrom(loadConcert.From),
+				concert.WithTo(loadConcert.To),
+			)
+
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+			concerts = append(concerts, c)
+		}
+
+		e, err := event.NewEvent(
+			event.WithID(eventID),
+			event.WithTitle(load.Title),
+			event.WithDescription(load.Description),
+			event.WithTicketURL(load.TicketURL),
+			event.WithConcerts(concerts...),
+			event.WithVenue(venue),
+			event.WithIsPublic(load.IsPublic),
+			event.WithUpdatedBy(requestMember.ID),
+		)
+
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		// If there is a cover image URL update, set it.
+		if strings.TrimSpace(load.ImageURL) != "" {
+			if err := s.objectStore.Delete(ctx, prevEvent.ImageURL); err != nil {
+				writeError(w, err)
+				return
+			}
+
+			if err := e.WithCfgs(event.WithImageURL(load.ImageURL)); err != nil {
+				writeError(w, err)
+				return
+			}
+		}
+
+		e, err = s.eventService.Update(ctx, eventID, e)
 		if err != nil {
 			writeError(w, err)
 			return
