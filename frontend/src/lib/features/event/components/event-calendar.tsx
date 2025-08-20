@@ -44,9 +44,9 @@ const EventCalendar = ({ event, ...rest }: Props) => {
 			</div>
 
 			<div className="overflow-y-scroll">
-				<div className="grid h-full min-h-96 flex-1 grid-cols-[48px_1fr] gap-4">
+				<div className="grid h-full min-h-72 flex-1 sm:grid-cols-[48px_1fr] gap-4">
 					{/*  Timeline */}
-					<div className="relative">
+					<div className="relative hidden sm:block">
 						{timeMarkers.map((marker, i) => {
 							const markerOffset = differenceInMinutes(marker, startHour)
 
@@ -98,7 +98,7 @@ const Entry = ({ concert, totalMinutes, startHour }: EntryProps) => {
 				top: `calc(${concertStartOffset / totalMinutes} * 100%)`,
 				height: `calc(${concertDurationMinutes / totalMinutes} * 100% - 1px)`
 			}}
-			className="absolute flex w-full justify-between overflow-hidden rounded-sm border border-t border-blue-800 bg-blue-950 p-2 text-sm transition-colors hover:bg-blue-900"
+			className="absolute flex min-h-10 w-full justify-between overflow-hidden rounded-sm border border-t border-blue-800 bg-blue-950 p-2 text-sm transition-colors hover:bg-blue-900"
 			to="/artists/$artistId"
 			params={{ artistId: concert.artist.id.toString() }}
 		>

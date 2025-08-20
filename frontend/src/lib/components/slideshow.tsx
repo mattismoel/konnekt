@@ -29,7 +29,7 @@ const Slideshow = ({ srcs }: Props) => {
 
 				do {
 					nextIdx = Math.floor(Math.random() * srcs.length)
-				} while (prevHistory.includes(nextIdx))
+				} while (prevHistory.includes(nextIdx) && srcs.length > HISTORY_SIZE)
 
 				const newHistory = [...prevHistory, nextIdx].slice(-HISTORY_SIZE);
 
