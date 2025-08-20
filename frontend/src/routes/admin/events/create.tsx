@@ -7,21 +7,21 @@ import { venuesQueryOpts } from '@/lib/features/event/query'
 import EventForm from '@/lib/features/event/components/event-form/event-form'
 
 export const Route = createFileRoute('/admin/events/create')({
-  component: RouteComponent,
-  loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(artistsQueryOpts)
-    queryClient.ensureQueryData(venuesQueryOpts)
-  }
+	component: RouteComponent,
+	loader: async ({ context: { queryClient } }) => {
+		queryClient.ensureQueryData(artistsQueryOpts)
+		queryClient.ensureQueryData(venuesQueryOpts)
+	}
 })
 
 function RouteComponent() {
-  const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
-  const { data: { records: venues } } = useSuspenseQuery(venuesQueryOpts)
+	const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
+	const { data: { records: venues } } = useSuspenseQuery(venuesQueryOpts)
 
-  return (
-    <EventForm
-      venues={venues}
-      artists={artists}
-    />
-  )
+	return (
+		<EventForm
+			venues={venues}
+			artists={artists}
+		/>
+	)
 }

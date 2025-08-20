@@ -5,16 +5,16 @@ import { createFileRoute } from '@tanstack/react-router'
 import ArtistForm from '@/lib/features/artist/components/artist-form'
 
 export const Route = createFileRoute('/admin/artists/create')({
-  component: RouteComponent,
-  loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(genresQueryOpts)
-  }
+	component: RouteComponent,
+	loader: async ({ context: { queryClient } }) => {
+		queryClient.ensureQueryData(genresQueryOpts)
+	}
 })
 
 function RouteComponent() {
-  const { data: { records: genres } } = useSuspenseQuery(genresQueryOpts)
+	const { data: { records: genres } } = useSuspenseQuery(genresQueryOpts)
 
-  return (
-    <ArtistForm genres={genres} />
-  )
+	return (
+		<ArtistForm genres={genres} />
+	)
 }

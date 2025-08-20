@@ -56,7 +56,7 @@ type Props = {
 	updatedByMember: Member;
 } | {
 	artist?: null;
-	updatedByMember: null;
+	updatedByMember?: null;
 })
 
 const ArtistForm = ({ artist, genres, updatedByMember }: Props) => {
