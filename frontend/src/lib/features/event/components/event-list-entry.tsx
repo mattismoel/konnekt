@@ -22,7 +22,7 @@ type Props = {
 
 const formatArtists = (artists: Artist[]): string => {
 	if (artists.length > 2) {
-		return artists.slice(0, 2).map(a => a.name).join(",") + " " + `(+${artists.length - 2} mere)`
+		return artists.slice(0, 2).map(a => a.name).join(", ") + " " + `(+${artists.length - 2} mere)`
 	}
 
 	return artists.map(a => a.name).join(", ")
