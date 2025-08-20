@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -73,7 +72,7 @@ func orderMapFromRequest(vals url.Values) (map[string]query.Order, error) {
 //	orderByStrToPair("") -> "", "", <error>
 func orderByStrToPair(s string) (string, query.Order, error) {
 	if strings.TrimSpace(s) == "" {
-		return "", "", errors.New(fmt.Sprintf("Order pair must be valid. Got %q", s))
+		return "", "", fmt.Errorf("Order pair must be valid. Got %q", s)
 	}
 
 	key, orderStr := func() (string, string) {
