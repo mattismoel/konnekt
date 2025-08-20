@@ -17,6 +17,9 @@ import LinkButton from "@/lib/components/ui/button/link-button"
 import { createSubmitHandler } from "@/lib/api"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/lib/context/auth"
+import { FaPen } from "react-icons/fa"
+import type { Member } from "@/lib/features/auth/member"
+import Audit from "@/lib/components/audit"
 
 // We must include the fieldArray as part of the context, to not create another
 // instance in children.
@@ -26,7 +29,7 @@ import { useAuth } from "@/lib/context/auth"
 type EventFormContext =
 	UseFieldArrayReturn<EventFormValues> &
 	UseFormReturn<EventFormValues> & {
-		event?: Event;
+		event?: Event | null;
 		venues: Venue[]
 		artists: Artist[]
 
@@ -45,13 +48,17 @@ export const useEventFormContext = () => {
 }
 
 type Props = {
-	event?: Event;
 	venues: Venue[]
 	artists: Artist[]
-}
+} & ({
+	event: Event;
+	updatedByMember: Member;
+} | {
+	event?: null;
+	updatedByMember?: null;
+})
 
-
-const EventForm = ({ event, venues, artists }: Props) => {
+const EventForm = ({ event, venues, artists, updatedByMember }: Props) => {
 	const { hasPermissions } = useAuth()
 	const queryClient = useQueryClient()
 
@@ -79,7 +86,7 @@ const EventForm = ({ event, venues, artists }: Props) => {
 		resolver: zodResolver(eventForm),
 	})
 
-	const { control, formState: { errors }, setValue, getValues, handleSubmit } = methods;
+	const { control, watch, formState: { errors }, setValue, getValues, handleSubmit } = methods;
 
 	const fieldArrayMethods = useFieldArray({ control, name: "concerts" })
 	const { fields, remove, append } = fieldArrayMethods
@@ -99,8 +106,6 @@ const EventForm = ({ event, venues, artists }: Props) => {
 		remove(idx)
 	}
 
-
-
 	const onSubmit = createSubmitHandler({
 		action: async (form: EventFormValues) => {
 			event ? await updateEvent(form, event.id) : await createEvent(form)
@@ -110,6 +115,8 @@ const EventForm = ({ event, venues, artists }: Props) => {
 		errorMessage: event ? "Kunne ikke redigére event" : "Kunne ikke lave event",
 		navigateTo: "/admin/events",
 	})
+
+	const isToBePublished = watch("isPublic")
 
 	return (
 		<FormProvider {...methods}>
@@ -133,9 +140,17 @@ const EventForm = ({ event, venues, artists }: Props) => {
 
 					<ConcertsSection />
 
-					{isEditable && (
-						<Button className="w-full md:w-fit" type="submit"><FaUpload />Offentliggør</Button>
-					)}
+					<div className="flex flex-col gap-4">
+						{isEditable && (
+							<Button className="w-full md:w-fit" type="submit">
+								{isToBePublished ? <FaUpload /> : event ? <FaPen /> : <FaPlus />}
+								{isToBePublished ? "Offentliggør" : event ? "Redigér" : "Tilføj"}
+							</Button>
+						)}
+						{event && (
+							<Audit updatedByMember={updatedByMember} updatedAt={event.updatedAt} />
+						)}
+					</div>
 				</form>
 			</EventFormContext.Provider>
 		</FormProvider>

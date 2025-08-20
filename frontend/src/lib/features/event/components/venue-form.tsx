@@ -12,12 +12,19 @@ import FormField from '@/lib/components/form-field';
 import Input from '@/lib/components/ui/input';
 import Selector from '@/lib/components/ui/selector';
 import { useAuth } from '@/lib/context/auth';
+import { FaPen, FaPlus } from 'react-icons/fa6';
+import Audit from '@/lib/components/audit';
+import type { Member } from '../../auth/member';
 
 type Props = {
-	venue?: Venue
+	venue: Venue
+	updatedByMember: Member
+} | {
+	venue?: null;
+	updatedByMember?: null;
 }
 
-const VenueForm = ({ venue }: Props) => {
+const VenueForm = ({ venue, updatedByMember }: Props) => {
 	const { hasPermissions } = useAuth()
 	const queryClient = useQueryClient()
 
@@ -77,7 +84,18 @@ const VenueForm = ({ venue }: Props) => {
 					</div>
 				</div>
 			</div>
-			{isEditable && <Button type="submit" className="w-full">Offentliggør</Button>}
+
+			<div className="flex flex-col gap-4">
+				{isEditable && (
+					<Button type="submit" className="w-full">
+						{venue ? <FaPen /> : <FaPlus />}
+						{venue ? "Redigér" : "Tilføj"}
+					</Button>
+				)}
+				{venue && (
+					<Audit updatedByMember={updatedByMember} updatedAt={venue.updatedAt} />
+				)}
+			</div>
 		</form>
 	)
 }

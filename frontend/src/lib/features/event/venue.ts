@@ -1,9 +1,13 @@
 import { idSchema, requestAndParse, type ID } from "@/lib/api";
+import { auditDates, auditMembers } from "@/lib/audit";
 import { createListResult, type ListResult } from "@/lib/query";
 import { createUrl, type Query } from "@/lib/url";
 import { z } from "zod";
 
 export const venueSchema = z.object({
+	...auditMembers.shape,
+	...auditDates.shape,
+
 	id: idSchema,
 	name: z.string(),
 	city: z.string(),

@@ -15,8 +15,11 @@ import {
 } from "react-icons/fa";
 
 import { FaTiktok } from "react-icons/fa6";
+import { auditDates, auditMembers } from "@/lib/audit";
 
 export const artistSchema = z.object({
+	...auditMembers.shape,
+	...auditDates.shape,
 	id: idSchema,
 	name: z.string(),
 	imageUrl: z.string().optional().or(z.string().url().optional()),
