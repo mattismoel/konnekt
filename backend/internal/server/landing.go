@@ -34,7 +34,13 @@ func (s Server) handleUploadLandingImage() http.HandlerFunc {
 			return
 		}
 
-		id, err := s.contentService.UploadLandingImage(ctx, file)
+		requestMember, err := s.memberFromRequest(ctx, w, r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		id, err := s.contentService.UploadLandingImage(ctx, file, requestMember.ID)
 		if err != nil {
 			writeError(w, err)
 			return

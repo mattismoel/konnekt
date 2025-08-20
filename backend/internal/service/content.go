@@ -35,7 +35,7 @@ func (s ContentService) LandingImages(ctx context.Context) ([]content.LandingIma
 	return images, nil
 }
 
-func (s ContentService) UploadLandingImage(ctx context.Context, r io.Reader) (int64, error) {
+func (s ContentService) UploadLandingImage(ctx context.Context, r io.Reader, requestMemberID int64) (int64, error) {
 	img, _, err := image.Decode(r)
 	if err != nil {
 		return 0, fmt.Errorf("Could not decode landing image: %v", err)
@@ -57,7 +57,7 @@ func (s ContentService) UploadLandingImage(ctx context.Context, r io.Reader) (in
 		return 0, fmt.Errorf("Could not upload landing image: %v", err)
 	}
 
-	id, err := s.contentRepo.InsertLandingImage(ctx, url)
+	id, err := s.contentRepo.InsertLandingImage(ctx, url, requestMemberID)
 	if err != nil {
 		return 0, fmt.Errorf("Could not insert landing image into repository: %v", err)
 	}
