@@ -96,9 +96,7 @@ CREATE TABLE IF NOT EXISTS concert (
 	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
 
   FOREIGN KEY (event_id) REFERENCES event (id),
-  FOREIGN KEY (artist_id) REFERENCES artist (id),
-	FOREIGN KEY (created_by) REFERENCES member(id),
-	FOREIGN KEY (updated_by) REFERENCES member(id)
+  FOREIGN KEY (artist_id) REFERENCES artist (id)
 );
 
 CREATE TRIGGER update_concerts_updated_at
