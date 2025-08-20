@@ -268,11 +268,15 @@ func scanTeam(s Scanner, dst *Team) error {
 func listTeams(ctx context.Context, tx *sql.Tx, params QueryParams) (TeamCollection, error) {
 	builder := teamBuilder.Distinct()
 
-	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
-		"id": func(f query.Filter) sq.Sqlizer {
-			return sq.Eq{"id": f.Value}
+	builder, err := withFiltering(builder, params.Filters, map[string]filterFunc{
+		"id": func(f query.Filter) (sq.Sqlizer, error) {
+			return sq.Eq{"id": f.Value}, nil
 		},
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	builder = withPagination(builder, params)
 

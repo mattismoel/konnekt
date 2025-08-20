@@ -91,17 +91,17 @@ func (s ArtistService) Create(ctx context.Context, a artist.Artist) (int64, erro
 	return artistID, nil
 }
 
-func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateArtist) (artist.Artist, error) {
+func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateArtist) error {
 	prevArtist, err := s.ByID(ctx, artistID)
 	if err != nil {
-		return artist.Artist{}, fmt.Errorf("Could not get artist %d: %v", artistID, err)
+		return fmt.Errorf("Could not get artist %d: %v", artistID, err)
 	}
 
 	socials := make([]artist.Social, 0)
 	for _, social := range load.Socials {
 		s, err := artist.NewSocial(social)
 		if err != nil {
-			return artist.Artist{}, fmt.Errorf("Could not create artist social: %v", err)
+			return fmt.Errorf("Could not create artist social: %v", err)
 		}
 
 		socials = append(socials, s)
@@ -111,7 +111,7 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 	for _, genreID := range load.GenreIDs {
 		genre, err := s.artistRepo.GenreByID(ctx, genreID)
 		if err != nil {
-			return artist.Artist{}, fmt.Errorf("Could not get genre %d: %v", genreID, err)
+			return fmt.Errorf("Could not get genre %d: %v", genreID, err)
 		}
 
 		genres = append(genres, genre)
@@ -125,13 +125,13 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 	)
 
 	if err != nil {
-		return artist.Artist{}, fmt.Errorf("Could not create artist: %v", err)
+		return fmt.Errorf("Could not create artist: %v", err)
 	}
 
 	if strings.TrimSpace(load.PreviewURL) != "" {
 		err := a.WithCfgs(artist.WithPreviewURL(load.PreviewURL))
 		if err != nil {
-			return artist.Artist{}, fmt.Errorf("Could not use artist preview URL: %v", err)
+			return fmt.Errorf("Could not use artist preview URL: %v", err)
 		}
 	}
 
@@ -139,25 +139,25 @@ func (s ArtistService) Update(ctx context.Context, artistID int64, load UpdateAr
 		// Delete previous artist image from object store.
 		url, err := url.Parse(prevArtist.ImageURL)
 		if err != nil {
-			return artist.Artist{}, fmt.Errorf("Could not parse artist image URL: %v", err)
+			return fmt.Errorf("Could not parse artist image URL: %v", err)
 		}
 
 		if err := s.objectStore.Delete(ctx, url.Path); err != nil {
-			return artist.Artist{}, fmt.Errorf("Could not delete previous artist image: %v", err)
+			return fmt.Errorf("Could not delete previous artist image: %v", err)
 		}
 
 		// Set the new artist image url.
 		if err := a.WithCfgs(artist.WithImageURL(load.ImageURL)); err != nil {
-			return artist.Artist{}, fmt.Errorf("Could not use artist image URL: %v", err)
+			return fmt.Errorf("Could not use artist image URL: %v", err)
 		}
 	}
 
 	err = s.artistRepo.Update(ctx, artistID, a)
 	if err != nil {
-		return artist.Artist{}, fmt.Errorf("Could not update artist: %v", err)
+		return fmt.Errorf("Could not update artist: %v", err)
 	}
 
-	return a, nil
+	return nil
 }
 
 func (s ArtistService) Delete(ctx context.Context, artistID int64) error {

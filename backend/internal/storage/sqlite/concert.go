@@ -18,7 +18,6 @@ type Concert struct {
 	EventID  int64
 
 	UnixTimestamps
-	AuditFields
 }
 
 type Concerts []Concert
@@ -71,8 +70,6 @@ func (c Concert) ToInternal(a artist.Artist) concert.Concert {
 		To:        c.To.Time(),
 		CreatedAt: c.CreatedAt.Time(),
 		UpdatedAt: c.UpdatedAt.Time(),
-		CreatedBy: c.CreatedBy,
-		UpdatedBy: c.UpdatedBy,
 	}
 }
 
@@ -87,10 +84,6 @@ func ConcertFromInternal(c concert.Concert, eventID int64) Concert {
 			CreatedAt: UnixTime(c.CreatedAt.Unix()),
 			UpdatedAt: UnixTime(c.CreatedAt.Unix()),
 		},
-		AuditFields: AuditFields{
-			CreatedBy: c.CreatedBy,
-			UpdatedBy: c.UpdatedBy,
-		},
 	}
 }
 
@@ -102,16 +95,12 @@ func insertConcert(ctx context.Context, tx *sql.Tx, c Concert) (int64, error) {
 			"artist_id",
 			"from_date",
 			"to_date",
-			"created_by",
-			"updated_by",
 		).
 		Values(
 			c.EventID,
 			c.ArtistID,
 			c.From,
 			c.To,
-			c.CreatedBy,
-			c.UpdatedBy,
 		).
 		ToSql()
 
@@ -140,8 +129,6 @@ var concertBuilder = sq.
 		"concert.to_date",
 		"concert.created_at",
 		"concert.updated_at",
-		"concert.created_by",
-		"concert.updated_by",
 	).
 	From("concert")
 
@@ -153,8 +140,6 @@ func scanConcert(s Scanner, dst *Concert) error {
 		&dst.To,
 		&dst.CreatedAt,
 		&dst.UpdatedAt,
-		&dst.CreatedBy,
-		&dst.UpdatedBy,
 	)
 
 	if err != nil {

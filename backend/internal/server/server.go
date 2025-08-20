@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/mattismoel/konnekt/internal/cfg"
+	"github.com/mattismoel/konnekt/internal/object"
 	"github.com/mattismoel/konnekt/internal/service"
 )
 
@@ -30,6 +31,8 @@ type Server struct {
 	artistService  *service.ArtistService
 	memberService  *service.MemberService
 	venueService   *service.VenueService
+
+	objectStore object.Store
 }
 
 func New(cfgs ...cfg.Func[Server]) (*Server, error) {
@@ -58,7 +61,6 @@ func WithCORSOrigins(allowedOrigins ...string) cfg.Func[Server] {
 			AllowCredentials: true,
 			MaxAge:           300,
 		}))
-
 		return nil
 	}
 }
@@ -127,4 +129,11 @@ func (srv Server) Start() error {
 	}
 
 	return httpServer.ListenAndServe()
+}
+
+func WithObjectStore(objectStore object.Store) cfg.Func[Server] {
+	return func(s *Server) error {
+		s.objectStore = objectStore
+		return nil
+	}
 }

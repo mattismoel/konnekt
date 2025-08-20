@@ -182,7 +182,7 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 			return
 		}
 
-		a, err := s.artistService.Update(ctx, artistID, service.UpdateArtist{
+		err = s.artistService.Update(ctx, artistID, service.UpdateArtist{
 			Name:        load.Name,
 			Description: load.Description,
 			PreviewURL:  load.PreviewURL,
@@ -196,13 +196,13 @@ func (s Server) handleUpdateArtist() http.HandlerFunc {
 			return
 		}
 
-		err = a.WithCfgs(artist.WithID(artistID))
+		updatedArtist, err := s.artistService.ByID(ctx, artistID)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		writeJSON(w, http.StatusOK, a)
+		writeJSON(w, http.StatusOK, updatedArtist)
 	}
 }
 

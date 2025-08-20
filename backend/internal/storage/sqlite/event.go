@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/concert"
@@ -128,6 +129,8 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 
 	defer tx.Rollback()
 
+	fmt.Printf("Internal: %+v\n", e.Venue)
+
 	eventID, err := insertEvent(ctx, tx, EventFromInternal(e))
 	if err != nil {
 		return 0, fmt.Errorf("Could not insert event: %v", err)
@@ -172,6 +175,8 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 	for _, c := range e.Concerts {
 		concerts = append(concerts, ConcertFromInternal(c, eventID))
 	}
+
+	fmt.Printf("%+v\n", concerts)
 
 	_, err = setEventConcerts(ctx, tx, eventID, concerts...)
 	if err != nil {
@@ -350,26 +355,38 @@ func listEvents(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Event, e
 		Distinct().
 		Join("concert ON concert.event_id = event.id")
 
-	builder = withFiltering(builder, params.Filters, map[string]filterFunc{
-		"title": func(f query.Filter) sq.Sqlizer {
-			return contains("title", f.Value)
+	builder, err := withFiltering(builder, params.Filters, map[string]filterFunc{
+		"title": func(f query.Filter) (sq.Sqlizer, error) {
+			return contains("title", f.Value), nil
 		},
-		"is_public": func(f query.Filter) sq.Sqlizer {
+		"is_public": func(f query.Filter) (sq.Sqlizer, error) {
 			if strings.ToUpper(f.Value) == "TRUE" {
-				return sq.Eq{"is_public": true}
+				return sq.Eq{"is_public": true}, nil
 			}
-			return sq.Eq{"is_public": false}
+			return sq.Eq{"is_public": false}, nil
 		},
-		"from_date": func(f query.Filter) sq.Sqlizer {
-			return sq.Expr(fmt.Sprintf("concert.from_date %s ?", f.Cmp), f.Value)
+		"from_date": func(f query.Filter) (sq.Sqlizer, error) {
+			fromDate, err := time.Parse(time.RFC3339, f.Value)
+			if err != nil {
+				return nil, err
+			}
+			return sq.Expr(fmt.Sprintf("concert.from_date %s ?", f.Cmp), fromDate.Unix()), nil
 		},
-		"to_date": func(f query.Filter) sq.Sqlizer {
-			return sq.Expr(fmt.Sprintf("concert.to_date %s ?", f.Cmp), f.Value)
+		"to_date": func(f query.Filter) (sq.Sqlizer, error) {
+			toDate, err := time.Parse(time.RFC3339, f.Value)
+			if err != nil {
+				return nil, err
+			}
+			return sq.Expr(fmt.Sprintf("concert.to_date %s ?", f.Cmp), toDate.Unix()), nil
 		},
-		"artist_id": func(f query.Filter) sq.Sqlizer {
-			return sq.Eq{"concert.artist_id": f.Value}
+		"artist_id": func(f query.Filter) (sq.Sqlizer, error) {
+			return sq.Eq{"concert.artist_id": f.Value}, nil
 		},
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	builder = withOrdering(builder, params.OrderBy, "from_date", "concert")
 	builder = withPagination(builder, params)
@@ -484,6 +501,10 @@ func updateEvent(ctx context.Context, tx *sql.Tx, eventID int64, e Event) error 
 
 	if e.VenueID != 0 {
 		builder = builder.Set("venue_id", e.VenueID)
+	}
+
+	if e.UpdatedBy != 0 {
+		builder = builder.Set("updated_by", e.UpdatedBy)
 	}
 
 	builder = builder.Set("is_public", e.IsPublic)

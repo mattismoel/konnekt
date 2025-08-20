@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/content"
@@ -14,6 +15,9 @@ var _ content.Repository = (*ContentRepository)(nil)
 type Image struct {
 	ID  int64
 	URL string
+
+	CreatedAt time.Time
+	CreatedBy int64
 }
 
 type ImageCollection = []Image

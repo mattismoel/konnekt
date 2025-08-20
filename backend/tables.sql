@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS team (
   id INTEGER PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL,
-  description TEXT NOT NULL,
+  description TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS members_teams (
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS event (
   ticket_url TEXT NOT NULL,
   image_url TEXT NOT NULL,
   venue_id INTEGER NOT NULL,
-  is_public BOOLEAN NOT NULL DEFAULT 0,
+  is_public BOOLEAN DEFAULT 0,
 
 	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
 	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
@@ -94,9 +94,6 @@ CREATE TABLE IF NOT EXISTS concert (
 
 	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
 	updated_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
-
-	created_by INTEGER NOT NULL,
-	updated_by INTEGER NOT NULL,
 
   FOREIGN KEY (event_id) REFERENCES event (id),
   FOREIGN KEY (artist_id) REFERENCES artist (id),
@@ -184,7 +181,12 @@ CREATE TABLE IF NOT EXISTS artists_genres (
 
 CREATE TABLE IF NOT EXISTS landing_image (
   id INTEGER PRIMARY KEY,
-  url TEXT UNIQUE NOT NULL
+  url TEXT UNIQUE NOT NULL,
+
+	created_at TIMESTAMP DEFAULT (strftime('%s', 'now')),
+	created_by INTEGER NOT NULL,
+
+	FOREIGN KEY (created_by) REFERENCES member(id)
 );
 
 COMMIT;

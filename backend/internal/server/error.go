@@ -39,7 +39,4 @@ func writeError(w http.ResponseWriter, err error) {
 	})
 
 	slog.Error("Interal server error", "error", err.Error())
-
-	return
-
 }

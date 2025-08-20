@@ -3,12 +3,13 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/mattismoel/konnekt/internal/domain/concert"
 	"github.com/mattismoel/konnekt/internal/domain/event"
-	"github.com/mattismoel/konnekt/internal/service"
 )
 
 const COVER_IMAGE_WIDTH = 2048
@@ -108,14 +109,14 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 				concert.WithArtist(a),
 				concert.WithFrom(loadConcert.From),
 				concert.WithTo(loadConcert.To),
-				concert.WithCreatedBy(requestMember.ID),
-				concert.WithUpdatedBy(requestMember.ID),
 			)
 
 			if err != nil {
 				writeError(w, err)
 				return
 			}
+
+			fmt.Printf("CONCERT TO INSERT: %+v\n", c)
 
 			concerts = append(concerts, c)
 		}
@@ -137,6 +138,11 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 			event.WithCreatedBy(requestMember.ID),
 			event.WithUpdatedBy(requestMember.ID),
 		)
+
+		if err != nil {
+			writeError(w, err)
+			return
+		}
 
 		eventID, err := s.eventService.Create(ctx, e)
 		if err != nil {
@@ -188,26 +194,88 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 
 		ctx := r.Context()
 
-		concerts := make([]service.UpdateConcert, 0)
-
-		for _, c := range load.Concerts {
-			concerts = append(concerts, service.UpdateConcert{
-				ArtistID: c.ArtistID,
-				From:     c.From,
-				To:       c.To,
-			})
+		requestMember, err := s.memberFromRequest(ctx, w, r)
+		if err != nil {
+			writeError(w, err)
+			return
 		}
 
-		e, err := s.eventService.Update(ctx, eventID, service.UpdateEvent{
-			Title:       load.Title,
-			Description: load.Description,
-			TicketURL:   load.TicketURL,
-			ImageURL:    load.ImageURL,
-			VenueID:     load.VenueID,
-			Concerts:    concerts,
-			IsPublic:    load.IsPublic,
-		})
+		// concerts := make([]service.UpdateConcert, 0)
+		//
+		// for _, c := range load.Concerts {
+		// 	concerts = append(concerts, service.UpdateConcert{
+		// 		ArtistID: c.ArtistID,
+		// 		From:     c.From,
+		// 		To:       c.To,
+		// 	})
+		// }
 
+		// Return if event does not exist.
+		prevEvent, err := s.eventService.ByID(ctx, eventID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		venue, err := s.venueService.ByID(ctx, load.VenueID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		concerts := make([]concert.Concert, 0)
+		for _, loadConcert := range load.Concerts {
+			artist, err := s.artistService.ByID(ctx, loadConcert.ArtistID)
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+			c, err := concert.NewConcert(
+				concert.WithID(eventID),
+				concert.WithArtist(artist),
+				concert.WithFrom(loadConcert.From),
+				concert.WithTo(loadConcert.To),
+			)
+
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+
+			concerts = append(concerts, c)
+		}
+
+		e, err := event.NewEvent(
+			event.WithID(eventID),
+			event.WithTitle(load.Title),
+			event.WithDescription(load.Description),
+			event.WithTicketURL(load.TicketURL),
+			event.WithConcerts(concerts...),
+			event.WithVenue(venue),
+			event.WithIsPublic(load.IsPublic),
+			event.WithUpdatedBy(requestMember.ID),
+		)
+
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		// If there is a cover image URL update, set it.
+		if strings.TrimSpace(load.ImageURL) != "" {
+			if err := s.objectStore.Delete(ctx, prevEvent.ImageURL); err != nil {
+				writeError(w, err)
+				return
+			}
+
+			if err := e.WithCfgs(event.WithImageURL(load.ImageURL)); err != nil {
+				writeError(w, err)
+				return
+			}
+		}
+
+		e, err = s.eventService.Update(ctx, eventID, e)
 		if err != nil {
 			writeError(w, err)
 			return
