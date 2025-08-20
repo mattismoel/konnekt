@@ -56,7 +56,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
 						)}
 						<div className="flex items-center gap-4">
 							<FaMapPin />
-							<a className="line-clamp-1" href={locationUrl.toString()}
+							<a className="line-clamp-1 hover:underline" href={locationUrl.toString()}
 							>{event.venue.name}, {event.venue.city} ({event.venue.countryCode})</a
 							>
 						</div>
