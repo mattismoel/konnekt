@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/mattismoel/konnekt/internal/domain/content"
@@ -16,7 +15,7 @@ type Image struct {
 	ID  int64
 	URL string
 
-	CreatedAt time.Time
+	CreatedAt UnixTime
 	CreatedBy int64
 }
 
@@ -33,7 +32,7 @@ func NewContentRepository(db *sql.DB) (*ContentRepository, error) {
 }
 
 // InsertLandingImage implements content.Repository.
-func (r *ContentRepository) InsertLandingImage(ctx context.Context, url string) (int64, error) {
+func (r *ContentRepository) InsertLandingImage(ctx context.Context, url string, createdByID int64) (int64, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
@@ -41,7 +40,7 @@ func (r *ContentRepository) InsertLandingImage(ctx context.Context, url string) 
 
 	defer tx.Rollback()
 
-	id, err := insertLandingImage(ctx, tx, url)
+	id, err := insertLandingImage(ctx, tx, url, createdByID)
 	if err != nil {
 		return 0, fmt.Errorf("Could not insert landing image: %v", err)
 	}
@@ -121,11 +120,11 @@ func (r ContentRepository) DeleteLandingImage(ctx context.Context, id int64) err
 	return nil
 }
 
-func insertLandingImage(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
+func insertLandingImage(ctx context.Context, tx *sql.Tx, url string, createdByID int64) (int64, error) {
 	query, args, err := sq.
 		Insert("landing_image").
-		Columns("url").
-		Values(url).
+		Columns("url", "created_by").
+		Values(url, createdByID).
 		ToSql()
 
 	if err != nil {
@@ -147,7 +146,7 @@ func insertLandingImage(ctx context.Context, tx *sql.Tx, url string) (int64, err
 
 func landingImages(ctx context.Context, tx *sql.Tx) (ImageCollection, error) {
 	query, args, err := sq.
-		Select("id", "url").
+		Select("id", "url", "created_at", "created_by").
 		From("landing_image").
 		ToSql()
 
@@ -167,14 +166,18 @@ func landingImages(ctx context.Context, tx *sql.Tx) (ImageCollection, error) {
 	for rows.Next() {
 		var id int64
 		var url string
+		var createdAt UnixTime
+		var createdByID int64
 
-		if err := rows.Scan(&id, &url); err != nil {
+		if err := rows.Scan(&id, &url, &createdAt, &createdByID); err != nil {
 			return nil, err
 		}
 
 		images = append(images, Image{
-			ID:  id,
-			URL: url,
+			ID:        id,
+			URL:       url,
+			CreatedAt: createdAt,
+			CreatedBy: createdByID,
 		})
 	}
 
@@ -187,7 +190,7 @@ func landingImages(ctx context.Context, tx *sql.Tx) (ImageCollection, error) {
 
 func landingImageByID(ctx context.Context, tx *sql.Tx, id int64) (Image, error) {
 	query, args, err := sq.
-		Select("url").
+		Select("url", "createdBy", "createdAt").
 		From("landing_image").
 		Where(sq.Eq{"id": id}).
 		ToSql()
@@ -197,18 +200,24 @@ func landingImageByID(ctx context.Context, tx *sql.Tx, id int64) (Image, error) 
 	}
 
 	var url string
+	var createdByID int64
+	var createdAtUnix UnixTime
 
 	err = tx.
 		QueryRowContext(ctx, query, args...).
-		Scan(&url)
+		Scan(&url, &createdByID, &createdAtUnix)
 
 	if err != nil {
 		return Image{}, err
 	}
 
+	fmt.Printf("createdBY: %d, createdAt: %v\n", createdByID, createdAtUnix)
+
 	return Image{
-		ID:  id,
-		URL: url,
+		ID:        id,
+		URL:       url,
+		CreatedBy: createdByID,
+		CreatedAt: createdAtUnix,
 	}, nil
 }
 
@@ -232,7 +241,9 @@ func deleteLandingImage(ctx context.Context, tx *sql.Tx, id int64) error {
 
 func (img Image) ToInternal() content.LandingImage {
 	return content.LandingImage{
-		ID:  img.ID,
-		URL: img.URL,
+		ID:        img.ID,
+		URL:       img.URL,
+		CreatedAt: img.CreatedAt.Time(),
+		CreatedBy: img.CreatedBy,
 	}
 }
