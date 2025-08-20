@@ -54,15 +54,17 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 					src={member.profilePictureUrl}
 					className="w-full aspect-video @lg:w-32 @lg:block object-cover shrink-0"
 				/>
-				<div className="py-4 px-8">
-					<div className="flex flex-col gap-2">
-						<span className="font-semibold line-clamp-1">{member.firstName} {member.lastName}</span>
-						<div className="text-text/50 flex flex-col">
-							<span className="line-clamp-1">
-								{member.specialRole ? member.specialRole : teamsString}
-							</span>
-							<span className="line-clamp-1">{member.email}</span>
-						</div>
+				<div className="py-4 px-8 flex flex-col gap-2 overflow-hidden max-w-full">
+					<span className="font-semibold line-clamp-1">
+						{member.firstName} {member.lastName}
+					</span>
+					<div className="text-text/50 w-full">
+						<span className="line-clamp-1">
+							{member.specialRole ? member.specialRole : teamsString}
+						</span>
+						<p className="w-full truncate">
+							{member.email}
+						</p>
 					</div>
 				</div>
 			</div>
