@@ -122,6 +122,12 @@ func (s Server) handleUpdateVenue() http.HandlerFunc {
 			return
 		}
 
+		requestMember, err := s.memberFromRequest(ctx, w, r)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
 		venueID, err := strconv.Atoi(chi.URLParam(r, "venueID"))
 		if err != nil {
 			writeError(w, err)
@@ -132,6 +138,7 @@ func (s Server) handleUpdateVenue() http.HandlerFunc {
 			venue.WithName(load.Name),
 			venue.WithCity(load.City),
 			venue.WithCountryCode(load.CountryCode),
+			venue.WithUpdatedBy(requestMember.ID),
 		)
 
 		if err != nil {
