@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -115,8 +114,6 @@ func (s Server) handleCreateEvent() http.HandlerFunc {
 				writeError(w, err)
 				return
 			}
-
-			fmt.Printf("CONCERT TO INSERT: %+v\n", c)
 
 			concerts = append(concerts, c)
 		}

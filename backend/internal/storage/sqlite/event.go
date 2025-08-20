@@ -129,8 +129,6 @@ func (repo EventRepository) Insert(ctx context.Context, e event.Event) (int64, e
 
 	defer tx.Rollback()
 
-	fmt.Printf("Internal: %+v\n", e.Venue)
-
 	eventID, err := insertEvent(ctx, tx, EventFromInternal(e))
 	if err != nil {
 		return 0, fmt.Errorf("Could not insert event: %v", err)
@@ -175,8 +173,6 @@ func (repo EventRepository) Update(ctx context.Context, eventID int64, e event.E
 	for _, c := range e.Concerts {
 		concerts = append(concerts, ConcertFromInternal(c, eventID))
 	}
-
-	fmt.Printf("%+v\n", concerts)
 
 	_, err = setEventConcerts(ctx, tx, eventID, concerts...)
 	if err != nil {

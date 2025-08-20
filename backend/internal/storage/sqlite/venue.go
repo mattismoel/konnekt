@@ -268,8 +268,6 @@ func venueByID(ctx context.Context, tx *sql.Tx, venueID int64) (Venue, error) {
 		return Venue{}, err
 	}
 
-	fmt.Printf("VENUE +%v\n", v)
-
 	return v, nil
 }
 
