@@ -299,7 +299,7 @@ func updateVenue(ctx context.Context, tx *sql.Tx, venueID int64, v Venue) error 
 		builder = builder.Set("city", v.City)
 	}
 	if v.CountryCode != "" {
-		builder = builder.Set("country_code", v.Name)
+		builder = builder.Set("country_code", v.CountryCode)
 	}
 
 	query, args, err := builder.ToSql()
