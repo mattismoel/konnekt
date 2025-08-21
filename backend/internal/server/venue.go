@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -134,8 +133,6 @@ func (s Server) handleUpdateVenue() http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
-
-		fmt.Printf("countryCode: %q\n", load.CountryCode)
 
 		v, err := venue.NewVenue(
 			venue.WithName(load.Name),
