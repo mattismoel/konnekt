@@ -3,9 +3,12 @@ import { differenceInMinutes, startOfHour, addHours, format } from 'date-fns';
 import { cn } from '@/lib/clsx';
 
 import type { Event } from '@/lib/features/event/event';
-import { useMemo, type HTMLAttributes } from 'react';
+import { useEffect, useMemo, useState, type HTMLAttributes } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { Concert } from '../concert';
+import LinkButton from '@/lib/components/ui/button/link-button';
+import { generateGoogleCalendarEventUrl } from '@/lib/google-calendar';
+import { FaCalendarPlus } from 'react-icons/fa6';
 
 type Props = HTMLAttributes<HTMLDivElement> & {
 	event: Event;
@@ -13,6 +16,13 @@ type Props = HTMLAttributes<HTMLDivElement> & {
 
 const EventCalendar = ({ event, ...rest }: Props) => {
 	let concerts = event.concerts.sort((a, b) => a.from.getTime() - b.from.getTime())
+
+	const [calendarUrl, setCalendarUrl] = useState<URL | null>(null);
+
+	useEffect(() => {
+		const url = generateGoogleCalendarEventUrl(event)
+		setCalendarUrl(url)
+	}, [event.title, concerts.length])
 
 	let startHour = concerts.length > 0
 		? startOfHour(concerts[0].from)
@@ -38,9 +48,19 @@ const EventCalendar = ({ event, ...rest }: Props) => {
 
 	return (
 		<div className="flex w-full flex-col gap-8" {...rest}>
-			<div>
-				<h3 className="mb-2 text-xl font-bold">Program for {event.title}</h3>
-				<span className="text-zinc-300">{format(concerts[0].from, "EEEE, dd/MM/yyyy")}</span>
+			<div className="flex justify-between items-center-safe">
+				<div>
+					<h3 className="mb-2 text-xl font-bold">Program for {event.title}</h3>
+					<span className="text-zinc-300">{format(concerts[0].from, "EEEE, dd/MM/yyyy")}</span>
+				</div>
+
+				{calendarUrl && (
+					<LinkButton className="hidden sm:flex" variant="ghost" to={calendarUrl.toString()} target="__blank">
+						<FaCalendarPlus />
+						Føj til kalender
+					</LinkButton>
+				)}
+
 			</div>
 
 			<div className="overflow-y-scroll">
@@ -77,6 +97,13 @@ const EventCalendar = ({ event, ...rest }: Props) => {
 						))}
 					</div>
 				</div>
+
+				{calendarUrl && (
+					<LinkButton className="flex w-full sm:hidden" variant="secondary" to={calendarUrl.toString()} target="__blank">
+						<FaCalendarPlus />
+						Føj til kalender
+					</LinkButton>
+				)}
 			</div>
 		</div>
 	)
