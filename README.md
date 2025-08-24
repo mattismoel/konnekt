@@ -1,8 +1,10 @@
-# Website for the Konnekt, the non-profit for upcoming artists.
+# Website for the Konnekt
 
-[Konnekt](https://knnkt.dk) is a non-profit youth-driven organization helping young musicians get a platform on the Danish music scene.
-
-We are run by volunteers, and backed by several local sponsors, giving us the possibility to give a stage to the upcoming musicians while giving them the pay they deserve.
+<p align="center">
+    <a href="https://knnkt.dk">
+        <img src="logo.svg" width="400" alt="Konnekt logo"
+    </a>
+</p>
 
 
 # Building the website
