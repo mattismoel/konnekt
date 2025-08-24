@@ -98,11 +98,11 @@ const Entry = ({ concert, totalMinutes, startHour }: EntryProps) => {
 				top: `calc(${concertStartOffset / totalMinutes} * 100%)`,
 				height: `calc(${concertDurationMinutes / totalMinutes} * 100% - 1px)`
 			}}
-			className="absolute flex min-h-10 w-full justify-between overflow-hidden rounded-sm border border-t border-blue-800 bg-blue-950 p-2 text-sm transition-colors hover:bg-blue-900"
+			className="group absolute flex min-h-10 w-full justify-between overflow-hidden rounded-sm border border-t border-blue-800 bg-blue-950 p-2 text-sm transition-colors hover:bg-blue-900"
 			to="/artists/$artistId"
 			params={{ artistId: concert.artist.id.toString() }}
 		>
-			<p className="font-bold text-blue-200">
+			<p className="font-bold text-blue-200 group-hover:underline">
 				{concert.artist.name}
 			</p>
 			<p className="text-blue-500">
