@@ -67,7 +67,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
 					</div>
 
 					<div className="flex flex-col justify-end gap-2">
-						<LinkButton to={event.ticketUrl} className="w-full"><FaTicketAlt />Køb billet</LinkButton>
+						<LinkButton to={event.ticketUrl} className="w-full"><FaTicketAlt />Find billeter</LinkButton>
 						{!active && (
 							<LinkButton
 								to="/events/$eventId"
