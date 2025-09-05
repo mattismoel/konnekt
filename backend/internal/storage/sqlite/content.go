@@ -190,7 +190,7 @@ func landingImages(ctx context.Context, tx *sql.Tx) (ImageCollection, error) {
 
 func landingImageByID(ctx context.Context, tx *sql.Tx, id int64) (Image, error) {
 	query, args, err := sq.
-		Select("url", "createdBy", "createdAt").
+		Select("url", "created_by", "created_at").
 		From("landing_image").
 		Where(sq.Eq{"id": id}).
 		ToSql()
