@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { artistById, listArtists } from "./artist";
-import { artistEvents, listUpcomingEvents } from "../event/event";
+import { artistEvents, listPreviousEvents, listUpcomingEvents } from "../event/event";
 import { listGenres } from "./genre";
 import { eventsArtists } from "./events-artists";
 import type { ID } from "@/lib/api";
@@ -37,5 +37,16 @@ export const upcomingArtistsQueryOpts =
 
 			const upcomingArtists = eventsArtists(upcomingEvents)
 			return upcomingArtists
+		}
+	})
+
+export const previousArtistsQueryOpts =
+	queryOptions({
+		queryKey: ["artists", "previous"],
+		queryFn: async () => {
+			const { records: previousEvents } = await listPreviousEvents()
+
+			const previousArtists = eventsArtists(previousEvents)
+			return previousArtists
 		}
 	})
