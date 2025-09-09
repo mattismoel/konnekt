@@ -10,16 +10,14 @@ services:
       - 3000:3000
     environment:
     - NODE_ENV=development
-
   backend:
-    image: golang:1.24
+    image: cosmtrek/air:latest
     working_dir: /app
+    ports:
+    - 8080:8080
     volumes:
       - ./backend:/app
-      - ~/.aws:/root/.aws:ro"
-    command: sh -c "go mod tidy && go install github.com/air-verse/air@latest && air"
-    ports:
-      - 8080:8080
+      - ~/.aws:/root/.aws:ro
   caddy:
     image: caddy:latest
     ports:
