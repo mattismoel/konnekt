@@ -129,7 +129,8 @@ export const listUpcomingEvents = async (publicOnly: boolean = true): Promise<Li
  */
 export const listPreviousEvents = async (): Promise<ListResult<Event>> => {
 	const result = await listEvents({
-		filter: ["from_date" + "<" + startOfToday().toISOString()]
+		filter: ["from_date" + "<" + startOfToday().toISOString()],
+		orderBy: new Map([["from_date", "DESC"]])
 	})
 
 	return result
