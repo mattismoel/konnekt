@@ -1,6 +1,6 @@
 module github.com/mattismoel/konnekt
 
-go 1.24
+go 1.25.1
 
 require (
 	github.com/Masterminds/squirrel v1.5.4

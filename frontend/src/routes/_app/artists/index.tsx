@@ -4,182 +4,203 @@ import { pickRandom } from '@/lib/array';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/clsx';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { upcomingArtistsQueryOpts } from '@/lib/features/artist/query';
+import { previousArtistsQueryOpts, upcomingArtistsQueryOpts } from '@/lib/features/artist/query';
 import PageMeta from '@/lib/components/page-meta';
 
 /** @description The rate of which artist auto display changes artist. */
 const AUTO_DISPLAY_RATE = 0.25;
 
+/** @description The max amount of previous artists to show. */
+const MAX_PREVIOUS_ARTIST_COUNT = 16
+
 export const Route = createFileRoute('/_app/artists/')({
-  component: RouteComponent,
-  loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(upcomingArtistsQueryOpts)
-  }
+	component: RouteComponent,
+	loader: async ({ context: { queryClient } }) => {
+		queryClient.ensureQueryData(upcomingArtistsQueryOpts)
+		queryClient.ensureQueryData(previousArtistsQueryOpts)
+	}
 })
 
 type ArtistsContext = {
-  artists: Artist[]
-  selected: Artist | undefined
+	upcomingArtists: Artist[]
+	previousArtists: Artist[]
+	selected: Artist | undefined
 
-  onSelect: (artist: Artist) => void;
-  onExit: () => void;
+	onSelect: (artist: Artist) => void;
+	onExit: () => void;
 }
 
 const ArtistsContext = createContext<ArtistsContext | undefined>(undefined)
 
 const useArtistsContext = () => {
-  const ctx = useContext(ArtistsContext)
-  if (!ctx) throw new Error("No ArtistsContext.Provider found")
-  return ctx
+	const ctx = useContext(ArtistsContext)
+	if (!ctx) throw new Error("No ArtistsContext.Provider found")
+	return ctx
 }
 
 function RouteComponent() {
-  const { data: artists } = useSuspenseQuery(upcomingArtistsQueryOpts)
+	const { data: upcomingArtists } = useSuspenseQuery(upcomingArtistsQueryOpts)
+	const { data: previousArtists } = useSuspenseQuery(previousArtistsQueryOpts)
 
-  const [selected, setSelected] = useState<Artist>();
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+	const [selected, setSelected] = useState<Artist>();
+	const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  useEffect(() => {
-    if (artists.length > 0) setSelected(artists[0])
-  }, [artists])
+	useEffect(() => {
+		if (upcomingArtists.length <= 0 && previousArtists.length > 0) setSelected(previousArtists[0])
 
-  useEffect(() => {
-    beginAutoDisplay();
-    return endAutoDisplay;
-  }, [artists]);
+		if (upcomingArtists.length > 0) setSelected(upcomingArtists[0])
+	}, [upcomingArtists])
 
-  const beginAutoDisplay = () => {
-    if (intervalRef.current) return
+	useEffect(() => {
+		if (upcomingArtists.length > 0 || previousArtists.length > 0) beginAutoDisplay();
+		return endAutoDisplay;
+	}, [upcomingArtists]);
 
-    intervalRef.current = setInterval(() => {
-      if (!artists || artists.length <= 0) return
+	const beginAutoDisplay = () => {
+		if (intervalRef.current) return
 
-      const newArtist = pickRandom(artists, selected);
+		intervalRef.current = setInterval(() => {
+			if (upcomingArtists.length <= 0 && previousArtists.length <= 0) return
+			const newArtist = pickRandom(upcomingArtists.length > 0 ? upcomingArtists : previousArtists.slice(0, MAX_PREVIOUS_ARTIST_COUNT))
+			if (newArtist) setSelected(newArtist);
+		}, 1000 / AUTO_DISPLAY_RATE);
+	};
 
-      if (newArtist) setSelected(newArtist);
-    }, 1000 / AUTO_DISPLAY_RATE);
-  };
+	const endAutoDisplay = () => {
+		if (!intervalRef.current) return;
 
-  const endAutoDisplay = () => {
-    if (!intervalRef.current) return;
+		clearInterval(intervalRef.current);
+		intervalRef.current = null
+	};
 
-    clearInterval(intervalRef.current);
-    intervalRef.current = null
-  };
+	const onSelect = (artist: Artist) => {
+		setSelected(artist)
+		endAutoDisplay()
+	}
 
-  const onSelect = (artist: Artist) => {
-    setSelected(artist)
-    endAutoDisplay()
-  }
+	return (
+		<ArtistsContext.Provider value={{ upcomingArtists, previousArtists, selected, onSelect, onExit: beginAutoDisplay }}>
+			<PageMeta
+				title="Konnekt | Kunstnere"
+				description="Se alle aktuelle kunstnere der medvirker i Konnekts kommende events"
+			/>
 
-  return (
-    <ArtistsContext.Provider value={{ artists, selected, onSelect, onExit: beginAutoDisplay }}>
-      <PageMeta
-        title="Konnekt | Kunstnere"
-        description="Se alle aktuelle kunstnere der medvirker i Konnekts kommende events"
-      />
+			<main className="px-auto min-h-svh pb-32 pt-24 md:pt-32">
+				{[...upcomingArtists, ...previousArtists].map(artist => (
+					<img
+						key={artist.id}
+						src={artist.imageUrl}
+						alt={artist.name}
+						className={cn("pointer-events-none fixed top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-50 transition-all duration-1000", {
+							"opacity-100 scale-105": selected?.id === artist.id
+						})}
+					/>
+				))}
 
-      {artists.length > 0 ? (
-        <main className="px-auto h-svh pb-32 pt-24 md:pt-32">
-          {artists.map(artist => (
-            <img
-              key={artist.id}
-              src={artist.imageUrl}
-              alt={artist.name}
-              className={cn("pointer-events-none absolute top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-50 transition-all duration-1000", {
-                "opacity-100 scale-105": selected?.id === artist.id
-              })}
-            />
-          ))}
+				<div className="h-full flex flex-col">
+					<section className="flex flex-col mb-8">
+						<h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl text-shadow-md/15">Kunstnere</h1>
+						{upcomingArtists.length > 0 && (
+							<span className="text-text/75 text-shadow-sm leading-relaxed">
+								Her kan du se alle kunstnere, som medvirker i kommende events samt dem, der har været en del af tidligere events.
+							</span>
+						)}
+					</section>
 
-          <div className="space-y-16 h-full flex flex-col">
-            <section className="flex flex-col">
-              <h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl text-shadow-md/15">Kunstnere</h1>
-              <span className="text-text/75 text-shadow-sm">
-                Her kan du se alle kunstnere, som medvirker i kommende events.
-              </span>
-            </section>
-
-            <ArtistList />
-          </div>
-        </main>
-
-      ) : (
-        <main className="min-h-svh flex flex-col justify-center items-center px-auto">
-          <span className="italic text-text/75 text-center">Der er ingen aktuelle kunstnere i øjeblikket...</span>
-        </main>
-      )}
-    </ArtistsContext.Provider>
-  )
+					<ArtistList />
+				</div>
+			</main>
+		</ArtistsContext.Provider>
+	)
 }
 
 const ArtistList = () => {
-  const { artists } = useArtistsContext()
+	const { upcomingArtists: artists, previousArtists } = useArtistsContext()
 
-  return (
-    <ul className="flex-1 overflow-y-scroll">
-      {artists.map(artist => (
-        <Entry key={artist.id} artist={artist} />
-      ))}
-    </ul>
-  )
+	return (
+		<div className="flex flex-col gap-16">
+			<section>
+				{/* <h2 className='mb-4 font-semibold font-heading'>Kommende</h2> */}
+				{artists.length > 0 ? (
+					<ul className="flex-1 overflow-y-scroll">
+						{artists.map(artist => (
+							<Entry key={artist.id} artist={artist} />
+						))}
+					</ul>
+				) : (
+					<p className="text-text/50 italic">Der er ingen kommende kunstnere...</p>
+				)}
+			</section>
+
+			{previousArtists.length > 0 && (
+				<section>
+					<h2 className="mb-4 font-semibold font-heading">Tidligere kunstnere</h2>
+					<ul className="flex-1 overflow-y-scroll">
+						{previousArtists.slice(0, MAX_PREVIOUS_ARTIST_COUNT).map(artist => (
+							<Entry key={artist.id} artist={artist} />
+						))}
+					</ul>
+				</section>
+			)}
+		</div>
+	)
 }
 
 type EntryProps = {
-  artist: Artist;
+	artist: Artist;
 }
 
 const Entry = ({ artist }: EntryProps) => {
-  const { selected, onSelect, onExit } = useArtistsContext()
+	const { selected, onSelect, onExit } = useArtistsContext()
 
-  const genreString = artist.genres.map(({ name }) => name).join(", ")
+	const genreString = artist.genres.map(({ name }) => name).join(", ")
 
-  const ref = useRef<HTMLLIElement>(null)
+	const ref = useRef<HTMLLIElement>(null)
 
-  useEffect(() => {
-    if (selected?.id === artist.id)
-      ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
-  }, [selected])
+	useEffect(() => {
+		if (selected?.id === artist.id)
+			ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+	}, [selected])
 
-  return (
-    <li
-      ref={ref}
-      className={cn("@container px-4 border border-transparent rounded-md hover:bg-text/10", {
-        "border-text/25": selected?.id === artist.id
-      })}
-      onMouseEnter={() => onSelect(artist)}
-      onMouseLeave={onExit}
-    >
-      <div className="grid grid-cols-1 @md:grid-cols-2 @2xl:grid-cols-3 items-center text-shadow-sm">
-        <Link
-          to="/artists/$artistId"
-          params={{ artistId: artist.id.toString() }}
-          className={cn("font-bold w-full py-3 text-text/50 ", {
-            "text-text": selected?.id === artist.id
-          })}
-        >
-          {artist.name}
-        </Link>
-        <span className="hidden @md:block text-text/75">{genreString}</span>
-        <div className="hidden @2xl:flex justify-end">
-          <SocialList socials={artist.socials} />
-        </div>
-      </div>
-    </li>
-  )
+	return (
+		<li
+			ref={ref}
+			className={cn("@container px-4 border border-transparent rounded-md hover:bg-text/10", {
+				"border-text/25": selected?.id === artist.id
+			})}
+			onMouseEnter={() => onSelect(artist)}
+			onMouseLeave={onExit}
+		>
+			<div className="grid grid-cols-1 @md:grid-cols-2 @2xl:grid-cols-3 items-center text-shadow-sm">
+				<Link
+					to="/artists/$artistId"
+					params={{ artistId: artist.id.toString() }}
+					className={cn("font-bold w-full py-3 text-text/50 ", {
+						"text-text": selected?.id === artist.id
+					})}
+				>
+					{artist.name}
+				</Link>
+				<span className="hidden @md:block text-text/75">{genreString}</span>
+				<div className="hidden @2xl:flex justify-end">
+					<SocialList socials={artist.socials} />
+				</div>
+			</div>
+		</li>
+	)
 }
 
 const SocialList = ({ socials }: { socials: string[] }) => {
-  return (
-    <ul className="flex gap-4">
-      {socials.map(social => {
-        const Icon = socialUrlToIcon(social)
-        return (
-          <li key={social} className="text-text/50">
-            <a href={social}><Icon key={social} className="text-2xl" /></a>
-          </li>
-        )
-      })}
-    </ul>
-  )
+	return (
+		<ul className="flex gap-4">
+			{socials.map(social => {
+				const Icon = socialUrlToIcon(social)
+				return (
+					<li key={social} className="text-text/50">
+						<a href={social}><Icon key={social} className="text-2xl" /></a>
+					</li>
+				)
+			})}
+		</ul>
+	)
 }

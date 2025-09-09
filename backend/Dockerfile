@@ -4,7 +4,7 @@
 # CGO dependencies are installed, Golang project dependencies are installed,
 # and the project is built with CGO.
 # ==============================================================================
-FROM golang:1.24-alpine AS build
+FROM golang:1.25-alpine AS build
 
 WORKDIR /app
 

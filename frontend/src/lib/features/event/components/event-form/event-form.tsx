@@ -228,7 +228,7 @@ const VenueSelector = () => {
 							<Button variant="ghost" className="aspect-square h-full">
 								<FaArrowsRotate />
 							</Button>
-							<LinkButton to="/admin/venues/create" className="aspect-square h-full">
+							<LinkButton to="/admin/venues/create" className="aspect-square h-full" target="__blank">
 								<FaPlus />
 							</LinkButton>
 						</div>

@@ -56,7 +56,7 @@ const Entry = ({ index }: EntryProps) => {
 					{!disabled && (
 						<div className="flex gap-2">
 							<Button variant="ghost" className="aspect-square h-full"><FaArrowsRotate /></Button>
-							<LinkButton to="/admin/artists/create" className="aspect-square h-full"><FaPlus /></LinkButton>
+							<LinkButton to="/admin/artists/create" target="__blank" className="aspect-square h-full"><FaPlus /></LinkButton>
 						</div>
 					)}
 				</div>
