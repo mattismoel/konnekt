@@ -115,15 +115,15 @@ function RouteComponent() {
 }
 
 const ArtistList = () => {
-	const { upcomingArtists: artists, previousArtists } = useArtistsContext()
+	const { upcomingArtists, previousArtists } = useArtistsContext()
 
 	return (
 		<div className="flex flex-col gap-16">
 			<section>
 				{/* <h2 className='mb-4 font-semibold font-heading'>Kommende</h2> */}
-				{artists.length > 0 ? (
+				{upcomingArtists.length > 0 ? (
 					<ul className="flex-1 overflow-y-scroll">
-						{artists.map(artist => (
+						{upcomingArtists.map(artist => (
 							<Entry key={artist.id} artist={artist} />
 						))}
 					</ul>
