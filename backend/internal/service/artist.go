@@ -254,3 +254,12 @@ func (s ArtistService) ArtistEvents(ctx context.Context, artistID int64) (query.
 
 	return result, nil
 }
+
+func (s ArtistService) GenreByID(ctx context.Context, genreID int64) (artist.Genre, error) {
+	genre, err := s.artistRepo.GenreByID(ctx, genreID)
+	if err != nil {
+		return artist.Genre{}, err
+	}
+
+	return genre, nil
+}
