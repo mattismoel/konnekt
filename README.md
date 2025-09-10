@@ -1,4 +1,4 @@
-# Website for the Konnekt
+# Website for the youth-driven non-profit Konnekt
 
 <p align="center">
     <a href="https://knnkt.dk">
