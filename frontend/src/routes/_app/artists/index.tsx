@@ -6,12 +6,13 @@ import { cn } from '@/lib/clsx';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { previousArtistsQueryOpts, upcomingArtistsQueryOpts } from '@/lib/features/artist/query';
 import PageMeta from '@/lib/components/page-meta';
+import Button from '@/lib/components/ui/button/button';
 
 /** @description The rate of which artist auto display changes artist. */
 const AUTO_DISPLAY_RATE = 0.25;
 
 /** @description The max amount of previous artists to show. */
-const MAX_PREVIOUS_ARTIST_COUNT = 16
+const MAX_PREVIOUS_ARTIST_COUNT = 8
 
 export const Route = createFileRoute('/_app/artists/')({
 	component: RouteComponent,
@@ -115,15 +116,16 @@ function RouteComponent() {
 }
 
 const ArtistList = () => {
-	const { upcomingArtists: artists, previousArtists } = useArtistsContext()
+	const { upcomingArtists, previousArtists } = useArtistsContext()
+	const [showAllPrevious, setShowAllPrevious] = useState(false)
 
 	return (
 		<div className="flex flex-col gap-16">
 			<section>
 				{/* <h2 className='mb-4 font-semibold font-heading'>Kommende</h2> */}
-				{artists.length > 0 ? (
+				{upcomingArtists.length > 0 ? (
 					<ul className="flex-1 overflow-y-scroll">
-						{artists.map(artist => (
+						{upcomingArtists.map(artist => (
 							<Entry key={artist.id} artist={artist} />
 						))}
 					</ul>
@@ -133,13 +135,32 @@ const ArtistList = () => {
 			</section>
 
 			{previousArtists.length > 0 && (
-				<section>
-					<h2 className="mb-4 font-semibold font-heading">Tidligere kunstnere</h2>
+				<section className="flex flex-col gap-4">
+					<h2 className="font-semibold font-heading">Tidligere kunstnere</h2>
 					<ul className="flex-1 overflow-y-scroll">
 						{previousArtists.slice(0, MAX_PREVIOUS_ARTIST_COUNT).map(artist => (
 							<Entry key={artist.id} artist={artist} />
 						))}
 					</ul>
+
+					{!showAllPrevious && previousArtists.length > MAX_PREVIOUS_ARTIST_COUNT && (
+						<Button
+							type="button"
+							variant="secondary"
+							onClick={() => setShowAllPrevious(true)}
+							className="w-full py-3 rounded-md border border-transparent text-text/75 hover:border-text/15 hover:text-text hover:bg-text/15 bg-text/10"
+						>
+							Se alle (+{previousArtists.length - MAX_PREVIOUS_ARTIST_COUNT})
+						</Button>
+					)}
+
+					{showAllPrevious && (
+						<ul className="flex-1 overflow-y-scroll">
+							{previousArtists.slice(MAX_PREVIOUS_ARTIST_COUNT).map(artist => (
+								<Entry key={artist.id} artist={artist} />
+							))}
+						</ul>
+					)}
 				</section>
 			)}
 		</div>
