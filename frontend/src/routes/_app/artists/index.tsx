@@ -11,7 +11,7 @@ import PageMeta from '@/lib/components/page-meta';
 const AUTO_DISPLAY_RATE = 0.25;
 
 /** @description The max amount of previous artists to show. */
-const MAX_PREVIOUS_ARTIST_COUNT = 16
+const MAX_PREVIOUS_ARTIST_COUNT = 8
 
 export const Route = createFileRoute('/_app/artists/')({
 	component: RouteComponent,
