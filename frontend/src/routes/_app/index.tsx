@@ -72,8 +72,8 @@ function App() {
 
 						<div className="z-10 flex w-full flex-col-reverse gap-4 sm:flex-row">
 							<LinkButton to="/about" variant="outline" className="w-full sm:w-fit">Læs mere</LinkButton>
-							<LinkButton to="/events" className="group w-full items-center gap-2 sm:w-fit">
-								Se events
+							<LinkButton to={upcomingEvents.length > 0 ? "/events" : "/artists"} className="group w-full items-center gap-2 sm:w-fit">
+								{upcomingEvents.length > 0 ? "Se events" : "Se kunstnere"}
 								<FaArrowRight className="text-sm transition-transform group-hover:translate-x-1" />
 							</LinkButton>
 						</div>
