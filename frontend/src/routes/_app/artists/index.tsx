@@ -91,7 +91,7 @@ function RouteComponent() {
 						key={artist.id}
 						src={artist.imageUrl}
 						alt={artist.name}
-						className={cn("pointer-events-none fixed top-0 left-0 -z-10 h-full w-full object-cover opacity-0 brightness-50 transition-all duration-1000", {
+						className={cn("pointer-events-none fixed top-0 left-0 -z-10 h-lvh w-full object-cover opacity-0 brightness-50 transition-all duration-1000", {
 							"opacity-100 scale-105": selected?.id === artist.id
 						})}
 					/>
