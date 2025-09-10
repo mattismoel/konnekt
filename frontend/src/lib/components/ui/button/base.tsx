@@ -14,7 +14,7 @@ export const variantClasses = new Map<Variant, string>([
 	['primary', 'bg-zinc-100 text-zinc-950 hover:bg-zinc-300'],
 	[
 		'secondary',
-		'text-text/85 hover:text-text border border-zinc-700 bg-zinc-800 font-normal hover:border-zinc-600 hover:bg-zinc-700'
+		'text-text/75 hover:text-text border border-text/15 bg-text/10 hover:border-text/20 hover:bg-text/20'
 	],
 	[
 		'outline',
