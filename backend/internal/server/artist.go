@@ -90,19 +90,17 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 				writeError(w, err)
 				return
 			}
-
 		}
 
-		q, err := query.NewListQuery(query.WithFilters(filters))
-		if err != nil {
-			writeError(w, err)
-			return
-		}
+		genres := make([]artist.Genre, 0)
+		for _, genreID := range load.GenreIDs {
+			genre, err := s.artistService.GenreByID(ctx, genreID)
+			if err != nil {
+				writeError(w, err)
+				return
+			}
 
-		genresResult, err := s.artistService.ListGenres(ctx, q)
-		if err != nil {
-			writeError(w, err)
-			return
+			genres = append(genres, genre)
 		}
 
 		socials := make([]artist.Social, 0)
@@ -119,7 +117,7 @@ func (s Server) handleCreateArtist() http.HandlerFunc {
 		a, err := artist.NewArtist(
 			artist.WithName(load.Name),
 			artist.WithDescription(load.Description),
-			artist.WithGenres(genresResult.Records...),
+			artist.WithGenres(genres...),
 			artist.WithImageURL(load.ImageURL),
 			artist.WithSocials(socials...),
 			artist.WithCreatedBy(requestMember.ID),
