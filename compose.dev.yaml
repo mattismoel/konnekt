@@ -1,0 +1,38 @@
+services:
+  nginx:
+    image: nginx:latest
+    depends_on:
+      - backend
+    volumes:
+    - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    - ./certs:/etc/nginx/certs:ro
+    ports:
+      - 80:80
+      - 443:443
+  backend:
+    working_dir: /app
+    image: cosmtrek/air
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432
+      HOST: 0.0.0.0
+      PORT: 8080
+    volumes:
+      - ./backend:/app
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: password
+  adminer:
+    image: adminer:latest
+    ports:
+      - 8081:8080
+  cli:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.cli
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432
+    depends_on:
+      - db
