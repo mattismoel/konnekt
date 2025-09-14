@@ -1,0 +1,10 @@
+FROM golang:1.25-alpine AS build
+WORKDIR /app
+COPY . .
+RUN go build -o cli ./cmd/cli
+
+FROM alpine:latest
+WORKDIR /app
+
+COPY --from=build /app/cli .
+ENTRYPOINT [ "./cli" ]
