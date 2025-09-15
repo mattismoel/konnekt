@@ -150,9 +150,7 @@ func createArtistTables(ctx context.Context, tx pgx.Tx) error {
 		name TEXT UNIQUE NOT NULL,
 
 		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-		updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-		created_by INTEGER NOT NULL REFERENCES member(id),
-		updated_by INTEGER NOT NULL REFERENCES member(id)
+		updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 	);
 
 	CREATE TABLE IF NOT EXISTS artists_genres (

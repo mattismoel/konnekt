@@ -10,8 +10,6 @@ type Genre string
 
 type CreateGenre struct {
 	Name      string `json:"name"`
-	CreatedBy ID     `json:"-"`
-}
 
 func (s Server) handleCreateGenre() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -42,4 +40,5 @@ func (s Server) handleCreateGenre() http.HandlerFunc {
 			return
 		}
 	}
+	CreatedBy int64  `json:"-"`
 }
