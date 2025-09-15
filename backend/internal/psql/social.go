@@ -10,9 +10,9 @@ import (
 )
 
 type Social struct {
-	ID       int64
-	URL      string
-	ArtistID int64
+	ID       int64  `db:"id"`
+	URL      string `db:"url"`
+	ArtistID int64  `db:"artist_id"`
 }
 
 func insertSocial(ctx context.Context, tx pgx.Tx, s Social) (int64, error) {
@@ -26,9 +26,14 @@ func insertSocial(ctx context.Context, tx pgx.Tx, s Social) (int64, error) {
 		return 0, NewQueryBuildError("insert social", err)
 	}
 
-	var id int64
-	if err := tx.QueryRow(ctx, query, args...).Scan(&id); err != nil {
-		return 0, err
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("Could not insert social: %v", err)
+	}
+
+	id, err := pgx.CollectExactlyOneRow(rows, pgx.RowTo[int64])
+	if err != nil {
+		return 0, fmt.Errorf("Could not get inserted ID: %v", err)
 	}
 
 	return id, nil
@@ -36,7 +41,7 @@ func insertSocial(ctx context.Context, tx pgx.Tx, s Social) (int64, error) {
 
 func artistSocials(ctx context.Context, tx pgx.Tx, artistID int64) (Collection[Social, konnekt.Social], error) {
 	query, args, err := psql.
-		Select("id", "url", "artist_id").
+		Select("*").
 		From("social").
 		Where(sq.Eq{"artist_id": artistID}).
 		ToSql()
@@ -50,16 +55,9 @@ func artistSocials(ctx context.Context, tx pgx.Tx, artistID int64) (Collection[S
 		return nil, fmt.Errorf("Could not query for artist socials: %v", err)
 	}
 
-	defer rows.Close()
-
-	socials := make([]Social, 0)
-	for rows.Next() {
-		s, err := scanSocial(rows)
-		if err != nil {
-			return nil, err
-		}
-
-		socials = append(socials, s)
+	socials, err := pgx.CollectRows(rows, pgx.RowToStructByName[Social])
+	if err != nil {
+		return nil, fmt.Errorf("Could not get artist socials: %v", err)
 	}
 
 	return socials, nil
@@ -80,16 +78,6 @@ func deleteArtistSocials(ctx context.Context, tx pgx.Tx, artistID int64) error {
 	}
 
 	return nil
-}
-func scanSocial(s Scanner) (Social, error) {
-	var social Social
-
-	if err := scan(s, &social.ID, &social.URL, &social.ArtistID); err != nil {
-		return Social{}, err
-	}
-
-	return social, nil
-
 }
 
 func (s Social) ToDomain() konnekt.Social {

@@ -14,31 +14,16 @@ import (
 	"github.com/mattismoel/konnekt/backend/order"
 )
 
-var artistSelectBuilder = psql.
-	Select(
-		"id",
-		"name",
-		"description",
-		"image_url",
-		"preview_url",
-		"created_by",
-		"updated_by",
-		"created_at",
-		"updated_at",
-	).
-	From("artist")
-
 var _ konnekt.ArtistRepo = ArtistRepo{}
 
 type Artist struct {
-	ID          int64
-	Name        string
-	Description string
-	ImageURL    string
-	PreviewURL  string
-
-	AuditFields
+	ID          int64  `db:"id"`
+	Name        string `db:"name"`
+	Description string `db:"description"`
+	ImageURL    string `db:"image_url"`
+	PreviewURL  string `db:"preview_url"`
 	Timestamps
+	AuditFields
 }
 
 type ArtistRepo struct {
@@ -281,9 +266,14 @@ func insertArtist(ctx context.Context, tx pgx.Tx, a Artist) (int64, error) {
 		return 0, NewQueryBuildError("insert artist", err)
 	}
 
-	var id int64
-	if err := tx.QueryRow(ctx, query, args...).Scan(&id); err != nil {
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
 		return 0, fmt.Errorf("Could not insert artist: %v", err)
+	}
+
+	id, err := pgx.CollectExactlyOneRow(rows, pgx.RowTo[int64])
+	if err != nil {
+		return 0, err
 	}
 
 	return id, nil
@@ -326,7 +316,7 @@ func updateArtist(ctx context.Context, tx pgx.Tx, artistID int64, fieldMap mask.
 }
 
 func listArtists(ctx context.Context, tx pgx.Tx, pg Pagination, orderMap order.Map) (Collection[Artist, konnekt.Artist], error) {
-	builder := artistSelectBuilder
+	builder := psql.Select("*").From("artist")
 	builder = applyPagination(builder, pg)
 	builder = applyOrdering(builder, orderMap)
 
@@ -340,28 +330,31 @@ func listArtists(ctx context.Context, tx pgx.Tx, pg Pagination, orderMap order.M
 		return nil, err
 	}
 
-	defer rows.Close()
-
-	artists := make([]Artist, 0)
-	for rows.Next() {
-		artist, err := scanArtist(rows)
-		if err != nil {
-			return nil, err
-		}
-		artists = append(artists, artist)
+	artists, err := pgx.CollectRows(rows, pgx.RowToStructByName[Artist])
+	if err != nil {
+		return nil, err
 	}
 
 	return artists, nil
 }
 
 func artistByID(ctx context.Context, tx pgx.Tx, artistID int64) (Artist, error) {
-	query, args, err := artistSelectBuilder.Where(sq.Eq{"id": artistID}).ToSql()
+	query, args, err := psql.
+		Select("*").
+		From("artist").
+		Where(sq.Eq{"id": artistID}).
+		ToSql()
+
 	if err != nil {
 		return Artist{}, NewQueryBuildError("artist by id", err)
 	}
 
-	row := tx.QueryRow(ctx, query, args...)
-	artist, err := scanArtist(row)
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return Artist{}, err
+	}
+
+	artist, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[Artist])
 	if err != nil {
 		return Artist{}, err
 	}
@@ -370,13 +363,22 @@ func artistByID(ctx context.Context, tx pgx.Tx, artistID int64) (Artist, error) 
 }
 
 func artistByName(ctx context.Context, tx pgx.Tx, artistName string) (Artist, error) {
-	query, args, err := artistSelectBuilder.Where(sq.Eq{"name": artistName}).ToSql()
+	query, args, err := psql.
+		Select("*").
+		From("artist").
+		Where(sq.Eq{"name": artistName}).
+		ToSql()
+
 	if err != nil {
 		return Artist{}, NewQueryBuildError("artist by name", err)
 	}
 
-	row := tx.QueryRow(ctx, query, args...)
-	artist, err := scanArtist(row)
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return Artist{}, err
+	}
+
+	artist, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[Artist])
 	if err != nil {
 		return Artist{}, err
 	}
@@ -395,18 +397,6 @@ func deleteArtist(ctx context.Context, tx pgx.Tx, artistID int64) error {
 	}
 
 	return nil
-}
-
-func scanArtist(s Scanner) (Artist, error) {
-	var a Artist
-	err := scan(s, &a.ID, &a.Name, &a.Description, &a.ImageURL, &a.PreviewURL,
-		&a.CreatedBy, &a.UpdatedBy, &a.CreatedAt, &a.UpdatedAt)
-
-	if err != nil {
-		return Artist{}, err
-	}
-
-	return a, nil
 }
 
 func (a Artist) ToDomain() konnekt.Artist {

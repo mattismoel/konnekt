@@ -11,13 +11,11 @@ import (
 )
 
 type Genre struct {
-	ID   int64
-	Name string
-	AuditFields
+	ID   int64  `db:"id"`
+	Name string `db:"name"`
 	Timestamps
+	AuditFields
 }
-
-var genreSelectBuilder = psql.Select("id", "name").From("genre")
 
 // GenreByID implements konnekt.ArtistRepo.
 func (a ArtistRepo) GenreByID(ctx context.Context, genreID konnekt.ID) (konnekt.Genre, error) {
@@ -66,13 +64,22 @@ func (a ArtistRepo) InsertGenre(ctx context.Context, cg konnekt.CreateGenre) (ko
 }
 
 func genreByID(ctx context.Context, tx pgx.Tx, genreID int64) (Genre, error) {
-	query, args, err := genreSelectBuilder.Where(sq.Eq{"id": genreID}).ToSql()
+	query, args, err := psql.
+		Select("*").
+		From("genre").
+		Where(sq.Eq{"id": genreID}).
+		ToSql()
+
 	if err != nil {
 		return Genre{}, NewQueryBuildError("genre by id", err)
 	}
 
-	row := tx.QueryRow(ctx, query, args...)
-	genre, err := scanGenre(row)
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return Genre{}, err
+	}
+
+	genre, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[Genre])
 	if err != nil {
 		return Genre{}, err
 	}
@@ -103,7 +110,7 @@ func insertGenre(ctx context.Context, tx pgx.Tx, g Genre) (int64, error) {
 
 func artistGenres(ctx context.Context, tx pgx.Tx, artistID int64) (Collection[Genre, konnekt.Genre], error) {
 	query, args, err := psql.
-		Select("id", "name").
+		Select("genre.*").
 		From("genre").
 		Join("artists_genres ag on ag.genre_id = genre.id").
 		Where(sq.Eq{"ag.artist_id": artistID}).
@@ -118,16 +125,9 @@ func artistGenres(ctx context.Context, tx pgx.Tx, artistID int64) (Collection[Ge
 		return nil, fmt.Errorf("Could not query for artist genres: %v", err)
 	}
 
-	defer rows.Close()
-
-	genres := make([]Genre, 0)
-	for rows.Next() {
-		g, err := scanGenre(rows)
-		if err != nil {
-			return nil, err
-		}
-
-		genres = append(genres, g)
+	genres, err := pgx.CollectRows(rows, pgx.RowToStructByName[Genre])
+	if err != nil {
+		return nil, err
 	}
 
 	return genres, nil
@@ -166,15 +166,6 @@ func clearArtistGenres(ctx context.Context, tx pgx.Tx, artistID int64) error {
 	}
 
 	return nil
-}
-func scanGenre(s Scanner) (Genre, error) {
-	var g Genre
-
-	if err := scan(s, &g.ID, &g.Name); err != nil {
-		return Genre{}, err
-	}
-
-	return g, nil
 }
 
 func (g Genre) ToDomain() konnekt.Genre {
