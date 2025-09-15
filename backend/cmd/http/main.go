@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/internal/psql"
+	"github.com/mattismoel/konnekt/backend/internal/server"
 )
 
 const (
@@ -38,8 +38,8 @@ func main() {
 
 	artistRepo := psql.ArtistRepo{Pool: dbPool}
 
-	server := konnekt.Server{
-		ArtistRepo: artistRepo,
+	server := server.Server{
+		ArtistRepo:  artistRepo,
 	}
 
 	if err := server.Start(host, port); err != nil {
