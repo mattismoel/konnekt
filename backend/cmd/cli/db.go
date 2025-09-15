@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
+	konnekt "github.com/mattismoel/konnekt/backend"
 )
+
+var psql = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
 
 func clearDatabase(ctx context.Context, conn *pgx.Conn) error {
 	err := pgx.BeginFunc(ctx, conn, func(tx pgx.Tx) error {
@@ -299,20 +303,32 @@ func seedDb(ctx context.Context, conn *pgx.Conn) error {
 }
 
 func seedTeams(ctx context.Context, tx pgx.Tx) error {
-	query := `
-	INSERT INTO team (name, display_name, description) VALUES 
-	('admin', 'Administrator', 'Administrator af hjemmesiden.'),
-	('member', 'Medlem', 'Medlem af foreningen.'),
-	('project-leader', 'Projektleder', 'Projektleder af foreningen.'),
-	('booking', 'Booking', 'Booking af kunstnere.'),
-	('public-relations', 'PR', 'Håndtering af foreningens offentlige og medie-mæssige tilstedeværelse.'),
-	('visual-identity', 'Visuel Identitet', 'Håndtering af foreningens visuelle identitet og design.'),
-	('event-management', 'Event-management', 'Håndtering, planlægning og afvikling foreningens events'),
-	('economy', 'Økonomi', 'Håndtering af foreningens økonomi.')
+	teams := []konnekt.Team{
+		{Name: "admin", DisplayName: "Administrator", Description: "Administrator af hjemmesiden."},
+		{Name: "member", DisplayName: "Medlem", Description: "Medlem af foreningen."},
+		{Name: "project-leader", DisplayName: "Projektleder", Description: "Projektleder af foreningen."},
+		{Name: "booking", DisplayName: "Booking", Description: "Booking af kunstnere."},
+		{Name: "public-relations", DisplayName: "PR", Description: "Håndtering af foreningens offentlige og medie-mæssige tilstedeværelse."},
+		{Name: "visual-identity", DisplayName: "Visuel Identitet", Description: "Håndtering af foreningens visuelle identitet og design."},
+		{Name: "event-management", DisplayName: "Event-management", Description: "Håndtering, planlægning og afvikling foreningens events"},
+		{Name: "economy", DisplayName: "Økonomi", Description: "Håndtering af foreningens økonomi."},
+	}
 
-	ON CONFLICT DO NOTHING;`
+	builder := psql.
+		Insert("team").
+		Columns("name", "display_name", "description").
+		Suffix("ON CONFLICT DO NOTHING")
 
-	if _, err := tx.Exec(ctx, query); err != nil {
+	for _, t := range teams {
+		builder = builder.Values(t.Name, t.DisplayName, t.Description)
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return fmt.Errorf("Could not create team seed query: %v", err)
+	}
+
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
 		return fmt.Errorf("Could not insert seed teams: %v", err)
 	}
 
@@ -320,43 +336,55 @@ func seedTeams(ctx context.Context, tx pgx.Tx) error {
 }
 
 func seedPermissions(ctx context.Context, tx pgx.Tx) error {
-	query := `
-	INSERT INTO permission (name, display_name, description) VALUES
-	('view:event', 'Events (se)', 'Tilladeslse til at se events.'),
-	('edit:event', 'Events (redigér)', 'Tilladelse til at redigére events.'),
-	('delete:event', 'Events (slet)', 'Tilladelse til at slette events.'),
+	perms := []konnekt.Permission{
+		{Name: "view:event", DisplayName: "Events (se)", Description: "Tilladeslse til at se events."},
+		{Name: "edit:event", DisplayName: "Events (redigér)", Description: "Tilladelse til at redigére events."},
+		{Name: "delete:event", DisplayName: "Events (slet)", Description: "Tilladelse til at slette events."},
 
-	('view:artist', 'Kunstnere (se)', 'Tilladeslse til at se kunstnere.'),
-	('edit:artist', 'Kunstnere (redigér)', 'Tilladelse til at redigére kunstnere.'),
-	('delete:artist', 'Kunstnere (slet)', 'Tilladelse til at slette kunstnere.'),
+		{Name: "view:artist", DisplayName: "Kunstnere (se)", Description: "Tilladeslse til at se kunstnere."},
+		{Name: "edit:artist", DisplayName: "Kunstnere (redigér)", Description: "Tilladelse til at redigére kunstnere."},
+		{Name: "delete:artist", DisplayName: "Kunstnere (slet)", Description: "Tilladelse til at slette kunstnere."},
 
-	('view:venue', 'Venues (se)', 'Tilladeslse til at se venues.'),
-	('edit:venue', 'Venues (redigér)', 'Tilladelse til at redigére venues.'),
-	('delete:venue', 'Venues (slet)', 'Tilladelse til at slette venues.'),
+		{Name: "view:venue", DisplayName: "Venues (se)", Description: "Tilladeslse til at se venues."},
+		{Name: "edit:venue", DisplayName: "Venues (redigér)", Description: "Tilladelse til at redigére venues."},
+		{Name: "delete:venue", DisplayName: "Venues (slet)", Description: "Tilladelse til at slette venues."},
 
-	('view:genre', 'Genrer (se)', 'Tilladeslse til at se genrer.'),
-	('edit:genre', 'Genrer (redigér)', 'Tilladelse til at redigére genrer.'),
-	('delete:genre', 'Genrer (slet)', 'Tilladelse til at slette genrer.'),
+		{Name: "view:genre", DisplayName: "Genrer (se)", Description: "Tilladeslse til at se genrer."},
+		{Name: "edit:genre", DisplayName: "Genrer (redigér)", Description: "Tilladelse til at redigére genrer."},
+		{Name: "delete:genre", DisplayName: "Genrer (slet)", Description: "Tilladelse til at slette genrer."},
 
-	('view:content', 'Indhold (se)', 'Tilladeslse til at se hjemmesideindhold.'),
-	('edit:content', 'Indhold (redigér)', 'Tilladelse til at redigére hjemmesideindhold.'),
-	('delete:content', 'Indhold (slet)', 'Tilladelse til at slette hjemmesideindhold.'),
+		{Name: "view:content", DisplayName: "Indhold (se)", Description: "Tilladeslse til at se hjemmesideindhold."},
+		{Name: "edit:content", DisplayName: "Indhold (redigér)", Description: "Tilladelse til at redigére hjemmesideindhold."},
+		{Name: "delete:content", DisplayName: "Indhold (slet)", Description: "Tilladelse til at slette hjemmesideindhold."},
 
-	('view:member', 'Medlemmer (se)', 'Tilladeslse til at se medlemmer.'),
-	('edit:member', 'Medlemmer (redigér)', 'Tilladelse til at redigére medlemmer.'),
-	('delete:member', 'Medlemmer (slet)', 'Tilladelse til at slette medlemmer.'),
+		{Name: "view:member", DisplayName: "Medlemmer (se)", Description: "Tilladeslse til at se medlemmer."},
+		{Name: "edit:member", DisplayName: "Medlemmer (redigér)", Description: "Tilladelse til at redigére medlemmer."},
+		{Name: "delete:member", DisplayName: "Medlemmer (slet)", Description: "Tilladelse til at slette medlemmer."},
 
-	('view:team', 'Hold (se)', 'Tilladeslse til at se hold.'),
-	('edit:team', 'Hold (redigér)', 'Tilladelse til at redigére hold.'),
-	('delete:team', 'Hold (slet)', 'Tilladelse til at slette hold.'),
+		{Name: "view:team", DisplayName: "Hold (se)", Description: "Tilladeslse til at se hold."},
+		{Name: "edit:team", DisplayName: "Hold (redigér)", Description: "Tilladelse til at redigére hold."},
+		{Name: "delete:team", DisplayName: "Hold (slet)", Description: "Tilladelse til at slette hold."},
 
-	('view:permission', 'Tilladelser (se)', 'Tilladeslse til at se tilladelse.'),
-	('edit:permission', 'Tilladelser (redigér)', 'Tilladelse til at redigére tilladelser.'),
-	('delete:permission', 'Tilladelser (slet)', 'Tilladelse til at slette tilladelser.')
+		{Name: "view:permission", DisplayName: "Tilladelser (se)", Description: "Tilladeslse til at se tilladelse."},
+		{Name: "edit:permission", DisplayName: "Tilladelser (redigér)", Description: "Tilladelse til at redigére tilladelser."},
+		{Name: "delete:permission", DisplayName: "Tilladelser (slet)", Description: "Tilladelse til at slette tilladelser.}"},
+	}
 
-	ON CONFLICT DO NOTHING;`
+	builder := psql.
+		Insert("permission").
+		Columns("name", "display_name", "description").
+		Suffix("ON CONFLICT DO NOTHING")
 
-	if _, err := tx.Exec(ctx, query); err != nil {
+	for _, p := range perms {
+		builder = builder.Values(p.Name, p.DisplayName, p.Description)
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return fmt.Errorf("Could not create seed permission query: %v", err)
+	}
+
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
 		return fmt.Errorf("Could not insert seed permissions: %v", err)
 	}
 
@@ -364,17 +392,21 @@ func seedPermissions(ctx context.Context, tx pgx.Tx) error {
 }
 
 func seedGenres(ctx context.Context, tx pgx.Tx) error {
-	query := `
-	INSERT INTO genre (name, created_by, updated_by) VALUES 
-	('Rock', 1, 1),
-	('Punk', 1, 1),
-	('Pop', 1, 1),
-	('Hip-Hip', 1, 1),
-	('Rap', 1, 1),
-	('Folk', 1, 1),
-	('Klassisk', 1, 1);`
+	genres := []konnekt.Genre{"Rock", "Punk", "Pop", "Hip-Hop", "Rap", "Folk",
+		"Indie", "R&B", "Elektronisk", "Country", "Jazz", "Blues", "Funk", "Latin"}
 
-	if _, err := tx.Exec(ctx, query); err != nil {
+	builder := psql.Insert("genre").Columns("name")
+
+	for _, genreName := range genres {
+		builder = builder.Values(genreName)
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return fmt.Errorf("Could not create seed genres query: %v", err)
+	}
+
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
 		return fmt.Errorf("Could not insert genres: %v", err)
 	}
 
