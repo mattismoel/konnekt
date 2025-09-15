@@ -207,8 +207,7 @@ func createMemberTables(ctx context.Context, tx pgx.Tx) error {
 		password_hash CHAR(60) NOT NULL,
 		avatar_url TEXT NOT NULL,
 		special_role TEXT,
-		active BOOLEAN NOT NULL DEFAULT FALSE,
-		approved_by_id INTEGER REFERENCES member(id),
+		approved BOOLEAN NOT NULL DEFAULT FALSE,
 
 		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 		updated_at TIMESTAMP NOT NULL DEFAULT NOW()
