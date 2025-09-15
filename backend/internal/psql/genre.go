@@ -38,8 +38,8 @@ func (a ArtistRepo) GenreByID(ctx context.Context, genreID konnekt.ID) (konnekt.
 }
 
 // InsertGenre implements konnekt.ArtistRepo.
-func (a ArtistRepo) InsertGenre(ctx context.Context, cg konnekt.CreateGenre) (konnekt.ID, error) {
-	var genreID konnekt.ID
+func (a ArtistRepo) InsertGenre(ctx context.Context, cg konnekt.CreateGenre) (int64, error) {
+	var genreID int64
 	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		id, err := insertGenre(ctx, tx, Genre{
 			Name: cg.Name,
@@ -52,7 +52,7 @@ func (a ArtistRepo) InsertGenre(ctx context.Context, cg konnekt.CreateGenre) (ko
 			return fmt.Errorf("Could not insert genre: %v", err)
 		}
 
-		genreID = konnekt.ID(id)
+		genreID = id
 		return nil
 	})
 

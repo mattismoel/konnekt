@@ -11,13 +11,13 @@ import (
 )
 
 type Artist struct {
-	ID          ID       `json:"id"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	ImageURL    string   `json:"imageUrl"`
 	PreviewURL  string   `json:"previewUrl"`
 	Socials     []Social `json:"social"`
 	Genres      []Genre  `json:"genres"`
+	ID          int64            `json:"id"`
 }
 
 type CreateArtist struct {
@@ -26,8 +26,8 @@ type CreateArtist struct {
 	ImageURL    string   `json:"imageUrl"`
 	PreviewURL  string   `json:"previewUrl"`
 	Socials     []Social `json:"socials"`
-	GenreIDs    []ID     `json:"genreIds"`
 	CreatedBy   int64    `json:"-"`
+	GenreIDs    []int64          `json:"genreIds"`
 }
 
 type UpdateArtist struct {
@@ -36,18 +36,18 @@ type UpdateArtist struct {
 	ImageURL    string   `json:"imageUrl"`
 	PreviewURL  string   `json:"previewUrl"`
 	Socials     []Social `json:"socials"`
-	GenreIDs    []ID     `json:"genres"`
+	GenreIDs    []int64          `json:"genres"`
 }
 
 type ArtistRepo interface {
-	InsertArtist(context.Context, CreateArtist) (ID, error)
-	ArtistByID(context.Context, ID) (Artist, error)
+	InsertArtist(context.Context, CreateArtist) (int64, error)
+	ArtistByID(context.Context, int64) (Artist, error)
 	ListArtists(context.Context, api.ListRequest) (api.ListResponse[Artist], error)
-	UpdateArtist(context.Context, ID, api.UpdateRequest[UpdateArtist]) error
-	DeleteArtist(context.Context, ID) error
+	UpdateArtist(context.Context, int64, api.UpdateRequest[UpdateArtist]) error
+	DeleteArtist(context.Context, int64) error
 
-	InsertGenre(context.Context, CreateGenre) (ID, error)
-	GenreByID(context.Context, ID) (Genre, error)
+	InsertGenre(context.Context, CreateGenre) (int64, error)
+	GenreByID(context.Context, int64) (Genre, error)
 }
 
 type Social string

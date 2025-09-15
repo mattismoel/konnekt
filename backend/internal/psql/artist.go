@@ -31,7 +31,7 @@ type ArtistRepo struct {
 }
 
 // ArtistByID implements konnekt.ArtistRepo.
-func (a ArtistRepo) ArtistByID(ctx context.Context, artistID konnekt.ID) (konnekt.Artist, error) {
+func (a ArtistRepo) ArtistByID(ctx context.Context, artistID int64) (konnekt.Artist, error) {
 	var artist konnekt.Artist
 	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		dbArtist, err := artistByID(ctx, tx, int64(artistID))
@@ -76,7 +76,7 @@ func (a ArtistRepo) ArtistByID(ctx context.Context, artistID konnekt.ID) (konnek
 }
 
 // DeleteArtist implements konnekt.ArtistRepo.
-func (a ArtistRepo) DeleteArtist(ctx context.Context, artistID konnekt.ID) error {
+func (a ArtistRepo) DeleteArtist(ctx context.Context, artistID int64) error {
 	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		if err := deleteArtistSocials(ctx, tx, int64(artistID)); err != nil {
 			return err
@@ -101,10 +101,10 @@ func (a ArtistRepo) DeleteArtist(ctx context.Context, artistID konnekt.ID) error
 }
 
 // InsertArtist implements konnekt.ArtistRepo.
-func (a ArtistRepo) InsertArtist(ctx context.Context, ca konnekt.CreateArtist) (konnekt.ID, error) {
-	var insertedID konnekt.ID
+func (a ArtistRepo) InsertArtist(ctx context.Context, ca konnekt.CreateArtist) (int64, error) {
+	var artistID int64
 	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
-		artistID, err := insertArtist(ctx, tx, Artist{
+		insertedID, err := insertArtist(ctx, tx, Artist{
 			Name:        ca.Name,
 			Description: ca.Description,
 			ImageURL:    ca.ImageURL,
@@ -141,7 +141,7 @@ func (a ArtistRepo) InsertArtist(ctx context.Context, ca konnekt.CreateArtist) (
 			return fmt.Errorf("Could not insert artist: %v", err)
 		}
 
-		insertedID = konnekt.ID(artistID)
+		artistID = insertedID
 		return nil
 	})
 
@@ -149,7 +149,7 @@ func (a ArtistRepo) InsertArtist(ctx context.Context, ca konnekt.CreateArtist) (
 		return 0, err
 	}
 
-	return insertedID, nil
+	return artistID, nil
 }
 
 // ListArtists implements konnekt.ArtistRepo.
@@ -193,7 +193,7 @@ func (a ArtistRepo) ListArtists(ctx context.Context, lr api.ListRequest) (api.Li
 }
 
 // UpdateArtist implements konnekt.ArtistRepo.
-func (a ArtistRepo) UpdateArtist(ctx context.Context, artistID konnekt.ID, ur api.UpdateRequest[konnekt.UpdateArtist]) error {
+func (a ArtistRepo) UpdateArtist(ctx context.Context, artistID int64, ur api.UpdateRequest[konnekt.UpdateArtist]) error {
 	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		updateMap := ur.UpdateMap()
 
@@ -401,7 +401,7 @@ func deleteArtist(ctx context.Context, tx pgx.Tx, artistID int64) error {
 
 func (a Artist) ToDomain() konnekt.Artist {
 	return konnekt.Artist{
-		ID:          konnekt.ID(a.ID),
+		ID:          a.ID,
 		Name:        a.Name,
 		Description: a.Description,
 		ImageURL:    a.ImageURL,
