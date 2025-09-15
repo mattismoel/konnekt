@@ -41,10 +41,6 @@ func initialiseDatabase(ctx context.Context, conn *pgx.Conn) error {
 			return fmt.Errorf("Could not create member tables: %v", err)
 		}
 
-		if err := createCityTable(ctx, tx); err != nil {
-			return fmt.Errorf("Could not create city table: %v", err)
-		}
-
 		if err := createVenueTable(ctx, tx); err != nil {
 			return fmt.Errorf("Could not create venue table: %v", err)
 		}
@@ -184,7 +180,8 @@ func createVenueTable(ctx context.Context, tx pgx.Tx) error {
 	CREATE TABLE IF NOT EXISTS venue (
 		id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 		name TEXT UNIQUE NOT NULL,
-		city_id INTEGER NOT NULL REFERENCES city(id),
+		city TEXT NOT NULL,
+		country TEXT NOT NULL,
 
 		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 		updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -194,20 +191,6 @@ func createVenueTable(ctx context.Context, tx pgx.Tx) error {
 
 	CREATE TRIGGER update_venue_timestamps BEFORE INSERT OR UPDATE ON venue
 	FOR EACH ROW EXECUTE FUNCTION update_timestamps();`
-
-	if _, err := tx.Exec(ctx, query); err != nil {
-		return fmt.Errorf("Could not execute query: %v", err)
-	}
-
-	return nil
-}
-
-func createCityTable(ctx context.Context, tx pgx.Tx) error {
-	query := `
-	CREATE TABLE IF NOT EXISTS city (
-		id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-		name TEXT UNIQUE NOT NULL
-	);`
 
 	if _, err := tx.Exec(ctx, query); err != nil {
 		return fmt.Errorf("Could not execute query: %v", err)
