@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/mattismoel/konnekt/backend/mask"
@@ -17,7 +16,6 @@ func (ur UpdateRequest[F]) UpdateMap() mask.FieldMap {
 	um := make(mask.FieldMap)
 
 	validFieldMap := ur.Data.Fields()
-	fmt.Println("FIELDS", validFieldMap)
 
 	for fieldName, value := range validFieldMap {
 		if slices.Contains(ur.UpdateMask, fieldName) {
