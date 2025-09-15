@@ -45,6 +45,15 @@ func BadRequestError(r *http.Request, cause string) Error {
 	}
 }
 
+func UnauthorisedError(r *http.Request) Error {
+	return Error{
+		Status:  http.StatusUnauthorized,
+		Message: "Unauthorized",
+		Cause:   "User is unauthorised for the request",
+		Path:    r.URL.Path,
+	}
+}
+
 func WriteError(w http.ResponseWriter, r *http.Request, err error) error {
 	var apiError Error
 	if errors.As(err, &apiError) {

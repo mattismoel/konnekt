@@ -37,9 +37,13 @@ func main() {
 	defer dbPool.Close()
 
 	artistRepo := psql.ArtistRepo{Pool: dbPool}
+	sessionRepo := psql.SessionRepo{Pool: dbPool}
+	memberRepo := psql.MemberRepo{Pool: dbPool}
 
 	server := server.Server{
 		ArtistRepo:  artistRepo,
+		SessionRepo: sessionRepo,
+		MemberRepo:  memberRepo,
 	}
 
 	if err := server.Start(host, port); err != nil {
