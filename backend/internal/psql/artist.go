@@ -7,6 +7,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/api"
 	"github.com/mattismoel/konnekt/backend/mask"
@@ -41,13 +42,13 @@ type Artist struct {
 }
 
 type ArtistRepo struct {
-	Conn *pgx.Conn
+	Pool *pgxpool.Pool
 }
 
 // ArtistByID implements konnekt.ArtistRepo.
 func (a ArtistRepo) ArtistByID(ctx context.Context, artistID konnekt.ID) (konnekt.Artist, error) {
 	var artist konnekt.Artist
-	err := pgx.BeginFunc(ctx, a.Conn, func(tx pgx.Tx) error {
+	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		dbArtist, err := artistByID(ctx, tx, int64(artistID))
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
@@ -91,7 +92,7 @@ func (a ArtistRepo) ArtistByID(ctx context.Context, artistID konnekt.ID) (konnek
 
 // DeleteArtist implements konnekt.ArtistRepo.
 func (a ArtistRepo) DeleteArtist(ctx context.Context, artistID konnekt.ID) error {
-	err := pgx.BeginFunc(ctx, a.Conn, func(tx pgx.Tx) error {
+	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		if err := deleteArtistSocials(ctx, tx, int64(artistID)); err != nil {
 			return err
 		}
@@ -117,7 +118,7 @@ func (a ArtistRepo) DeleteArtist(ctx context.Context, artistID konnekt.ID) error
 // InsertArtist implements konnekt.ArtistRepo.
 func (a ArtistRepo) InsertArtist(ctx context.Context, ca konnekt.CreateArtist) (konnekt.ID, error) {
 	var insertedID konnekt.ID
-	err := pgx.BeginFunc(ctx, a.Conn, func(tx pgx.Tx) error {
+	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		artistID, err := insertArtist(ctx, tx, Artist{
 			Name:        ca.Name,
 			Description: ca.Description,
@@ -169,7 +170,7 @@ func (a ArtistRepo) InsertArtist(ctx context.Context, ca konnekt.CreateArtist) (
 // ListArtists implements konnekt.ArtistRepo.
 func (a ArtistRepo) ListArtists(ctx context.Context, lr api.ListRequest) (api.ListResponse[konnekt.Artist], error) {
 	artists := make([]konnekt.Artist, 0)
-	err := pgx.BeginFunc(ctx, a.Conn, func(tx pgx.Tx) error {
+	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		pagination := paginationFromListRequest(lr)
 		dbArtists, err := listArtists(ctx, tx, pagination, lr.OrderMap)
 		if err != nil {
@@ -208,7 +209,7 @@ func (a ArtistRepo) ListArtists(ctx context.Context, lr api.ListRequest) (api.Li
 
 // UpdateArtist implements konnekt.ArtistRepo.
 func (a ArtistRepo) UpdateArtist(ctx context.Context, artistID konnekt.ID, ur api.UpdateRequest[konnekt.UpdateArtist]) error {
-	err := pgx.BeginFunc(ctx, a.Conn, func(tx pgx.Tx) error {
+	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		updateMap := ur.UpdateMap()
 
 		if err := updateArtist(ctx, tx, int64(artistID), updateMap); err != nil {

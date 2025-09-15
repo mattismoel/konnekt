@@ -22,7 +22,7 @@ var genreSelectBuilder = psql.Select("id", "name").From("genre")
 // GenreByID implements konnekt.ArtistRepo.
 func (a ArtistRepo) GenreByID(ctx context.Context, genreID konnekt.ID) (konnekt.Genre, error) {
 	var genre konnekt.Genre
-	err := pgx.BeginFunc(ctx, a.Conn, func(tx pgx.Tx) error {
+	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		dbGenre, err := genreByID(ctx, tx, int64(genreID))
 		if err != nil {
 			return fmt.Errorf("Could not get genre with ID %d: %v", genreID, err)
@@ -42,7 +42,7 @@ func (a ArtistRepo) GenreByID(ctx context.Context, genreID konnekt.ID) (konnekt.
 // InsertGenre implements konnekt.ArtistRepo.
 func (a ArtistRepo) InsertGenre(ctx context.Context, cg konnekt.CreateGenre) (konnekt.ID, error) {
 	var genreID konnekt.ID
-	err := pgx.BeginFunc(ctx, a.Conn, func(tx pgx.Tx) error {
+	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		id, err := insertGenre(ctx, tx, Genre{
 			Name: cg.Name,
 			AuditFields: AuditFields{

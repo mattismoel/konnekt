@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/internal/psql"
 )
@@ -28,13 +28,15 @@ func main() {
 		return
 	}
 
-	conn, err := pgx.Connect(ctx, connStr)
+	dbPool, err := pgxpool.New(ctx, connStr)
 	if err != nil {
 		slog.Error("Could not connect to database", "error", err.Error())
 		return
 	}
 
-	artistRepo := psql.ArtistRepo{Conn: conn}
+	defer dbPool.Close()
+
+	artistRepo := psql.ArtistRepo{Pool: dbPool}
 
 	server := konnekt.Server{
 		ArtistRepo: artistRepo,
