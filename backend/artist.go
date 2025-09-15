@@ -2,40 +2,37 @@ package konnekt
 
 import (
 	"context"
-	"errors"
-	"net/http"
 
 	"github.com/mattismoel/konnekt/backend/api"
 	"github.com/mattismoel/konnekt/backend/mask"
-	"github.com/mattismoel/konnekt/backend/urlutil"
 )
 
 type Artist struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	ImageURL    string   `json:"imageUrl"`
-	PreviewURL  string   `json:"previewUrl"`
-	Socials     []Social `json:"social"`
-	Genres      []Genre  `json:"genres"`
 	ID          int64            `json:"id"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	ImageURL    string           `json:"imageUrl"`
+	PreviewURL  string           `json:"previewUrl"`
+	Socials     SocialCollection `json:"social"`
+	Genres      []Genre          `json:"genres"`
 }
 
 type CreateArtist struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	ImageURL    string   `json:"imageUrl"`
-	PreviewURL  string   `json:"previewUrl"`
-	Socials     []Social `json:"socials"`
-	CreatedBy   int64    `json:"-"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	ImageURL    string           `json:"imageUrl"`
+	PreviewURL  string           `json:"previewUrl"`
+	Socials     SocialCollection `json:"socials"`
 	GenreIDs    []int64          `json:"genreIds"`
+	CreatedBy   int64            `json:"-"`
 }
 
 type UpdateArtist struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	ImageURL    string   `json:"imageUrl"`
-	PreviewURL  string   `json:"previewUrl"`
-	Socials     []Social `json:"socials"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	ImageURL    string           `json:"imageUrl"`
+	PreviewURL  string           `json:"previewUrl"`
+	Socials     SocialCollection `json:"socials"`
 	GenreIDs    []int64          `json:"genres"`
 }
 
@@ -186,6 +183,7 @@ func (s Server) handleDeleteArtist() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 	}
 }
+type SocialCollection []Social
 
 func (ua UpdateArtist) Fields() mask.FieldMap {
 	return mask.FieldMap{
@@ -196,4 +194,12 @@ func (ua UpdateArtist) Fields() mask.FieldMap {
 		"socials":     ua.Socials,
 		"genres":      ua.GenreIDs,
 	}
+}
+
+func (sc SocialCollection) String() []string {
+	strs := make([]string, 0)
+	for _, s := range sc {
+		strs = append(strs, string(s))
+	}
+	return strs
 }
