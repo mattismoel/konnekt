@@ -226,9 +226,10 @@ func createMemberTables(ctx context.Context, tx pgx.Tx) error {
 func createSessionTable(ctx context.Context, tx pgx.Tx) error {
 	query := `
 	CREATE TABLE IF NOT EXISTS session (
-		id TEXT PRIMARY KEY,
-		member_id INTEGER NOT NULL REFERENCES member(id),
-		expires_at TIMESTAMP NOT NULL
+		id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+		session_id TEXT UNIQUE NOT NULL,
+		secret_hash BYTEA NOT NULL,
+		created_at TIMESTAMP NOT NULL
 	);`
 
 	if _, err := tx.Exec(ctx, query); err != nil {
