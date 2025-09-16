@@ -10,6 +10,7 @@ import (
 	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/api"
 	"github.com/mattismoel/konnekt/backend/internal/server"
+	"github.com/mattismoel/konnekt/backend/mask"
 	"github.com/mattismoel/konnekt/backend/order"
 )
 
@@ -27,6 +28,23 @@ type Venue struct {
 
 type VenueRepo struct {
 	Pool *pgxpool.Pool
+}
+
+// UpdateVenue implements server.VenueRepo.
+func (v VenueRepo) UpdateVenue(ctx context.Context, venueID int64, ur api.UpdateRequest[konnekt.UpdateVenue]) error {
+	err := pgx.BeginFunc(ctx, v.Pool, func(tx pgx.Tx) error {
+		if err := updateVenue(ctx, tx, venueID, ur.UpdateMap()); err != nil {
+			return fmt.Errorf("Could not udpate venue: %v", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ListVenues implements konnekt.VenueRepo.
@@ -181,6 +199,51 @@ func listVenues(ctx context.Context, tx pgx.Tx, pg Pagination, om order.Map) (Co
 	}
 
 	return venues, nil
+}
+
+func updateVenue(ctx context.Context, tx pgx.Tx, venueID int64, um mask.FieldMap) error {
+	exists, err := checkIfExists(ctx, tx, "venue", "id", venueID)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return pgx.ErrNoRows
+	}
+
+	// ID      int64  `db:"id"`
+	// Name    string `db:"name"`
+	// City    string `db:"city"`
+	// Country string `db:"country"`
+
+	allowed := []string{"name", "city", "country"}
+
+	updates := make(map[string]any)
+	for _, key := range allowed {
+		if v, ok := um[mask.FieldName(key)]; ok {
+			updates[key] = v
+		}
+	}
+
+	if len(updates) == 0 {
+		return nil
+	}
+
+	query, args, err := psql.
+		Update("venue").
+		Where(sq.Eq{"id": venueID}).
+		SetMap(updates).
+		ToSql()
+
+	if err != nil {
+		return NewQueryBuildError("update venue", err)
+	}
+
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("Could not update venue: %v", err)
+	}
+
+	return nil
 }
 
 func (v Venue) Assemble(context.Context, pgx.Tx) (konnekt.Venue, error) {
