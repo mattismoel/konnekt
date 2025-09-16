@@ -7,11 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type Domainer[T any, K any] interface {
-	Assemble(context.Context, pgx.Tx) (K, error)
-}
-
-type Collection[T Domainer[T, K], K any] []T
+type Collection[T Assembler[T, K], K any] []T
 
 func (c Collection[T, K]) Assemble(ctx context.Context, tx pgx.Tx) ([]K, error) {
 	items := make([]K, 0)
