@@ -11,6 +11,7 @@ import (
 	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/api"
 	"github.com/mattismoel/konnekt/backend/internal/server"
+	"github.com/mattismoel/konnekt/backend/mask"
 	"github.com/mattismoel/konnekt/backend/order"
 )
 
@@ -130,8 +131,41 @@ func (e EventRepo) ListEvents(ctx context.Context, lr api.ListRequest) (api.List
 }
 
 // Update implements konnekt.EventRepo.
-func (e EventRepo) Update(context.Context, api.UpdateRequest[konnekt.UpdateEvent]) error {
-	panic("unimplemented")
+func (e EventRepo) Update(ctx context.Context, eventID int64, ur api.UpdateRequest[konnekt.UpdateEvent]) error {
+	err := pgx.BeginFunc(ctx, e.Pool, func(tx pgx.Tx) error {
+		um := ur.UpdateMap()
+		if err := updateEvent(ctx, tx, eventID, um); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return konnekt.ErrResourceNotFound
+			}
+
+			return fmt.Errorf("Could not update event: %v", err)
+		}
+
+		if _, ok := um["concerts"]; ok {
+			concerts := make([]Concert, 0)
+			for _, c := range ur.Data.Concerts {
+				concerts = append(concerts, Concert{
+					FromDate: c.From,
+					ToDate:   c.To,
+					ArtistID: c.ArtistID,
+					EventID:  eventID,
+				})
+			}
+
+			if err := setEventConcerts(ctx, tx, eventID, concerts...); err != nil {
+				return fmt.Errorf("Could not set event concerts: %v", err)
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func insertEvent(ctx context.Context, tx pgx.Tx, e Event) (int64, error) {
@@ -208,6 +242,46 @@ func listEvents(ctx context.Context, tx pgx.Tx, pg Pagination, om order.Map) (Co
 	}
 
 	return events, nil
+}
+
+func updateEvent(ctx context.Context, tx pgx.Tx, eventID int64, um mask.FieldMap) error {
+	exists, err := checkIfExists(ctx, tx, "event", "id", eventID)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return pgx.ErrNoRows
+	}
+
+	allowed := []string{"title", "description", "image_url", "ticket_url", "is_public", "venue_id"}
+
+	updates := make(map[string]any)
+	for _, key := range allowed {
+		if v, ok := um[mask.FieldName(key)]; ok {
+			updates[key] = v
+		}
+	}
+
+	if len(updates) == 0 {
+		return nil
+	}
+
+	query, args, err := psql.
+		Update("event").
+		Where(sq.Eq{"id": eventID}).
+		SetMap(updates).
+		ToSql()
+
+	if err != nil {
+		return NewQueryBuildError("update event", err)
+	}
+
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("Could not update event: %v", err)
+	}
+
+	return nil
 }
 
 func (e Event) Assemble(ctx context.Context, tx pgx.Tx) (konnekt.Event, error) {

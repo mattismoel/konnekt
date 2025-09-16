@@ -4,9 +4,10 @@ import "net/http"
 
 func (s Server) setupRouter(mux *http.ServeMux) {
 	// |=> EVENT ROUTES.
-	mux.HandleFunc("POST /events", s.withPermissions(s.handleCreateEvent(), "edit:event"))
 	mux.HandleFunc("GET /events", s.handleListEvents())
 	mux.HandleFunc("GET /events/{eventID}", s.handleGetEventByID())
+	mux.HandleFunc("PATCH /events/{eventID}", s.withPermissions(s.handleUpdateEvent(), "edit:event"))
+	mux.HandleFunc("POST /events", s.withPermissions(s.handleCreateEvent(), "edit:event"))
 
 	// |=> VENUE ROUTES.
 	mux.HandleFunc("POST /venues", s.withPermissions(s.handleCreateVenue(), "edit:venue"))

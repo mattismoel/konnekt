@@ -41,8 +41,10 @@ type CreateConcert struct {
 
 type UpdateEvent struct {
 	Title       string          `json:"title"`
-	Description string          `json:"desccription"`
+	Description string          `json:"description"`
 	IsPublic    bool            `json:"isPublic"`
+	ImageURL    string          `json:"imageUrl"`
+	TicketURL   string          `json:"ticketUrl"`
 	VenueID     int64           `json:"venueId"`
 	Concerts    []CreateConcert `json:"concerts"`
 }
@@ -54,5 +56,7 @@ func (ue UpdateEvent) Fields() mask.FieldMap {
 		"is_public":   ue.IsPublic,
 		"venue_id":    ue.VenueID,
 		"concerts":    ue.Concerts,
+		"ticket_url":  ue.TicketURL,
+		"image_url":   ue.ImageURL,
 	}
 }

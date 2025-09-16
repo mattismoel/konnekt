@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	konnekt "github.com/mattismoel/konnekt/backend"
@@ -14,7 +15,7 @@ type EventRepo interface {
 	EventByID(context.Context, int64) (konnekt.Event, error)
 	ListEvents(context.Context, api.ListRequest) (api.ListResponse[konnekt.Event], error)
 	Delete(context.Context, int64) error
-	Update(context.Context, api.UpdateRequest[konnekt.UpdateEvent]) error
+	Update(context.Context, int64, api.UpdateRequest[konnekt.UpdateEvent]) error
 }
 
 func (s Server) handleListEvents() http.HandlerFunc {
@@ -81,6 +82,42 @@ func (s Server) handleGetEventByID() http.HandlerFunc {
 		}
 
 		if err := api.WriteJSON(w, event, int(http.StatusOK)); err != nil {
+			api.WriteError(w, r, err)
+			return
+		}
+	}
+}
+
+func (s Server) handleUpdateEvent() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		var load api.UpdateRequest[konnekt.UpdateEvent]
+
+		eventID, err := urlutil.PathInt(r, "eventID")
+		if err != nil {
+			api.WriteError(w, r, api.BadRequestError(r, "Invalid event ID"))
+			return
+		}
+
+		if err := api.ReadJSON(r.Body, &load); err != nil {
+			api.WriteError(w, r, api.BadRequestError(r, "Invalid update request"))
+			return
+		}
+
+		fmt.Printf("%+v\n", load)
+		if err := s.EventRepo.Update(ctx, int64(eventID), load); err != nil {
+			api.WriteError(w, r, err)
+			return
+		}
+
+		updatedEvent, err := s.EventRepo.EventByID(ctx, int64(eventID))
+		if err != nil {
+			api.WriteError(w, r, err)
+			return
+		}
+
+		if err := api.WriteJSON(w, updatedEvent, http.StatusOK); err != nil {
 			api.WriteError(w, r, err)
 			return
 		}
