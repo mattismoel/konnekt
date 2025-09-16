@@ -172,7 +172,6 @@ func (a ArtistRepo) ListArtists(ctx context.Context, lr api.ListRequest) (api.Li
 	}
 
 	return api.ListResponse[konnekt.Artist]{
-		// TotalSize: totalSize,
 		Records: artists,
 	}, nil
 }

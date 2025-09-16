@@ -20,8 +20,7 @@ type ListRequest struct {
 }
 
 type ListResponse[T any] struct {
-	TotalSize int `json:"totalSize"`
-	Records   []T `json:"records"`
+	Records []T `json:"records"`
 }
 
 func NewListRequest(r *http.Request) ListRequest {
