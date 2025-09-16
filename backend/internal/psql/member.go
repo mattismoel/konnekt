@@ -62,7 +62,11 @@ func (m MemberRepo) MemberByEmail(ctx context.Context, email string) (konnekt.Me
 			return fmt.Errorf("Could not find member with email %q: %v", email, err)
 		}
 
-		member = dbMember.ToDomain()
+		member, err = dbMember.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble DB member: %v", err)
+		}
+
 		return nil
 	})
 
@@ -118,7 +122,11 @@ func (m MemberRepo) MemberByID(ctx context.Context, memberID int64) (konnekt.Mem
 			return fmt.Errorf("Could not get member with ID: %d: %v", memberID, err)
 		}
 
-		member = dbMember.ToDomain()
+		member, err = dbMember.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble DB member: %v", err)
+		}
+
 		return nil
 	})
 
@@ -208,7 +216,7 @@ func memberByEmail(ctx context.Context, tx pgx.Tx, email string) (Member, error)
 	return member, nil
 }
 
-func (m Member) ToDomain() konnekt.Member {
+func (m Member) Assemble(ctx context.Context, tx pgx.Tx) (konnekt.Member, error) {
 	return konnekt.Member{
 		ID:          m.ID,
 		Email:       m.Email,
@@ -217,5 +225,5 @@ func (m Member) ToDomain() konnekt.Member {
 		AvatarURL:   m.AvatarURL,
 		SpecialRole: m.SpecialRole.String,
 		Approved:    m.Approved,
-	}
+	}, nil
 }

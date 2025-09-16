@@ -41,7 +41,11 @@ func (a AuthRepo) MemberTeams(ctx context.Context, memberID int64) (api.ListResp
 			return fmt.Errorf("Could not get member teams: %v", err)
 		}
 
-		teams = dbTeams.ToDomain()
+		teams, err = dbTeams.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble DB teams: %v", err)
+		}
+
 		return nil
 	})
 
@@ -63,7 +67,11 @@ func (a AuthRepo) TeamPermissions(ctx context.Context, teamID int64) (api.ListRe
 			return fmt.Errorf("Could not get team permisssions: %v", err)
 		}
 
-		perms = dbPerms.ToDomain()
+		perms, err = dbPerms.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble DB permissions: %v", err)
+		}
+
 		return nil
 	})
 
@@ -126,20 +134,20 @@ func teamPermissions(ctx context.Context, tx pgx.Tx, teamID int64) (Collection[P
 	return permissions, nil
 }
 
-func (t Team) ToDomain() konnekt.Team {
+func (t Team) Assemble(ctx context.Context, tx pgx.Tx) (konnekt.Team, error) {
 	return konnekt.Team{
 		ID:          t.ID,
 		Name:        t.Name,
 		DisplayName: t.DisplayName,
 		Description: t.Description,
-	}
+	}, nil
 }
 
-func (p Permission) ToDomain() konnekt.Permission {
+func (p Permission) Assemble(context.Context, pgx.Tx) (konnekt.Permission, error) {
 	return konnekt.Permission{
 		ID:          p.ID,
 		Name:        p.Name,
 		DisplayName: p.DisplayName,
 		Description: p.Description,
-	}
+	}, nil
 }

@@ -35,7 +35,12 @@ type ArtistRepo struct {
 func (a ArtistRepo) ArtistByID(ctx context.Context, artistID int64) (konnekt.Artist, error) {
 	var artist konnekt.Artist
 	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
-		dbArtist, err := artistByID(ctx, tx, int64(artistID))
+		dbArtist, err := artistByID(ctx, tx, artistID)
+		if err != nil {
+			return fmt.Errorf("Could not get artist: %v", err)
+		}
+
+		assembledArtist, err := dbArtist.Assemble(ctx, tx)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
 				return konnekt.ErrResourceNotFound
@@ -43,28 +48,7 @@ func (a ArtistRepo) ArtistByID(ctx context.Context, artistID int64) (konnekt.Art
 			return fmt.Errorf("Could not get artist by ID: %v", err)
 		}
 
-		dbGenres, err := artistGenres(ctx, tx, int64(artistID))
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return konnekt.ErrResourceNotFound
-			}
-
-			return fmt.Errorf("Could not get artist genres: %v", err)
-		}
-
-		dbSocials, err := artistSocials(ctx, tx, int64(artistID))
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return konnekt.ErrResourceNotFound
-			}
-
-			return fmt.Errorf("Could not get artist socials: %v", err)
-		}
-
-		artist = dbArtist.ToDomain()
-		artist.Genres = dbGenres.ToDomain()
-		artist.Socials = dbSocials.ToDomain()
-
+		artist = assembledArtist
 		return nil
 	})
 
@@ -148,21 +132,9 @@ func (a ArtistRepo) ListArtists(ctx context.Context, lr api.ListRequest) (api.Li
 			return err
 		}
 
-		artists = dbArtists.ToDomain()
-
-		for i := range artists {
-			artistGenres, err := artistGenres(ctx, tx, int64(artists[i].ID))
-			if err != nil {
-				return err
-			}
-
-			artistSocials, err := artistSocials(ctx, tx, int64(artists[i].ID))
-			if err != nil {
-				return err
-			}
-
-			artists[i].Socials = artistSocials.ToDomain()
-			artists[i].Genres = artistGenres.ToDomain()
+		artists, err = dbArtists.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble DB artists: %v", err)
 		}
 
 		return nil
@@ -386,16 +358,36 @@ func deleteArtist(ctx context.Context, tx pgx.Tx, artistID int64) error {
 	return nil
 }
 
-func (a Artist) ToDomain() konnekt.Artist {
+func (a Artist) Assemble(ctx context.Context, tx pgx.Tx) (konnekt.Artist, error) {
+	dbSocials, err := artistSocials(ctx, tx, a.ID)
+	if err != nil {
+		return konnekt.Artist{}, fmt.Errorf("Could not get artist socials: %v", err)
+	}
+
+	dbGenres, err := artistGenres(ctx, tx, a.ID)
+	if err != nil {
+		return konnekt.Artist{}, fmt.Errorf("Could not get artist genres: %v", err)
+	}
+
+	socials, err := dbSocials.Assemble(ctx, tx)
+	if err != nil {
+		return konnekt.Artist{}, fmt.Errorf("Could not assemble artist socials: %v", err)
+	}
+
+	genres, err := dbGenres.Assemble(ctx, tx)
+	if err != nil {
+		return konnekt.Artist{}, fmt.Errorf("Could not assemble artist genres: %v", err)
+	}
+
 	return konnekt.Artist{
 		ID:          a.ID,
 		Name:        a.Name,
 		Description: a.Description,
 		ImageURL:    a.ImageURL,
 		PreviewURL:  a.PreviewURL,
-		Socials:     make([]konnekt.Social, 0),
-		Genres:      make([]konnekt.Genre, 0),
-	}
+		Socials:     socials,
+		Genres:      genres,
+	}, nil
 }
 
 func (a Artist) Fields() mask.FieldMap {

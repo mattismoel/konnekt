@@ -56,10 +56,6 @@ func deleteArtistSocials(ctx context.Context, tx pgx.Tx, artistID int64) error {
 	return nil
 }
 
-func (s Social) ToDomain() konnekt.Social {
-	return konnekt.Social(s.URL)
-}
-
 func setArtistSocials(ctx context.Context, tx pgx.Tx, artistID int64, socials ...string) error {
 	if err := deleteArtistSocials(ctx, tx, artistID); err != nil {
 		return fmt.Errorf("Could not insert artist socials: %v", err)
@@ -81,4 +77,8 @@ func setArtistSocials(ctx context.Context, tx pgx.Tx, artistID int64, socials ..
 	}
 
 	return nil
+}
+
+func (s Social) Assemble(context.Context, pgx.Tx) (konnekt.Social, error) {
+	return konnekt.Social(s.URL), nil
 }

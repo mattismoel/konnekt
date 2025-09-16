@@ -24,7 +24,11 @@ func (a ArtistRepo) GenreByID(ctx context.Context, genreID int64) (konnekt.Genre
 			return fmt.Errorf("Could not get genre with ID %d: %v", genreID, err)
 		}
 
-		genre = dbGenre.ToDomain()
+		genre, err = dbGenre.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble genre: %v", err)
+		}
+
 		return nil
 	})
 
@@ -164,6 +168,6 @@ func setArtistGenres(ctx context.Context, tx pgx.Tx, artistID int64, genreIDs ..
 	return nil
 }
 
-func (g Genre) ToDomain() konnekt.Genre {
-	return konnekt.Genre(g.Name)
+func (g Genre) Assemble(context.Context, pgx.Tx) (konnekt.Genre, error) {
+	return konnekt.Genre(g.Name), nil
 }

@@ -40,7 +40,11 @@ func (v VenueRepo) ListVenues(ctx context.Context, lr api.ListRequest) (api.List
 			return fmt.Errorf("Could not list venues: %v", err)
 		}
 
-		venues = dbVenues.ToDomain()
+		venues, err = dbVenues.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble DB venues: %v", err)
+		}
+
 		return nil
 	})
 
@@ -62,7 +66,11 @@ func (v VenueRepo) VenueByID(ctx context.Context, venueID int64) (konnekt.Venue,
 			return fmt.Errorf("Could not get venue with ID %d: %v", venueID, err)
 		}
 
-		venue = dbVenue.ToDomain()
+		venue, err = dbVenue.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble DB venue: %v", err)
+		}
+
 		return nil
 	})
 
@@ -175,11 +183,11 @@ func listVenues(ctx context.Context, tx pgx.Tx, pg Pagination, om order.Map) (Co
 	return venues, nil
 }
 
-func (v Venue) ToDomain() konnekt.Venue {
+func (v Venue) Assemble(context.Context, pgx.Tx) (konnekt.Venue, error) {
 	return konnekt.Venue{
 		ID:      v.ID,
 		Name:    v.Name,
 		City:    v.City,
 		Country: v.Country,
-	}
+	}, nil
 }

@@ -75,7 +75,11 @@ func (s SessionRepo) GetSession(ctx context.Context, sessionID auth.SessionID) (
 			return fmt.Errorf("Could not get session: %v", err)
 		}
 
-		session = dbSession.ToDomain()
+		session, err = dbSession.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble DB session: %v", err)
+		}
+
 		return nil
 	})
 
@@ -148,11 +152,11 @@ func deleteSession(ctx context.Context, tx pgx.Tx, sessionID string) error {
 	return nil
 }
 
-func (s Session) ToDomain() auth.Session {
+func (s Session) Assemble(context.Context, pgx.Tx) (auth.Session, error) {
 	return auth.Session{
 		ID:         auth.SessionID(s.SessionID),
 		CreatedAt:  s.CreatedAt,
 		MemberID:   s.MemberID,
 		SecretHash: s.SecretHash,
-	}
+	}, nil
 }

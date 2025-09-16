@@ -1,16 +1,28 @@
 package psql
 
+import (
+	"context"
+	"fmt"
+
+	"github.com/jackc/pgx/v5"
+)
+
 type Domainer[T any, K any] interface {
-	ToDomain() K
+	Assemble(context.Context, pgx.Tx) (K, error)
 }
 
 type Collection[T Domainer[T, K], K any] []T
 
-func (c Collection[T, K]) ToDomain() []K {
-	domainItems := make([]K, 0)
-	for _, item := range c {
-		domainItems = append(domainItems, item.ToDomain())
+func (c Collection[T, K]) Assemble(ctx context.Context, tx pgx.Tx) ([]K, error) {
+	items := make([]K, 0)
+	for _, dbItem := range c {
+		item, err := dbItem.Assemble(ctx, tx)
+		if err != nil {
+			return nil, fmt.Errorf("Could not assemble DB item: %v", err)
+		}
+
+		items = append(items, item)
 	}
 
-	return domainItems
+	return items, nil
 }
