@@ -15,6 +15,7 @@ func (s Server) setupRouter(mux *http.ServeMux) {
 	mux.HandleFunc("GET /venues/{venueID}", s.handleGetVenueByID())
 	mux.HandleFunc("POST /venues", s.withPermissions(s.handleCreateVenue(), "edit:venue"))
 	mux.HandleFunc("PATCH /venues/{venueID}", s.withPermissions(s.handleUpdateVenue(), "edit:venue"))
+	mux.HandleFunc("DELETE /venues/{venueID}", s.withPermissions(s.handleDeleteVenue(), "delete:venue"))
 
 	// |=> ARTIST ROUTES.
 	mux.HandleFunc("GET /artists", s.handleListArtists())

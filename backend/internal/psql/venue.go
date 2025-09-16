@@ -31,6 +31,23 @@ type VenueRepo struct {
 	Pool *pgxpool.Pool
 }
 
+// DeleteVenue implements server.VenueRepo.
+func (v VenueRepo) DeleteVenue(ctx context.Context, venueID int64) error {
+	err := pgx.BeginFunc(ctx, v.Pool, func(tx pgx.Tx) error {
+		if err := deleteVenue(ctx, tx, venueID); err != nil {
+			return fmt.Errorf("Could not delete venue: %v", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // UpdateVenue implements server.VenueRepo.
 func (v VenueRepo) UpdateVenue(ctx context.Context, venueID int64, ur api.UpdateRequest[konnekt.UpdateVenue]) error {
 	err := pgx.BeginFunc(ctx, v.Pool, func(tx pgx.Tx) error {
@@ -249,6 +266,19 @@ func updateVenue(ctx context.Context, tx pgx.Tx, venueID int64, um mask.FieldMap
 
 	if _, err := tx.Exec(ctx, query, args...); err != nil {
 		return fmt.Errorf("Could not update venue: %v", err)
+	}
+
+	return nil
+}
+
+func deleteVenue(ctx context.Context, tx pgx.Tx, venueID int64) error {
+	query, args, err := psql.Delete("venue").Where(sq.Eq{"id": venueID}).ToSql()
+	if err != nil {
+		return NewQueryBuildError("delete venue", err)
+	}
+
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("Could not delete venue: %v", err)
 	}
 
 	return nil

@@ -15,6 +15,7 @@ type VenueRepo interface {
 	VenueByID(context.Context, int64) (konnekt.Venue, error)
 	ListVenues(context.Context, api.ListRequest) (api.ListResponse[konnekt.Venue], error)
 	UpdateVenue(context.Context, int64, api.UpdateRequest[konnekt.UpdateVenue]) error
+	DeleteVenue(context.Context, int64) error
 }
 
 func (s Server) handleCreateVenue() http.HandlerFunc {
@@ -126,6 +127,27 @@ func (s Server) handleGetVenueByID() http.HandlerFunc {
 		}
 
 		if err := api.WriteJSON(w, venue, int(http.StatusOK)); err != nil {
+			api.WriteError(w, r, err)
+			return
+		}
+	}
+}
+
+func (s Server) handleDeleteVenue() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		venueID, err := urlutil.PathInt(r, "venueID")
+		if err != nil {
+			api.WriteError(w, r, api.BadRequestError(r, "Invalid venue ID"))
+			return
+		}
+
+		if err := s.VenueRepo.DeleteVenue(ctx, int64(venueID)); err != nil {
+			if errors.Is(err, konnekt.ErrResourceNotFound) {
+				api.WriteError(w, r, api.NotFoundError(r, "No such venue"))
+				return
+			}
+
 			api.WriteError(w, r, err)
 			return
 		}
