@@ -68,7 +68,42 @@ func (s SessionRepo) InsertSession(ctx context.Context, session auth.Session) (i
 }
 
 func (s SessionRepo) GetSession(ctx context.Context, sessionID auth.SessionID) (auth.Session, error) {
-	return auth.Session{}, nil
+	var session auth.Session
+	err := pgx.BeginFunc(ctx, s.Pool, func(tx pgx.Tx) error {
+		dbSession, err := sessionBySessionID(ctx, tx, string(sessionID))
+		if err != nil {
+			return fmt.Errorf("Could not get session: %v", err)
+		}
+
+		session = dbSession.ToDomain()
+		return nil
+	})
+
+	if err != nil {
+		return auth.Session{}, err
+	}
+
+	return session, nil
+}
+
+func sessionBySessionID(ctx context.Context, tx pgx.Tx, sessionID string) (Session, error) {
+	query, args, err := psql.
+		Select("*").
+		From("session").
+		Where(sq.Eq{"session_id": sessionID}).
+		ToSql()
+
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return Session{}, NewQueryBuildError("session by session ID", err)
+	}
+
+	session, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[Session])
+	if err != nil {
+		return Session{}, fmt.Errorf("Could not collect session: %v", err)
+	}
+
+	return session, nil
 }
 
 func insertSession(ctx context.Context, tx pgx.Tx, s Session) (int64, error) {
@@ -111,4 +146,13 @@ func deleteSession(ctx context.Context, tx pgx.Tx, sessionID string) error {
 	}
 
 	return nil
+}
+
+func (s Session) ToDomain() auth.Session {
+	return auth.Session{
+		ID:         auth.SessionID(s.SessionID),
+		CreatedAt:  s.CreatedAt,
+		MemberID:   s.MemberID,
+		SecretHash: s.SecretHash,
+	}
 }

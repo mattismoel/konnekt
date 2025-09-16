@@ -10,10 +10,12 @@ import (
 )
 
 type Server struct {
-	ArtistRepo  konnekt.ArtistRepo
-	VenueRepo   konnekt.VenueRepo
-	MemberRepo  konnekt.MemberRepo
-	EventRepo   konnekt.EventRepo
+	ArtistRepo konnekt.ArtistRepo
+	VenueRepo  konnekt.VenueRepo
+	MemberRepo konnekt.MemberRepo
+	EventRepo  konnekt.EventRepo
+	AuthRepo   konnekt.AuthRepo
+
 	SessionRepo auth.SessionRepo
 }
 

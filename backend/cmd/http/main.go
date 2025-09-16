@@ -39,11 +39,13 @@ func main() {
 	artistRepo := psql.ArtistRepo{Pool: dbPool}
 	sessionRepo := psql.SessionRepo{Pool: dbPool}
 	memberRepo := psql.MemberRepo{Pool: dbPool}
+	authRepo := psql.AuthRepo{Pool: dbPool}
 
 	server := server.Server{
 		ArtistRepo:  artistRepo,
 		SessionRepo: sessionRepo,
 		MemberRepo:  memberRepo,
+		AuthRepo:    authRepo,
 	}
 
 	if err := server.Start(host, port); err != nil {
