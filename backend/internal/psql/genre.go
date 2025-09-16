@@ -2,7 +2,6 @@ package psql
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
@@ -18,7 +17,7 @@ type Genre struct {
 }
 
 // GenreByID implements konnekt.ArtistRepo.
-func (a ArtistRepo) GenreByID(ctx context.Context, genreID konnekt.ID) (konnekt.Genre, error) {
+func (a ArtistRepo) GenreByID(ctx context.Context, genreID int64) (konnekt.Genre, error) {
 	var genre konnekt.Genre
 	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		dbGenre, err := genreByID(ctx, tx, int64(genreID))
@@ -133,28 +132,6 @@ func artistGenres(ctx context.Context, tx pgx.Tx, artistID int64) (Collection[Ge
 	return genres, nil
 }
 
-func associateArtistWithGenre(ctx context.Context, tx pgx.Tx, artistID int64, genreID int64) error {
-	query, args, err := psql.
-		Insert("artists_genres").
-		Columns("artist_id", "genre_id").
-		Values(artistID, genreID).
-		ToSql()
-
-	if err != nil {
-		return NewQueryBuildError("associate artist with genre", err)
-	}
-
-	if _, err := tx.Exec(ctx, query, args...); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return err
-		}
-
-		return fmt.Errorf("Could not associate artist with genre: %v", err)
-	}
-
-	return nil
-}
-
 func clearArtistGenres(ctx context.Context, tx pgx.Tx, artistID int64) error {
 	query, args, err := psql.Delete("artists_genres").Where(sq.Eq{"artist_id": artistID}).ToSql()
 	if err != nil {
@@ -163,6 +140,29 @@ func clearArtistGenres(ctx context.Context, tx pgx.Tx, artistID int64) error {
 
 	if _, err := tx.Exec(ctx, query, args...); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func setArtistGenres(ctx context.Context, tx pgx.Tx, artistID int64, genreIDs ...int64) error {
+	if err := clearArtistGenres(ctx, tx, artistID); err != nil {
+		return fmt.Errorf("Could not delete artist genres: %v", err)
+	}
+
+	builder := psql.Insert("artists_genres").Columns("artist_id", "genre_id")
+
+	for _, genreID := range genreIDs {
+		builder = builder.Values(artistID, genreID)
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return NewQueryBuildError("insert artist genre", err)
+	}
+
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("Could not insert artist genres: %v", err)
 	}
 
 	return nil

@@ -115,30 +115,16 @@ func (a ArtistRepo) InsertArtist(ctx context.Context, ca konnekt.CreateArtist) (
 			},
 		})
 
-		// Ensure that artist genres and socials are cleared, in case of conflict update.
-		if err := clearArtistGenres(ctx, tx, artistID); err != nil {
-			return err
-		}
-
-		if err := deleteArtistSocials(ctx, tx, artistID); err != nil {
-			return err
-		}
-
-		for _, genreID := range ca.GenreIDs {
-			if err := associateArtistWithGenre(ctx, tx, artistID, int64(genreID)); err != nil {
-				return fmt.Errorf("Could not associate artist with genre: %v", err)
-			}
-		}
-
-		for _, url := range ca.Socials {
-			_, err := insertSocial(ctx, tx, Social{URL: string(url), ArtistID: artistID})
-			if err != nil {
-				return fmt.Errorf("Could not insert artist social: %v", err)
-			}
-		}
-
 		if err != nil {
 			return fmt.Errorf("Could not insert artist: %v", err)
+		}
+
+		if err := setArtistGenres(ctx, tx, insertedID, ca.GenreIDs...); err != nil {
+			return fmt.Errorf("Could not set artist genres: %v", err)
+		}
+
+		if err := setArtistSocials(ctx, tx, artistID, ca.Socials.String()...); err != nil {
+			return fmt.Errorf("Could not set artist socials: %v", err)
 		}
 
 		artistID = insertedID
@@ -206,34 +192,18 @@ func (a ArtistRepo) UpdateArtist(ctx context.Context, artistID int64, ur api.Upd
 		}
 
 		if _, ok := updateMap["socials"]; ok {
-			if err := deleteArtistSocials(ctx, tx, int64(artistID)); err != nil {
+			if err := setArtistSocials(ctx, tx, artistID, ur.Data.Socials.String()...); err != nil {
 				return fmt.Errorf("Could not delete artist socials: %v", err)
-			}
-
-			for _, s := range ur.Data.Socials {
-				_, err := insertSocial(ctx, tx, Social{
-					URL:      string(s),
-					ArtistID: int64(artistID),
-				})
-
-				if err != nil {
-					return fmt.Errorf("Could not insert social: %v", err)
-				}
 			}
 		}
 
 		if _, ok := updateMap["genres"]; ok {
-			if err := clearArtistGenres(ctx, tx, int64(artistID)); err != nil {
-				return fmt.Errorf("Could not delete artist genres: %v", err)
-			}
-
-			for _, genreID := range ur.Data.GenreIDs {
-				err := associateArtistWithGenre(ctx, tx, int64(artistID), int64(genreID))
-				if err != nil {
-					return fmt.Errorf("Could not associate artist %d with genre %d: %v", artistID, genreID, err)
-				}
+			err := setArtistGenres(ctx, tx, int64(artistID), ur.Data.GenreIDs...)
+			if err != nil {
+				return fmt.Errorf("Could not set artist genres: %v", err)
 			}
 		}
+
 		return nil
 	})
 

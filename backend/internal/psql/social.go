@@ -15,30 +15,6 @@ type Social struct {
 	ArtistID int64  `db:"artist_id"`
 }
 
-func insertSocial(ctx context.Context, tx pgx.Tx, s Social) (int64, error) {
-	query, args, err := psql.Insert("social").
-		Columns("url", "artist_id").
-		Values(s.URL, s.ArtistID).
-		Suffix("RETURNING id").
-		ToSql()
-
-	if err != nil {
-		return 0, NewQueryBuildError("insert social", err)
-	}
-
-	rows, err := tx.Query(ctx, query, args...)
-	if err != nil {
-		return 0, fmt.Errorf("Could not insert social: %v", err)
-	}
-
-	id, err := pgx.CollectExactlyOneRow(rows, pgx.RowTo[int64])
-	if err != nil {
-		return 0, fmt.Errorf("Could not get inserted ID: %v", err)
-	}
-
-	return id, nil
-}
-
 func artistSocials(ctx context.Context, tx pgx.Tx, artistID int64) (Collection[Social, konnekt.Social], error) {
 	query, args, err := psql.
 		Select("*").
@@ -82,4 +58,27 @@ func deleteArtistSocials(ctx context.Context, tx pgx.Tx, artistID int64) error {
 
 func (s Social) ToDomain() konnekt.Social {
 	return konnekt.Social(s.URL)
+}
+
+func setArtistSocials(ctx context.Context, tx pgx.Tx, artistID int64, socials ...string) error {
+	if err := deleteArtistSocials(ctx, tx, artistID); err != nil {
+		return fmt.Errorf("Could not insert artist socials: %v", err)
+	}
+
+	builder := psql.Insert("social").Columns("url", "artist_id")
+
+	for _, socialURL := range socials {
+		builder = builder.Values(socialURL, artistID)
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return NewQueryBuildError("insert artist social", err)
+	}
+
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("Could not insert artist social: %v", err)
+	}
+
+	return nil
 }
