@@ -2,6 +2,7 @@ package psql
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
@@ -81,6 +82,10 @@ func (v VenueRepo) VenueByID(ctx context.Context, venueID int64) (konnekt.Venue,
 	err := pgx.BeginFunc(ctx, v.Pool, func(tx pgx.Tx) error {
 		dbVenue, err := venueByID(ctx, tx, venueID)
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return konnekt.ErrResourceNotFound
+			}
+
 			return fmt.Errorf("Could not get venue with ID %d: %v", venueID, err)
 		}
 
@@ -146,6 +151,9 @@ func venueByID(ctx context.Context, tx pgx.Tx, venueID int64) (Venue, error) {
 
 	venue, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[Venue])
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Venue{}, err
+		}
 		return Venue{}, fmt.Errorf("Could not collect venue: %v", err)
 	}
 
