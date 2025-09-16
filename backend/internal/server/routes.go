@@ -3,10 +3,6 @@ package server
 import "net/http"
 
 func (s Server) setupRouter(mux *http.ServeMux) {
-	// mux.HandleFunc("GET /events/", handleUnimplemented())
-	// mux.HandleFunc("GET /events/{eventID}/", handleUnimplemented())
-	// mux.HandleFunc("PATCH /events/{eventID}/", handleUnimplemented())
-	// mux.HandleFunc("DELETE /events/{eventID}/", handleUnimplemented())
 	mux.HandleFunc("POST /events", s.withPermissions(s.handleCreateEvent(), "edit:event"))
 
 	mux.HandleFunc("POST /venues", s.withPermissions(s.handleCreateVenue(), "edit:venue"))
