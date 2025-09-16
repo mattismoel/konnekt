@@ -221,22 +221,13 @@ func insertArtist(ctx context.Context, tx pgx.Tx, a Artist) (int64, error) {
 }
 
 func updateArtist(ctx context.Context, tx pgx.Tx, artistID int64, fieldMap mask.FieldMap) error {
-	var alreadyExists bool
-
-	err := tx.
-		QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM artist WHERE id = $1)", artistID).
-		Scan(&alreadyExists)
-
-	if !alreadyExists {
-		return pgx.ErrNoRows
+	exists, err := checkIfExists(ctx, tx, "artist", "id", artistID)
+	if err != nil {
+		return err
 	}
 
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return err
-		}
-
-		return fmt.Errorf("Could not check if artists already exists: %v", err)
+	if !exists {
+		return pgx.ErrNoRows
 	}
 
 	allowed := []string{"name", "description", "image_url", "preview_url"}
