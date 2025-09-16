@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -14,6 +15,11 @@ import (
 const (
 	SESSION_COOKIE_NAME = "konnekt-session"
 )
+
+type AuthRepo interface {
+	TeamPermissions(context.Context, int64) (api.ListResponse[konnekt.Permission], error)
+	MemberTeams(context.Context, int64) (api.ListResponse[konnekt.Team], error)
+}
 
 type Register struct {
 	Email           string `json:"email"`

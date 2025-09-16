@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
@@ -8,6 +9,17 @@ import (
 	"github.com/mattismoel/konnekt/backend/api"
 	"github.com/mattismoel/konnekt/backend/urlutil"
 )
+
+type ArtistRepo interface {
+	InsertArtist(context.Context, konnekt.CreateArtist) (int64, error)
+	ArtistByID(context.Context, int64) (konnekt.Artist, error)
+	ListArtists(context.Context, api.ListRequest) (api.ListResponse[konnekt.Artist], error)
+	UpdateArtist(context.Context, int64, api.UpdateRequest[konnekt.UpdateArtist]) error
+	DeleteArtist(context.Context, int64) error
+
+	InsertGenre(context.Context, konnekt.CreateGenre) (int64, error)
+	GenreByID(context.Context, int64) (konnekt.Genre, error)
+}
 
 func (s Server) handleCreateArtist() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

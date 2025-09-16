@@ -1,11 +1,6 @@
 package konnekt
 
-import (
-	"context"
-
-	"github.com/mattismoel/konnekt/backend/api"
-	"github.com/mattismoel/konnekt/backend/mask"
-)
+import "github.com/mattismoel/konnekt/backend/mask"
 
 type Artist struct {
 	ID          int64            `json:"id"`
@@ -34,17 +29,6 @@ type UpdateArtist struct {
 	PreviewURL  string           `json:"previewUrl"`
 	Socials     SocialCollection `json:"socials"`
 	GenreIDs    []int64          `json:"genres"`
-}
-
-type ArtistRepo interface {
-	InsertArtist(context.Context, CreateArtist) (int64, error)
-	ArtistByID(context.Context, int64) (Artist, error)
-	ListArtists(context.Context, api.ListRequest) (api.ListResponse[Artist], error)
-	UpdateArtist(context.Context, int64, api.UpdateRequest[UpdateArtist]) error
-	DeleteArtist(context.Context, int64) error
-
-	InsertGenre(context.Context, CreateGenre) (int64, error)
-	GenreByID(context.Context, int64) (Genre, error)
 }
 
 type Social string

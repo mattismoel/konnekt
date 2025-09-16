@@ -6,16 +6,15 @@ import (
 	"net/http"
 	"strconv"
 
-	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/auth"
 )
 
 type Server struct {
-	ArtistRepo konnekt.ArtistRepo
-	VenueRepo  konnekt.VenueRepo
-	MemberRepo konnekt.MemberRepo
-	EventRepo  konnekt.EventRepo
-	AuthRepo   konnekt.AuthRepo
+	ArtistRepo ArtistRepo
+	VenueRepo  VenueRepo
+	MemberRepo MemberRepo
+	EventRepo  EventRepo
+	AuthRepo   AuthRepo
 
 	SessionRepo auth.SessionRepo
 }

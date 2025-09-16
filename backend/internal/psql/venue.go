@@ -9,10 +9,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/api"
+	"github.com/mattismoel/konnekt/backend/internal/server"
 	"github.com/mattismoel/konnekt/backend/order"
 )
 
-var _ konnekt.VenueRepo = VenueRepo{}
+var _ server.VenueRepo = VenueRepo{}
 
 type Venue struct {
 	ID      int64  `db:"id"`

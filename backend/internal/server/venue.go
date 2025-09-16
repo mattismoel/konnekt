@@ -1,11 +1,18 @@
 package server
 
 import (
+	"context"
 	"net/http"
 
 	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/api"
 )
+
+type VenueRepo interface {
+	InsertVenue(context.Context, konnekt.CreateVenue) (int64, error)
+	VenueByID(context.Context, int64) (konnekt.Venue, error)
+	ListVenues(context.Context, api.ListRequest) (api.ListResponse[konnekt.Venue], error)
+}
 
 func (s Server) handleCreateVenue() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

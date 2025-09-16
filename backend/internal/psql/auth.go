@@ -9,9 +9,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/api"
+	"github.com/mattismoel/konnekt/backend/internal/server"
 )
 
-var _ konnekt.AuthRepo = AuthRepo{}
+var _ server.AuthRepo = AuthRepo{}
 
 type AuthRepo struct {
 	Pool *pgxpool.Pool

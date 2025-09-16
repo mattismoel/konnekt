@@ -10,10 +10,11 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	konnekt "github.com/mattismoel/konnekt/backend"
+	"github.com/mattismoel/konnekt/backend/internal/server"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var _ konnekt.MemberRepo = MemberRepo{}
+var _ server.MemberRepo = MemberRepo{}
 
 type MemberRepo struct {
 	Pool *pgxpool.Pool

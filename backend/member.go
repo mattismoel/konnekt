@@ -1,7 +1,5 @@
 package konnekt
 
-import "context"
-
 type Member struct {
 	ID          int64  `json:"id"`
 	Email       string `json:"email"`
@@ -18,11 +16,4 @@ type CreateMember struct {
 	LastName  string `json:"lastName"`
 	AvatarURL string `json:"avatarUrl"`
 	Password  string `json:"password"`
-}
-
-type MemberRepo interface {
-	MemberByID(context.Context, int64) (Member, error)
-	MemberByEmail(context.Context, string) (Member, error)
-	InsertMember(context.Context, CreateMember) (int64, error)
-	MemberPasswordHash(context.Context, int64) ([]byte, error)
 }
