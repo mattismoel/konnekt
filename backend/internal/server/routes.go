@@ -6,8 +6,8 @@ func (s Server) setupRouter(mux *http.ServeMux) {
 	// |=> EVENT ROUTES.
 	mux.HandleFunc("GET /events", s.handleListEvents())
 	mux.HandleFunc("GET /events/{eventID}", s.handleGetEventByID())
-	mux.HandleFunc("PATCH /events/{eventID}", s.withPermissions(s.handleUpdateEvent(), "edit:event"))
 	mux.HandleFunc("POST /events", s.withPermissions(s.handleCreateEvent(), "edit:event"))
+	mux.HandleFunc("PATCH /events/{eventID}", s.withPermissions(s.handleUpdateEvent(), "edit:event"))
 	mux.HandleFunc("DELETE /events/{eventID}", s.withPermissions(s.handleDeleteEvent(), "delete:event"))
 
 	// |=> VENUE ROUTES.
@@ -19,11 +19,11 @@ func (s Server) setupRouter(mux *http.ServeMux) {
 
 	// |=> ARTIST ROUTES.
 	mux.HandleFunc("GET /artists", s.handleListArtists())
-	mux.HandleFunc("POST /artists", s.withPermissions(s.handleCreateArtist(), "edit:artist"))
 	mux.HandleFunc("GET /artists/{artistID}", s.handleGetArtistByID())
+	mux.HandleFunc("POST /artists", s.withPermissions(s.handleCreateArtist(), "edit:artist"))
+	mux.HandleFunc("POST /artists/genres", s.withPermissions(s.handleCreateGenre(), "edit:genre"))
 	mux.HandleFunc("PATCH /artists/{artistID}", s.withPermissions(s.handleUpdateArtist(), "edit:artist"))
 	mux.HandleFunc("DELETE /artists/{artistID}", s.withPermissions(s.handleDeleteArtist(), "delete:artist"))
-	mux.HandleFunc("POST /artists/genres", s.withPermissions(s.handleCreateGenre(), "edit:genre"))
 
 	// |=> AUTHENTICATION ROUTES.
 	mux.HandleFunc("POST /auth/register", s.handleRegisterMember())
