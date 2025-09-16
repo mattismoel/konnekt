@@ -60,7 +60,6 @@ func (a ArtistRepo) ArtistByID(ctx context.Context, artistID int64) (konnekt.Art
 			return fmt.Errorf("Could not get artist socials: %v", err)
 		}
 
-		fmt.Println("SOCIALS", dbSocials)
 		artist = dbArtist.ToDomain()
 		artist.Genres = dbGenres.ToDomain()
 		artist.Socials = dbSocials.ToDomain()
