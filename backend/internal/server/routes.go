@@ -12,6 +12,7 @@ func (s Server) setupRouter(mux *http.ServeMux) {
 
 	// |=> VENUE ROUTES.
 	mux.HandleFunc("GET /venues", s.handleListVenues())
+	mux.HandleFunc("GET /venues/{venueID}", s.handleGetVenueByID())
 	mux.HandleFunc("POST /venues", s.withPermissions(s.handleCreateVenue(), "edit:venue"))
 	mux.HandleFunc("PATCH /venues/{venueID}", s.withPermissions(s.handleUpdateVenue(), "edit:venue"))
 

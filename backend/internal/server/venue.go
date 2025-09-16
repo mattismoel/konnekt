@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	konnekt "github.com/mattismoel/konnekt/backend"
@@ -98,6 +99,33 @@ func (s Server) handleUpdateVenue() http.HandlerFunc {
 		}
 
 		if err := api.WriteJSON(w, updatedVenue, http.StatusOK); err != nil {
+			api.WriteError(w, r, err)
+			return
+		}
+	}
+}
+
+func (s Server) handleGetVenueByID() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		venueID, err := urlutil.PathInt(r, "venueID")
+		if err != nil {
+			api.WriteError(w, r, api.BadRequestError(r, "Invalid venue ID"))
+			return
+		}
+
+		venue, err := s.VenueRepo.VenueByID(ctx, int64(venueID))
+		if err != nil {
+			if errors.Is(err, konnekt.ErrResourceNotFound) {
+				api.WriteError(w, r, api.NotFoundError(r, "No such venue"))
+				return
+			}
+
+			api.WriteError(w, r, err)
+			return
+		}
+
+		if err := api.WriteJSON(w, venue, int(http.StatusOK)); err != nil {
 			api.WriteError(w, r, err)
 			return
 		}
