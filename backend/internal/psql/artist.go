@@ -122,7 +122,7 @@ func (a ArtistRepo) InsertArtist(ctx context.Context, ca konnekt.CreateArtist) (
 			return fmt.Errorf("Could not set artist genres: %v", err)
 		}
 
-		if err := setArtistSocials(ctx, tx, artistID, ca.Socials.String()...); err != nil {
+		if err := setArtistSocials(ctx, tx, insertedID, ca.Socials.String()...); err != nil {
 			return fmt.Errorf("Could not set artist socials: %v", err)
 		}
 
