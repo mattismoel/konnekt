@@ -36,6 +36,7 @@ func main() {
 
 	defer dbPool.Close()
 
+	eventRepo := psql.EventRepo{Pool: dbPool}
 	artistRepo := psql.ArtistRepo{Pool: dbPool}
 	venueRepo := psql.VenueRepo{Pool: dbPool}
 	sessionRepo := psql.SessionRepo{Pool: dbPool}
@@ -43,6 +44,7 @@ func main() {
 	authRepo := psql.AuthRepo{Pool: dbPool}
 
 	server := server.Server{
+		EventRepo:   eventRepo,
 		ArtistRepo:  artistRepo,
 		VenueRepo:   venueRepo,
 		SessionRepo: sessionRepo,

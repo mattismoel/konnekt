@@ -5,6 +5,8 @@ import "net/http"
 func (s Server) setupRouter(mux *http.ServeMux) {
 	// |=> EVENT ROUTES.
 	mux.HandleFunc("POST /events", s.withPermissions(s.handleCreateEvent(), "edit:event"))
+	mux.HandleFunc("GET /events", s.handleListEvents())
+	mux.HandleFunc("GET /events/{eventID}", s.handleGetEventByID())
 
 	// |=> VENUE ROUTES.
 	mux.HandleFunc("POST /venues", s.withPermissions(s.handleCreateVenue(), "edit:venue"))
