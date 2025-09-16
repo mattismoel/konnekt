@@ -123,3 +123,20 @@ func (s Server) handleUpdateEvent() http.HandlerFunc {
 		}
 	}
 }
+
+func (s Server) handleDeleteEvent() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		eventID, err := urlutil.PathInt(r, "eventID")
+		if err != nil {
+			api.WriteError(w, r, api.BadRequestError(r, "Invalid eventID"))
+			return
+		}
+
+		if err := s.EventRepo.Delete(ctx, int64(eventID)); err != nil {
+			api.WriteError(w, r, err)
+			return
+		}
+	}
+}

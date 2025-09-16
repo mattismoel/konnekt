@@ -31,8 +31,24 @@ type EventRepo struct {
 }
 
 // Delete implements konnekt.EventRepo.
-func (e EventRepo) Delete(context.Context, int64) error {
-	panic("unimplemented")
+func (e EventRepo) Delete(ctx context.Context, eventID int64) error {
+	err := pgx.BeginFunc(ctx, e.Pool, func(tx pgx.Tx) error {
+		if err := deleteEventConcerts(ctx, tx, eventID); err != nil {
+			return fmt.Errorf("Could not delete event concerts: %v", err)
+		}
+
+		if err := deleteEvent(ctx, tx, eventID); err != nil {
+			return fmt.Errorf("Could not delete event: %v", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // EventByID implements konnekt.EventRepo.
@@ -279,6 +295,19 @@ func updateEvent(ctx context.Context, tx pgx.Tx, eventID int64, um mask.FieldMap
 
 	if _, err := tx.Exec(ctx, query, args...); err != nil {
 		return fmt.Errorf("Could not update event: %v", err)
+	}
+
+	return nil
+}
+
+func deleteEvent(ctx context.Context, tx pgx.Tx, eventID int64) error {
+	query, args, err := psql.Delete("event").Where(sq.Eq{"id": eventID}).ToSql()
+	if err != nil {
+		return NewQueryBuildError("delete event", err)
+	}
+
+	if _, err := tx.Exec(ctx, query, args...); err != nil {
+		return fmt.Errorf("Could not delete event: %v", err)
 	}
 
 	return nil
