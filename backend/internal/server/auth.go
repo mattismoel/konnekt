@@ -53,7 +53,7 @@ func (s Server) handleRegisterMember() http.HandlerFunc {
 		cm := konnekt.CreateMember{
 			Email:     load.Email,
 			FirstName: load.FirstName,
-			LastName:  load.FirstName,
+			LastName:  load.LastName,
 			AvatarURL: load.AvatarURL,
 			Password:  load.Password,
 		}
