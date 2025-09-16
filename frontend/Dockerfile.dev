@@ -1,0 +1,6 @@
+FROM oven/bun:1 AS base
+WORKDIR /app
+
+EXPOSE 24678
+
+CMD ["bun", "run", "dev" ]
