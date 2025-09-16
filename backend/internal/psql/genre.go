@@ -13,7 +13,6 @@ type Genre struct {
 	ID   int64  `db:"id"`
 	Name string `db:"name"`
 	Timestamps
-	AuditFields
 }
 
 // GenreByID implements konnekt.ArtistRepo.
@@ -42,11 +41,8 @@ func (a ArtistRepo) InsertGenre(ctx context.Context, cg konnekt.CreateGenre) (in
 	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		id, err := insertGenre(ctx, tx, Genre{
 			Name: cg.Name,
-			AuditFields: AuditFields{
-				CreatedBy: int64(cg.CreatedBy),
-				UpdatedBy: int64(cg.CreatedBy),
-			},
 		})
+
 		if err != nil {
 			return fmt.Errorf("Could not insert genre: %v", err)
 		}
@@ -89,8 +85,8 @@ func genreByID(ctx context.Context, tx pgx.Tx, genreID int64) (Genre, error) {
 func insertGenre(ctx context.Context, tx pgx.Tx, g Genre) (int64, error) {
 	query, args, err := psql.
 		Insert("genre").
-		Columns("name", "created_by", "updated_by").
-		Values(g.Name, g.CreatedBy, g.UpdatedBy).
+		Columns("name").
+		Values(g.Name).
 		Suffix("ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name").
 		Suffix("RETURNING id").
 		ToSql()
