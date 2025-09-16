@@ -16,7 +16,7 @@ type Server struct {
 	EventRepo  EventRepo
 	AuthRepo   AuthRepo
 
-	SessionRepo auth.SessionRepo
+	SessionRepo SessionRepo
 }
 
 func (s Server) Start(host string, port int) error {

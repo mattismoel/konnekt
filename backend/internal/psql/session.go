@@ -9,9 +9,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mattismoel/konnekt/backend/auth"
+	"github.com/mattismoel/konnekt/backend/internal/server"
 )
 
-var _ auth.SessionRepo = SessionRepo{}
+var _ server.SessionRepo = SessionRepo{}
 
 type Session struct {
 	ID         int64

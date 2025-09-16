@@ -16,6 +16,12 @@ const (
 	SESSION_COOKIE_NAME = "konnekt-session"
 )
 
+type SessionRepo interface {
+	InsertSession(context.Context, auth.Session) (int64, error)
+	GetSession(context.Context, auth.SessionID) (auth.Session, error)
+	DeleteSession(context.Context, auth.SessionID) error
+}
+
 type AuthRepo interface {
 	TeamPermissions(context.Context, int64) (api.ListResponse[konnekt.Permission], error)
 	MemberTeams(context.Context, int64) (api.ListResponse[konnekt.Team], error)
