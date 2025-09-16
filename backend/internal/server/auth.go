@@ -70,7 +70,7 @@ func (s Server) handleRegisterMember() http.HandlerFunc {
 			return
 		}
 
-		session, err := auth.CreateSession()
+		session, err := auth.CreateSession(memberID)
 		if err != nil {
 			api.WriteError(w, r, err)
 			return
@@ -150,7 +150,7 @@ func (s Server) handleLoginMember() http.HandlerFunc {
 			}
 		}
 
-		session, err := auth.CreateSession()
+		session, err := auth.CreateSession(member.ID)
 		if err != nil {
 
 		}

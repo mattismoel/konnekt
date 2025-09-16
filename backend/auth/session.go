@@ -25,11 +25,12 @@ type SessionToken string
 type Session struct {
 	ID         SessionID    `json:"id"`
 	CreatedAt  time.Time    `json:"createdAt"`
+	MemberID   int64        `json:"memberId"`
 	SecretHash []byte       `json:"-"`
 	Token      SessionToken `json:"-"`
 }
 
-func CreateSession() (Session, error) {
+func CreateSession(memberID int64) (Session, error) {
 	id, err := generateSecureRandomBytes()
 	if err != nil {
 		return Session{}, fmt.Errorf("Could not generate session ID: %v", err)
@@ -45,6 +46,7 @@ func CreateSession() (Session, error) {
 
 	return Session{
 		ID:         SessionID(id),
+		MemberID:   memberID,
 		SecretHash: secretHash,
 		CreatedAt:  time.Now(),
 		Token:      SessionToken(token),

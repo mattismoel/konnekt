@@ -18,6 +18,7 @@ type Session struct {
 	SessionID  string
 	SecretHash []byte
 	CreatedAt  time.Time
+	MemberID   int64
 }
 
 type SessionRepo struct {
@@ -48,6 +49,7 @@ func (s SessionRepo) InsertSession(ctx context.Context, session auth.Session) (i
 			SessionID:  string(session.ID),
 			SecretHash: session.SecretHash,
 			CreatedAt:  session.CreatedAt,
+			MemberID:   session.MemberID,
 		})
 
 		if err != nil {
@@ -72,8 +74,8 @@ func (s SessionRepo) GetSession(ctx context.Context, sessionID auth.SessionID) (
 func insertSession(ctx context.Context, tx pgx.Tx, s Session) (int64, error) {
 	query, args, err := psql.
 		Insert("session").
-		Columns("session_id", "secret_hash", "created_at").
-		Values(s.SessionID, s.SecretHash, s.CreatedAt).
+		Columns("session_id", "member_id", "secret_hash", "created_at").
+		Values(s.SessionID, s.MemberID, s.SecretHash, s.CreatedAt).
 		Suffix("RETURNING id").
 		ToSql()
 
