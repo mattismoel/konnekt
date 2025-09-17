@@ -7,6 +7,7 @@ type Member struct {
 	LastName    string `json:"lastName"`
 	AvatarURL   string `json:"avatarUrl"`
 	SpecialRole string `json:"specialRole,omitempty"`
+	Teams       []Team `json:"teams"`
 	Approved    bool   `json:"approved"`
 }
 

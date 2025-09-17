@@ -267,6 +267,16 @@ func listMembers(ctx context.Context, tx pgx.Tx, pg Pagination) (Collection[Memb
 }
 
 func (m Member) Assemble(ctx context.Context, tx pgx.Tx) (konnekt.Member, error) {
+	dbMemberTeams, err := memberTeams(ctx, tx, m.ID)
+	if err != nil {
+		return konnekt.Member{}, fmt.Errorf("Could not get member teams: %v", err)
+	}
+
+	teams, err := dbMemberTeams.Assemble(ctx, tx)
+	if err != nil {
+		return konnekt.Member{}, fmt.Errorf("Could not assemble member teams: %v", err)
+	}
+
 	return konnekt.Member{
 		ID:          m.ID,
 		Email:       m.Email,
@@ -275,5 +285,6 @@ func (m Member) Assemble(ctx context.Context, tx pgx.Tx) (konnekt.Member, error)
 		AvatarURL:   m.AvatarURL,
 		SpecialRole: m.SpecialRole.String,
 		Approved:    m.Approved,
+		Teams:       teams,
 	}, nil
 }
