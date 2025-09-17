@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	konnekt "github.com/mattismoel/konnekt/backend"
+	"github.com/mattismoel/konnekt/backend/api"
 	"github.com/mattismoel/konnekt/backend/internal/server"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -18,6 +19,33 @@ var _ server.MemberRepo = MemberRepo{}
 
 type MemberRepo struct {
 	Pool *pgxpool.Pool
+}
+
+// ListMembers implements server.MemberRepo.
+func (m MemberRepo) ListMembers(ctx context.Context, lr api.ListRequest) (api.ListResponse[konnekt.Member], error) {
+	members := make([]konnekt.Member, 0)
+	err := pgx.BeginFunc(ctx, m.Pool, func(tx pgx.Tx) error {
+		pg := paginationFromListRequest(lr)
+		dbMembers, err := listMembers(ctx, tx, pg)
+		if err != nil {
+			return fmt.Errorf("Could not list members: %v", err)
+		}
+
+		members, err = dbMembers.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble members: %v", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return api.ListResponse[konnekt.Member]{}, err
+	}
+
+	return api.ListResponse[konnekt.Member]{
+		Records: members,
+	}, nil
 }
 
 type Member struct {
@@ -214,6 +242,28 @@ func memberByEmail(ctx context.Context, tx pgx.Tx, email string) (Member, error)
 	}
 
 	return member, nil
+}
+
+func listMembers(ctx context.Context, tx pgx.Tx, pg Pagination) (Collection[Member, konnekt.Member], error) {
+	builder := psql.Select("*").From("member")
+	builder = applyPagination(builder, pg)
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, NewQueryBuildError("list members", err)
+	}
+
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("Could not query for members: %v", err)
+	}
+
+	members, err := pgx.CollectRows(rows, pgx.RowToStructByName[Member])
+	if err != nil {
+		return nil, fmt.Errorf("Could not collect members: %v", err)
+	}
+
+	return members, nil
 }
 
 func (m Member) Assemble(ctx context.Context, tx pgx.Tx) (konnekt.Member, error) {

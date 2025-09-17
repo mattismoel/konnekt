@@ -30,6 +30,7 @@ func (s Server) setupRouter(mux *http.ServeMux) {
 	mux.HandleFunc("POST /auth/login", s.handleLoginMember())
 
 	// |=> AUTHORIZATION ROUTES.
+	mux.HandleFunc("GET /members", s.handleListMembers())
 	mux.HandleFunc("GET /members/{memberID}/teams", s.handleGetMemberTeams())
 	mux.HandleFunc("GET /teams/{teamID}/permissions", s.withPermissions(s.handleGetTeamPermissions(), "view:permission"))
 }
