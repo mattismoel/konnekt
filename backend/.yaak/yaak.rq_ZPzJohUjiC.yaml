@@ -1,0 +1,48 @@
+type: http_request
+model: http_request
+id: rq_ZPzJohUjiC
+createdAt: 2025-09-17T21:31:36.952587976
+updatedAt: 2025-09-17T21:32:47.907511506
+workspaceId: wk_AqH2bpeWow
+folderId: fl_GE8ehyrKWx
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "data": {
+        "title": "New Event",
+        "description": "New Description...",
+        "imageUrl": "https://picsum.photos/4096",
+        "ticketUrl": "https://example.com/new",
+        "venueId": 1,
+        "concerts": [
+          {
+            "artistId": 1,
+            "from": "2025-08-20T18:00:00+02:00",
+            "to": "2025-08-20T18:30:00+02:00"
+          },
+          {
+            "artistId": 2,
+            "from": "2025-08-20T18:40:00+02:00",
+            "to": "2025-08-20T19:10:00+02:00"
+          }
+        ],
+        "isPublic": true
+      },
+      "updateMask": [
+        "venue_id"
+      ]
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: DPNBHcW4vY
+method: PATCH
+name: Update Event
+sortPriority: 3000.0
+url: ${[ baseUrl ]}/events/:eventId
+urlParameters: []

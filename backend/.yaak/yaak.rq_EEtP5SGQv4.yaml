@@ -1,0 +1,44 @@
+type: http_request
+model: http_request
+id: rq_EEtP5SGQv4
+createdAt: 2025-09-17T21:29:28.697181168
+updatedAt: 2025-09-17T21:30:15.586672257
+workspaceId: wk_AqH2bpeWow
+folderId: fl_RLVaVFxGku
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "data": {
+        "name": "New Title",
+        "description": "New Description",
+        "imageUrl": "https://picsum.photots/id/237/4096",
+        "previewUrl": "https://example.com",
+        "socials": [
+          "https://example.com/1",
+          "https://example.com/2",
+          "https://example.com/3"
+        ],
+        "genres": [
+          1,
+          2,
+          3
+        ]
+      },
+      "updateMask": [
+        "genres"
+      ]
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: 8nX5jm9kId
+method: PATCH
+name: Update Artist
+sortPriority: 1500.0
+url: ${[ baseUrl ]}/artists/:artistId
+urlParameters: []

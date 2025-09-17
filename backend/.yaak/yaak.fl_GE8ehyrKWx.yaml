@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_GE8ehyrKWx
+createdAt: 2025-09-17T21:13:20.232682010
+updatedAt: 2025-09-17T21:32:58.188599142
+workspaceId: wk_AqH2bpeWow
+folderId: null
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: Events
+sortPriority: 0.0

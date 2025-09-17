@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_HacT2Bc8rQ
+createdAt: 2025-09-17T21:16:44.659646196
+updatedAt: 2025-09-17T21:23:57.354743750
+workspaceId: wk_AqH2bpeWow
+folderId: fl_umAcYZvNbS
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "email": "example@mail.com",
+      "password": "Example1234!"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: 6iIrIpE4XS
+method: POST
+name: Login
+sortPriority: 1000.0
+url: ${[ baseUrl ]}/auth/login
+urlParameters: []

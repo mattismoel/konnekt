@@ -1,0 +1,33 @@
+type: http_request
+model: http_request
+id: rq_BJSRYRLECB
+createdAt: 2025-09-17T21:25:13.032006634
+updatedAt: 2025-09-17T21:26:21.866278100
+workspaceId: wk_AqH2bpeWow
+folderId: fl_kPi8WjreAF
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "data": {
+        "name": "New Venue",
+        "city": "New City",
+        "country": "New Country"
+      },
+      "updateMask": [
+        "country"
+      ]
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: eyZSYqVUNs
+method: PATCH
+name: Update Venue
+sortPriority: 3000.0
+url: ${[ baseUrl ]}/venues/:venueId
+urlParameters: []

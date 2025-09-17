@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_C4GQyYrWmi
+createdAt: 2025-09-17T21:35:30.548630304
+updatedAt: 2025-09-17T21:35:44.095871206
+workspaceId: wk_AqH2bpeWow
+folderId: fl_nab7ZsUPix
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: ''
+sortPriority: 999.9999
+url: ${[ baseUrl ]}/teams/:teamId/permissions
+urlParameters:
+- enabled: true
+  name: :teamId
+  value: '1'
+  id: aap9imG4xc
+- enabled: true
+  name: ''
+  value: ''
+  id: BDDJyFJmuF

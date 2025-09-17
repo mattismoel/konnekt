@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_aNGpLvWhtc
+createdAt: 2025-09-17T21:20:40.366938258
+updatedAt: 2025-09-17T21:32:47.892898973
+workspaceId: wk_AqH2bpeWow
+folderId: fl_GE8ehyrKWx
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Event By ID
+sortPriority: 1000.0
+url: ${[ baseUrl ]}/events/:eventId
+urlParameters:
+- enabled: true
+  name: :eventId
+  value: '6'
+  id: ivhRIupdUs
+- enabled: true
+  name: ''
+  value: ''
+  id: ABbj8yH6nv

@@ -1,0 +1,38 @@
+type: http_request
+model: http_request
+id: rq_gZiU9AMPgv
+createdAt: 2025-09-17T21:30:19.219558317
+updatedAt: 2025-09-17T21:30:45.589100396
+workspaceId: wk_AqH2bpeWow
+folderId: fl_RLVaVFxGku
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "Example Artist 3",
+      "description": "This is a description for Example Artist...",
+      "imageUrl": "https://picsum.photos/2048",
+      "genreIds": [
+        1,
+        2,
+        3
+      ],
+      "socials": [
+        "https://example.com/1",
+        "https://example.com/2",
+        "https://example.com/3"
+      ]
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: 4vD5dhPfkB
+method: POST
+name: Create Artist
+sortPriority: 1250.0
+url: ${[ baseUrl ]}/artists
+urlParameters: []

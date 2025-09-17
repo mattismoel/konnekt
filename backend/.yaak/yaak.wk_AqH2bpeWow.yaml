@@ -1,0 +1,14 @@
+type: workspace
+model: workspace
+id: wk_AqH2bpeWow
+createdAt: 2025-09-17T21:11:42.890795126
+updatedAt: 2025-09-17T21:13:08.127598528
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: Konnekt
+encryptionKeyChallenge: null
+settingValidateCertificates: false
+settingFollowRedirects: true
+settingRequestTimeout: 0

@@ -1,0 +1,28 @@
+type: http_request
+model: http_request
+id: rq_yiHaVPWBFa
+createdAt: 2025-09-17T21:24:07.445861447
+updatedAt: 2025-09-17T21:26:21.859783382
+workspaceId: wk_AqH2bpeWow
+folderId: fl_kPi8WjreAF
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "Example Venue",
+      "country": "DK",
+      "city": "Example City"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: AQhKTigMNZ
+method: POST
+name: Create Venue
+sortPriority: 2000.0
+url: ${[ baseUrl ]}/venues
+urlParameters: []

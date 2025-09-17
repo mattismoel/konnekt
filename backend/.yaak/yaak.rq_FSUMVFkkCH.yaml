@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_FSUMVFkkCH
+createdAt: 2025-09-17T21:28:42.170474246
+updatedAt: 2025-09-17T21:29:22.892138803
+workspaceId: wk_AqH2bpeWow
+folderId: fl_RLVaVFxGku
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: DELETE
+name: Delete Artist
+sortPriority: 2000.0
+url: ${[ baseUrl ]}/artists/:artistId
+urlParameters:
+- enabled: true
+  name: :artistId
+  value: '1'
+  id: GRXn6nd49M
+- enabled: true
+  name: ''
+  value: ''
+  id: VPsyuBsr26

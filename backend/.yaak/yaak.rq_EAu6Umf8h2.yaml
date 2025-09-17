@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_EAu6Umf8h2
+createdAt: 2025-09-17T21:23:04.282217517
+updatedAt: 2025-09-17T21:26:21.840992414
+workspaceId: wk_AqH2bpeWow
+folderId: fl_kPi8WjreAF
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: List Venues
+sortPriority: 0.0
+url: ${[ baseUrl ]}/venues
+urlParameters: []

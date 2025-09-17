@@ -1,0 +1,43 @@
+type: http_request
+model: http_request
+id: rq_CBcuLWGJgS
+createdAt: 2025-09-17T21:21:23.453982140
+updatedAt: 2025-09-17T21:32:47.900372257
+workspaceId: wk_AqH2bpeWow
+folderId: fl_GE8ehyrKWx
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "title": "Example Event",
+      "description": "Description for an example event event",
+      "imageUrl": "https://picsum.photos/2048",
+      "ticketUrl": "https://example.com",
+      "venueId": 4,
+      "concerts": [
+        {
+          "artistId": 5,
+          "from": "2025-08-20T18:00:00+02:00",
+          "to": "2025-08-20T18:30:00+02:00"
+        },
+        {
+          "artistId": 6,
+          "from": "2025-08-20T18:40:00+02:00",
+          "to": "2025-08-20T19:10:00+02:00"
+        }
+      ],
+      "isPublic": true
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: 5swu3kXhYa
+method: POST
+name: Create Event
+sortPriority: 2000.0
+url: ${[ baseUrl ]}/events
+urlParameters: []

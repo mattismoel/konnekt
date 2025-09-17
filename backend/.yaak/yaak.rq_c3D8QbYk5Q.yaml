@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_c3D8QbYk5Q
+createdAt: 2025-09-17T21:23:24.251011570
+updatedAt: 2025-09-17T21:26:21.852616099
+workspaceId: wk_AqH2bpeWow
+folderId: fl_kPi8WjreAF
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Venue By ID
+sortPriority: 1000.0
+url: ${[ baseUrl ]}/venues/:venueId
+urlParameters:
+- enabled: true
+  name: :venueId
+  value: '4'
+  id: 69yFqih2we
+- enabled: true
+  name: ''
+  value: ''
+  id: 22ZzfTYsr3

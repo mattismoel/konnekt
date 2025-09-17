@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_vP6puKNZdh
+createdAt: 2025-09-17T21:27:38.629586874
+updatedAt: 2025-09-17T21:29:22.881794535
+workspaceId: wk_AqH2bpeWow
+folderId: fl_RLVaVFxGku
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Artist By ID
+sortPriority: 1000.0
+url: ${[ baseUrl ]}/artists/:artistId
+urlParameters:
+- enabled: true
+  name: :artistId
+  value: '1'
+  id: 6QWzDJD2gt
+- enabled: true
+  name: ''
+  value: ''
+  id: r4ig2zdGDN

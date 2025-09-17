@@ -1,0 +1,31 @@
+type: http_request
+model: http_request
+id: rq_URmAVeD2Vs
+createdAt: 2025-09-17T21:18:32.127301973
+updatedAt: 2025-09-17T21:23:55.385471929
+workspaceId: wk_AqH2bpeWow
+folderId: fl_umAcYZvNbS
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "email": "example@mail.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "avatarUrl": "https://picsum.photos/247/1024",
+      "password": "Example1234!",
+      "passwordConfirm": "Example1234!"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: pvizdsYqeq
+method: POST
+name: Register
+sortPriority: 0.0
+url: ${[ baseUrl ]}/auth/register
+urlParameters: []

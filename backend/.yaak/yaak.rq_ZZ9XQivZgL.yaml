@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_ZZ9XQivZgL
+createdAt: 2025-09-17T21:32:26.145125915
+updatedAt: 2025-09-17T21:32:47.914209419
+workspaceId: wk_AqH2bpeWow
+folderId: fl_GE8ehyrKWx
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: DELETE
+name: Delete Event
+sortPriority: 4000.0
+url: ${[ baseUrl ]}/events/:eventId
+urlParameters: []
