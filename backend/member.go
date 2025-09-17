@@ -6,7 +6,7 @@ type Member struct {
 	FirstName   string `json:"firstName"`
 	LastName    string `json:"lastName"`
 	AvatarURL   string `json:"avatarUrl"`
-	SpecialRole string `json:"specialRole"`
+	SpecialRole string `json:"specialRole,omitempty"`
 	Approved    bool   `json:"approved"`
 }
 
