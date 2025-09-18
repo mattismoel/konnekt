@@ -37,6 +37,10 @@ func (a ArtistRepo) ArtistByID(ctx context.Context, artistID int64) (konnekt.Art
 	err := pgx.BeginFunc(ctx, a.Pool, func(tx pgx.Tx) error {
 		dbArtist, err := artistByID(ctx, tx, artistID)
 		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return konnekt.ErrResourceNotFound
+			}
+
 			return fmt.Errorf("Could not get artist: %v", err)
 		}
 
