@@ -8,7 +8,7 @@ type Artist struct {
 	Description string           `json:"description"`
 	ImageURL    string           `json:"imageUrl"`
 	PreviewURL  string           `json:"previewUrl"`
-	Socials     SocialCollection `json:"social"`
+	Socials     SocialCollection `json:"socials"`
 	Genres      []Genre          `json:"genres"`
 }
 
