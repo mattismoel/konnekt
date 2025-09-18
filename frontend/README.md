@@ -25,10 +25,6 @@ This project uses [Vitest](https://vitest.dev/) for testing. You can run the tes
 bunx --bun run test
 ```
 
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
 
 
 
