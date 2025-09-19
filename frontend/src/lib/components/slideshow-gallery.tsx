@@ -4,42 +4,40 @@ import { cn } from "../clsx";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 
 const SlideshowGallery = ({ children }: PropsWithChildren) => {
+	const [scrollIdx, setScrollIdx] = useState(0)
+	const [scrollSize, setScrollSize] = useState(0)
+
 	const ref = useRef<HTMLDivElement>(null)
 	const { scroll } = useScroll(ref)
-	const [scrollSize, setScrollSize] = useState(0)
-	const [scrollIdx, setScrollIdx] = useState(0)
 
 	const childCount = Children.count(children)
 
+	// Calculate new index when physically scrolled.
 	useEffect(() => {
 		if (!ref.current) return
-		ref.current.scrollTo({ left: 0 })
-		setScrollIdx(0)
-	}, [])
+		const ratio = scroll.x / ref.current.scrollWidth
+		const newIdx = Math.round(ratio * childCount)
+		setScrollIdx(newIdx);
+	}, [scroll.x])
 
+
+	// Calculate the scrollSize (width of a single entry
 	useEffect(() => {
-		if (!ref.current || childCount === 0) return
+		if (!ref.current) return
 		const newScrollSize = ref.current.scrollWidth / childCount
 		setScrollSize(newScrollSize)
-	}, [childCount])
-
-	useEffect(() => {
-		if (!ref.current || scrollSize === 0) return
-		const newScrollIdx = Math.round(ref.current.scrollLeft / scrollSize)
-		setScrollIdx(newScrollIdx)
-	}, [scroll.x, scrollSize])
-
-	const scrollToIndex = (idx: number) => {
-		if (!ref.current || scrollSize === 0) return
-		const clampedIdx = Math.max(0, Math.min(idx, childCount - 1))
-		ref.current.scrollTo({
-			left: clampedIdx * scrollSize,
-			behavior: "smooth"
-		})
-	}
+	}, [ref])
 
 	const scrollInDirection = (direction: number) => {
-		scrollToIndex(scrollIdx + direction)
+		if (!ref.current) return
+		const newIdx = scrollIdx + direction
+		if (newIdx >= childCount) {
+			ref.current?.scrollTo({ left: 0, behavior: "smooth" })
+			return
+		}
+
+		const newScrollPos = scrollSize * newIdx
+		ref.current.scrollTo({ left: newScrollPos, behavior: "smooth" })
 	};
 
 	return (
