@@ -22,7 +22,7 @@ import LogoDisplay from '@/lib/components/logo-display';
 import TeamDisplay from '@/lib/components/member-display';
 import EventCard from '@/lib/features/events/components/event-card';
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_app/')({
 	component: App,
 	loader: async ({ context: { queryClient } }) => {
 		queryClient.ensureQueryData(upcomingEventsQueryOpts())
