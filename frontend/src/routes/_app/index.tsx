@@ -4,7 +4,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { upcomingEventsQueryOpts } from '@/lib/features/events/query';
 import { membersQueryOpts } from '@/lib/features/auth/query';
 import { useMousePos } from '@/lib/hooks/useMousePos';
-import { useRandom } from '@/lib/hooks/useRandom';
+import { useRandomIndex } from '@/lib/hooks/useRandom';
 import { cn } from '@/lib/clsx';
 
 import Posten from "@/lib/assets/sponsors/posten-logo.svg"
@@ -36,7 +36,7 @@ function App() {
 	const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts())
 	const { data: { records: members } } = useSuspenseQuery(membersQueryOpts())
 
-	const { index: imgIdx, randomize } = useRandom(images)
+	const { randomIndex, randomize } = useRandomIndex(images)
 	const mousePos = useMousePos()
 
 	useEffect(() => {
@@ -48,7 +48,7 @@ function App() {
 		<main>
 			<section className='relative isolate px-responsive flex flex-col justify-center gap-4 h-svh overflow-hidden'>
 				{images.map((src, idx) => (
-					<img key={src} src={src} className={cn('h-full w-full z-0 absolute top-0 left-0 brightness-40 object-cover opacity-0 transition-opacity duration-2000 [.active]:opacity-100', idx === imgIdx && "active")} />
+					<img key={src} src={src} className={cn('h-full w-full z-0 absolute top-0 left-0 brightness-40 object-cover opacity-0 transition-opacity duration-2000 [.active]:opacity-100', idx === randomIndex && "active")} />
 				))}
 
 				<GlowingCursor size="xl" mousePos={mousePos} />

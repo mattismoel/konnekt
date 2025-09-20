@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { randomIndex } from "../random"
 
-export const useRandom = <T,>(selection: T[], historySize: number = 3) => {
 	const [history, setHistory] = useState<number[]>(() => selection.length > 0 ? [randomIndex(selection.length)] : [])
+export const useRandomIndex = <T,>(selection: T[], historySize: number = 2) => {
 
 	const randomize = () => {
 		if (selection.length === 0) return
