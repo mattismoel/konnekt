@@ -25,7 +25,7 @@ const NavMenu = ({ entries, show, onClose }: Props) => {
 				<div ref={ref} className="relative z-50 h-full bg-background p-8 border border-zinc-900 rounded-sm">
 					<ul className="flex flex-col gap-4">
 						{entries.map(({ pathname, title }) => (
-							<NavEntry pathname={pathname} title={title} active={pathname === location.pathname} />
+							<NavEntry pathname={pathname} title={title} active={pathname === location.pathname} onSelect={onClose} />
 						))}
 					</ul>
 					<button type="button" onClick={onClose} className="w-full mt-16 flex justify-center rotate-180 transition-[rotate] group-[.show]:rotate-0"><FaChevronDown /></button>
@@ -39,10 +39,11 @@ type NavEntryProps = {
 	pathname: string
 	title: string
 	active: boolean
+	onSelect: () => void;
 }
 
-const NavEntry = ({ pathname, title, active }: NavEntryProps) => (
-	<li className={cn("text-3xl font-heading [.active]:font-bold [.active]:text-heading", active && "active")}>
+const NavEntry = ({ pathname, title, active, onSelect }: NavEntryProps) => (
+	<li className={cn("text-3xl font-heading [.active]:font-bold [.active]:text-heading", active && "active")} onClick={onSelect}>
 		<Link to={pathname}>{title}</Link>
 	</li>
 )
