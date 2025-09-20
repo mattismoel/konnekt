@@ -1,29 +1,54 @@
 import { useState } from "react"
 import { randomIndex } from "../random"
 
-	const [history, setHistory] = useState<number[]>(() => selection.length > 0 ? [randomIndex(selection.length)] : [])
+/**
+ * @description Hook for generating random index without index repetition.
+ * @param selection The array to generate indicies from.
+ * @param historySize The buffer size of which previous items cannot be randomly selected. 
+ */
 export const useRandomIndex = <T,>(selection: T[], historySize: number = 2) => {
+	const [indexHistory, setIndexHistory] = useState<number[]>([])
 
 	const randomize = () => {
 		if (selection.length === 0) return
 
-		if (selection.length <= historySize) {
-			const newIdx = randomIndex(selection.length)
-			setHistory([newIdx])
+		if (selection.length === 1) {
+			setIndexHistory([0])
 			return
 		}
 
-		setHistory(prev => {
+		setIndexHistory(prevHistory => {
+			// If there are less items than the history can hold, we cannot enforce
+			// uniqueness. Therefore we just return a random index, though making
+			// sure the item is not directly repeated.
+			if (selection.length <= historySize) {
+				let newIdx = randomIndex(selection.length)
+				const prevIdx = prevHistory[prevHistory.length - 1]
+				while (newIdx === prevIdx) {
+					newIdx = randomIndex(selection.length)
+				}
+
+				return [...prevHistory, newIdx].slice(-historySize)
+			}
+
 			let newIdx = randomIndex(selection.length)
-			while (prev.includes(newIdx)) {
+			while (prevHistory.includes(newIdx)) {
 				newIdx = randomIndex(selection.length)
 			}
 
-			return [...prev, newIdx].slice(-historySize)
+			return [...prevHistory, newIdx].slice(-historySize)
 		})
 	}
 
-	const index = history[history.length - 1]
+	const overrideIndex = (newIdx: number) => {
+		if (newIdx < 0 || newIdx > selection.length - 1) {
+			throw new Error("Override index out of bounds")
+		}
 
-	return { index, randomize }
+		setIndexHistory(prev => [...prev, newIdx].slice(-historySize))
+	}
+
+	const index = indexHistory[indexHistory.length - 1]
+
+	return { randomIndex: index, randomize, overrideIndex }
 }
