@@ -21,3 +21,4 @@ export const event = z.object({
 
 
 export type Event = z.infer<typeof event>
+export type Concert = z.infer<typeof concert>

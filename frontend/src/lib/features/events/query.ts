@@ -14,6 +14,17 @@ export const upcomingEventsQueryOpts = () => queryOptions({
 		return createListResult(event).parse(await res.json())
 	}
 })
+export const eventByIdQueryOpts = (eventId: number) => queryOptions({
+	queryKey: ["events", eventId],
+	queryFn: async () => {
+		const res = await fetch(`/api/events/${eventId}`)
+		if (!res.ok) {
+			throwAPIError(await res.json())
+		}
+
+		return event.parse(await res.json())
+	}
+})
 
 export const artistEventsQueryOpts = (artistId: number) => queryOptions({
 	queryKey: ["artist-events", artistId],
