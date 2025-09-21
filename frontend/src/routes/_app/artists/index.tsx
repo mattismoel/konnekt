@@ -42,7 +42,7 @@ function RouteComponent() {
 		<main className="min-h-svh py-32 px-responsive overflow-hidden">
 			<div className="z-0 fixed top-0 left-0 w-full h-svh overflow-hidden">
 				{[...upcomingArtists].map((artist, i) => (
-					<img key={artist.imageUrl} src={artist.imageUrl} className={cn("absolute top-0 left-0 h-full w-full object-cover opacity-0 brightness-60 transition-[opacity,scale] duration-1000 [.active]:opacity-100 [.active]:scale-110", i === randomIndex && "active")} />
+					<img key={artist.imageUrl} src={artist.imageUrl} className={cn("absolute top-0 left-0 h-full w-full object-cover opacity-0 brightness-50 transition-[opacity,scale] duration-1000 [.active]:opacity-100 [.active]:scale-110", i === randomIndex && "active")} />
 				))}
 			</div>
 
