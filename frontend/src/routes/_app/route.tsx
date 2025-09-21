@@ -9,6 +9,17 @@ export const Route = createFileRoute('/_app')({
 	component: RouteComponent,
 })
 
+const socials: string[] = [
+	"https://www.instagram.com/konnekt_odense/",
+	"https://www.tiktok.com/@konnekt_",
+	"https://www.facebook.com/profile.php?id=61574860865073"
+]
+
+const mails: string[] = [
+	"konnekt.samarbejde@gmail.com",
+	"booking.konnekt@gmail.com",
+]
+
 const navEntries = [
 	{ pathname: "/events", title: "Events" },
 	{ pathname: "/artists", title: "Kunstnere" },
@@ -27,7 +38,7 @@ function RouteComponent() {
 				onClose={() => setNavMenuOpen(false)}
 			/>
 			<Outlet />
-			<Footer />
+			<Footer socials={socials} mails={mails} routes={navEntries} />
 		</>
 	)
 }
