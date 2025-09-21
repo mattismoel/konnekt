@@ -72,7 +72,7 @@ const Entry = forwardRef<HTMLLIElement, EntryProps>(({ artist, isShowcased, ...r
 				"hover:bg-foreground/10 hover:border-foreground/20 [.showcase]:border-foreground/20",
 				isShowcased && "showcase",
 			)}>
-				<Link to="/artists/$artistId" params={{ artistId: artist.id.toString() }} className="pl-4 py-2">
+				<Link to="/artists/$artistId" params={{ artistId: artist.id.toString() }} className="pl-6 py-4">
 					<span className="font-semibold group-hover:text-foreground group-[.showcase]:text-foreground">{artist.name}</span>
 				</Link>
 				<span className="hidden w-full @lg:inline text-foreground/75">{artist.genres.join(", ")}</span>
