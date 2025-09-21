@@ -15,7 +15,7 @@ const Footer = ({ routes, socials, mails }: Props) => (
 				<h3 className="font-heading text-heading font-semibold mb-4">Find rundt</h3>
 				<ul>
 					{routes.map(({ title, pathname }) => (
-						<li>
+						<li key={pathname}>
 							<Link to={pathname} className="hover:underline">{title}</Link>
 						</li>
 					))}
@@ -28,7 +28,7 @@ const Footer = ({ routes, socials, mails }: Props) => (
 				</div>
 				<ul className="flex flex-col sm:items-end">
 					{mails.map(mail => (
-						<li>
+						<li key={mail}>
 							<a href={`mailto:${mail}`} className="hover:underline">{mail}</a>
 						</li>
 					))}

@@ -26,7 +26,7 @@ const Navbar = ({ entries: links, menuOpen, onOpenMenu }: Props) => {
 			</div>
 			<ul className="hidden text-heading/75 gap-8 md:flex">
 				{links.map(({ pathname, title }) => (
-					<NavEntry active={location.pathname === pathname} pathname={pathname} title={title} />
+					<NavEntry key={pathname} active={location.pathname === pathname} pathname={pathname} title={title} />
 				))}
 			</ul>
 		</nav>

@@ -13,7 +13,7 @@ const SocialList = ({ urls, size = "md", className }: Props) => (
 		"text-2xl gap-5": size === "md",
 		"text-3xl gap-6": size === "lg",
 	}, className)}>
-		{urls.map(url => <li><SocialIcon url={url} /></li>)}
+		{urls.map(url => <li key={url}><SocialIcon url={url} /></li>)}
 	</ul>
 )
 
