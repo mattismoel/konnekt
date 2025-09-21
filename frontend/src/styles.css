@@ -10,7 +10,7 @@
 	--color-background: var(--color-zinc-950);
 	--color-foreground: var(--color-zinc-50);
 
-	--color-text: var(--color-zinc-400);
+	--color-text: var(--color-zinc-300);
 	--color-heading: var(--color-foreground);
 	--font-sans: "Poppins", sans-serif;
 	--font-heading: "Ubuntu", sans-serif;
