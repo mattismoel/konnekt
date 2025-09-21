@@ -28,6 +28,7 @@ function RouteComponent() {
 
 	useEffect(() => {
 		if (isManualShowcase) return
+		randomize()
 		const interval = setInterval(() => randomize(), 2000)
 		return () => clearInterval(interval)
 	}, [isManualShowcase])
