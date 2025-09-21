@@ -1,14 +1,11 @@
+import { forwardRef, useEffect, useState, type HTMLAttributes } from 'react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/clsx'
-import SocialIcon from '@/lib/components/social-icon'
-import SocialList from '@/lib/components/social-list'
-import type { Artist } from '@/lib/features/artists/artist'
 import { previousArtistsQueryOpts, upcomingArtistsQueryOpts } from '@/lib/features/artists/query'
 import { useRandomIndex } from '@/lib/hooks/useRandom'
-import { socialIconByUrl } from '@/lib/social'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { forwardRef, useEffect, useState, type HTMLAttributes } from 'react'
-import { FaInstagram } from 'react-icons/fa6'
+import type { Artist } from '@/lib/features/artists/artist'
+import SocialList from '@/lib/components/social-list'
 
 export const Route = createFileRoute('/_app/artists/')({
 	component: RouteComponent,
