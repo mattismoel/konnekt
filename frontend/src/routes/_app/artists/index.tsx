@@ -1,7 +1,10 @@
 import { cn } from '@/lib/clsx'
+import SocialIcon from '@/lib/components/social-icon'
+import SocialList from '@/lib/components/social-list'
 import type { Artist } from '@/lib/features/artists/artist'
 import { previousArtistsQueryOpts, upcomingArtistsQueryOpts } from '@/lib/features/artists/query'
 import { useRandomIndex } from '@/lib/hooks/useRandom'
+import { socialIconByUrl } from '@/lib/social'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { forwardRef, useEffect, useState, type HTMLAttributes } from 'react'
@@ -72,9 +75,7 @@ const Entry = forwardRef<HTMLLIElement, EntryProps>(({ artist, isShowcased, ...r
 					<span className="font-semibold group-hover:text-foreground group-[.showcase]:text-foreground">{artist.name}</span>
 				</Link>
 				<span className="hidden w-full @lg:inline">{artist.genres.join(", ")}</span>
-				<ul className="hidden gap-4 justify-end @2xl:flex py-2 pr-4">
-					{artist.socials.map(url => <a href={url}><FaInstagram /></a>)}
-				</ul>
+				<SocialList size="md" urls={artist.socials} className="hidden justify-end @2xl:flex pr-6" />
 			</div>
 		</li>
 	)
