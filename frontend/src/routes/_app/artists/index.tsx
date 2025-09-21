@@ -75,7 +75,7 @@ const Entry = forwardRef<HTMLLIElement, EntryProps>(({ artist, isShowcased, ...r
 				<Link to="/artists/$artistId" params={{ artistId: artist.id.toString() }} className="pl-4 py-2">
 					<span className="font-semibold group-hover:text-foreground group-[.showcase]:text-foreground">{artist.name}</span>
 				</Link>
-				<span className="hidden w-full @lg:inline">{artist.genres.join(", ")}</span>
+				<span className="hidden w-full @lg:inline text-foreground/75">{artist.genres.join(", ")}</span>
 				<SocialList size="md" urls={artist.socials} className="hidden justify-end @2xl:flex pr-6" />
 			</div>
 		</li>
