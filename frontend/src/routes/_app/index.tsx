@@ -40,6 +40,7 @@ function App() {
 	const mousePos = useMousePos()
 
 	useEffect(() => {
+		randomize()
 		const interval = setInterval(() => randomize(), 5000)
 		return () => clearInterval(interval)
 	}, [])
