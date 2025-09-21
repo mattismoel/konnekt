@@ -28,3 +28,15 @@ export const previousArtistsQueryOpts = () => queryOptions({
 		return result
 	}
 })
+
+export const artistByIdQueryOpts = (artistId: number) => queryOptions({
+	queryKey: ["artists", artistId],
+	queryFn: async () => {
+		const res = await fetch(`/api/artists/${artistId}`)
+		if (!res.ok) {
+			throwAPIError(await res.json())
+		}
+
+		return artist.parse(await res.json())
+	}
+})

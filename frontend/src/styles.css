@@ -72,3 +72,8 @@
 		opacity: --value(--opacity-*);
 	}
 }
+
+@utility word-spacing-* {
+	word-spacing: --value(--spacing-*, *, [*]);
+	word-spacing: --spacing(--value(integer));
+}
