@@ -1,7 +1,8 @@
 import z from "zod";
-import { team } from "./team";
+import { teamSchema } from "./team";
+import { throwAPIError } from "@/lib/api/error";
 
-export const member = z.object({
+export const memberSchema = z.object({
 	id: z.int().positive(),
 	email: z.email().nonempty(),
 	firstName: z.string().nonempty(),
@@ -9,7 +10,7 @@ export const member = z.object({
 	avatarUrl: z.url().nonempty(),
 	specialRole: z.string().optional(),
 	approved: z.boolean(),
-	teams: team.array(),
+	teams: teamSchema.array(),
 })
 
-export type Member = z.infer<typeof member>
+export type Member = z.infer<typeof memberSchema>

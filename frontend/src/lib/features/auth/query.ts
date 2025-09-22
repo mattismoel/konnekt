@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { member } from "./member";
+import { memberSchema } from "./member";
 import { createListResult } from "@/lib/api/list";
 
 export const membersQueryOpts = () => queryOptions({
@@ -10,7 +10,7 @@ export const membersQueryOpts = () => queryOptions({
 			throw new Error("Could not fetch members")
 		}
 
-		const members = createListResult(member).parse(await res.json())
+		const members = createListResult(memberSchema).parse(await res.json())
 		return members
 	}
 })
