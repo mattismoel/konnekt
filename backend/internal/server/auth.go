@@ -178,6 +178,41 @@ func (s Server) handleLoginMember() http.HandlerFunc {
 	}
 }
 
+func (s Server) handleGetSession() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		sessCookie, err := sessionCookie(r)
+		if err != nil {
+			if errors.Is(err, http.ErrNoCookie) {
+				api.WriteError(w, r, api.UnauthorisedError(r))
+				return
+			}
+
+			api.WriteError(w, r, err)
+			return
+		}
+
+		token := auth.SessionToken(sessCookie.Value)
+		sessionID, err := token.SessionID()
+		if err != nil {
+			api.WriteError(w, r, api.UnauthorisedError(r))
+			return
+		}
+
+		session, err := s.SessionRepo.GetSession(ctx, sessionID)
+		if err != nil {
+			api.WriteError(w, r, err)
+			return
+		}
+
+		if err := token.Validate(session.SecretHash); err != nil {
+			api.WriteError(w, r, api.UnauthorisedError(r))
+			return
+		}
+	}
+}
+
 func sessionCookie(r *http.Request) (*http.Cookie, error) {
 	cookie, err := r.Cookie(SESSION_COOKIE_NAME)
 	if err != nil {

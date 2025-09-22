@@ -1,12 +1,15 @@
 package server
 
 import (
+	"errors"
 	"net/http"
+	"slices"
 
+	konnekt "github.com/mattismoel/konnekt/backend"
 	"github.com/mattismoel/konnekt/backend/api"
+	"github.com/mattismoel/konnekt/backend/auth"
 	"github.com/mattismoel/konnekt/backend/urlutil"
 )
-
 
 func (s Server) handleGetTeamPermissions() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
