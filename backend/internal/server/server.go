@@ -1,13 +1,20 @@
 package server
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"strconv"
 
 	"github.com/mattismoel/konnekt/backend/auth"
 )
+
+type ObjectStore interface {
+	Insert(context.Context, string, io.Reader) (string, error)
+	Delete(context.Context, string) error
+}
 
 type Server struct {
 	ArtistRepo ArtistRepo
@@ -17,6 +24,7 @@ type Server struct {
 	AuthRepo   AuthRepo
 
 	SessionRepo SessionRepo
+	ObjectStore ObjectStore
 }
 
 func (s Server) Start(host string, port int) error {
