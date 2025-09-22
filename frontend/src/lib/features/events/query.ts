@@ -1,6 +1,6 @@
 import { throwAPIError } from "@/lib/api/error";
 import { queryOptions } from "@tanstack/react-query";
-import { event } from "./event";
+import { eventSchema } from "./event";
 import { createListResult } from "@/lib/api/list";
 
 export const upcomingEventsQueryOpts = () => queryOptions({
@@ -11,7 +11,7 @@ export const upcomingEventsQueryOpts = () => queryOptions({
 			throwAPIError(await res.json())
 		}
 
-		return createListResult(event).parse(await res.json())
+		return createListResult(eventSchema).parse(await res.json())
 	}
 })
 export const eventByIdQueryOpts = (eventId: number) => queryOptions({
@@ -22,7 +22,7 @@ export const eventByIdQueryOpts = (eventId: number) => queryOptions({
 			throwAPIError(await res.json())
 		}
 
-		return event.parse(await res.json())
+		return eventSchema.parse(await res.json())
 	}
 })
 
@@ -34,6 +34,6 @@ export const artistEventsQueryOpts = (artistId: number) => queryOptions({
 			throwAPIError(await res.json())
 		}
 
-		return createListResult(event).parse(await res.json())
+		return createListResult(eventSchema).parse(await res.json())
 	}
 })

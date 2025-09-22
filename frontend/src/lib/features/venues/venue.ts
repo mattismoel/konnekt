@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const venue = z.object({
+export const venueSchema = z.object({
 	id: z.int().positive(),
 	name: z.string().nonempty(),
 	city: z.string().nonempty(),

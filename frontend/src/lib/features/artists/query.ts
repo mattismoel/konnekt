@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { artist } from "./artist";
+import { artistSchema } from "./artist";
 import { createListResult } from "@/lib/api/list";
 import { throwAPIError } from "@/lib/api/error";
 
@@ -11,7 +11,7 @@ export const upcomingArtistsQueryOpts = () => queryOptions({
 			throwAPIError(await res.json())
 		}
 
-		const result = createListResult(artist).parse(await res.json())
+		const result = createListResult(artistSchema).parse(await res.json())
 		return result
 	}
 })
@@ -24,7 +24,7 @@ export const previousArtistsQueryOpts = () => queryOptions({
 			throwAPIError(await res.json())
 		}
 
-		const result = createListResult(artist).parse(await res.json())
+		const result = createListResult(artistSchema).parse(await res.json())
 		return result
 	}
 })
@@ -37,6 +37,6 @@ export const artistByIdQueryOpts = (artistId: number) => queryOptions({
 			throwAPIError(await res.json())
 		}
 
-		return artist.parse(await res.json())
+		return artistSchema.parse(await res.json())
 	}
 })
