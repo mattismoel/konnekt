@@ -9,50 +9,279 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as AppRouteRouteImport } from './routes/_app/route'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AdminEventsRouteImport } from './routes/admin/events'
+import { Route as AppAboutUsRouteImport } from './routes/_app/about-us'
+import { Route as AppEventsIndexRouteImport } from './routes/_app/events/index'
+import { Route as AppArtistsIndexRouteImport } from './routes/_app/artists/index'
+import { Route as AppEventsEventIdRouteImport } from './routes/_app/events/$eventId'
+import { Route as AppAuthRegisterRouteImport } from './routes/_app/auth/register'
+import { Route as AppAuthLoginRouteImport } from './routes/_app/auth/login'
+import { Route as AppArtistsArtistIdRouteImport } from './routes/_app/artists/$artistId'
 
-const IndexRoute = IndexRouteImport.update({
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRouteRoute = AppRouteRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AdminEventsRoute = AdminEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AppAboutUsRoute = AppAboutUsRouteImport.update({
+  id: '/about-us',
+  path: '/about-us',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppEventsIndexRoute = AppEventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppArtistsIndexRoute = AppArtistsIndexRouteImport.update({
+  id: '/artists/',
+  path: '/artists/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppEventsEventIdRoute = AppEventsEventIdRouteImport.update({
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppAuthRegisterRoute = AppAuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppAuthLoginRoute = AppAuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppArtistsArtistIdRoute = AppArtistsArtistIdRouteImport.update({
+  id: '/artists/$artistId',
+  path: '/artists/$artistId',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/about-us': typeof AppAboutUsRoute
+  '/admin/events': typeof AdminEventsRoute
+  '/': typeof AppIndexRoute
+  '/artists/$artistId': typeof AppArtistsArtistIdRoute
+  '/auth/login': typeof AppAuthLoginRoute
+  '/auth/register': typeof AppAuthRegisterRoute
+  '/events/$eventId': typeof AppEventsEventIdRoute
+  '/artists': typeof AppArtistsIndexRoute
+  '/events': typeof AppEventsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/about-us': typeof AppAboutUsRoute
+  '/admin/events': typeof AdminEventsRoute
+  '/': typeof AppIndexRoute
+  '/artists/$artistId': typeof AppArtistsArtistIdRoute
+  '/auth/login': typeof AppAuthLoginRoute
+  '/auth/register': typeof AppAuthRegisterRoute
+  '/events/$eventId': typeof AppEventsEventIdRoute
+  '/artists': typeof AppArtistsIndexRoute
+  '/events': typeof AppEventsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteRouteWithChildren
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/_app/about-us': typeof AppAboutUsRoute
+  '/admin/events': typeof AdminEventsRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/artists/$artistId': typeof AppArtistsArtistIdRoute
+  '/_app/auth/login': typeof AppAuthLoginRoute
+  '/_app/auth/register': typeof AppAuthRegisterRoute
+  '/_app/events/$eventId': typeof AppEventsEventIdRoute
+  '/_app/artists/': typeof AppArtistsIndexRoute
+  '/_app/events/': typeof AppEventsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/admin'
+    | '/about-us'
+    | '/admin/events'
+    | '/'
+    | '/artists/$artistId'
+    | '/auth/login'
+    | '/auth/register'
+    | '/events/$eventId'
+    | '/artists'
+    | '/events'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/admin'
+    | '/about-us'
+    | '/admin/events'
+    | '/'
+    | '/artists/$artistId'
+    | '/auth/login'
+    | '/auth/register'
+    | '/events/$eventId'
+    | '/artists'
+    | '/events'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/admin'
+    | '/_app/about-us'
+    | '/admin/events'
+    | '/_app/'
+    | '/_app/artists/$artistId'
+    | '/_app/auth/login'
+    | '/_app/auth/register'
+    | '/_app/events/$eventId'
+    | '/_app/artists/'
+    | '/_app/events/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRouteRoute: typeof AppRouteRouteWithChildren
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/admin/events': {
+      id: '/admin/events'
+      path: '/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AdminEventsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_app/about-us': {
+      id: '/_app/about-us'
+      path: '/about-us'
+      fullPath: '/about-us'
+      preLoaderRoute: typeof AppAboutUsRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/events/': {
+      id: '/_app/events/'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof AppEventsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/artists/': {
+      id: '/_app/artists/'
+      path: '/artists'
+      fullPath: '/artists'
+      preLoaderRoute: typeof AppArtistsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/events/$eventId': {
+      id: '/_app/events/$eventId'
+      path: '/events/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof AppEventsEventIdRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/auth/register': {
+      id: '/_app/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AppAuthRegisterRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/auth/login': {
+      id: '/_app/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AppAuthLoginRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/artists/$artistId': {
+      id: '/_app/artists/$artistId'
+      path: '/artists/$artistId'
+      fullPath: '/artists/$artistId'
+      preLoaderRoute: typeof AppArtistsArtistIdRouteImport
+      parentRoute: typeof AppRouteRoute
     }
   }
 }
 
+interface AppRouteRouteChildren {
+  AppAboutUsRoute: typeof AppAboutUsRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppArtistsArtistIdRoute: typeof AppArtistsArtistIdRoute
+  AppAuthLoginRoute: typeof AppAuthLoginRoute
+  AppAuthRegisterRoute: typeof AppAuthRegisterRoute
+  AppEventsEventIdRoute: typeof AppEventsEventIdRoute
+  AppArtistsIndexRoute: typeof AppArtistsIndexRoute
+  AppEventsIndexRoute: typeof AppEventsIndexRoute
+}
+
+const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppAboutUsRoute: AppAboutUsRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppArtistsArtistIdRoute: AppArtistsArtistIdRoute,
+  AppAuthLoginRoute: AppAuthLoginRoute,
+  AppAuthRegisterRoute: AppAuthRegisterRoute,
+  AppEventsEventIdRoute: AppEventsEventIdRoute,
+  AppArtistsIndexRoute: AppArtistsIndexRoute,
+  AppEventsIndexRoute: AppEventsIndexRoute,
+}
+
+const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
+  AppRouteRouteChildren,
+)
+
+interface AdminRouteRouteChildren {
+  AdminEventsRoute: typeof AdminEventsRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminEventsRoute: AdminEventsRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRouteRoute: AppRouteRouteWithChildren,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
