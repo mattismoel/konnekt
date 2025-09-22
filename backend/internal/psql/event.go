@@ -30,6 +30,32 @@ type EventRepo struct {
 	Pool *pgxpool.Pool
 }
 
+// ArtistEvents implements server.EventRepo.
+func (e EventRepo) ArtistEvents(ctx context.Context, artistID int64, lr api.ListRequest) (api.ListResponse[konnekt.Event], error) {
+	events := make([]konnekt.Event, 0)
+	err := pgx.BeginFunc(ctx, e.Pool, func(tx pgx.Tx) error {
+		dbEvents, err := artistEvents(ctx, tx, artistID)
+		if err != nil {
+			return fmt.Errorf("Could not list artist events: %v", err)
+		}
+
+		events, err = dbEvents.Assemble(ctx, tx)
+		if err != nil {
+			return fmt.Errorf("Could not assemble DB events: %v", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return api.ListResponse[konnekt.Event]{}, err
+	}
+
+	return api.ListResponse[konnekt.Event]{
+		Records: events,
+	}, nil
+}
+
 // Delete implements konnekt.EventRepo.
 func (e EventRepo) Delete(ctx context.Context, eventID int64) error {
 	err := pgx.BeginFunc(ctx, e.Pool, func(tx pgx.Tx) error {
@@ -298,6 +324,32 @@ func updateEvent(ctx context.Context, tx pgx.Tx, eventID int64, um mask.FieldMap
 	}
 
 	return nil
+}
+
+func artistEvents(ctx context.Context, tx pgx.Tx, artistID int64) (Collection[Event, konnekt.Event], error) {
+	query, args, err := psql.
+		Select("e.*").
+		Distinct().
+		From("concert c").
+		Where(sq.Eq{"c.artist_id": artistID}).
+		Join("event e ON e.id = c.event_id").
+		ToSql()
+
+	if err != nil {
+		return nil, NewQueryBuildError("artist events", err)
+	}
+
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("Could not query for artist events: %v", err)
+	}
+
+	events, err := pgx.CollectRows(rows, pgx.RowToStructByName[Event])
+	if err != nil {
+		return nil, fmt.Errorf("Could not collect artist events: %v", err)
+	}
+
+	return events, nil
 }
 
 func deleteEvent(ctx context.Context, tx pgx.Tx, eventID int64) error {

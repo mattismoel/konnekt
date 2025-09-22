@@ -16,6 +16,7 @@ type EventRepo interface {
 	ListEvents(context.Context, api.ListRequest) (api.ListResponse[konnekt.Event], error)
 	Delete(context.Context, int64) error
 	Update(context.Context, int64, api.UpdateRequest[konnekt.UpdateEvent]) error
+	ArtistEvents(context.Context, int64, api.ListRequest) (api.ListResponse[konnekt.Event], error)
 }
 
 func (s Server) handleListEvents() http.HandlerFunc {
@@ -135,6 +136,29 @@ func (s Server) handleDeleteEvent() http.HandlerFunc {
 		}
 
 		if err := s.EventRepo.Delete(ctx, int64(eventID)); err != nil {
+			api.WriteError(w, r, err)
+			return
+		}
+	}
+}
+
+func (s Server) handleGetArtistEvents() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		artistID, err := urlutil.PathInt(r, "artistID")
+		if err != nil {
+			api.WriteError(w, r, api.BadRequestError(r, "Invalid artist ID"))
+			return
+		}
+
+		lr := api.NewListRequest(r)
+		result, err := s.EventRepo.ArtistEvents(ctx, int64(artistID), lr)
+		if err != nil {
+			api.WriteError(w, r, err)
+			return
+		}
+
+		if err := api.WriteJSON(w, result, int(http.StatusOK)); err != nil {
 			api.WriteError(w, r, err)
 			return
 		}

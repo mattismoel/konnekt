@@ -20,6 +20,7 @@ func (s Server) setupRouter(mux *http.ServeMux) {
 	// |=> ARTIST ROUTES.
 	mux.HandleFunc("GET /artists", s.handleListArtists())
 	mux.HandleFunc("GET /artists/{artistID}", s.handleGetArtistByID())
+	mux.HandleFunc("GET /artists/{artistID}/events", s.handleGetArtistEvents())
 	mux.HandleFunc("POST /artists", s.withPermissions(s.handleCreateArtist(), "edit:artist"))
 	mux.HandleFunc("POST /artists/genres", s.withPermissions(s.handleCreateGenre(), "edit:genre"))
 	mux.HandleFunc("PATCH /artists/{artistID}", s.withPermissions(s.handleUpdateArtist(), "edit:artist"))
