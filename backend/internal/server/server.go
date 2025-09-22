@@ -33,7 +33,7 @@ func (s Server) Start(host string, port int) error {
 
 	httpServer := &http.Server{
 		Addr:    net.JoinHostPort(host, strconv.Itoa(port)),
-		Handler:      Chain(mux, Logger),
+		Handler: Chain(mux, Logger),
 	}
 
 	return httpServer.ListenAndServe()
