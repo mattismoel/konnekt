@@ -50,6 +50,7 @@ export const artistForm = z.object({
 	]),
 	genreIds: idSchema
 		.array()
+		.max(3, "En kunstner må maks have 3 genrer")
 		.nonempty(),
 	socials: z
 		.string()

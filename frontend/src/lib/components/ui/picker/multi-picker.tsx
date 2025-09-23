@@ -4,12 +4,15 @@ import Entry from "./entry";
 type Props = {
 	entries: EntryType[]
 	selected: EntryType[]
+	max?: number
 	onChange: (selected: EntryType[]) => void;
 }
 
-const MultiPicker = ({ entries, selected, onChange }: Props) => {
+const MultiPicker = ({ entries, selected, max, onChange }: Props) => {
 	const handleToggle = (entry: EntryType) => {
 		const isSelected = selected.some(e => e.id === entry.id)
+
+		if (max && !isSelected && selected.length >= max) return
 
 		const newSelected = isSelected
 			? selected.filter(e => e.id !== entry.id)
