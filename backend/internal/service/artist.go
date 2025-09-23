@@ -21,7 +21,7 @@ import (
 	_ "image/png"
 )
 
-const ARTIST_IMAGE_WIDTH_PX = 2048
+const ARTIST_IMAGE_WIDTH_PX = 4096
 
 var (
 	AllowedImageFiletypes = []string{".png", ".jpeg", ".jpg"}

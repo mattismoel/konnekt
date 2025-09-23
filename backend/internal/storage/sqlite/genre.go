@@ -138,7 +138,7 @@ func scanGenre(s Scanner, dst *Genre) error {
 
 // Lists genres based on the input {QueryParams}.
 func listGenres(ctx context.Context, tx *sql.Tx, params QueryParams) ([]Genre, error) {
-	builder := genreBuilder
+	builder := genreBuilder.OrderBy("genre.name")
 
 	builder = withPagination(builder, params)
 
@@ -299,6 +299,7 @@ func artistGenres(ctx context.Context, tx *sql.Tx, artistID int64) (GenreCollect
 	query, args, err := genreBuilder.
 		Join("artists_genres ag on ag.genre_id = genre.id").
 		Where(sq.Eq{"ag.artist_id": artistID}).
+		OrderBy("genre.name").
 		ToSql()
 
 	if err != nil {
