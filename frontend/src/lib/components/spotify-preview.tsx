@@ -14,10 +14,10 @@ const SpotifyPreview = ({trackId}: Props) => {
 				style:border-radius="12px"
 				width="100%"
 				height="152"
-				frameBorder="0"
 				allowFullScreen
 				allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
 				loading="lazy"
+				tabIndex={-1}
 			></iframe>
 		</div>
 	)

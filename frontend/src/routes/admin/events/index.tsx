@@ -9,39 +9,39 @@ import { previousEventsQueryOpts, upcomingEventsQueryOpts } from '@/lib/features
 import EventList from '@/lib/features/event/components/event-list';
 
 export const Route = createFileRoute('/admin/events/')({
-  component: RouteComponent,
-  loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(upcomingEventsQueryOpts(false))
-    queryClient.ensureQueryData(previousEventsQueryOpts)
-  }
+	component: RouteComponent,
+	loader: async ({ context: { queryClient } }) => {
+		queryClient.ensureQueryData(upcomingEventsQueryOpts(false))
+		queryClient.ensureQueryData(previousEventsQueryOpts)
+	}
 })
 
 function RouteComponent() {
-  const { hasPermissions } = useAuth()
+	const { hasPermissions } = useAuth()
 
-  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts(false))
-  const { data: { records: previousEvents } } = useSuspenseQuery(previousEventsQueryOpts)
+	const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts(false))
+	const { data: { records: previousEvents } } = useSuspenseQuery(previousEventsQueryOpts)
 
-  return (
-    <>
-      <AdminHeader>
-        <AdminHeader.Title>Events</AdminHeader.Title>
-        <AdminHeader.Description>Overblik over alle events.</AdminHeader.Description>
-        <AdminHeader.Actions>
-          {hasPermissions(["edit:event"]) && (
-            <LinkButton
-              to="/admin/events/create"
-              disabled={!hasPermissions(['edit:event'])}
-            >
-              <FaPlus />Tilføj
-            </LinkButton>
-          )}
-        </AdminHeader.Actions>
-      </AdminHeader>
+	return (
+		<div className="min-h-svh px-auto py-32">
+			<AdminHeader>
+				<AdminHeader.Title>Events</AdminHeader.Title>
+				<AdminHeader.Description>Overblik over alle events.</AdminHeader.Description>
+				<AdminHeader.Actions>
+					{hasPermissions(["edit:event"]) && (
+						<LinkButton
+							to="/admin/events/create"
+							disabled={!hasPermissions(['edit:event'])}
+						>
+							<FaPlus />Tilføj
+						</LinkButton>
+					)}
+				</AdminHeader.Actions>
+			</AdminHeader>
 
-      <main className="pt-16">
-        <EventList previousEvents={previousEvents} upcomingEvents={upcomingEvents} />
-      </main>
-    </>
-  )
+			<main className="pt-16">
+				<EventList previousEvents={previousEvents} upcomingEvents={upcomingEvents} />
+			</main>
+		</div>
+	)
 }

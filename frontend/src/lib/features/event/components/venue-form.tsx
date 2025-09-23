@@ -52,7 +52,7 @@ const VenueForm = ({ venue, updatedByMember }: Props) => {
 	})
 
 	return (
-		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
+		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8 max-w-lg">
 			<div className="flex flex-col gap-4">
 				<FormField error={errors.name}>
 					<Input {...register("name")} placeholder="Venuenavn" />

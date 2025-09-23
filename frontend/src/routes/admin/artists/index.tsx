@@ -8,51 +8,51 @@ import { createFileRoute } from '@tanstack/react-router'
 import { FaPlus } from 'react-icons/fa6'
 
 export const Route = createFileRoute('/admin/artists/')({
-  component: RouteComponent,
-  loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(upcomingArtistsQueryOpts)
-    queryClient.ensureQueryData(artistsQueryOpts)
-  }
+	component: RouteComponent,
+	loader: async ({ context: { queryClient } }) => {
+		queryClient.ensureQueryData(upcomingArtistsQueryOpts)
+		queryClient.ensureQueryData(artistsQueryOpts)
+	}
 })
 
 function RouteComponent() {
-  const { data: upcomingArtists } = useSuspenseQuery(upcomingArtistsQueryOpts)
-  const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
+	const { data: upcomingArtists } = useSuspenseQuery(upcomingArtistsQueryOpts)
+	const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
 
-  const { hasPermissions } = useAuth()
+	const { hasPermissions } = useAuth()
 
-  return (
-    <>
-      <AdminHeader>
-        <AdminHeader.Title>Kunstnere</AdminHeader.Title>
-        <AdminHeader.Description
-        >Overblik over alle kunstnere, som er associerede med events.</AdminHeader.Description
-        >
-        <AdminHeader.Actions>
-          {hasPermissions(["edit:artist"]) && (
-            <LinkButton
-              to="/admin/artists/create"
-              disabled={!hasPermissions(['edit:artist'])}
-            >
-              <FaPlus />Tilføj
-            </LinkButton>
-          )}
-        </AdminHeader.Actions>
-      </AdminHeader>
+	return (
+		<div className="px-auto py-32 min-h-svh">
+			<AdminHeader>
+				<AdminHeader.Title>Kunstnere</AdminHeader.Title>
+				<AdminHeader.Description
+				>Overblik over alle kunstnere, som er associerede med events.</AdminHeader.Description
+				>
+				<AdminHeader.Actions>
+					{hasPermissions(["edit:artist"]) && (
+						<LinkButton
+							to="/admin/artists/create"
+							disabled={!hasPermissions(['edit:artist'])}
+						>
+							<FaPlus />Tilføj
+						</LinkButton>
+					)}
+				</AdminHeader.Actions>
+			</AdminHeader>
 
-      <main className="pt-16">
-        {hasPermissions(['view:artist']) ? (
-          <section className="space-y-4">
-            <ArtistList
-              artists={artists}
-              upcomingArtists={upcomingArtists}
-            />
-          </section>
-        ) : (
-          <span>Du har ikke tilladelse til at se kunstnere...</span>
+			<main className="pt-16">
+				{hasPermissions(['view:artist']) ? (
+					<section className="space-y-4">
+						<ArtistList
+							artists={artists}
+							upcomingArtists={upcomingArtists}
+						/>
+					</section>
+				) : (
+					<span>Du har ikke tilladelse til at se kunstnere...</span>
 
-        )}
-      </main>
-    </>
-  )
+				)}
+			</main>
+		</div>
+	)
 }

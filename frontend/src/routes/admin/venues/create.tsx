@@ -9,9 +9,11 @@ export const Route = createFileRoute('/admin/venues/create')({
 function RouteComponent() {
 
 	return (
-		<main>
-			<h1 className="font-heading text-2xl font-bold mb-4">Lav venue</h1>
-			<VenueForm />
+		<main className="px-auto py-32 min-h-svh flex justify-center items-center">
+			<div>
+				<h1 className="font-heading text-2xl font-bold mb-4">Lav venue</h1>
+				<VenueForm />
+			</div>
 		</main >
 	)
 }
