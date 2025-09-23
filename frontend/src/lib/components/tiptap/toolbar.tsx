@@ -20,6 +20,7 @@ type ActionButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 const ActionButton = ({ children, active, ...rest }: ActionButtonProps) => (
 	<button
 		{...rest}
+		tabIndex={-1}
 		type="button"
 		className={cn(
 			'disabled:text-text/50 text-text/50 px-4 py-2 text-sm hover:bg-zinc-800 disabled:hover:bg-zinc-800',
