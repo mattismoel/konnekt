@@ -122,6 +122,8 @@ const EventForm = ({ event, venues, artists, updatedByMember }: Props) => {
 		<FormProvider {...methods}>
 			<EventFormContext.Provider value={{ ...methods, ...fieldArrayMethods, artists, venues, event, onAddConcert, onDeleteConcert }}>
 				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-16 @container">
+					{/* DISABLED "ENTER" FOR SUBMISSION */}
+					<button type="submit" disabled aria-hidden className="hidden" />
 					<FormField error={errors.image}>
 						<ImagePreview disabled={!isEditable} src={event?.imageUrl} accept="image/jpeg,image/png" onChange={file => setValue("image", file)} />
 					</FormField>

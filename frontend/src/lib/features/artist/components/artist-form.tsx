@@ -106,6 +106,9 @@ const ArtistForm = ({ artist, genres, updatedByMember }: Props) => {
 		<ArtistFormContext.Provider value={{ ...methods, ...fieldArrayMethods, artist, genres }}>
 			<FormProvider {...methods}>
 				<form className="flex flex-col gap-16" onSubmit={handleSubmit(onSubmit)}>
+					{/* DISABLES "ENTER" FOR SUBMISSION */}
+					<button type="submit" disabled className="hidden" aria-hidden />
+
 					<Controller
 						control={control}
 						name="image"
