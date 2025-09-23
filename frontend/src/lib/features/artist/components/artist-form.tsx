@@ -26,6 +26,8 @@ import { useToast } from "@/lib/context/toast"
 import Audit from "@/lib/components/audit"
 import type { Member } from "../../auth/member"
 
+const MAX_GENRES = 3
+
 const internalSocialSchema = z.object({ value: z.string().url() })
 
 const internalArtistFormSchema = artistForm
@@ -248,7 +250,7 @@ const GenreSection = () => {
 
 							<Modal show={showPicker} onClose={() => setShowPicker(false)}>
 								<Modal.Header>
-									<Modal.Title>Vælg genrer...</Modal.Title>
+									<Modal.Title>Vælg genrer... (max {MAX_GENRES})</Modal.Title>
 									<Modal.Description>
 										Her kan du vælge de genrer, som kunstneren associeres med.
 									</Modal.Description>
@@ -261,6 +263,7 @@ const GenreSection = () => {
 										</Button>
 									</div>
 									<MultiPicker
+										max={MAX_GENRES}
 										entries={filteredEntries}
 										selected={selectedEntries}
 										onChange={newSelected => onChange(newSelected.map(e => parseInt(e.value)))}

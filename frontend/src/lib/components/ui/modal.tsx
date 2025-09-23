@@ -35,7 +35,7 @@ const Modal = ({ show, onClose, children, className, ...rest }: Props) => {
 				ref={ref}
 				onClose={onClose}
 				className={cn(
-					'fixed top-1/2 left-1/2 w-full min-w-xs -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-md border border-zinc-800 sm:min-w-lg',
+					'fixed top-1/2 left-1/2 w-full min-w-xs max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-md border border-zinc-800 sm:min-w-lg',
 					className
 				)}
 			>
