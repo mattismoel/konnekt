@@ -45,8 +45,8 @@ const Footer = () => {
 					<span className="font-heading mb-2 font-bold sm:hidden">Kontakt os</span>
 
 					<address className="not-italic text-text/50 flex flex-col items-start sm:items-end gap-2">
-						<ContactEntry type="mail" value="konnekt.samarbejde@gmail.dk" />
-						<ContactEntry type="mail" value="booking.konnekt@gmail.dk" />
+						<ContactEntry type="mail" value="konnekt.samarbejde@gmail.com" />
+						<ContactEntry type="mail" value="booking.konnekt@gmail.com" />
 					</address>
 
 					<SocialMediaList socialMap={socialMap} />
