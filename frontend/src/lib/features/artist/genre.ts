@@ -3,6 +3,7 @@ import { createListResult, type ListResult } from "@/lib/query"
 import { createUrl, type Query } from "@/lib/url"
 import { z } from "zod"
 import type { Event } from "../event/event"
+import { uppercaseFirstLetter } from "@/lib/string"
 
 export const genreSchema = z.object({
 	id: idSchema,
@@ -12,7 +13,10 @@ export const genreSchema = z.object({
 export type Genre = z.infer<typeof genreSchema>
 
 const createGenreSchema = z.object({
-	name: z.string().nonempty()
+	name: z.
+		string().
+		nonempty().
+		transform(s => uppercaseFirstLetter(s))
 })
 
 export const listGenres = async (query?: Query): Promise<ListResult<Genre>> => {
