@@ -33,11 +33,13 @@ function RouteComponent() {
 	const { data: updatedByMember } = useSuspenseQuery((updatedByQueryOpts))
 
 	return (
-		<EventForm
-			event={event}
-			venues={venues}
-			artists={artists}
-			updatedByMember={updatedByMember}
-		/>
+		<main className="px-auto py-32 min-h-svh">
+			<EventForm
+				event={event}
+				venues={venues}
+				artists={artists}
+				updatedByMember={updatedByMember}
+			/>
+		</main>
 	)
 }

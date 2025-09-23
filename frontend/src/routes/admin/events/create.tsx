@@ -19,9 +19,11 @@ function RouteComponent() {
 	const { data: { records: venues } } = useSuspenseQuery(venuesQueryOpts)
 
 	return (
-		<EventForm
-			venues={venues}
-			artists={artists}
-		/>
+		<main className="min-h-svh px-auto py-32">
+			<EventForm
+				venues={venues}
+				artists={artists}
+			/>
+		</main>
 	)
 }

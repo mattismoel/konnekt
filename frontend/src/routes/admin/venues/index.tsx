@@ -8,38 +8,37 @@ import { createFileRoute } from '@tanstack/react-router'
 import { FaPlus } from 'react-icons/fa'
 
 export const Route = createFileRoute('/admin/venues/')({
-  component: RouteComponent,
-  loader: async ({ context: { queryClient } }) => {
-    queryClient.ensureQueryData(venuesQueryOpts)
-  }
+	component: RouteComponent,
+	loader: async ({ context: { queryClient } }) => {
+		queryClient.ensureQueryData(venuesQueryOpts)
+	}
 })
 
 function RouteComponent() {
-  const { hasPermissions } = useAuth()
-  const { data: { records: venues } } = useSuspenseQuery(venuesQueryOpts)
-  return (
+	const { hasPermissions } = useAuth()
+	const { data: { records: venues } } = useSuspenseQuery(venuesQueryOpts)
+	return (
+		<div className="px-auto py-32 min-h-svh">
+			<AdminHeader>
+				<AdminHeader.Title>Venues</AdminHeader.Title>
+				<AdminHeader.Description
+				>Overblik over alle venues, som er associerede med events for Konnekt.</AdminHeader.Description
+				>
+				<AdminHeader.Actions>
+					{hasPermissions(["edit:venue"]) && (
+						<LinkButton
+							to="/admin/venues/create"
+							disabled={!hasPermissions(['edit:venue'])}
+						>
+							<FaPlus />Tilføj
+						</LinkButton>
+					)}
+				</AdminHeader.Actions>
+			</AdminHeader>
 
-    <>
-      <AdminHeader>
-        <AdminHeader.Title>Venues</AdminHeader.Title>
-        <AdminHeader.Description
-        >Overblik over alle venues, som er associerede med events for Konnekt.</AdminHeader.Description
-        >
-        <AdminHeader.Actions>
-          {hasPermissions(["edit:venue"]) && (
-            <LinkButton
-              to="/admin/venues/create"
-              disabled={!hasPermissions(['edit:venue'])}
-            >
-              <FaPlus />Tilføj
-            </LinkButton>
-          )}
-        </AdminHeader.Actions>
-      </AdminHeader>
-
-      <main className="pt-16">
-        <VenueList venues={venues} />
-      </main>
-    </>
-  )
+			<main className="pt-16">
+				<VenueList venues={venues} />
+			</main>
+		</div>
+	)
 }

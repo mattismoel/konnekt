@@ -15,6 +15,8 @@ function RouteComponent() {
 	const { data: { records: genres } } = useSuspenseQuery(genresQueryOpts)
 
 	return (
-		<ArtistForm genres={genres} />
+		<main className="px-auto py-32 min-h-svh">
+			<ArtistForm genres={genres} />
+		</main>
 	)
 }
