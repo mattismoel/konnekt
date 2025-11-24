@@ -54,7 +54,7 @@ const RouteEntry = ({ pathname, name }: RouteEntryProps) => {
 			<Link
 				to={pathname}
 				title={name}
-				className={cn("hover:text-text text-text/75 [.is-current]:text-text transition-colors before:invisible before:block before:h-0 before:overflow-hidden before:font-medium before:content-[attr(title)] [.is-current]:font-medium", {
+				className={cn("hover:text-text text-text/75 [.is-current]:text-text transition-colors before:invisible before:block before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(title)] [.is-current]:font-semibold", {
 					"is-current": pathname === pagePathname
 				})}
 			>
