@@ -6,7 +6,7 @@ const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>
 		<input
 			ref={ref}
 			{...rest}
-			className={cn("bg-background disabled:text-text/50 w-full rounded-sm border border-zinc-900 px-3 py-2", className)}
+			className={cn("bg-background disabled:text-text/50 w-full rounded-sm border border-zinc-900 px-4 py-2", className)}
 		/>
 	)
 })
