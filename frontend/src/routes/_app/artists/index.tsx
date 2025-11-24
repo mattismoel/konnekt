@@ -188,7 +188,8 @@ const Entry = ({ artist, previous = false }: EntryProps) => {
 	return (
 		<li
 			ref={ref}
-			className={cn("@container px-4 border border-transparent rounded-md hover:bg-text/10", {
+			className={cn("isolate relative @container px-4 border border-transparent rounded-md overflow-hidden hover:bg-text/5 hover:backdrop-blur-xs transition-[backdrop-filter,background-color,border-color]", {
+				"hover:border-text/25": true,
 				"border-text/25": (!previous && (selected?.id === artist.id))
 			})}
 			onMouseEnter={() => onSelect(artist)}

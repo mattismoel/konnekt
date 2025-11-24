@@ -8,7 +8,7 @@ export type RootProps = PropsWithChildren & {
 };
 
 export const baseClasses =
-	'flex h-min w-fit items-center justify-center gap-3 rounded-sm px-3 py-2 font-medium text-zinc-950 transition-colors disabled:opacity-50';
+	'flex h-min w-fit items-center justify-center gap-3 rounded-sm px-4 py-2 font-medium text-zinc-950 transition-colors disabled:opacity-50';
 
 export const variantClasses = new Map<Variant, string>([
 	['primary', 'bg-zinc-100 text-zinc-950 hover:bg-zinc-300'],

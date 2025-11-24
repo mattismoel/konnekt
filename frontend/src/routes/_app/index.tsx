@@ -63,8 +63,8 @@ function App() {
 						/>
 					</div>
 					<section className="flex max-w-lg flex-col gap-16 overflow-hidden">
-						<div className="flex flex-col gap-4">
-							<h2 className="font-heading text-4xl sm:text-5xl text-shadow-lg/15"><b>Fynsk musik</b> med fremtiden for øje</h2>
+						<div className="flex flex-col">
+							<h2 className="leading-[1.2] mb-6 font-heading text-4xl sm:text-5xl text-shadow-lg/15"><b>Fynsk musik</b> med fremtiden for øje</h2>
 							<p className="text-text/75 text-shadow-md leading-relaxed">
 								Et springbræt for unge, aspirerende musiskere, og en indgang ind til den danske musikscene.
 							</p>
