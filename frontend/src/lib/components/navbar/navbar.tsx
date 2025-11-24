@@ -40,7 +40,7 @@ type RouteEntryProps = {
 
 const RouteList = ({ children, className }: HTMLAttributes<HTMLUListElement>) => {
 	return (
-		<ul className={cn('hidden items-center gap-6 text-lg text-zinc-50 md:flex', className)}>
+		<ul className={cn('hidden items-center gap-8 text-lg text-zinc-50 md:flex', className)}>
 			{children}
 		</ul>
 	)
