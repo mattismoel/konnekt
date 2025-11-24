@@ -71,7 +71,7 @@ function RouteComponent() {
 				<section className="flex flex-col gap-16">
 					<div className="mb-8">
 						<h1 className="font-heading text-4xl font-bold mb-8">Ofte stillede spørgsmål</h1>
-						<p className="text-text/75">
+						<p className="text-text/75 leading-relaxed">
 							Her kan se diverse spørgsmål, som vi ofte stilles.
 							Har du yderligere spørgsmål, så&nbsp;
 							<a
@@ -152,7 +152,7 @@ function RouteComponent() {
 }
 
 const Section = ({ children }: PropsWithChildren) => (
-	<section className="prose-base prose-headings:font-heading prose-headings:font-bold prose-p:text-text/75">
+	<section className="prose-lg prose-headings:font-heading prose-headings:font-bold prose-p:text-text/75">
 		{children}
 	</section>
 )
