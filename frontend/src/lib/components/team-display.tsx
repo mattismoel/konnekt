@@ -48,27 +48,22 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
 	const teamsString = memberTeams.map(t => t.displayName).join(", ")
 
 	return (
-		<a href={`mailto:${member.email}`} className="group rounded-sm overflow-hidden bg-gradient-to-br from-zinc-700 to-zinc-900 p-[1px] transition-colors hover:from-zinc-600 hover:to-zinc-900">
-			<div className="flex flex-col @lg:flex-row bg-gradient-to-tl from-zinc-950 to-zinc-950 rounded-sm overflow-hidden transition-colors group-hover:to-zinc-900">
-				<img
-					src={member.profilePictureUrl}
-					className="w-full aspect-video @lg:w-32 @lg:block object-cover shrink-0"
-				/>
-				<div className="py-4 px-8 flex flex-col gap-2 overflow-hidden max-w-full">
-					<span className="font-semibold line-clamp-1">
-						{member.firstName} {member.lastName}
+		<div className="border border-zinc-800 group bg-gradient-to-br from-zinc-900 to-zinc-950 p-[1px] transition-colors hover:from-zinc-900 flex flex-col @lg:flex-row rounded-sm overflow-hidden hover:to-zinc-900">
+			<img
+				src={member.profilePictureUrl}
+				className="w-full aspect-video @lg:w-32 @lg:block object-cover shrink-0"
+			/>
+			<div className="py-4 px-8 flex flex-col gap-2 overflow-hidden max-w-full">
+				<span className="font-semibold line-clamp-1">
+					{member.firstName} {member.lastName}
+				</span>
+				<div className="text-text/50 w-full">
+					<span className="line-clamp-1">
+						{member.specialRole ? member.specialRole : teamsString}
 					</span>
-					<div className="text-text/50 w-full">
-						<span className="line-clamp-1">
-							{member.specialRole ? member.specialRole : teamsString}
-						</span>
-						<p className="w-full truncate">
-							{member.email}
-						</p>
-					</div>
 				</div>
 			</div>
-		</a>
+		</div>
 	)
 }
 
