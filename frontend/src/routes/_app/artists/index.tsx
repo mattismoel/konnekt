@@ -139,7 +139,7 @@ const ArtistList = () => {
 					<h2 className="font-semibold font-heading">Tidligere kunstnere</h2>
 					<ul className="flex-1 overflow-y-scroll">
 						{previousArtists.slice(0, MAX_PREVIOUS_ARTIST_COUNT).map(artist => (
-							<Entry key={artist.id} artist={artist} />
+							<Entry key={artist.id} artist={artist} previous />
 						))}
 					</ul>
 
@@ -157,7 +157,7 @@ const ArtistList = () => {
 					{showAllPrevious && (
 						<ul className="flex-1 overflow-y-scroll">
 							{previousArtists.slice(MAX_PREVIOUS_ARTIST_COUNT).map(artist => (
-								<Entry key={artist.id} artist={artist} />
+								<Entry key={artist.id} artist={artist} previous />
 							))}
 						</ul>
 					)}
@@ -169,9 +169,10 @@ const ArtistList = () => {
 
 type EntryProps = {
 	artist: Artist;
+	previous?: boolean;
 }
 
-const Entry = ({ artist }: EntryProps) => {
+const Entry = ({ artist, previous = false }: EntryProps) => {
 	const { selected, onSelect, onExit } = useArtistsContext()
 
 	const genreString = artist.genres.map(({ name }) => name).join(", ")
@@ -180,14 +181,15 @@ const Entry = ({ artist }: EntryProps) => {
 
 	useEffect(() => {
 		if (selected?.id === artist.id)
-			ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+			if (previous) return
+		ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
 	}, [selected])
 
 	return (
 		<li
 			ref={ref}
 			className={cn("@container px-4 border border-transparent rounded-md hover:bg-text/10", {
-				"border-text/25": selected?.id === artist.id
+				"border-text/25": (!previous && (selected?.id === artist.id))
 			})}
 			onMouseEnter={() => onSelect(artist)}
 			onMouseLeave={onExit}
@@ -197,7 +199,7 @@ const Entry = ({ artist }: EntryProps) => {
 					to="/artists/$artistId"
 					params={{ artistId: artist.id.toString() }}
 					className={cn("font-bold w-full py-3 text-text/50 ", {
-						"text-text": selected?.id === artist.id
+						"text-text": (!previous && (selected?.id === artist.id))
 					})}
 				>
 					{artist.name}
