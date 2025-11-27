@@ -100,12 +100,7 @@ function RouteComponent() {
 
 				<div className="h-full flex flex-col">
 					<section className="flex flex-col mb-8">
-						<h1 className="font-heading mb-4 text-5xl font-bold md:text-7xl text-shadow-md/15">Kunstnere</h1>
-						{upcomingArtists.length > 0 && (
-							<span className="text-text/75 text-shadow-sm leading-relaxed">
-								Her kan du se alle kunstnere, som medvirker i kommende events samt dem, der har været en del af tidligere events.
-							</span>
-						)}
+						<h1 className="font-heading mb-4 text-4xl font-bold text-shadow-md/15">Kommende kunstnere</h1>
 					</section>
 
 					<ArtistList />
@@ -117,12 +112,11 @@ function RouteComponent() {
 
 const ArtistList = () => {
 	const { upcomingArtists, previousArtists } = useArtistsContext()
-	const [showAllPrevious, setShowAllPrevious] = useState(false)
+	const [showPrevious, setShowPrevious] = useState(false)
 
 	return (
 		<div className="flex flex-col gap-16">
 			<section>
-				{/* <h2 className='mb-4 font-semibold font-heading'>Kommende</h2> */}
 				{upcomingArtists.length > 0 ? (
 					<ul className="flex-1 overflow-y-scroll">
 						{upcomingArtists.map(artist => (
@@ -134,34 +128,31 @@ const ArtistList = () => {
 				)}
 			</section>
 
-			{previousArtists.length > 0 && (
-				<section className="flex flex-col gap-4">
-					<h2 className="font-semibold font-heading">Tidligere kunstnere</h2>
-					<ul className="flex-1 overflow-y-scroll">
-						{previousArtists.slice(0, MAX_PREVIOUS_ARTIST_COUNT).map(artist => (
-							<Entry key={artist.id} artist={artist} previous />
-						))}
-					</ul>
-
-					{!showAllPrevious && previousArtists.length > MAX_PREVIOUS_ARTIST_COUNT && (
-						<Button
-							type="button"
-							variant="secondary"
-							onClick={() => setShowAllPrevious(true)}
-							className="w-full py-3 rounded-md border border-transparent text-text/75 hover:border-text/15 hover:text-text hover:bg-text/15 bg-text/10"
-						>
-							Se alle (+{previousArtists.length - MAX_PREVIOUS_ARTIST_COUNT})
-						</Button>
-					)}
-
-					{showAllPrevious && (
+			{(previousArtists.length > 0) && (
+				showPrevious && (
+					<section className="flex flex-col gap-4">
+						<h2 className="font-semibold font-heading">Tidligere kunstnere</h2>
 						<ul className="flex-1 overflow-y-scroll">
-							{previousArtists.slice(MAX_PREVIOUS_ARTIST_COUNT).map(artist => (
+							{previousArtists.map(artist => (
 								<Entry key={artist.id} artist={artist} previous />
 							))}
 						</ul>
-					)}
-				</section>
+					</section>
+				)
+			)}
+
+			{previousArtists.length > 0 && (
+				<Button
+					type="button"
+					variant="secondary"
+					onClick={() => setShowPrevious(prev => !prev)}
+					className="w-full py-3 rounded-md border border-transparent text-text/75 hover:border-text/15 hover:text-text hover:bg-text/15 bg-text/10"
+				>
+					{showPrevious
+						? "Skjul tidligere"
+						: "Vis tidligere"
+					}
+				</Button>
 			)}
 		</div>
 	)
