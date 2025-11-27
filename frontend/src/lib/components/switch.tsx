@@ -29,7 +29,7 @@ const Switch = ({ entries, selected, prefix, onSwitch, ...rest }: Props) => {
 				)}>
 					{prefix}</span>
 
-				<div className="flex flex-col gap-1 w-full @2xl:flex-row">
+				<div className="flex flex-col gap-2 w-full @2xl:flex-row @2xl:gap-1">
 					{entries.map(entry => (
 						<button
 							key={entry.id}
@@ -37,8 +37,8 @@ const Switch = ({ entries, selected, prefix, onSwitch, ...rest }: Props) => {
 							onClick={() => onSwitch(entry.id)}
 							title={entry.value}
 							className={cn(
-								"whitespace-nowrap border border-zinc-900 px-6 py-2 text-sm rounded-full transition-colors duration-100 hover:bg-zinc-900 hover:border-zinc-800",
-								"@2xl:border-transparent",
+								"whitespace-nowrap border border-zinc-900 px-6 py-2 rounded-full transition-colors duration-100 hover:bg-zinc-900 hover:border-zinc-800",
+								"@2xl:border-transparent @2xl:text-sm",
 								"before:invisible before:block before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(title)]",
 								selected === entry.id && "bg-zinc-100 font-semibold text-zinc-900 hover:bg-zinc-100 hover:border-zinc-100"
 							)}
