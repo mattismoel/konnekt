@@ -1,4 +1,3 @@
-import { cn } from '@/lib/clsx';
 import Accordion from '@/lib/components/accordion';
 import Switch from '@/lib/components/switch';
 import { createFileRoute } from '@tanstack/react-router'
