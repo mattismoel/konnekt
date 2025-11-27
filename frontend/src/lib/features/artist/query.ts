@@ -44,9 +44,15 @@ export const previousArtistsQueryOpts =
 	queryOptions({
 		queryKey: ["artists", "previous"],
 		queryFn: async () => {
+			const { records: upcomingEvents } = await listUpcomingEvents()
 			const { records: previousEvents } = await listPreviousEvents()
 
 			const previousArtists = eventsArtists(previousEvents)
-			return previousArtists
+			const upcomingArtists = eventsArtists(upcomingEvents)
+
+			return previousArtists.
+				filter(artist =>
+					!upcomingArtists.some(upcoming => upcoming.id === artist.id)
+				)
 		}
 	})

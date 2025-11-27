@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/admin/route'
 import { Route as AppRouteImport } from './routes/_app/route'
 import { Route as AppIndexImport } from './routes/_app/index'
+import { Route as AppContactImport } from './routes/_app/contact'
 import { Route as AppAboutImport } from './routes/_app/about'
 import { Route as AppAuthRouteImport } from './routes/_app/auth/route'
 import { Route as AdminVenuesIndexImport } from './routes/admin/venues/index'
@@ -51,6 +52,12 @@ const AppRouteRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+
+const AppContactRoute = AppContactImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => AppRouteRoute,
 } as any)
 
@@ -204,6 +211,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AppAboutImport
+      parentRoute: typeof AppRouteImport
+    }
+    '/_app/contact': {
+      id: '/_app/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof AppContactImport
       parentRoute: typeof AppRouteImport
     }
     '/_app/': {
@@ -361,6 +375,7 @@ const AppAuthRouteRouteWithChildren = AppAuthRouteRoute._addFileChildren(
 interface AppRouteRouteChildren {
   AppAuthRouteRoute: typeof AppAuthRouteRouteWithChildren
   AppAboutRoute: typeof AppAboutRoute
+  AppContactRoute: typeof AppContactRoute
   AppIndexRoute: typeof AppIndexRoute
   AppArtistsArtistIdRoute: typeof AppArtistsArtistIdRoute
   AppEventsEventIdRoute: typeof AppEventsEventIdRoute
@@ -371,6 +386,7 @@ interface AppRouteRouteChildren {
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppAuthRouteRoute: AppAuthRouteRouteWithChildren,
   AppAboutRoute: AppAboutRoute,
+  AppContactRoute: AppContactRoute,
   AppIndexRoute: AppIndexRoute,
   AppArtistsArtistIdRoute: AppArtistsArtistIdRoute,
   AppEventsEventIdRoute: AppEventsEventIdRoute,
@@ -421,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AppAuthRouteRouteWithChildren
   '/about': typeof AppAboutRoute
+  '/contact': typeof AppContactRoute
   '/': typeof AppIndexRoute
   '/artists/$artistId': typeof AppArtistsArtistIdRoute
   '/auth/login': typeof AppAuthLoginRoute
@@ -446,6 +463,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteRouteWithChildren
   '/auth': typeof AppAuthRouteRouteWithChildren
   '/about': typeof AppAboutRoute
+  '/contact': typeof AppContactRoute
   '/': typeof AppIndexRoute
   '/artists/$artistId': typeof AppArtistsArtistIdRoute
   '/auth/login': typeof AppAuthLoginRoute
@@ -473,6 +491,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/_app/auth': typeof AppAuthRouteRouteWithChildren
   '/_app/about': typeof AppAboutRoute
+  '/_app/contact': typeof AppContactRoute
   '/_app/': typeof AppIndexRoute
   '/_app/artists/$artistId': typeof AppArtistsArtistIdRoute
   '/_app/auth/login': typeof AppAuthLoginRoute
@@ -501,6 +520,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/about'
+    | '/contact'
     | '/'
     | '/artists/$artistId'
     | '/auth/login'
@@ -525,6 +545,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/about'
+    | '/contact'
     | '/'
     | '/artists/$artistId'
     | '/auth/login'
@@ -550,6 +571,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/_app/auth'
     | '/_app/about'
+    | '/_app/contact'
     | '/_app/'
     | '/_app/artists/$artistId'
     | '/_app/auth/login'
@@ -601,6 +623,7 @@ export const routeTree = rootRoute
       "children": [
         "/_app/auth",
         "/_app/about",
+        "/_app/contact",
         "/_app/",
         "/_app/artists/$artistId",
         "/_app/events/$eventId",
@@ -635,6 +658,10 @@ export const routeTree = rootRoute
     },
     "/_app/about": {
       "filePath": "_app/about.tsx",
+      "parent": "/_app"
+    },
+    "/_app/contact": {
+      "filePath": "_app/contact.tsx",
       "parent": "/_app"
     },
     "/_app/": {

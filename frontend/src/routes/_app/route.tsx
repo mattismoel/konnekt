@@ -34,6 +34,7 @@ function RouteComponent() {
 				<Navbar.RouteList>
 					<Navbar.RouteEntry pathname="/events" name="Events" />
 					<Navbar.RouteEntry pathname="/artists" name="Kunstnere" />
+					<Navbar.RouteEntry pathname="/contact" name="Kontakt" />
 					<Navbar.RouteEntry pathname="/about" name="Om os" />
 				</Navbar.RouteList>
 			</Navbar>
@@ -43,6 +44,7 @@ function RouteComponent() {
 					<NavMenu.RouteEntry to="/">Forside</NavMenu.RouteEntry>
 					<NavMenu.RouteEntry to="/events">Events</NavMenu.RouteEntry>
 					<NavMenu.RouteEntry to="/artists">Kunstnere</NavMenu.RouteEntry>
+					<NavMenu.RouteEntry to="/contact">Kontakt</NavMenu.RouteEntry>
 					<NavMenu.RouteEntry to="/about">Om os</NavMenu.RouteEntry>
 				</NavMenu.RouteList>
 			</NavMenu>
