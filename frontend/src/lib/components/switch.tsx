@@ -29,7 +29,7 @@ const Switch = ({ entries, selected, prefix, onSwitch, ...rest }: Props) => {
 				)}>
 					{prefix}</span>
 
-				<div className="flex flex-col gap-1 w-full @2xl:flex-row">
+				<div className="flex flex-col gap-2 w-full @2xl:flex-row @2xl:gap-1">
 					{entries.map(entry => (
 						<button
 							key={entry.id}
