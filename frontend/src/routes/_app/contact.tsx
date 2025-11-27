@@ -8,9 +8,9 @@ type CategoryName = typeof categoryNames[number]
 
 const categoryDetailsMap = new Map<CategoryName, { email: string }>([
 	["booking", { email: "booking.konnekt@gmail.com" }],
-	["volunteers", { email: "samarbejde.konnekt@gmail.com" }],
-	["partners", { email: "samarbejde.konnekt@gmail.com" }],
-	["other", { email: "samarbejde.konnekt@gmail.com" }],
+	["volunteers", { email: "konnekt.samarbejde@gmail.com" }],
+	["partners", { email: "konnekt.samarbejde@gmail.com" }],
+	["other", { email: "konnekt.samarbejde@gmail.com" }],
 ])
 
 export const Route = createFileRoute('/_app/contact')({
