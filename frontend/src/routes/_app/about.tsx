@@ -1,10 +1,8 @@
-import Accordion from '@/lib/components/accordion'
 import PageMeta from '@/lib/components/page-meta'
 import TeamDisplay from '@/lib/components/team-display'
 import { membersQueryOpts, teamsQueryOpts } from '@/lib/features/auth/query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import type { PropsWithChildren } from 'react'
 
 export const Route = createFileRoute('/_app/about')({
 	component: RouteComponent,
