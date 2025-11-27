@@ -11,9 +11,6 @@ import Button from '@/lib/components/ui/button/button';
 /** @description The rate of which artist auto display changes artist. */
 const AUTO_DISPLAY_RATE = 0.25;
 
-/** @description The max amount of previous artists to show. */
-const MAX_PREVIOUS_ARTIST_COUNT = 8
-
 export const Route = createFileRoute('/_app/artists/')({
 	component: RouteComponent,
 	loader: async ({ context: { queryClient } }) => {
@@ -62,7 +59,7 @@ function RouteComponent() {
 
 		intervalRef.current = setInterval(() => {
 			if (upcomingArtists.length <= 0 && previousArtists.length <= 0) return
-			const newArtist = pickRandom(upcomingArtists.length > 0 ? upcomingArtists : previousArtists.slice(0, MAX_PREVIOUS_ARTIST_COUNT))
+			const newArtist = pickRandom(upcomingArtists)
 			if (newArtist) setSelected(newArtist);
 		}, 1000 / AUTO_DISPLAY_RATE);
 	};
@@ -171,10 +168,10 @@ const Entry = ({ artist, previous = false }: EntryProps) => {
 	const ref = useRef<HTMLLIElement>(null)
 
 	useEffect(() => {
-		if (selected?.id === artist.id)
-			if (previous) return
+		if (previous) return
+		if (selected?.id !== artist.id) return
 		ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
-	}, [selected])
+	}, [selected, selected?.id])
 
 	return (
 		<li
