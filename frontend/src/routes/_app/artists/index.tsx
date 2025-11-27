@@ -44,6 +44,8 @@ function RouteComponent() {
 	const [selected, setSelected] = useState<Artist>();
 	const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
+	const { y: scrollY } = useScroll()
+
 	useEffect(() => {
 		if (upcomingArtists.length <= 0 && previousArtists.length > 0) setSelected(previousArtists[0])
 
@@ -59,6 +61,7 @@ function RouteComponent() {
 		if (intervalRef.current) return
 
 		intervalRef.current = setInterval(() => {
+			if (scrollY > 0) return
 			if (upcomingArtists.length <= 0 && previousArtists.length <= 0) return
 			const newArtist = pickRandom(upcomingArtists)
 			if (newArtist) setSelected(newArtist);
@@ -167,16 +170,6 @@ const Entry = ({ artist, previous = false }: EntryProps) => {
 	const genreString = artist.genres.map(({ name }) => name).join(", ")
 
 	const ref = useRef<HTMLLIElement>(null)
-
-	const { y: scrollY } = useScroll()
-
-	useEffect(() => {
-		if (previous) return
-		if (selected?.id !== artist.id) return
-		if (scrollY > 0) return
-
-		ref.current?.scrollIntoView({ behavior: "smooth", block: "center" })
-	}, [selected, selected?.id])
 
 	return (
 		<li
