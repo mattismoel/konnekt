@@ -7,6 +7,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { previousArtistsQueryOpts, upcomingArtistsQueryOpts } from '@/lib/features/artist/query';
 import PageMeta from '@/lib/components/page-meta';
 import Button from '@/lib/components/ui/button/button';
+import { useScroll } from '@/lib/hooks/useScroll';
 
 /** @description The rate of which artist auto display changes artist. */
 const AUTO_DISPLAY_RATE = 0.25;
@@ -167,9 +168,13 @@ const Entry = ({ artist, previous = false }: EntryProps) => {
 
 	const ref = useRef<HTMLLIElement>(null)
 
+	const { y: scrollY } = useScroll()
+
 	useEffect(() => {
 		if (previous) return
 		if (selected?.id !== artist.id) return
+		if (scrollY > 0) return
+
 		ref.current?.scrollIntoView({ behavior: "smooth", block: "center" })
 	}, [selected, selected?.id])
 
