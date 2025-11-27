@@ -170,7 +170,7 @@ const Entry = ({ artist, previous = false }: EntryProps) => {
 	useEffect(() => {
 		if (previous) return
 		if (selected?.id !== artist.id) return
-		ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+		ref.current?.scrollIntoView({ behavior: "smooth", block: "center" })
 	}, [selected, selected?.id])
 
 	return (
