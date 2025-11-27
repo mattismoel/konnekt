@@ -62,7 +62,7 @@ function RouteComponent() {
 
 		intervalRef.current = setInterval(() => {
 			if (upcomingArtists.length <= 0 && previousArtists.length <= 0) return
-			const newArtist = pickRandom(upcomingArtists.length > 0 ? upcomingArtists : previousArtists.slice(0, MAX_PREVIOUS_ARTIST_COUNT))
+			const newArtist = pickRandom(upcomingArtists)
 			if (newArtist) setSelected(newArtist);
 		}, 1000 / AUTO_DISPLAY_RATE);
 	};
@@ -171,10 +171,10 @@ const Entry = ({ artist, previous = false }: EntryProps) => {
 	const ref = useRef<HTMLLIElement>(null)
 
 	useEffect(() => {
-		if (selected?.id === artist.id)
-			if (previous) return
+		if (previous) return
+		if (selected?.id !== artist.id) return
 		ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
-	}, [selected])
+	}, [selected, selected?.id])
 
 	return (
 		<li
