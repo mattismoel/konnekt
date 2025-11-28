@@ -57,12 +57,10 @@ function RouteComponent() {
             />
             <Fader
               direction="right"
-              className="absolute hidden w-96 from-zinc-950 md:block"
+              className="absolute hidden w-96 from-black md:block"
             />
-            <Fader
-              direction="up"
-              className="absolute h-[512px] from-zinc-950"
-            />
+            <Fader direction="up" className="absolute h-[512px] from-black" />
+
             <div className="z-10 flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-end">
               <h1
                 style={{ wordSpacing: "100vw" }}
@@ -86,7 +84,8 @@ function RouteComponent() {
               </div>
             </div>
           </div>
-          <article className="space-y-16 bg-zinc-950 px-auto py-16">
+
+          <article className="space-y-16 border-t border-t-zinc-900 bg-zinc-950 px-auto py-16">
             <section className="space-y-8">
               <div
                 className="prose prose-lg max-w-none prose-invert md:prose-base"

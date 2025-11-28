@@ -46,9 +46,10 @@ function RouteComponent() {
         title={`Konnekt | Event | ${event.title}`}
         description={`Oplev vores kommende event "${event.title}" ${fromDate ? format(fromDate, DATETIME_FORMAT) : ""}`}
       />
-      <main className="flex min-h-sub-nav flex-col gap-16 pb-16 text-white">
+      <main className="flex min-h-sub-nav flex-col pb-16 text-white">
         <EventDetails active event={event} />
-        <article className="space-y-16 px-auto pt-8 pb-16">
+
+        <article className="space-y-16 border-t border-t-zinc-900 px-auto pt-16 pb-16">
           <section
             className="prose max-w-none prose-invert"
             dangerouslySetInnerHTML={{ __html: event.description }}

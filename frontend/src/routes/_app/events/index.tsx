@@ -31,7 +31,7 @@ function RouteComponent() {
         <main className="min-h-svh">
           <EventDetails event={events[0]} prefix="Næste event:" />
 
-          <div className="flex flex-col px-auto pt-16 pb-16 md:pt-16">
+          <div className="flex flex-col border-t border-t-zinc-900 px-auto pt-16 pb-16 md:pt-16">
             <h1 className="mb-8 font-heading text-4xl font-bold text-shadow-md/15">
               Kommende events
             </h1>
