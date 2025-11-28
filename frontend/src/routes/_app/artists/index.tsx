@@ -162,7 +162,10 @@ const SocialList = ({ socials }: { socials: string[] }) => {
       {socials.map((social) => {
         const Icon = socialUrlToIcon(social);
         return (
-          <li key={social} className="text-text/50">
+          <li
+            key={social}
+            className="text-text/50 transition-colors hover:text-text"
+          >
             <a href={social}>
               <Icon key={social} className="text-2xl" />
             </a>
