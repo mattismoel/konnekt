@@ -51,27 +51,18 @@ const TeamDisplay = ({ members, allTeams }: Props) => {
 
       <div className="flex flex-wrap justify-center gap-x-20 gap-y-12">
         {regularMembers.map((member) => (
-          <div className="flex flex-col items-center">
-            <p className="mb-1 text-base font-medium">
-              {member.firstName} {member.lastName}
-            </p>
-            <p className="text-xs text-text/50">
-              {member.teams
-                .slice(0, 2)
-                .map((team) => team.displayName)
-                .join(", ")}
-            </p>
-          </div>
+          <RegularMemberInfo
+            key={member.id}
+            member={member}
+            includedTeams={includedTeams}
+          />
         ))}
       </div>
     </div>
   );
 };
 
-type MemberInfoProps = {
-  member: Member;
-  includedTeams: Team[];
-};
+type MemberInfoProps = { member: Member; includedTeams: Team[] };
 
 const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
   const memberTeams = member.teams.filter((team) =>
@@ -95,6 +86,30 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
           </span>
         </div>
       </div>
+    </div>
+  );
+};
+
+type RegularMemberInfoProps = {
+  member: Member;
+  includedTeams: Team[];
+};
+
+const RegularMemberInfo = ({
+  member,
+  includedTeams,
+}: RegularMemberInfoProps) => {
+  const memberTeams = member.teams.filter((team) =>
+    includedTeams.some((t) => t.name === team.name),
+  );
+  const teamsString = memberTeams.map((t) => t.displayName).join(", ");
+
+  return (
+    <div className="flex flex-col items-center">
+      <p className="mb-1 text-base font-medium">
+        {member.firstName} {member.lastName}
+      </p>
+      <p className="text-xs text-text/50">{teamsString}</p>
     </div>
   );
 };
