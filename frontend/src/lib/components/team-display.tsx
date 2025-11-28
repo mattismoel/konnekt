@@ -34,8 +34,8 @@ const TeamDisplay = ({ members, allTeams }: Props) => {
   );
 
   return (
-    <div className="@container flex flex-col gap-16">
-      <div className="grid grid-cols-1 gap-2 @3xl:grid-cols-2">
+    <div className="@container flex flex-col">
+      <div className="mb-16 grid grid-cols-1 gap-2 @3xl:grid-cols-2">
         {specialMembers.map((member) => (
           <MemberInfo
             key={member.id}
@@ -43,12 +43,25 @@ const TeamDisplay = ({ members, allTeams }: Props) => {
             includedTeams={includedTeams}
           />
         ))}
+      </div>
+
+      <h4 className="mb-12 text-center text-text/50">
+        Øvrige {regularMembers.length > 5 && regularMembers.length} medlemmer
+      </h4>
+
+      <div className="flex flex-wrap justify-center gap-x-20 gap-y-12">
         {regularMembers.map((member) => (
-          <MemberInfo
-            key={member.id}
-            member={member}
-            includedTeams={includedTeams}
-          />
+          <div className="flex flex-col items-center">
+            <p className="mb-1 text-base font-medium">
+              {member.firstName} {member.lastName}
+            </p>
+            <p className="text-xs text-text/50">
+              {member.teams
+                .slice(0, 2)
+                .map((team) => team.displayName)
+                .join(", ")}
+            </p>
+          </div>
         ))}
       </div>
     </div>
@@ -67,7 +80,7 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
   const teamsString = memberTeams.map((t) => t.displayName).join(", ");
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900 transition-colors hover:bg-zinc-800 @lg:flex-row">
+    <div className="group flex flex-col overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900 transition-colors @lg:flex-row">
       <img
         src={member.profilePictureUrl}
         className="aspect-video w-full shrink-0 object-cover @lg:block @lg:w-32"
