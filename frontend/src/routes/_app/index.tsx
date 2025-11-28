@@ -98,7 +98,7 @@ function App() {
           <Fader direction="up" className="absolute z-0 h-64 from-black/75" />
         </section>
 
-        <section className="bg-zinc-950">
+        <section className="border-t border-t-zinc-900 bg-zinc-950">
           <section className="flex flex-col gap-32 px-auto py-16">
             <section>
               <h1 className="mb-8 font-heading text-2xl font-bold">
