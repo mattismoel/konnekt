@@ -3,6 +3,8 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
+	--max-content-width: 40em;
+
 	--spacing-sidenav-sm: 4rem;
 	--spacing-sidenav-md: 16rem;
 	--spacing-sidenav-lg: 20rem;
@@ -20,6 +22,11 @@
 
 @utility px-auto {
 	@apply px-6 sm:px-16 md:px-32 lg:px-48 xl:px-96;
+@utility mx-responsive {
+	--min-padding: 3rem;
+
+	max-width: min(var(--max-content-width), 100% - var(--min-padding));
+	margin: 0 auto;
 }
 
 @keyframes slide {

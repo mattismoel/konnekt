@@ -3,19 +3,44 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { useScroll } from "@/lib/hooks/useScroll";
 import type { HTMLAttributes, PropsWithChildren } from "react";
 
+const SCROLL_BUFFER = 64;
+
 const Navbar = ({ children }: PropsWithChildren) => {
   const { y: scrollY } = useScroll();
+
+  const scrolled = scrollY > SCROLL_BUFFER;
 
   return (
     <nav
       className={cn(
-        "fixed z-40 flex h-nav w-screen items-center justify-between bg-gradient-to-b from-black/80 px-auto outline outline-transparent transition-colors duration-500 [.scrolled]:from-zinc-950 [.scrolled]:to-zinc-950 [.scrolled]:outline-zinc-800",
-        {
-          scrolled: scrollY > 0,
-        },
+        "fixed inset-0 z-40 flex h-nav w-full transition-[inset]",
+        scrolled && "inset-y-1",
       )}
     >
-      {children}
+      {/* BACKDROP */}
+      <div
+        className={cn(
+          "w-full transition-[max-width,margin]",
+          scrolled ? "mx-responsive" : "m-[0_auto] max-w-full",
+        )}
+      >
+        <div
+          className={cn(
+            "inset-0 h-nav w-full rounded-[0px] bg-gradient-to-b from-black/80 outline outline-transparent backdrop-blur-none transition-[backdrop-filter,--tw-gradient-from,--tw-gradient-to,padding,border-radius,inset,outline-color] duration-200",
+            scrolled &&
+              "rounded-[2rem] from-zinc-950/75 to-zinc-950/75 outline-zinc-800 backdrop-blur-2xl",
+          )}
+        >
+          <div
+            className={cn(
+              "inset-0 left-0 flex h-nav justify-between px-8 transition-[padding] duration-200",
+              scrolled && "px-12",
+            )}
+          >
+            {children}
+          </div>
+        </div>
+      </div>
     </nav>
   );
 };
