@@ -48,8 +48,8 @@ function RouteComponent() {
         description={`Oplev ${artist.name} til "${artistEvents.at(0)?.title}"`}
       />
       <main>
-        <div className="grid min-h-svh grid-cols-1 grid-rows-[85svh_1fr]">
-          <div className="relative isolate flex items-end px-auto py-16">
+        <div className="min-h-svh">
+          <div className="relative isolate flex min-h-[85svh] items-end py-16">
             <img
               src={artist.imageUrl}
               alt="Cover af {artist.name}"
@@ -61,7 +61,7 @@ function RouteComponent() {
             />
             <Fader direction="up" className="absolute h-[512px] from-black" />
 
-            <div className="z-10 flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-end">
+            <div className="z-10 mx-responsive flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-end">
               <h1
                 style={{ wordSpacing: "100vw" }}
                 className="font-heading text-7xl font-bold text-shadow-md md:text-8xl lg:text-9xl"
@@ -85,24 +85,26 @@ function RouteComponent() {
             </div>
           </div>
 
-          <article className="space-y-16 border-t border-t-zinc-900 bg-zinc-950 px-auto py-16">
-            <section className="space-y-8">
-              <div
-                className="prose prose-lg max-w-none prose-invert md:prose-base"
-                dangerouslySetInnerHTML={{ __html: artist.description }}
-              />
-              {trackId && <SpotifyPreview trackId={trackId} />}
-            </section>
-
-            {artistEvents.length > 0 && (
-              <section>
-                <h1 className="mb-8 font-heading text-2xl font-bold">
-                  Oplev {artist.name} her
-                </h1>
-                <EventGrid events={artistEvents} />
+          <div className="border-t border-t-zinc-900">
+            <article className="mx-responsive w-full space-y-16 bg-zinc-950 py-16">
+              <section className="space-y-8">
+                <div
+                  className="prose prose-lg max-w-none prose-invert md:prose-base"
+                  dangerouslySetInnerHTML={{ __html: artist.description }}
+                />
+                {trackId && <SpotifyPreview trackId={trackId} />}
               </section>
-            )}
-          </article>
+
+              {artistEvents.length > 0 && (
+                <section>
+                  <h1 className="mb-8 font-heading text-2xl font-bold">
+                    Oplev {artist.name} her
+                  </h1>
+                  <EventGrid events={artistEvents} />
+                </section>
+              )}
+            </article>
+          </div>
         </div>
       </main>
     </>

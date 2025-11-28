@@ -39,7 +39,7 @@ function RouteComponent() {
   const { data: updatedByMember } = useSuspenseQuery(updatedByMemberQueryOpts);
 
   return (
-    <main className="min-h-svh px-auto py-32">
+    <main className="mx-responsive min-h-svh py-32">
       <ArtistForm
         artist={artist}
         genres={genres}

@@ -49,20 +49,22 @@ function RouteComponent() {
       <main className="flex min-h-sub-nav flex-col pb-16 text-white">
         <EventDetails active event={event} />
 
-        <article className="space-y-16 border-t border-t-zinc-900 px-auto pt-16 pb-16">
-          <section
-            className="prose max-w-none prose-invert"
-            dangerouslySetInnerHTML={{ __html: event.description }}
-          />
-          <EventCalendar event={event} />
+        <div className="border-t border-t-zinc-900">
+          <article className="mx-responsive w-full space-y-16 pt-16 pb-16">
+            <section
+              className="prose max-w-none prose-invert"
+              dangerouslySetInnerHTML={{ __html: event.description }}
+            />
+            <EventCalendar event={event} />
 
-          {filteredEvents.length > 0 && (
-            <section>
-              <h1 className="mb-8 text-2xl font-bold">Se også</h1>
-              <EventGrid events={filteredEvents} />
-            </section>
-          )}
-        </article>
+            {filteredEvents.length > 0 && (
+              <section>
+                <h1 className="mb-8 text-2xl font-bold">Se også</h1>
+                <EventGrid events={filteredEvents} />
+              </section>
+            )}
+          </article>
+        </div>
       </main>
     </>
   );

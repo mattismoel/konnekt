@@ -33,7 +33,7 @@ function RouteComponent() {
   };
 
   return (
-    <main className="flex min-h-svh flex-col gap-32 px-auto py-32">
+    <main className="mx-responsive flex min-h-svh flex-col gap-32 py-32">
       <section>
         <h1 className="mb-4 font-heading text-4xl font-bold">
           Er du i tvivl om noget?

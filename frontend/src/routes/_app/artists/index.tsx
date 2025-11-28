@@ -43,7 +43,7 @@ function RouteComponent() {
         description="Se alle aktuelle kunstnere der medvirker i Konnekts kommende events"
       />
 
-      <main className="min-h-svh px-auto pt-24 pb-32 md:pt-32">
+      <main className="mx-responsive min-h-svh pt-24 pb-32 md:pt-32">
         {[...upcomingArtists, ...previousArtists].map((artist) => (
           <img
             key={artist.id}

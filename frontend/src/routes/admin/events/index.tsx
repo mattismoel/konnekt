@@ -31,7 +31,7 @@ function RouteComponent() {
   } = useSuspenseQuery(previousEventsQueryOpts);
 
   return (
-    <div className="min-h-svh px-auto py-32">
+    <div className="mx-responsive min-h-svh py-32">
       <AdminHeader>
         <AdminHeader.Title>Events</AdminHeader.Title>
         <AdminHeader.Description>

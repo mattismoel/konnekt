@@ -28,7 +28,7 @@ function RouteComponent() {
   const { hasPermissions } = useAuth();
 
   return (
-    <div className="min-h-svh px-auto py-32">
+    <div className="mx-responsive min-h-svh py-32">
       <AdminHeader>
         <AdminHeader.Title>Kunstnere</AdminHeader.Title>
         <AdminHeader.Description>
