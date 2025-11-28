@@ -34,7 +34,7 @@ const Navbar = ({ children }: PropsWithChildren) => {
           <div
             className={cn(
               "inset-0 left-0 flex h-nav justify-between px-8 transition-[padding] duration-200",
-              scrolled && "px-12",
+              scrolled && "md:px-12",
             )}
           >
             {children}
