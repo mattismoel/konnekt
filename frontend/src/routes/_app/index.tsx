@@ -57,7 +57,7 @@ function App() {
       />
 
       <div>
-        <section className="-z-50 flex h-svh flex-col justify-center gap-16 px-auto">
+        <section className="-z-50 mx-responsive flex h-svh flex-col justify-center gap-16">
           <div className="pointer-events-none absolute top-0 left-0 isolate -z-10 h-full w-full overflow-hidden">
             <GlowCursor />
             <Slideshow
@@ -99,7 +99,7 @@ function App() {
         </section>
 
         <section className="border-t border-t-zinc-900 bg-zinc-950">
-          <section className="flex flex-col gap-32 px-auto py-16">
+          <section className="mx-responsive flex flex-col gap-32 py-16">
             <section>
               <h1 className="mb-8 font-heading text-2xl font-bold">
                 Vores mission

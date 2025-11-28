@@ -44,7 +44,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
 
       <Fader className="absolute -z-10 h-1/2" direction="up" />
 
-      <div className="flex w-full flex-col px-auto">
+      <div className="mx-responsive flex w-full flex-col">
         {prefix && <span className="text-shadow-sm">{prefix}</span>}
 
         <h1 className="mb-6 font-heading text-5xl font-bold text-shadow-md md:mb-8 md:text-7xl">

@@ -14,7 +14,7 @@ function RouteComponent() {
   const { data: images } = useSuspenseQuery(landingImagesQueryOptions);
 
   return (
-    <main className="min-h-svh px-auto py-32">
+    <main className="mx-responsive min-h-svh py-32">
       <LandingImagesForm images={images} />
     </main>
   );

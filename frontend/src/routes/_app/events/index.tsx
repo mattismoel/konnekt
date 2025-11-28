@@ -31,15 +31,17 @@ function RouteComponent() {
         <main className="min-h-svh">
           <EventDetails event={events[0]} prefix="Næste event:" />
 
-          <div className="flex flex-col border-t border-t-zinc-900 px-auto pt-16 pb-16 md:pt-16">
-            <h1 className="mb-8 font-heading text-4xl font-bold text-shadow-md/15">
-              Kommende events
-            </h1>
-            <EventGrid events={events} />
+          <div className="border-t border-t-zinc-900">
+            <div className="mx-responsive flex flex-col pt-16 pb-16 md:pt-16">
+              <h1 className="mb-8 font-heading text-4xl font-bold text-shadow-md/15">
+                Kommende events
+              </h1>
+              <EventGrid events={events} />
+            </div>
           </div>
         </main>
       ) : (
-        <main className="flex min-h-svh flex-col items-center justify-center px-auto">
+        <main className="mx-responsive flex min-h-svh flex-col items-center justify-center">
           <span className="text-center text-text/75 italic">
             Der er ingen aktuelle events i øjeblikket...
           </span>

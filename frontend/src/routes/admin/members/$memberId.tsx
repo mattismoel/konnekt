@@ -37,7 +37,7 @@ function RouteComponent() {
   const { data: memberTeams } = useSuspenseQuery(memberTeamsQueryOpts);
 
   return (
-    <main className="px-auto py-32">
+    <main className="mx-responsive py-32">
       <MemberForm member={member} teams={teams} memberTeams={memberTeams} />
     </main>
   );

@@ -24,7 +24,7 @@ function RouteComponent() {
   const { data: updatedByMember } = useSuspenseQuery(updatedByMemberQueryOpts);
 
   return (
-    <main className="flex min-h-svh items-center justify-center px-auto py-32">
+    <main className="mx-responsive flex min-h-svh items-center justify-center py-32">
       <div>
         <h1 className="mb-4 font-heading text-2xl font-bold">Redigér venue</h1>
         <VenueForm venue={venue} updatedByMember={updatedByMember} />

@@ -28,7 +28,7 @@ function RouteComponent() {
   };
 
   return (
-    <main className="flex min-h-svh items-center justify-center px-auto">
+    <main className="mx-responsive flex min-h-svh items-center justify-center">
       <RegisterForm onSubmit={onSubmit} />
     </main>
   );

@@ -29,7 +29,7 @@ function RouteComponent() {
             Det danske musikmiljø er for svært at bryde igennem - især for unge
             aspirerende musikere og det skal ændres."
       />
-      <main className="flex min-h-svh flex-col px-auto py-32">
+      <main className="mx-responsive flex min-h-svh flex-col py-32">
         <h1 className="mb-4 font-heading text-4xl font-bold">Hvem er vi?</h1>
         <p className="mb-16 leading-relaxed text-text/75">
           Konnekt er en ungedrevet forening og et koncertinitiativ, der arbejder
