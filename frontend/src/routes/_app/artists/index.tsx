@@ -46,8 +46,8 @@ function RouteComponent() {
 						key={artist.id}
 						src={artist.imageUrl}
 						alt={artist.name}
-						className={cn("pointer-events-none fixed top-0 left-0 -z-10 h-lvh w-full object-cover opacity-0 brightness-50 transition-all duration-1000", {
-							"opacity-100 scale-105": selected?.id === artist.id
+						className={cn("scale-102 pointer-events-none fixed top-0 left-0 -z-10 h-lvh w-full object-cover opacity-0 brightness-50 transition-[scale,opacity] duration-400", {
+							"opacity-100 scale-100": selected?.id === artist.id
 						})}
 					/>
 				))}
@@ -89,8 +89,6 @@ function RouteComponent() {
 							</Button>
 						)}
 					</div>
-
-					{/* <ArtistList /> */}
 				</div>
 			</main>
 		</>
@@ -129,18 +127,18 @@ const Entry = ({ artist, onSelect }: EntryProps) => {
 	return (
 		<li
 			ref={ref}
-			className="group isolate relative @container px-4 border border-transparent rounded-md overflow-hidden hover:bg-text/5 hover:backdrop-blur-xs transition-[backdrop-filter,background-color,border-color] hover:border-text/25"
+			className="group isolate relative @container px-4 border border-transparent rounded-md overflow-hidden hover:bg-text/5 transition-colors hover:border-text/25"
 			onMouseEnter={onSelect}
 		>
 			<div className="grid grid-cols-1 @md:grid-cols-2 @2xl:grid-cols-3 items-center text-shadow-sm">
 				<Link
 					to="/artists/$artistId"
 					params={{ artistId: artist.id.toString() }}
-					className="font-bold w-full py-3 text-text/50 group-hover:text-text"
+					className="font-bold w-full py-3 text-text/50 transition-colors group-hover:text-text"
 				>
 					{artist.name}
 				</Link>
-				<span className="hidden @md:block text-text/75 cursor-default group-hover:text-text">{genreString}</span>
+				<span className="hidden @md:block text-text/75 cursor-default transition-colors group-hover:text-text">{genreString}</span>
 				<div className="hidden @2xl:flex justify-end">
 					<SocialList socials={artist.socials} />
 				</div>
