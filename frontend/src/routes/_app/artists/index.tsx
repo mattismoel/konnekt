@@ -145,7 +145,7 @@ const Entry = ({ artist, onSelect }: EntryProps) => {
         >
           {artist.name}
         </Link>
-        <span className="hidden cursor-default text-text/75 transition-colors group-hover:text-text @md:block">
+        <span className="hidden cursor-default whitespace-nowrap text-text/75 transition-colors group-hover:text-text @md:block">
           {genreString}
         </span>
         <div className="hidden justify-end @2xl:flex">
