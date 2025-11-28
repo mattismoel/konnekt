@@ -57,14 +57,15 @@ const AuthLayout = () => {
             <Navbar.RouteEntry pathname="/admin/members" name="Medlemmer" />
             <Navbar.RouteEntry pathname="/admin/content" name="Indhold" />
           </Navbar.RouteList>
+
+          <button className="group" onClick={() => setShowUserContext(true)}>
+            <img
+              src={member.profilePictureUrl}
+              alt="Profil"
+              className="h-8 w-8 rounded-full object-cover outline outline-zinc-700 group-hover:outline-2"
+            />
+          </button>
         </Navbar.Content>
-        <button className="group" onClick={() => setShowUserContext(true)}>
-          <img
-            src={member.profilePictureUrl}
-            alt="Profil"
-            className="h-8 w-8 rounded-full object-cover outline outline-zinc-700 group-hover:outline-2"
-          />
-        </button>
         <ContextMenu
           show={showUserContext}
           onClose={() => setShowUserContext(false)}

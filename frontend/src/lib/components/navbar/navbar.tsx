@@ -20,7 +20,7 @@ const Navbar = ({ children }: PropsWithChildren) => {
       {/* BACKDROP */}
       <div
         className={cn(
-          "w-full transition-[max-width,margin]",
+          "w-full min-w-fit transition-[max-width,margin]",
           scrolled ? "mx-responsive" : "m-[0_auto] max-w-full",
         )}
       >
@@ -33,7 +33,7 @@ const Navbar = ({ children }: PropsWithChildren) => {
         >
           <div
             className={cn(
-              "inset-0 left-0 flex h-nav justify-between px-8 transition-[padding] duration-200",
+              "inset-0 left-0 flex h-nav justify-between gap-32 px-8 transition-[padding] duration-200",
               scrolled && "md:px-12",
             )}
           >
