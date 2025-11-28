@@ -13,13 +13,6 @@ export const useMousePos = () => {
   };
 
   useEffect(() => {
-    setRawMousePos((prev) => ({
-      x: prev.x + scrollPos.x,
-      y: prev.y + scrollPos.y,
-    }));
-  }, [scrollPos]);
-
-  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setRawMousePos({
         x: e.clientX,
