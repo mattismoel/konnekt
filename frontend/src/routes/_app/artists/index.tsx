@@ -82,10 +82,7 @@ function RouteComponent() {
 								onClick={() => setShowPrevious(prev => !prev)}
 								className="w-full py-3 rounded-md border border-transparent text-text/75 hover:border-text/15 hover:text-text hover:bg-text/15 bg-text/10"
 							>
-								{showPrevious
-									? "Skjul tidligere"
-									: "Vis tidligere"
-								}
+								{showPrevious ? "Skjul tidligere" : "Vis tidligere"}
 							</Button>
 						)}
 					</div>
