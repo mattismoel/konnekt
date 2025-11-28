@@ -1,244 +1,325 @@
-import { Controller, FormProvider, useFieldArray, useForm, type UseFieldArrayReturn, type UseFormReturn } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { FaArrowsRotate, FaPlus, FaUpload } from "react-icons/fa6"
-import { addMinutes, roundToNearestHours } from "date-fns"
-import ConcertList from "./concert-list"
-import { createEvent, eventForm, updateEvent, type Event, type EventFormValues } from "@/lib/features/event/event"
-import type { Venue } from "@/lib/features/event/venue"
-import type { Artist } from "@/lib/features/artist/artist"
-import { createContext, useContext } from "react"
-import FormField from "@/lib/components/form-field"
-import ImagePreview from "@/lib/components/image-preview"
-import Tiptap from "@/lib/components/tiptap/tiptap"
-import Button from "@/lib/components/ui/button/button"
-import Input from "@/lib/components/ui/input"
-import Selector from "@/lib/components/ui/selector"
-import LinkButton from "@/lib/components/ui/button/link-button"
-import { createSubmitHandler } from "@/lib/api"
-import { useQueryClient } from "@tanstack/react-query"
-import { useAuth } from "@/lib/context/auth"
-import { FaPen } from "react-icons/fa"
-import type { Member } from "@/lib/features/auth/member"
-import Audit from "@/lib/components/audit"
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useForm,
+  type UseFieldArrayReturn,
+  type UseFormReturn,
+} from "react-hook-form";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FaArrowsRotate, FaPlus, FaUpload } from "react-icons/fa6";
+import { addMinutes, roundToNearestHours } from "date-fns";
+import ConcertList from "./concert-list";
+
+import {
+  createEvent,
+  eventForm,
+  updateEvent,
+  type Event,
+  type EventFormValues,
+} from "@/lib/features/event/event";
+
+import type { Venue } from "@/lib/features/event/venue";
+import type { Artist } from "@/lib/features/artist/artist";
+import { createContext, useContext } from "react";
+import FormField from "@/lib/components/form-field";
+import ImagePreview from "@/lib/components/image-preview";
+import Tiptap from "@/lib/components/tiptap/tiptap";
+import Button from "@/lib/components/ui/button/button";
+import Input from "@/lib/components/ui/input";
+import Selector from "@/lib/components/ui/selector";
+import LinkButton from "@/lib/components/ui/button/link-button";
+import { createSubmitHandler } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/context/auth";
+import { FaPen } from "react-icons/fa";
+import type { Member } from "@/lib/features/auth/member";
+import Audit from "@/lib/components/audit";
 
 // We must include the fieldArray as part of the context, to not create another
 // instance in children.
 //
 // This also means, that we are NOT to use the react-hook-form useFormContext,
 // but rather the extended useEventFormContext!
-type EventFormContext =
-	UseFieldArrayReturn<EventFormValues> &
-	UseFormReturn<EventFormValues> & {
-		event?: Event | null;
-		venues: Venue[]
-		artists: Artist[]
+type EventFormContext = UseFieldArrayReturn<EventFormValues> &
+  UseFormReturn<EventFormValues> & {
+    event?: Event | null;
+    venues: Venue[];
+    artists: Artist[];
 
-		onAddConcert: () => void;
-		onDeleteConcert: (index: number) => void
-	}
+    onAddConcert: () => void;
+    onDeleteConcert: (index: number) => void;
+  };
 
-const EventFormContext = createContext<EventFormContext | undefined>(undefined)
+const EventFormContext = createContext<EventFormContext | undefined>(undefined);
 
 export const useEventFormContext = () => {
-	const eventFormContext = useContext(EventFormContext)
+  const eventFormContext = useContext(EventFormContext);
 
-	if (!eventFormContext) throw new Error("No provider for EventFormContext")
+  if (!eventFormContext) throw new Error("No provider for EventFormContext");
 
-	return eventFormContext
-}
+  return eventFormContext;
+};
 
 type Props = {
-	venues: Venue[]
-	artists: Artist[]
-} & ({
-	event: Event;
-	updatedByMember: Member;
-} | {
-	event?: null;
-	updatedByMember?: null;
-})
+  venues: Venue[];
+  artists: Artist[];
+} & (
+  | {
+      event: Event;
+      updatedByMember: Member;
+    }
+  | {
+      event?: null;
+      updatedByMember?: null;
+    }
+);
 
 const EventForm = ({ event, venues, artists, updatedByMember }: Props) => {
-	const { hasPermissions } = useAuth()
-	const queryClient = useQueryClient()
+  const { hasPermissions } = useAuth();
+  const queryClient = useQueryClient();
 
-	const isEditable = hasPermissions(["edit:event"])
+  const isEditable = hasPermissions(["edit:event"]);
 
-	const methods = useForm({
-		disabled: !isEditable,
-		defaultValues:
-			event ? {
-				title: event.title,
-				description: event.description,
-				venueId: event?.venue.id,
-				image: undefined,
-				ticketUrl: event.ticketUrl,
-				concerts: event?.concerts.map(c => ({
-					from: c.from,
-					to: c.to,
-					artistID: c.artist.id,
-				})),
-				isPublic: event.isPublic
-			} : {
-				isPublic: true,
-				venueId: venues.find(v => v.name === "Posten")?.id
-			},
-		resolver: zodResolver(eventForm),
-	})
+  const methods = useForm({
+    disabled: !isEditable,
+    defaultValues: event
+      ? {
+          title: event.title,
+          description: event.description,
+          venueId: event?.venue.id,
+          image: undefined,
+          ticketUrl: event.ticketUrl,
+          concerts: event?.concerts.map((c) => ({
+            from: c.from,
+            to: c.to,
+            artistID: c.artist.id,
+          })),
+          isPublic: event.isPublic,
+        }
+      : {
+          isPublic: true,
+          venueId: venues.find((v) => v.name === "Posten")?.id,
+        },
+    resolver: zodResolver(eventForm),
+  });
 
-	const { control, watch, formState: { errors }, setValue, getValues, handleSubmit } = methods;
+  const {
+    control,
+    watch,
+    formState: { errors },
+    setValue,
+    getValues,
+    handleSubmit,
+  } = methods;
 
-	const fieldArrayMethods = useFieldArray({ control, name: "concerts" })
-	const { fields, remove, append } = fieldArrayMethods
+  const fieldArrayMethods = useFieldArray({ control, name: "concerts" });
+  const { fields, remove, append } = fieldArrayMethods;
 
+  const onAddConcert = () => {
+    const prevEnd =
+      fields.length > 0
+        ? getValues(`concerts.${fields.length - 1}.to`)
+        : undefined;
 
-	const onAddConcert = () => {
-		const prevEnd = fields.length > 0
-			? getValues(`concerts.${fields.length - 1}.to`)
-			: undefined
+    const from = prevEnd
+      ? addMinutes(prevEnd, 15)
+      : roundToNearestHours(new Date());
+    const to = addMinutes(from, 30);
+    append({ artistID: 1, from, to });
+  };
 
-		const from = prevEnd ? addMinutes(prevEnd, 15) : roundToNearestHours(new Date())
-		const to = addMinutes(from, 30)
-		append({ artistID: 1, from, to })
-	}
+  const onDeleteConcert = (idx: number) => {
+    remove(idx);
+  };
 
-	const onDeleteConcert = (idx: number) => {
-		remove(idx)
-	}
+  const onSubmit = createSubmitHandler({
+    action: async (form: EventFormValues) => {
+      event ? await updateEvent(form, event.id) : await createEvent(form);
+      await queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+    successMessage: event ? "Event opdateret" : "Event skabt",
+    errorMessage: event ? "Kunne ikke redigére event" : "Kunne ikke lave event",
+    navigateTo: "/admin/events",
+  });
 
-	const onSubmit = createSubmitHandler({
-		action: async (form: EventFormValues) => {
-			event ? await updateEvent(form, event.id) : await createEvent(form)
-			await queryClient.invalidateQueries({ queryKey: ["events"] })
-		},
-		successMessage: event ? "Event opdateret" : "Event skabt",
-		errorMessage: event ? "Kunne ikke redigére event" : "Kunne ikke lave event",
-		navigateTo: "/admin/events",
-	})
+  const isToBePublished = watch("isPublic");
 
-	const isToBePublished = watch("isPublic")
+  return (
+    <FormProvider {...methods}>
+      <EventFormContext.Provider
+        value={{
+          ...methods,
+          ...fieldArrayMethods,
+          artists,
+          venues,
+          event,
+          onAddConcert,
+          onDeleteConcert,
+        }}
+      >
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="@container flex flex-col gap-16"
+        >
+          {/* DISABLED "ENTER" FOR SUBMISSION */}
+          <button type="submit" disabled aria-hidden className="hidden" />
+          <FormField error={errors.image}>
+            <ImagePreview
+              disabled={!isEditable}
+              src={event?.imageUrl}
+              accept="image/jpeg,image/png"
+              onChange={(file) => setValue("image", file)}
+            />
+          </FormField>
 
-	return (
-		<FormProvider {...methods}>
-			<EventFormContext.Provider value={{ ...methods, ...fieldArrayMethods, artists, venues, event, onAddConcert, onDeleteConcert }}>
-				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-16 @container">
-					{/* DISABLED "ENTER" FOR SUBMISSION */}
-					<button type="submit" disabled aria-hidden className="hidden" />
-					<FormField error={errors.image}>
-						<ImagePreview disabled={!isEditable} src={event?.imageUrl} accept="image/jpeg,image/png" onChange={file => setValue("image", file)} />
-					</FormField>
+          <GeneralSection />
 
-					<GeneralSection />
+          <FormField error={errors.description}>
+            <Controller
+              control={control}
+              name="description"
+              render={({ field: { value, onChange } }) => (
+                <Tiptap
+                  disabled={!isEditable}
+                  content={value}
+                  onChange={onChange}
+                />
+              )}
+            />
+          </FormField>
 
-					<FormField error={errors.description}>
-						<Controller
-							control={control}
-							name="description"
-							render={({ field: { value, onChange } }) => (
-								<Tiptap disabled={!isEditable} content={value} onChange={onChange} />
-							)}
-						/>
-					</FormField>
+          <ConcertsSection />
 
-					<ConcertsSection />
-
-					<div className="flex flex-col gap-4">
-						{isEditable && (
-							<Button className="w-full md:w-fit" type="submit">
-								{isToBePublished ? <FaUpload /> : event ? <FaPen /> : <FaPlus />}
-								{isToBePublished ? "Offentliggør" : event ? "Redigér" : "Tilføj"}
-							</Button>
-						)}
-						{event && (
-							<Audit updatedByMember={updatedByMember} updatedAt={event.updatedAt} />
-						)}
-					</div>
-				</form>
-			</EventFormContext.Provider>
-		</FormProvider>
-	)
-}
+          <div className="flex flex-col gap-4">
+            {isEditable && (
+              <Button className="w-full md:w-fit" type="submit">
+                {isToBePublished ? (
+                  <FaUpload />
+                ) : event ? (
+                  <FaPen />
+                ) : (
+                  <FaPlus />
+                )}
+                {isToBePublished
+                  ? "Offentliggør"
+                  : event
+                    ? "Redigér"
+                    : "Tilføj"}
+              </Button>
+            )}
+            {event && (
+              <Audit
+                updatedByMember={updatedByMember}
+                updatedAt={event.updatedAt}
+              />
+            )}
+          </div>
+        </form>
+      </EventFormContext.Provider>
+    </FormProvider>
+  );
+};
 
 const GeneralSection = () => {
-	const { register, formState: { errors, disabled } } = useEventFormContext()
-	const isEditable = !disabled
+  const {
+    register,
+    formState: { errors, disabled },
+  } = useEventFormContext();
+  const isEditable = !disabled;
 
-	return (
-		<section>
+  return (
+    <section>
+      <h1 className="mb-4 font-heading text-2xl font-bold">Generelt</h1>
+      <div className="flex flex-col gap-4">
+        <FormField error={errors.title}>
+          <Input {...register("title")} placeholder="Eventtitel" />
+        </FormField>
 
-			<h1 className="text-2xl font-heading font-bold mb-4">Generelt</h1>
-			<div className="flex flex-col gap-4">
-				<FormField error={errors.title}>
-					<Input {...register("title")} placeholder="Eventtitel" />
-				</FormField>
+        <div className="flex flex-col gap-4 @xl:flex-row">
+          <FormField error={errors.ticketUrl}>
+            <Input
+              {...register("ticketUrl")}
+              placeholder="Billet-URL"
+              className="w-full"
+            />
+          </FormField>
 
-				<div className="flex flex-col @xl:flex-row gap-4">
-					<FormField error={errors.ticketUrl}>
-						<Input {...register("ticketUrl")} placeholder="Billet-URL" className="w-full" />
-					</FormField>
-
-					<VenueSelector />
-				</div>
-				{isEditable && (
-					<FormField className="w-min">
-						<label className="flex gap-2 items-center">
-							<input type="checkbox" {...register("isPublic")} />
-							Offentlig
-						</label>
-					</FormField>
-				)}
-			</div>
-		</section>
-	)
-}
+          <VenueSelector />
+        </div>
+        {isEditable && (
+          <FormField className="w-min">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" {...register("isPublic")} />
+              Offentlig
+            </label>
+          </FormField>
+        )}
+      </div>
+    </section>
+  );
+};
 
 const ConcertsSection = () => {
-	const { fields } = useEventFormContext()
-	return (
-		<section>
-			<h1 className="text-2xl font-bold font-heading mb-4">Koncerter</h1>
-			<ConcertList>
-				{fields.map((field, index) => (
-					<ConcertList.Entry key={field.id} index={index} />
-				))}
-			</ConcertList>
-		</section>
-	)
-}
+  const { fields } = useEventFormContext();
+  return (
+    <section>
+      <h1 className="mb-4 font-heading text-2xl font-bold">Koncerter</h1>
+      <ConcertList>
+        {fields.map((field, index) => (
+          <ConcertList.Entry key={field.id} index={index} />
+        ))}
+      </ConcertList>
+    </section>
+  );
+};
 
 const VenueSelector = () => {
-	const { venues, control, formState: { disabled } } = useEventFormContext()
-	const isEditable = !disabled
+  const {
+    venues,
+    control,
+    formState: { disabled },
+  } = useEventFormContext();
+  const isEditable = !disabled;
 
-	return (
-		<Controller
-			control={control}
-			name="venueId"
-			render={({ field: { onChange, ...rest }, fieldState: { error } }) => (
-				<FormField error={error}>
-					<Selector
-						{...rest}
-						onChange={e => onChange(parseInt(e.target.value))}
-						placeholder="Vælg venue..."
-						className="w-full"
-					>
-						{venues.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
-					</Selector>
+  return (
+    <Controller
+      control={control}
+      name="venueId"
+      render={({ field: { onChange, ...rest }, fieldState: { error } }) => (
+        <FormField error={error}>
+          <Selector
+            {...rest}
+            onChange={(e) => onChange(parseInt(e.target.value))}
+            placeholder="Vælg venue..."
+            className="w-full"
+          >
+            {venues.map(({ id, name }) => (
+              <option key={id} value={id}>
+                {name}
+              </option>
+            ))}
+          </Selector>
 
-					{isEditable && (
-						<div className="flex gap-2">
-							<Button variant="ghost" className="aspect-square h-full">
-								<FaArrowsRotate />
-							</Button>
-							<LinkButton to="/admin/venues/create" className="aspect-square h-full" target="__blank">
-								<FaPlus />
-							</LinkButton>
-						</div>
-					)}
-				</FormField>
-			)}
-		/>
-	)
-}
+          {isEditable && (
+            <div className="flex gap-2">
+              <Button variant="ghost" className="aspect-square h-full">
+                <FaArrowsRotate />
+              </Button>
+              <LinkButton
+                to="/admin/venues/create"
+                className="aspect-square h-full"
+                target="__blank"
+              >
+                <FaPlus />
+              </LinkButton>
+            </div>
+          )}
+        </FormField>
+      )}
+    />
+  );
+};
 
-export default EventForm
+export default EventForm;

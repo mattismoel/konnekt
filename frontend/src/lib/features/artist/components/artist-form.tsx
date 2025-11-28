@@ -1,337 +1,407 @@
-import { createContext, useContext, useMemo, useState } from "react"
-import { z } from "zod"
+import { createContext, useContext, useMemo, useState } from "react";
+import { z } from "zod";
 
-import { Controller, FormProvider, useFieldArray, useForm, type UseFieldArrayReturn, type UseFormReturn } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useForm,
+  type UseFieldArrayReturn,
+  type UseFormReturn,
+} from "react-hook-form";
 
-import { FaPlus, FaTrash, FaPen } from "react-icons/fa"
-import { artistForm, createArtist, socialUrlToIcon, updateArtist, type Artist, type ArtistFormValues } from "../artist"
-import { createGenre, genreSchema, type Genre } from "../genre"
-import FormField from "@/lib/components/form-field"
-import ImagePreview from "@/lib/components/image-preview"
-import Button from "@/lib/components/ui/button/button"
-import Input from "@/lib/components/ui/input"
-import Tiptap from "@/lib/components/tiptap/tiptap"
-import { trackIdFromUrl } from "@/lib/spotify"
-import SpotifyPreview from "@/lib/components/spotify-preview"
-import PillList from "@/lib/components/pill-list"
-import { createSubmitHandler } from "@/lib/api"
-import { useQueryClient } from "@tanstack/react-query"
-import { useAuth } from "@/lib/context/auth"
-import type { Entry as EntryType } from "@/lib/components/ui/picker/entry"
-import Modal from "@/lib/components/ui/modal"
-import MultiPicker from "@/lib/components/ui/picker/multi-picker"
-import Searchbar from "@/lib/components/searchbar"
-import { useToast } from "@/lib/context/toast"
-import Audit from "@/lib/components/audit"
-import type { Member } from "../../auth/member"
+import { zodResolver } from "@hookform/resolvers/zod";
 
-const MAX_GENRES = 3
+import { FaPlus, FaTrash, FaPen } from "react-icons/fa";
 
-const internalSocialSchema = z.object({ value: z.string().url() })
+import {
+  artistForm,
+  createArtist,
+  socialUrlToIcon,
+  updateArtist,
+  type Artist,
+  type ArtistFormValues,
+} from "../artist";
+
+import { createGenre, genreSchema, type Genre } from "../genre";
+import FormField from "@/lib/components/form-field";
+import ImagePreview from "@/lib/components/image-preview";
+import Button from "@/lib/components/ui/button/button";
+import Input from "@/lib/components/ui/input";
+import Tiptap from "@/lib/components/tiptap/tiptap";
+import { trackIdFromUrl } from "@/lib/spotify";
+import SpotifyPreview from "@/lib/components/spotify-preview";
+import PillList from "@/lib/components/pill-list";
+import { createSubmitHandler } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/context/auth";
+import type { Entry as EntryType } from "@/lib/components/ui/picker/entry";
+import Modal from "@/lib/components/ui/modal";
+import MultiPicker from "@/lib/components/ui/picker/multi-picker";
+import Searchbar from "@/lib/components/searchbar";
+import { useToast } from "@/lib/context/toast";
+import Audit from "@/lib/components/audit";
+import type { Member } from "../../auth/member";
+
+const MAX_GENRES = 3;
+
+const internalSocialSchema = z.object({ value: z.string().url() });
 
 const internalArtistFormSchema = artistForm
-	.omit({ socials: true })
-	.extend({ socials: internalSocialSchema.array() })
+  .omit({ socials: true })
+  .extend({ socials: internalSocialSchema.array() });
 
-type InternalArtistForm = z.infer<typeof internalArtistFormSchema>
+type InternalArtistForm = z.infer<typeof internalArtistFormSchema>;
 
-type ArtistFormContext =
-	UseFormReturn<InternalArtistForm> &
-	UseFieldArrayReturn<InternalArtistForm> & {
-		artist?: Artist | null;
-		genres: Genre[]
-	}
+type ArtistFormContext = UseFormReturn<InternalArtistForm> &
+  UseFieldArrayReturn<InternalArtistForm> & {
+    artist?: Artist | null;
+    genres: Genre[];
+  };
 
-const ArtistFormContext = createContext<ArtistFormContext | undefined>(undefined)
+const ArtistFormContext = createContext<ArtistFormContext | undefined>(
+  undefined,
+);
 
 export const useArtistFormContext = () => {
-	const ctx = useContext(ArtistFormContext)
-	if (!ctx) throw new Error("No Provider for ArtistFormContext")
-	return ctx
-}
+  const ctx = useContext(ArtistFormContext);
+  if (!ctx) throw new Error("No Provider for ArtistFormContext");
+  return ctx;
+};
 
 type Props = {
-	genres: Genre[]
-} & ({
-	artist: Artist;
-	updatedByMember: Member;
-} | {
-	artist?: null;
-	updatedByMember?: null;
-})
+  genres: Genre[];
+} & (
+  | {
+      artist: Artist;
+      updatedByMember: Member;
+    }
+  | {
+      artist?: null;
+      updatedByMember?: null;
+    }
+);
 
 const ArtistForm = ({ artist, genres, updatedByMember }: Props) => {
-	const { hasPermissions } = useAuth()
-	const isEditable = hasPermissions(["edit:artist"])
+  const { hasPermissions } = useAuth();
+  const isEditable = hasPermissions(["edit:artist"]);
 
-	const methods = useForm<InternalArtistForm>({
-		disabled: !isEditable,
-		defaultValues: {
-			...artist,
-			genreIds: artist?.genres.map(genre => genre.id) || [],
-			socials: artist?.socials.map(s => ({ value: s }))
-		},
-		resolver: zodResolver(internalArtistFormSchema),
-	})
+  const methods = useForm<InternalArtistForm>({
+    disabled: !isEditable,
+    defaultValues: {
+      ...artist,
+      genreIds: artist?.genres.map((genre) => genre.id) || [],
+      socials: artist?.socials.map((s) => ({ value: s })),
+    },
+    resolver: zodResolver(internalArtistFormSchema),
+  });
 
-	const { control, formState: { errors }, handleSubmit } = methods
-	const fieldArrayMethods = useFieldArray({ control, name: "socials" })
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+  } = methods;
+  const fieldArrayMethods = useFieldArray({ control, name: "socials" });
 
-	const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
-	const onSubmit = createSubmitHandler({
-		navigateTo: "/admin/artists",
-		successMessage: artist ? "Kunstner redigeret" : "Kunstner skabt",
-		errorMessage: artist ? "Kunne ikke redigere kunstner" : "Kunne ikke skabe kunstner",
-		action: async (form: InternalArtistForm) => {
-			const socials: string[] = form.socials.map(({ value }) => value)
-			const output: ArtistFormValues = { ...form, socials }
+  const onSubmit = createSubmitHandler({
+    navigateTo: "/admin/artists",
+    successMessage: artist ? "Kunstner redigeret" : "Kunstner skabt",
+    errorMessage: artist
+      ? "Kunne ikke redigere kunstner"
+      : "Kunne ikke skabe kunstner",
+    action: async (form: InternalArtistForm) => {
+      const socials: string[] = form.socials.map(({ value }) => value);
+      const output: ArtistFormValues = { ...form, socials };
 
-			const { data, success, error } = artistForm.safeParse(output)
-			if (!success) {
-				console.error(error)
-				throw error
-			}
+      const { data, success, error } = artistForm.safeParse(output);
+      if (!success) {
+        console.error(error);
+        throw error;
+      }
 
-			artist
-				? await updateArtist(artist.id, data)
-				: await createArtist(data)
+      artist ? await updateArtist(artist.id, data) : await createArtist(data);
 
-			await queryClient.invalidateQueries({ queryKey: ["artists"] })
-		},
-	})
+      await queryClient.invalidateQueries({ queryKey: ["artists"] });
+    },
+  });
 
-	return (
-		<ArtistFormContext.Provider value={{ ...methods, ...fieldArrayMethods, artist, genres }}>
-			<FormProvider {...methods}>
-				<form className="flex flex-col gap-16" onSubmit={handleSubmit(onSubmit)}>
-					{/* DISABLES "ENTER" FOR SUBMISSION */}
-					<button type="submit" disabled className="hidden" aria-hidden />
+  return (
+    <ArtistFormContext.Provider
+      value={{ ...methods, ...fieldArrayMethods, artist, genres }}
+    >
+      <FormProvider {...methods}>
+        <form
+          className="flex flex-col gap-16"
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          {/* DISABLES "ENTER" FOR SUBMISSION */}
+          <button type="submit" disabled className="hidden" aria-hidden />
 
-					<Controller
-						control={control}
-						name="image"
-						render={({ field }) => (
-							<FormField error={errors.image}>
-								<ImagePreview
-									{...field}
-									src={artist?.imageUrl}
-									accept="image/jpeg,image/png"
-								// onChange={(file) => setValue("image", file)}
-								/>
-							</FormField>
-						)}
-					/>
+          <Controller
+            control={control}
+            name="image"
+            render={({ field }) => (
+              <FormField error={errors.image}>
+                <ImagePreview
+                  {...field}
+                  src={artist?.imageUrl}
+                  accept="image/jpeg,image/png"
+                  // onChange={(file) => setValue("image", file)}
+                />
+              </FormField>
+            )}
+          />
 
-					<GeneralSection />
-					<SpotifySection />
-					<GenreSection />
-					<SocialsSection />
+          <GeneralSection />
+          <SpotifySection />
+          <GenreSection />
+          <SocialsSection />
 
+          <div className="flex flex-col gap-4">
+            {isEditable && (
+              <Button type="submit" className="w-full md:w-fit">
+                {artist ? <FaPen /> : <FaPlus />}
+                {artist ? "Redigér" : "Tilføj"}
+              </Button>
+            )}
 
-					<div className="flex flex-col gap-4">
-						{isEditable && (
-							<Button type="submit" className="w-full md:w-fit">
-								{artist ? <FaPen /> : <FaPlus />}
-								{artist ? "Redigér" : "Tilføj"}
-							</Button>
-						)}
-
-						{artist && (
-							<Audit updatedByMember={updatedByMember} updatedAt={artist.updatedAt} />
-						)}
-					</div>
-				</form>
-			</FormProvider>
-		</ArtistFormContext.Provider>
-	)
-}
+            {artist && (
+              <Audit
+                updatedByMember={updatedByMember}
+                updatedAt={artist.updatedAt}
+              />
+            )}
+          </div>
+        </form>
+      </FormProvider>
+    </ArtistFormContext.Provider>
+  );
+};
 
 const GeneralSection = () => {
-	const { control, register, formState: { errors } } = useArtistFormContext()
+  const {
+    control,
+    register,
+    formState: { errors },
+  } = useArtistFormContext();
 
-	return (
-		<section >
-			<h1 className="font-heading text-2xl font-bold mb-4">Generelt</h1>
-			<div className="flex flex-col gap-4">
-				<FormField error={errors.name}>
-					<Input placeholder="Kunstnernavn" {...register("name")} />
-				</FormField>
+  return (
+    <section>
+      <h1 className="mb-4 font-heading text-2xl font-bold">Generelt</h1>
+      <div className="flex flex-col gap-4">
+        <FormField error={errors.name}>
+          <Input placeholder="Kunstnernavn" {...register("name")} />
+        </FormField>
 
-				<Controller
-					control={control}
-					name="description"
-					render={({ field: { value, ...rest } }) => (
-						<FormField error={errors.description}>
-							<Tiptap {...rest} content={value} />
-						</FormField>
-					)}
-				/>
-			</div>
-		</section>
-	)
-
-}
+        <Controller
+          control={control}
+          name="description"
+          render={({ field: { value, ...rest } }) => (
+            <FormField error={errors.description}>
+              <Tiptap {...rest} content={value} />
+            </FormField>
+          )}
+        />
+      </div>
+    </section>
+  );
+};
 
 const SpotifySection = () => {
-	const { register, watch } = useArtistFormContext()
+  const { register, watch } = useArtistFormContext();
 
-	const trackId = trackIdFromUrl(watch("previewUrl"))
+  const trackId = trackIdFromUrl(watch("previewUrl"));
 
-	return (
-		<section>
-			<h1 className="text-2xl font-bold font-heading mb-8">Spotify Preview</h1>
-			<div className="flex flex-col gap-4">
-				<Input placeholder="Spotify Preview-URL..." {...register("previewUrl")} />
-				{trackId && <SpotifyPreview trackId={trackId} />}
-			</div>
-		</section>
-	)
-}
+  return (
+    <section>
+      <h1 className="mb-8 font-heading text-2xl font-bold">Spotify Preview</h1>
+      <div className="flex flex-col gap-4">
+        <Input
+          placeholder="Spotify Preview-URL..."
+          {...register("previewUrl")}
+        />
+        {trackId && <SpotifyPreview trackId={trackId} />}
+      </div>
+    </section>
+  );
+};
 
 const GenreSection = () => {
-	const queryClient = useQueryClient()
-	const { addToast } = useToast()
-	const { genres, control, formState: { errors, disabled } } = useArtistFormContext()
-	const [showPicker, setShowPicker] = useState(false)
+  const queryClient = useQueryClient();
+  const { addToast } = useToast();
+  const {
+    genres,
+    control,
+    formState: { errors, disabled },
+  } = useArtistFormContext();
+  const [showPicker, setShowPicker] = useState(false);
 
-	const [search, setSearch] = useState("")
-	const isEditable = !disabled
+  const [search, setSearch] = useState("");
+  const isEditable = !disabled;
 
-	const entries: EntryType[] = genres.map(genre => ({
-		id: genre.id.toString(),
-		value: genre.id.toString(),
-		name: genre.name,
-	}))
+  const entries: EntryType[] = genres.map((genre) => ({
+    id: genre.id.toString(),
+    value: genre.id.toString(),
+    name: genre.name,
+  }));
 
-	const filteredEntries = useMemo(() => entries.filter(entry =>
-		entry.name.toLowerCase().includes(search.toLowerCase())
-	), [search, entries])
+  const filteredEntries = useMemo(
+    () =>
+      entries.filter((entry) =>
+        entry.name.toLowerCase().includes(search.toLowerCase()),
+      ),
+    [search, entries],
+  );
 
-	const handleCreateGenre = async () => {
-		const { data, success, error } = genreSchema.pick({ name: true }).safeParse({ name: search })
-		if (!success) {
-			addToast("Kunne ikke lave genre", "Noget gik galt...", "error")
-			throw error
-		}
+  const handleCreateGenre = async () => {
+    const { data, success, error } = genreSchema
+      .pick({ name: true })
+      .safeParse({ name: search });
+    if (!success) {
+      addToast("Kunne ikke lave genre", "Noget gik galt...", "error");
+      throw error;
+    }
 
-		try {
-			await createGenre(data.name)
-			addToast("Genre skabt")
-			await queryClient.invalidateQueries({ queryKey: ["genres"] })
-		} catch (e) {
-			throw e
-		}
-	}
+    try {
+      await createGenre(data.name);
+      addToast("Genre skabt");
+      await queryClient.invalidateQueries({ queryKey: ["genres"] });
+    } catch (e) {
+      throw e;
+    }
+  };
 
-	return (
-		<section>
-			<h1 className="font-bold font-heading mb-8 text-2xl">Genrer</h1>
+  return (
+    <section>
+      <h1 className="mb-8 font-heading text-2xl font-bold">Genrer</h1>
 
-			<Controller
-				control={control}
-				name="genreIds"
-				render={({ field: { value, onChange } }) => {
-					const selectedEntries = entries.filter(e => value.includes(parseInt(e.value)))
+      <Controller
+        control={control}
+        name="genreIds"
+        render={({ field: { value, onChange } }) => {
+          const selectedEntries = entries.filter((e) =>
+            value.includes(parseInt(e.value)),
+          );
 
-					return (
-						<>
-							<FormField error={errors.genreIds}>
-								<PillList entries={selectedEntries.map(entry => entry.name)}>
-									{isEditable && (
-										<Button
-											variant="ghost"
-											onClick={() => setShowPicker(true)}
-											className="h-10 rounded-full px-4"
-										>
-											<FaPen />Vælg
-										</Button>
-									)}
-								</PillList>
-							</FormField>
+          return (
+            <>
+              <FormField error={errors.genreIds}>
+                <PillList entries={selectedEntries.map((entry) => entry.name)}>
+                  {isEditable && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowPicker(true)}
+                      className="h-10 rounded-full px-4"
+                    >
+                      <FaPen />
+                      Vælg
+                    </Button>
+                  )}
+                </PillList>
+              </FormField>
 
-							<Modal show={showPicker} onClose={() => setShowPicker(false)}>
-								<Modal.Header>
-									<Modal.Title>Vælg genrer... (max {MAX_GENRES})</Modal.Title>
-									<Modal.Description>
-										Her kan du vælge de genrer, som kunstneren associeres med.
-									</Modal.Description>
-								</Modal.Header>
-								<Modal.Content className="flex flex-col gap-8">
-									<div className="flex gap-2">
-										<Searchbar search={search} onChange={(s) => setSearch(s)} />
-										<Button type="button" onClick={handleCreateGenre}>
-											<FaPlus />Tilføj
-										</Button>
-									</div>
-									<MultiPicker
-										max={MAX_GENRES}
-										entries={filteredEntries}
-										selected={selectedEntries}
-										onChange={newSelected => onChange(newSelected.map(e => parseInt(e.value)))}
-									/>
-								</Modal.Content>
-								<Modal.Footer>
-									<Button type="button" onClick={() => setShowPicker(false)}>
-										Vælg
-									</Button>
-								</Modal.Footer>
-							</Modal>
-						</>
-					)
-				}}
-			/>
-		</section>
-	)
-}
+              <Modal show={showPicker} onClose={() => setShowPicker(false)}>
+                <Modal.Header>
+                  <Modal.Title>Vælg genrer... (max {MAX_GENRES})</Modal.Title>
+                  <Modal.Description>
+                    Her kan du vælge de genrer, som kunstneren associeres med.
+                  </Modal.Description>
+                </Modal.Header>
+                <Modal.Content className="flex flex-col gap-8">
+                  <div className="flex gap-2">
+                    <Searchbar search={search} onChange={(s) => setSearch(s)} />
+                    <Button type="button" onClick={handleCreateGenre}>
+                      <FaPlus />
+                      Tilføj
+                    </Button>
+                  </div>
+                  <MultiPicker
+                    max={MAX_GENRES}
+                    entries={filteredEntries}
+                    selected={selectedEntries}
+                    onChange={(newSelected) =>
+                      onChange(newSelected.map((e) => parseInt(e.value)))
+                    }
+                  />
+                </Modal.Content>
+                <Modal.Footer>
+                  <Button type="button" onClick={() => setShowPicker(false)}>
+                    Vælg
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+            </>
+          );
+        }}
+      />
+    </section>
+  );
+};
 
 const SocialsSection = () => {
-	const { fields, formState: { errors, disabled }, append } = useArtistFormContext()
-	const isEditable = !disabled
+  const {
+    fields,
+    formState: { errors, disabled },
+    append,
+  } = useArtistFormContext();
+  const isEditable = !disabled;
 
-	const [input, setInput] = useState("")
+  const [input, setInput] = useState("");
 
-	const handleAdd = () => {
-		append({ value: input })
-		setInput("")
-	}
+  const handleAdd = () => {
+    append({ value: input });
+    setInput("");
+  };
 
-	return (
-		<section>
-			<h1 className="font-heading font-bold text-2xl mb-4">Sociale medier</h1>
+  return (
+    <section>
+      <h1 className="mb-4 font-heading text-2xl font-bold">Sociale medier</h1>
 
-			{isEditable && (
-				<div className="w-full flex gap-4 mb-8">
-					<Input placeholder="URL..." value={input} onChange={e => setInput(e.target.value)} />
-					<Button variant="secondary" onClick={handleAdd}><FaPlus /> Tilføj</Button>
-				</div>
-			)}
+      {isEditable && (
+        <div className="mb-8 flex w-full gap-4">
+          <Input
+            placeholder="URL..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+          <Button variant="secondary" onClick={handleAdd}>
+            <FaPlus /> Tilføj
+          </Button>
+        </div>
+      )}
 
-			<div className="flex flex-col gap-2">
-				{fields.map((field, index) => (
-					<FormField error={errors.socials}>
-						<SocialMediaEntry key={field.id} index={index} />
-					</FormField>
-				))}
-			</div>
-		</section>
-	)
-}
+      <div className="flex flex-col gap-2">
+        {fields.map((field, index) => (
+          <FormField error={errors.socials}>
+            <SocialMediaEntry key={field.id} index={index} />
+          </FormField>
+        ))}
+      </div>
+    </section>
+  );
+};
 
 const SocialMediaEntry = ({ index }: { index: number }) => {
-	const { register, watch, remove } = useArtistFormContext()
-	const Icon = socialUrlToIcon(watch(`socials.${index}.value`))
+  const { register, watch, remove } = useArtistFormContext();
+  const Icon = socialUrlToIcon(watch(`socials.${index}.value`));
 
-	return (
-		<div className="w-full flex gap-4 items-center">
-			<div className="relative w-full">
-				<Icon className="absolute right-4 top-1/2 -translate-y-1/2 text-text/50" />
-				<Input {...register(`socials.${index}.value`)} />
-			</div>
-			<button onClick={() => remove(index)} type="button" className=" text-text/50 hover:text-text h-full"><FaTrash /></button>
-		</div>
-	)
-}
+  return (
+    <div className="flex w-full items-center gap-4">
+      <div className="relative w-full">
+        <Icon className="absolute top-1/2 right-4 -translate-y-1/2 text-text/50" />
+        <Input {...register(`socials.${index}.value`)} />
+      </div>
+      <button
+        onClick={() => remove(index)}
+        type="button"
+        className="h-full text-text/50 hover:text-text"
+      >
+        <FaTrash />
+      </button>
+    </div>
+  );
+};
 
-export default ArtistForm
+export default ArtistForm;
