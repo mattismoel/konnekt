@@ -35,7 +35,7 @@ const TeamDisplay = ({ members, allTeams }: Props) => {
 
   return (
     <div className="@container flex flex-col gap-16">
-      <div className="grid grid-cols-1 gap-8 @3xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 @3xl:grid-cols-2">
         {specialMembers.map((member) => (
           <MemberInfo
             key={member.id}
