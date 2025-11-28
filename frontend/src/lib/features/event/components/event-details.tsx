@@ -21,7 +21,10 @@ const EventDetails = ({ event, active, prefix }: Props) => {
   let fromDate = earliestConcert(event.concerts)?.from;
 
   const genres = eventGenres(event);
-  let genresString = genres.map((genre) => genre.name).join(", ");
+  let genresString = genres
+    .slice(0, 5)
+    .map((genre) => genre.name)
+    .join(", ");
 
   const locationUrl = new URL(
     `https://www.google.com/maps/search/?` +
@@ -44,12 +47,12 @@ const EventDetails = ({ event, active, prefix }: Props) => {
       <div className="flex w-full flex-col px-auto">
         {prefix && <span className="text-shadow-sm">{prefix}</span>}
 
-        <h1 className="mb-4 font-heading text-5xl font-bold text-shadow-md md:mb-8 md:text-7xl">
+        <h1 className="mb-6 font-heading text-5xl font-bold text-shadow-md md:mb-8 md:text-7xl">
           {event.title}
         </h1>
 
         <div className="flex flex-col gap-8 text-text/75 text-shadow-sm sm:flex-row">
-          <div className="flex flex-1 flex-col gap-1">
+          <div className="flex flex-1 flex-col justify-end gap-2 text-base">
             {fromDate && (
               <div className="flex items-center gap-4">
                 <FaCalendarDay />
@@ -59,18 +62,18 @@ const EventDetails = ({ event, active, prefix }: Props) => {
               </div>
             )}
             <div className="flex items-center gap-4">
+              <FaMusic />
+              <span className="line-clamp-1">{genresString}</span>
+            </div>
+            <div className="flex items-center gap-4">
               <FaMapPin />
               <a
                 className="line-clamp-1 hover:underline"
                 href={locationUrl.toString()}
               >
-                {event.venue.name}, {event.venue.city} (
+                {event.venue.name} / {event.venue.city} (
                 {event.venue.countryCode})
               </a>
-            </div>
-            <div className="flex items-center gap-4">
-              <FaMusic />
-              <span className="line-clamp-1">{genresString}</span>
             </div>
           </div>
 
@@ -83,7 +86,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
               <LinkButton
                 to="/events/$eventId"
                 params={{ eventId: event.id.toString() }}
-                variant="outline"
+                variant="secondary"
                 className="w-full"
               >
                 Læs mere
