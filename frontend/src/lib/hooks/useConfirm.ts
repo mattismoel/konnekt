@@ -1,5 +1,5 @@
 export const useConfirm = (msg: string, callback: () => void) => {
-  if (!confirm(msg)) return
+  if (!confirm(msg)) return;
 
-  callback()
-}
+  callback();
+};

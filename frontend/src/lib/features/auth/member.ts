@@ -1,142 +1,141 @@
-import { APIError, apiErrorSchema, idSchema, requestAndParse, type ID } from "@/lib/api"
-import { createListResult } from "@/lib/query"
-import { createUrl, type Query } from "@/lib/url"
-import { z } from "zod"
-import { teamSchema } from "./team"
-import { auditDates } from "@/lib/audit"
+import {
+  APIError,
+  apiErrorSchema,
+  idSchema,
+  requestAndParse,
+  type ID,
+} from "@/lib/api";
+import { createListResult } from "@/lib/query";
+import { createUrl, type Query } from "@/lib/url";
+import { z } from "zod";
+import { teamSchema } from "./team";
+import { auditDates } from "@/lib/audit";
 
 export const memberSchema = z.object({
-	...auditDates.shape,
-	id: idSchema,
-	approvedById: idSchema.optional(),
-	email: z.string().email(),
-	firstName: z.string(),
-	lastName: z.string(),
-	teams: teamSchema.array().min(1),
-	profilePictureUrl: z
-		.string()
-		.url()
-		.optional(),
+  ...auditDates.shape,
+  id: idSchema,
+  approvedById: idSchema.optional(),
+  email: z.string().email(),
+  firstName: z.string(),
+  lastName: z.string(),
+  teams: teamSchema.array().min(1),
+  profilePictureUrl: z.string().url().optional(),
 
-	active: z.boolean(),
-	specialRole: z.string().optional()
-})
+  active: z.boolean(),
+  specialRole: z.string().optional(),
+});
 
-export type Member = z.infer<typeof memberSchema>
+export type Member = z.infer<typeof memberSchema>;
 
 export const memberForm = z.object({
-	firstName: z
-		.string()
-		.nonempty(),
-	lastName: z
-		.string()
-		.nonempty(),
-	email: z
-		.string()
-		.email(),
-	memberTeams: z
-		.number()
-		.int()
-		.positive()
-		.array(),
-	specialRole: z
-		.string()
-		.optional(),
-	image: z.instanceof(File).optional()
-})
+  firstName: z.string().nonempty(),
+  lastName: z.string().nonempty(),
+  email: z.string().email(),
+  memberTeams: z.number().int().positive().array(),
+  specialRole: z.string().optional(),
+  image: z.instanceof(File).optional(),
+});
 
-export type MemberFormValues = z.infer<typeof memberForm>
+export type MemberFormValues = z.infer<typeof memberForm>;
 
 const editMemberSchema = memberForm
-	.omit({ image: true })
-	.extend({ profilePictureUrl: z.string().url().optional() })
+  .omit({ image: true })
+  .extend({ profilePictureUrl: z.string().url().optional() });
 
 export const memberSession = async () => {
-	const member = await requestAndParse(
-		createUrl(`/api/auth/session`),
-		memberSchema,
-		"Could not fetch member session",
-	)
+  const member = await requestAndParse(
+    createUrl(`/api/auth/session`),
+    memberSchema,
+    "Could not fetch member session",
+  );
 
-	return member
-}
+  return member;
+};
 
 export const listMembers = async (query?: Query) => {
-	const result = await requestAndParse(
-		createUrl(`/api/members`, query),
-		createListResult(memberSchema),
-		"Could not fetch members",
-	)
+  const result = await requestAndParse(
+    createUrl(`/api/members`, query),
+    createListResult(memberSchema),
+    "Could not fetch members",
+  );
 
-	return result
-}
+  return result;
+};
 
 export const approveMember = async (memberId: ID) => {
-	return requestAndParse(
-		createUrl(`/api/members/${memberId}/approve`),
-		undefined,
-		"Could not approve member",
-		undefined,
-		"POST"
-	)
-}
+  return requestAndParse(
+    createUrl(`/api/members/${memberId}/approve`),
+    undefined,
+    "Could not approve member",
+    undefined,
+    "POST",
+  );
+};
 
 export const deleteMember = async (memberId: ID) => {
-	return requestAndParse(
-		createUrl(`/api/members/${memberId}`),
-		undefined,
-		"Could not delete member",
-		undefined,
-		"DELETE"
-	)
-}
+  return requestAndParse(
+    createUrl(`/api/members/${memberId}`),
+    undefined,
+    "Could not delete member",
+    undefined,
+    "DELETE",
+  );
+};
 
 export const memberById = async (memberId: ID) => {
-	const member = await requestAndParse(
-		createUrl(`/api/members/${memberId}`),
-		memberSchema,
-		"Could not get member by ID"
-	)
+  const member = await requestAndParse(
+    createUrl(`/api/members/${memberId}`),
+    memberSchema,
+    "Could not get member by ID",
+  );
 
-	return member
-}
+  return member;
+};
 
 export const editMember = async (memberId: ID, form: MemberFormValues) => {
-	const { data, success, error } = memberForm.safeParse(form)
-	if (!success) throw error
+  const { data, success, error } = memberForm.safeParse(form);
+  if (!success) throw error;
 
-	const { image, ...rest } = data;
+  const { image, ...rest } = data;
 
-	const profilePictureUrl = image ? await uploadMemberProfilePicture(image) : undefined
+  const profilePictureUrl = image
+    ? await uploadMemberProfilePicture(image)
+    : undefined;
 
-	const member = requestAndParse(
-		createUrl(`/api/members/${memberId}`),
-		memberSchema,
-		"Could not update artist",
-		{ bodySchema: editMemberSchema, body: { ...rest, profilePictureUrl } },
-		"PUT"
-	)
+  const member = requestAndParse(
+    createUrl(`/api/members/${memberId}`),
+    memberSchema,
+    "Could not update artist",
+    { bodySchema: editMemberSchema, body: { ...rest, profilePictureUrl } },
+    "PUT",
+  );
 
-	return member
-}
+  return member;
+};
 
-export const uploadMemberProfilePicture = async (file: File): Promise<string> => {
-	const formData = new FormData()
+export const uploadMemberProfilePicture = async (
+  file: File,
+): Promise<string> => {
+  const formData = new FormData();
 
-	formData.append("file", file)
+  formData.append("file", file);
 
-	const res = await fetch(`/api/members/picture`, {
-		body: formData,
-		method: "POST",
-		credentials: "include",
-	})
+  const res = await fetch(`/api/members/picture`, {
+    body: formData,
+    method: "POST",
+    credentials: "include",
+  });
 
-	if (!res.ok) {
-		const err = apiErrorSchema.parse(await res.json())
-		throw new APIError(res.status, "Could not upload member profile picture", err.message)
-	}
+  if (!res.ok) {
+    const err = apiErrorSchema.parse(await res.json());
+    throw new APIError(
+      res.status,
+      "Could not upload member profile picture",
+      err.message,
+    );
+  }
 
-	const url = await res.text()
+  const url = await res.text();
 
-	return url
-}
+  return url;
+};

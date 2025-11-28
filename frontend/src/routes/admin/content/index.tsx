@@ -1,21 +1,21 @@
-import LandingImagesForm from '@/lib/components/landing-images-form'
-import { landingImagesQueryOptions } from '@/lib/features/content/query'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import LandingImagesForm from "@/lib/components/landing-images-form";
+import { landingImagesQueryOptions } from "@/lib/features/content/query";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/admin/content/')({
-	component: RouteComponent,
-	loader: async ({ context: { queryClient } }) => {
-		queryClient.ensureQueryData(landingImagesQueryOptions)
-	}
-})
+export const Route = createFileRoute("/admin/content/")({
+  component: RouteComponent,
+  loader: async ({ context: { queryClient } }) => {
+    queryClient.ensureQueryData(landingImagesQueryOptions);
+  },
+});
 
 function RouteComponent() {
-	const { data: images } = useSuspenseQuery(landingImagesQueryOptions)
+  const { data: images } = useSuspenseQuery(landingImagesQueryOptions);
 
-	return (
-		<main className="px-auto py-32 min-h-svh">
-			<LandingImagesForm images={images} />
-		</main>
-	)
+  return (
+    <main className="min-h-svh px-auto py-32">
+      <LandingImagesForm images={images} />
+    </main>
+  );
 }

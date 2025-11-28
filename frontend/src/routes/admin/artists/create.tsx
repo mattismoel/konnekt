@@ -1,22 +1,24 @@
-import { genresQueryOpts } from '@/lib/features/artist/query'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { genresQueryOpts } from "@/lib/features/artist/query";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
-import ArtistForm from '@/lib/features/artist/components/artist-form'
+import ArtistForm from "@/lib/features/artist/components/artist-form";
 
-export const Route = createFileRoute('/admin/artists/create')({
-	component: RouteComponent,
-	loader: async ({ context: { queryClient } }) => {
-		queryClient.ensureQueryData(genresQueryOpts)
-	}
-})
+export const Route = createFileRoute("/admin/artists/create")({
+  component: RouteComponent,
+  loader: async ({ context: { queryClient } }) => {
+    queryClient.ensureQueryData(genresQueryOpts);
+  },
+});
 
 function RouteComponent() {
-	const { data: { records: genres } } = useSuspenseQuery(genresQueryOpts)
+  const {
+    data: { records: genres },
+  } = useSuspenseQuery(genresQueryOpts);
 
-	return (
-		<main className="px-auto py-32 min-h-svh">
-			<ArtistForm genres={genres} />
-		</main>
-	)
+  return (
+    <main className="min-h-svh px-auto py-32">
+      <ArtistForm genres={genres} />
+    </main>
+  );
 }
