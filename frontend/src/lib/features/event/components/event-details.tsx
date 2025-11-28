@@ -51,7 +51,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
           {event.title}
         </h1>
 
-        <div className="flex flex-col gap-8 text-text/75 text-shadow-sm sm:flex-row">
+        <div className="flex flex-col gap-8 text-text/75 sm:flex-row">
           <div className="flex flex-1 flex-col justify-end gap-2 text-base">
             {fromDate && (
               <div className="flex items-center gap-4">
