@@ -1,36 +1,44 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { createMemberByIdQueryOpts, createMemberTeamsQueryOpts, teamsQueryOpts } from '@/lib/features/auth/query'
+import {
+  createMemberByIdQueryOpts,
+  createMemberTeamsQueryOpts,
+  teamsQueryOpts,
+} from "@/lib/features/auth/query";
 
-import MemberForm from '@/lib/features/auth/components/member-form'
+import MemberForm from "@/lib/features/auth/components/member-form";
 
-export const Route = createFileRoute('/admin/members/$memberId')({
-	component: RouteComponent,
-	loader: async ({ context: { queryClient }, params: { memberId } }) => {
-		const memberQueryOpts = createMemberByIdQueryOpts(parseInt(memberId))
+export const Route = createFileRoute("/admin/members/$memberId")({
+  component: RouteComponent,
+  loader: async ({ context: { queryClient }, params: { memberId } }) => {
+    const memberQueryOpts = createMemberByIdQueryOpts(parseInt(memberId));
 
-		queryClient.ensureQueryData(memberQueryOpts)
-		queryClient.ensureQueryData(teamsQueryOpts)
+    queryClient.ensureQueryData(memberQueryOpts);
+    queryClient.ensureQueryData(teamsQueryOpts);
 
-		const memberTeamsQueryOpts = createMemberTeamsQueryOpts(parseInt(memberId))
+    const memberTeamsQueryOpts = createMemberTeamsQueryOpts(parseInt(memberId));
 
-		queryClient.ensureQueryData(memberTeamsQueryOpts)
+    queryClient.ensureQueryData(memberTeamsQueryOpts);
 
-		return { memberQueryOpts, memberTeamsQueryOpts }
-	}
-})
+    return { memberQueryOpts, memberTeamsQueryOpts };
+  },
+});
 
 function RouteComponent() {
-	const { memberQueryOpts, memberTeamsQueryOpts } = Route.useLoaderData()
+  const { memberQueryOpts, memberTeamsQueryOpts } = Route.useLoaderData();
 
-	const { data: member } = useSuspenseQuery(memberQueryOpts)
-	const { data: { records: teams } } = useSuspenseQuery(teamsQueryOpts)
-	const { data: memberTeams } = useSuspenseQuery(memberTeamsQueryOpts)
+  const { data: member } = useSuspenseQuery(memberQueryOpts);
 
-	return (
-		<main className="px-auto py-32">
-			<MemberForm member={member} teams={teams} memberTeams={memberTeams} />
-		</main>
-	)
+  const {
+    data: { records: teams },
+  } = useSuspenseQuery(teamsQueryOpts);
+
+  const { data: memberTeams } = useSuspenseQuery(memberTeamsQueryOpts);
+
+  return (
+    <main className="px-auto py-32">
+      <MemberForm member={member} teams={teams} memberTeams={memberTeams} />
+    </main>
+  );
 }

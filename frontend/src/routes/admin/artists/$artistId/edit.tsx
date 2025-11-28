@@ -1,35 +1,50 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { createArtistByIdOpts, genresQueryOpts } from '@/lib/features/artist/query'
+import {
+  createArtistByIdOpts,
+  genresQueryOpts,
+} from "@/lib/features/artist/query";
 
-import ArtistForm from '@/lib/features/artist/components/artist-form'
-import { createMemberByIdQueryOpts } from '@/lib/features/auth/query'
+import ArtistForm from "@/lib/features/artist/components/artist-form";
+import { createMemberByIdQueryOpts } from "@/lib/features/auth/query";
 
-export const Route = createFileRoute('/admin/artists/$artistId/edit')({
-	component: RouteComponent,
-	loader: async ({ context: { queryClient }, params: { artistId } }) => {
-		const artistQueryOptions = createArtistByIdOpts(parseInt(artistId))
+export const Route = createFileRoute("/admin/artists/$artistId/edit")({
+  component: RouteComponent,
+  loader: async ({ context: { queryClient }, params: { artistId } }) => {
+    const artistQueryOptions = createArtistByIdOpts(parseInt(artistId));
 
-		const artist = await queryClient.ensureQueryData(artistQueryOptions)
-		const updatedByMemberQueryOpts = createMemberByIdQueryOpts(artist.updatedBy)
+    const artist = await queryClient.ensureQueryData(artistQueryOptions);
+    const updatedByMemberQueryOpts = createMemberByIdQueryOpts(
+      artist.updatedBy,
+    );
 
-		queryClient.ensureQueryData(genresQueryOpts)
-		queryClient.ensureQueryData(updatedByMemberQueryOpts)
+    queryClient.ensureQueryData(genresQueryOpts);
+    queryClient.ensureQueryData(updatedByMemberQueryOpts);
 
-		return { artistQueryOptions, updatedByMemberQueryOpts }
-	}
-})
+    return { artistQueryOptions, updatedByMemberQueryOpts };
+  },
+});
 
 function RouteComponent() {
-	const { artistQueryOptions, updatedByMemberQueryOpts } = Route.useLoaderData()
-	const { data: artist } = useSuspenseQuery(artistQueryOptions)
-	const { data: { records: genres } } = useSuspenseQuery(genresQueryOpts)
-	const { data: updatedByMember } = useSuspenseQuery(updatedByMemberQueryOpts)
+  const { artistQueryOptions, updatedByMemberQueryOpts } =
+    Route.useLoaderData();
 
-	return (
-		<main className="px-auto py-32 min-h-svh">
-			<ArtistForm artist={artist} genres={genres} updatedByMember={updatedByMember} />
-		</main>
-	)
+  const { data: artist } = useSuspenseQuery(artistQueryOptions);
+
+  const {
+    data: { records: genres },
+  } = useSuspenseQuery(genresQueryOpts);
+
+  const { data: updatedByMember } = useSuspenseQuery(updatedByMemberQueryOpts);
+
+  return (
+    <main className="min-h-svh px-auto py-32">
+      <ArtistForm
+        artist={artist}
+        genres={genres}
+        updatedByMember={updatedByMember}
+      />
+    </main>
+  );
 }

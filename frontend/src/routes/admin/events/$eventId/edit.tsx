@@ -1,45 +1,54 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { artistsQueryOpts } from '@/lib/features/artist/query'
-import { createEventByIdOpts, venuesQueryOpts } from '@/lib/features/event/query'
+import { artistsQueryOpts } from "@/lib/features/artist/query";
+import {
+  createEventByIdOpts,
+  venuesQueryOpts,
+} from "@/lib/features/event/query";
 
-import EventForm from '@/lib/features/event/components/event-form/event-form'
-import { createMemberByIdQueryOpts } from '@/lib/features/auth/query'
+import EventForm from "@/lib/features/event/components/event-form/event-form";
+import { createMemberByIdQueryOpts } from "@/lib/features/auth/query";
 
-export const Route = createFileRoute('/admin/events/$eventId/edit')({
-	component: RouteComponent,
-	loader: async ({ context: { queryClient }, params: { eventId } }) => {
-		const eventQueryOptions = createEventByIdOpts(parseInt(eventId))
-		const event = await queryClient.ensureQueryData(eventQueryOptions);
+export const Route = createFileRoute("/admin/events/$eventId/edit")({
+  component: RouteComponent,
+  loader: async ({ context: { queryClient }, params: { eventId } }) => {
+    const eventQueryOptions = createEventByIdOpts(parseInt(eventId));
+    const event = await queryClient.ensureQueryData(eventQueryOptions);
 
-		const updatedByQueryOpts = createMemberByIdQueryOpts(event.updatedBy)
+    const updatedByQueryOpts = createMemberByIdQueryOpts(event.updatedBy);
 
-		queryClient.ensureQueryData((updatedByQueryOpts))
-		queryClient.ensureQueryData(artistsQueryOpts)
-		queryClient.ensureQueryData(venuesQueryOpts)
+    queryClient.ensureQueryData(updatedByQueryOpts);
+    queryClient.ensureQueryData(artistsQueryOpts);
+    queryClient.ensureQueryData(venuesQueryOpts);
 
-		return { eventQueryOptions, updatedByQueryOpts }
-	}
-})
+    return { eventQueryOptions, updatedByQueryOpts };
+  },
+});
 
 function RouteComponent() {
-	const { eventQueryOptions, updatedByQueryOpts } = Route.useLoaderData()
+  const { eventQueryOptions, updatedByQueryOpts } = Route.useLoaderData();
 
-	const { data: event } = useSuspenseQuery(eventQueryOptions)
-	const { data: { records: artists } } = useSuspenseQuery(artistsQueryOpts)
-	const { data: { records: venues } } = useSuspenseQuery(venuesQueryOpts)
+  const { data: event } = useSuspenseQuery(eventQueryOptions);
 
-	const { data: updatedByMember } = useSuspenseQuery((updatedByQueryOpts))
+  const {
+    data: { records: artists },
+  } = useSuspenseQuery(artistsQueryOpts);
 
-	return (
-		<main className="px-auto py-32 min-h-svh">
-			<EventForm
-				event={event}
-				venues={venues}
-				artists={artists}
-				updatedByMember={updatedByMember}
-			/>
-		</main>
-	)
+  const {
+    data: { records: venues },
+  } = useSuspenseQuery(venuesQueryOpts);
+
+  const { data: updatedByMember } = useSuspenseQuery(updatedByQueryOpts);
+
+  return (
+    <main className="min-h-svh px-auto py-32">
+      <EventForm
+        event={event}
+        venues={venues}
+        artists={artists}
+        updatedByMember={updatedByMember}
+      />
+    </main>
+  );
 }
