@@ -14,7 +14,7 @@ const Navbar = ({ children }: PropsWithChildren) => {
     <nav
       className={cn(
         "fixed inset-0 z-40 flex h-nav w-full transition-[inset]",
-        scrolled && "inset-y-1",
+        scrolled && "inset-y-2",
       )}
     >
       {/* BACKDROP */}
