@@ -1,16 +1,11 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { socialUrlToIcon, type Artist } from '@/lib/features/artist/artist';
-import { pickRandom } from '@/lib/array';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/clsx';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { previousArtistsQueryOpts, upcomingArtistsQueryOpts } from '@/lib/features/artist/query';
 import PageMeta from '@/lib/components/page-meta';
 import Button from '@/lib/components/ui/button/button';
-import { useScroll } from '@/lib/hooks/useScroll';
-
-/** @description The rate of which artist auto display changes artist. */
-const AUTO_DISPLAY_RATE = 0.25;
 
 export const Route = createFileRoute('/_app/artists/')({
 	component: RouteComponent,
@@ -20,31 +15,12 @@ export const Route = createFileRoute('/_app/artists/')({
 	}
 })
 
-type ArtistsContext = {
-	upcomingArtists: Artist[]
-	previousArtists: Artist[]
-	selected: Artist | undefined
-
-	onSelect: (artist: Artist) => void;
-	onExit: () => void;
-}
-
-const ArtistsContext = createContext<ArtistsContext | undefined>(undefined)
-
-const useArtistsContext = () => {
-	const ctx = useContext(ArtistsContext)
-	if (!ctx) throw new Error("No ArtistsContext.Provider found")
-	return ctx
-}
-
 function RouteComponent() {
 	const { data: upcomingArtists } = useSuspenseQuery(upcomingArtistsQueryOpts)
 	const { data: previousArtists } = useSuspenseQuery(previousArtistsQueryOpts)
 
 	const [selected, setSelected] = useState<Artist>();
-	const intervalRef = useRef<NodeJS.Timeout | null>(null)
-
-	const { y: scrollY } = useScroll()
+	const [showPrevious, setShowPrevious] = useState(false)
 
 	useEffect(() => {
 		if (upcomingArtists.length <= 0 && previousArtists.length > 0) setSelected(previousArtists[0])
@@ -52,36 +28,13 @@ function RouteComponent() {
 		if (upcomingArtists.length > 0) setSelected(upcomingArtists[0])
 	}, [upcomingArtists])
 
-	useEffect(() => {
-		if (upcomingArtists.length > 0 || previousArtists.length > 0) beginAutoDisplay();
-		return endAutoDisplay;
-	}, [upcomingArtists]);
-
-	const beginAutoDisplay = () => {
-		if (intervalRef.current) return
-
-		intervalRef.current = setInterval(() => {
-			if (scrollY > 0) return
-			if (upcomingArtists.length <= 0 && previousArtists.length <= 0) return
-			const newArtist = pickRandom(upcomingArtists)
-			if (newArtist) setSelected(newArtist);
-		}, 1000 / AUTO_DISPLAY_RATE);
-	};
-
-	const endAutoDisplay = () => {
-		if (!intervalRef.current) return;
-
-		clearInterval(intervalRef.current);
-		intervalRef.current = null
-	};
 
 	const onSelect = (artist: Artist) => {
 		setSelected(artist)
-		endAutoDisplay()
 	}
 
 	return (
-		<ArtistsContext.Provider value={{ upcomingArtists, previousArtists, selected, onSelect, onExit: beginAutoDisplay }}>
+		<>
 			<PageMeta
 				title="Konnekt | Kunstnere"
 				description="Se alle aktuelle kunstnere der medvirker i Konnekts kommende events"
@@ -104,69 +57,71 @@ function RouteComponent() {
 						<h1 className="font-heading mb-4 text-4xl font-bold text-shadow-md/15">Kommende kunstnere</h1>
 					</section>
 
-					<ArtistList />
+					<div className="flex flex-col gap-16">
+						<section>
+							{upcomingArtists.length > 0 ? (
+								<ArtistList artists={upcomingArtists} onSelect={onSelect} />
+							) : (
+								<p className="text-text/50 italic">Der er ingen kommende kunstnere...</p>
+							)}
+						</section>
+
+						{(previousArtists.length > 0) && (
+							showPrevious && (
+								<section className="flex flex-col gap-4">
+									<h2 className="font-semibold font-heading">Tidligere kunstnere</h2>
+									<ArtistList artists={previousArtists} onSelect={onSelect} />
+								</section>
+							)
+						)}
+
+						{previousArtists.length > 0 && (
+							<Button
+								type="button"
+								variant="secondary"
+								onClick={() => setShowPrevious(prev => !prev)}
+								className="w-full py-3 rounded-md border border-transparent text-text/75 hover:border-text/15 hover:text-text hover:bg-text/15 bg-text/10"
+							>
+								{showPrevious
+									? "Skjul tidligere"
+									: "Vis tidligere"
+								}
+							</Button>
+						)}
+					</div>
+
+					{/* <ArtistList /> */}
 				</div>
 			</main>
-		</ArtistsContext.Provider>
+		</>
 	)
 }
 
-const ArtistList = () => {
-	const { upcomingArtists, previousArtists } = useArtistsContext()
-	const [showPrevious, setShowPrevious] = useState(false)
+type ArtistListProps = {
+	artists: Artist[]
+	onSelect: (artist: Artist) => void;
+}
 
+const ArtistList = ({ artists, onSelect }: ArtistListProps) => {
 	return (
-		<div className="flex flex-col gap-16">
-			<section>
-				{upcomingArtists.length > 0 ? (
-					<ul className="flex-1 overflow-y-scroll">
-						{upcomingArtists.map(artist => (
-							<Entry key={artist.id} artist={artist} />
-						))}
-					</ul>
-				) : (
-					<p className="text-text/50 italic">Der er ingen kommende kunstnere...</p>
-				)}
-			</section>
-
-			{(previousArtists.length > 0) && (
-				showPrevious && (
-					<section className="flex flex-col gap-4">
-						<h2 className="font-semibold font-heading">Tidligere kunstnere</h2>
-						<ul className="flex-1 overflow-y-scroll">
-							{previousArtists.map(artist => (
-								<Entry key={artist.id} artist={artist} previous />
-							))}
-						</ul>
-					</section>
-				)
-			)}
-
-			{previousArtists.length > 0 && (
-				<Button
-					type="button"
-					variant="secondary"
-					onClick={() => setShowPrevious(prev => !prev)}
-					className="w-full py-3 rounded-md border border-transparent text-text/75 hover:border-text/15 hover:text-text hover:bg-text/15 bg-text/10"
-				>
-					{showPrevious
-						? "Skjul tidligere"
-						: "Vis tidligere"
-					}
-				</Button>
-			)}
-		</div>
+		<ul className="flex-1 overflow-y-scroll">
+			{artists.map(artist => (
+				<Entry
+					key={artist.id}
+					artist={artist}
+					onSelect={() => onSelect(artist)}
+				/>
+			))}
+		</ul>
 	)
 }
 
 type EntryProps = {
 	artist: Artist;
-	previous?: boolean;
+	onSelect: () => void;
 }
 
-const Entry = ({ artist, previous = false }: EntryProps) => {
-	const { selected, onSelect, onExit } = useArtistsContext()
-
+const Entry = ({ artist, onSelect }: EntryProps) => {
 	const genreString = artist.genres.map(({ name }) => name).join(", ")
 
 	const ref = useRef<HTMLLIElement>(null)
@@ -174,24 +129,18 @@ const Entry = ({ artist, previous = false }: EntryProps) => {
 	return (
 		<li
 			ref={ref}
-			className={cn("isolate relative @container px-4 border border-transparent rounded-md overflow-hidden hover:bg-text/5 hover:backdrop-blur-xs transition-[backdrop-filter,background-color,border-color]", {
-				"hover:border-text/25": true,
-				"border-text/25": (!previous && (selected?.id === artist.id))
-			})}
-			onMouseEnter={() => onSelect(artist)}
-			onMouseLeave={onExit}
+			className="group isolate relative @container px-4 border border-transparent rounded-md overflow-hidden hover:bg-text/5 hover:backdrop-blur-xs transition-[backdrop-filter,background-color,border-color] hover:border-text/25"
+			onMouseEnter={onSelect}
 		>
 			<div className="grid grid-cols-1 @md:grid-cols-2 @2xl:grid-cols-3 items-center text-shadow-sm">
 				<Link
 					to="/artists/$artistId"
 					params={{ artistId: artist.id.toString() }}
-					className={cn("font-bold w-full py-3 text-text/50 ", {
-						"text-text": (!previous && (selected?.id === artist.id))
-					})}
+					className="font-bold w-full py-3 text-text/50 group-hover:text-text"
 				>
 					{artist.name}
 				</Link>
-				<span className="hidden @md:block text-text/75">{genreString}</span>
+				<span className="hidden @md:block text-text/75 cursor-default group-hover:text-text">{genreString}</span>
 				<div className="hidden @2xl:flex justify-end">
 					<SocialList socials={artist.socials} />
 				</div>
