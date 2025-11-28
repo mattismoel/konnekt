@@ -1,36 +1,44 @@
-import PageMeta from '@/lib/components/page-meta'
-import EventCalendar from '@/lib/features/event/components/event-calendar'
-import EventDetails from '@/lib/features/event/components/event-details'
-import EventGrid from '@/lib/features/event/components/event-grid'
-import { earliestConcert } from '@/lib/features/event/concert'
-import { createEventByIdOpts, upcomingEventsQueryOpts } from '@/lib/features/event/query'
-import { DATETIME_FORMAT } from '@/lib/time'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
-import { format } from 'date-fns'
+import PageMeta from "@/lib/components/page-meta";
+import EventCalendar from "@/lib/features/event/components/event-calendar";
+import EventDetails from "@/lib/features/event/components/event-details";
+import EventGrid from "@/lib/features/event/components/event-grid";
+import { earliestConcert } from "@/lib/features/event/concert";
+import {
+  createEventByIdOpts,
+  upcomingEventsQueryOpts,
+} from "@/lib/features/event/query";
+import { DATETIME_FORMAT } from "@/lib/time";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { format } from "date-fns";
 
-export const Route = createFileRoute('/_app/events/$eventId')({
+export const Route = createFileRoute("/_app/events/$eventId")({
   component: RouteComponent,
-  loader: async ({ context: { queryClient }, params: { eventId: eventIdStr } }) => {
-    const eventId = parseInt(eventIdStr)
+  loader: async ({
+    context: { queryClient },
+    params: { eventId: eventIdStr },
+  }) => {
+    const eventId = parseInt(eventIdStr);
 
-    const eventOptions = createEventByIdOpts(eventId)
+    const eventOptions = createEventByIdOpts(eventId);
 
-    queryClient.ensureQueryData(eventOptions)
-    queryClient.ensureQueryData(upcomingEventsQueryOpts())
+    queryClient.ensureQueryData(eventOptions);
+    queryClient.ensureQueryData(upcomingEventsQueryOpts());
 
-    return { eventOptions }
-  }
-})
+    return { eventOptions };
+  },
+});
 
 function RouteComponent() {
-  const { eventOptions } = Route.useLoaderData()
+  const { eventOptions } = Route.useLoaderData();
 
-  const { data: event } = useSuspenseQuery(eventOptions)
-  const { data: { records: upcomingEvents } } = useSuspenseQuery(upcomingEventsQueryOpts())
+  const { data: event } = useSuspenseQuery(eventOptions);
+  const {
+    data: { records: upcomingEvents },
+  } = useSuspenseQuery(upcomingEventsQueryOpts());
 
-  const filteredEvents = upcomingEvents.filter(({ id }) => id !== event.id)
-  const fromDate = earliestConcert(event.concerts)?.from
+  const filteredEvents = upcomingEvents.filter(({ id }) => id !== event.id);
+  const fromDate = earliestConcert(event.concerts)?.from;
 
   return (
     <>
@@ -38,10 +46,13 @@ function RouteComponent() {
         title={`Konnekt | Event | ${event.title}`}
         description={`Oplev vores kommende event "${event.title}" ${fromDate ? format(fromDate, DATETIME_FORMAT) : ""}`}
       />
-      <main className="min-h-sub-nav flex flex-col gap-16 pb-16 text-white">
+      <main className="flex min-h-sub-nav flex-col gap-16 pb-16 text-white">
         <EventDetails active event={event} />
-        <article className="px-auto space-y-16 pt-8 pb-16">
-          <section className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: event.description }} />
+        <article className="space-y-16 px-auto pt-8 pb-16">
+          <section
+            className="prose max-w-none prose-invert"
+            dangerouslySetInnerHTML={{ __html: event.description }}
+          />
           <EventCalendar event={event} />
 
           {filteredEvents.length > 0 && (
@@ -53,5 +64,5 @@ function RouteComponent() {
         </article>
       </main>
     </>
-  )
+  );
 }
