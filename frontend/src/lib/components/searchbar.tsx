@@ -22,9 +22,9 @@ const Searchbar = ({
       value={search}
       onChange={(e) => onChange(e.target.value)}
       type="text"
-      className="h-full w-full min-w-48 rounded-sm border-zinc-800 bg-zinc-900 py-2 pr-4 pl-12"
+      className="h-full w-full min-w-48 rounded-full border-zinc-800 bg-zinc-900 py-2 pr-6 pl-14"
     />
-    <FaSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-text/75" />
+    <FaSearch className="text-text/75 absolute top-1/2 left-6 -translate-y-1/2" />
   </div>
 );
 

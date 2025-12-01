@@ -10,9 +10,16 @@
 	--spacing-sidenav-lg: 20rem;
 
 	--spacing-nav: 3.5rem;
+
 	--color-background: var(--color-zinc-950);
-	--color-text: var(--color-zinc-100);
-	--spacing-sub-nav: calc(100svh - var(--spacing-nav));
+	--color-foreground: var(--color-zinc-100);
+
+	--color-text-light: var(--color-zinc-100);
+	--color-text-light-muted: var(--color-zinc-400);
+
+	--color-text-dark: var(--color-zinc-950);
+	--color-text-dark-muted: var(--color-zinc-800);
+
 	--font-sans: "Poppins", "sans-serif";
 	--font-heading: "Ubuntu", "Poppins", "sans-serif";
 

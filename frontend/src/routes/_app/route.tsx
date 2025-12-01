@@ -36,7 +36,10 @@ function RouteComponent() {
             <BiMenu className="text-2xl" />
           </button>
           <Link to="/">
-            <Logo className="h-4" aria-label="Go to frontpage" />
+            <Logo
+              className="h-4 fill-text-light"
+              aria-label="Go to frontpage"
+            />
           </Link>
         </Navbar.Header>
 

@@ -5,6 +5,7 @@ import {
   type ChangeEvent,
   type InputHTMLAttributes,
 } from "react";
+import Button from "./ui/button/button";
 
 type Props = {
   src?: string;
@@ -53,13 +54,13 @@ const ProfilePictureSelector = ({
           alt="Profile"
           className="h-28 w-28 rounded-full object-cover"
         />
-        <button
+        <Button
           type="button"
           onClick={() => ref.current?.click()}
-          className="absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 rounded-sm bg-text px-2 py-1 text-sm text-zinc-950 shadow-sm"
+          className="absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 px-4 py-1 text-sm"
         >
           Vælg
-        </button>
+        </Button>
       </div>
     </div>
   );

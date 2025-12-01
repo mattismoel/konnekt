@@ -9,7 +9,7 @@ const Card = ({
   return (
     <div
       {...rest}
-      className={cn("rounded-md border border-zinc-800 bg-zinc-950", className)}
+      className={cn("rounded-xl border border-zinc-800 bg-zinc-950", className)}
     >
       {children}
     </div>
@@ -22,7 +22,7 @@ const Header = ({
   ...rest
 }: HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div {...rest} className="flex flex-col gap-2 p-6">
+    <div {...rest} className={cn("flex flex-col gap-2 p-8 pt-12", className)}>
       {children}
     </div>
   );
@@ -46,7 +46,13 @@ const Title = ({
   ...rest
 }: HTMLAttributes<HTMLHeadingElement>) => {
   return (
-    <h1 {...rest} className={cn("text-xl font-bold", className)}>
+    <h1
+      {...rest}
+      className={cn(
+        "mb-4 font-heading text-3xl font-bold text-text-light",
+        className,
+      )}
+    >
       {children}
     </h1>
   );
@@ -65,7 +71,7 @@ const Description = ({
 
 const Footer = ({ children, ...rest }: HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div {...rest} className="p-6">
+    <div {...rest} className="p-6 pb-12">
       {children}
     </div>
   );

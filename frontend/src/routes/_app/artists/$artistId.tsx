@@ -64,18 +64,18 @@ function RouteComponent() {
             <div className="z-10 mx-responsive flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-end">
               <h1
                 style={{ wordSpacing: "100vw" }}
-                className="font-heading text-7xl font-bold text-shadow-md md:text-8xl lg:text-9xl"
+                className="font-heading text-7xl font-bold text-text-light text-shadow-md md:text-8xl lg:text-9xl"
               >
                 {artist.name}
               </h1>
-              <div className="flex gap-4 text-3xl text-text/50 text-shadow-sm">
+              <div className="flex gap-4 text-3xl text-shadow-sm">
                 {artist.socials.map((social) => {
                   const Icon = socialUrlToIcon(social);
                   return (
                     <a
                       key={social}
                       href={social}
-                      className="transition-colors hover:text-text"
+                      className="transition-colors hover:text-text-light"
                     >
                       <Icon />
                     </a>

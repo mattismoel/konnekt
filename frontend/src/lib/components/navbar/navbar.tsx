@@ -63,12 +63,7 @@ const RouteList = ({
   className,
 }: HTMLAttributes<HTMLUListElement>) => {
   return (
-    <ul
-      className={cn(
-        "hidden items-center gap-8 text-lg text-zinc-50 md:flex",
-        className,
-      )}
-    >
+    <ul className={cn("hidden items-center gap-8 text-lg md:flex", className)}>
       {children}
     </ul>
   );
@@ -76,6 +71,7 @@ const RouteList = ({
 
 const RouteEntry = ({ pathname, name }: RouteEntryProps) => {
   const { pathname: pagePathname } = useLocation();
+  const isCurrent = pathname === pagePathname;
 
   return (
     <li>
@@ -83,10 +79,10 @@ const RouteEntry = ({ pathname, name }: RouteEntryProps) => {
         to={pathname}
         title={name}
         className={cn(
-          "text-text/75 transition-colors before:invisible before:block before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(title)] hover:text-text [.is-current]:font-semibold [.is-current]:text-text",
-          {
-            "is-current": pathname === pagePathname,
-          },
+          "text-text/75 transition-colors",
+          "before:invisible before:block before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(title)]",
+          "hover:text-text-light",
+          isCurrent && "font-semibold text-text-light",
         )}
       >
         {name}

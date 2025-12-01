@@ -46,7 +46,7 @@ function RouteComponent() {
         title={`Konnekt | Event | ${event.title}`}
         description={`Oplev vores kommende event "${event.title}" ${fromDate ? format(fromDate, DATETIME_FORMAT) : ""}`}
       />
-      <main className="flex min-h-sub-nav flex-col pb-16 text-white">
+      <main className="flex min-h-svh flex-col pb-16">
         <EventDetails active event={event} />
 
         <div className="border-t border-t-zinc-900">

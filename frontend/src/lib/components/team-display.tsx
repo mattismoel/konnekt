@@ -45,7 +45,7 @@ const TeamDisplay = ({ members, allTeams }: Props) => {
         ))}
       </div>
 
-      <h4 className="mb-12 text-center text-text/50">
+      <h4 className="text-text/50 mb-12 text-center">
         Øvrige {regularMembers.length > 5 && regularMembers.length} medlemmer
       </h4>
 
@@ -71,16 +71,16 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
   const teamsString = memberTeams.map((t) => t.displayName).join(", ");
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900 transition-colors @lg:flex-row">
+    <div className="group flex flex-col overflow-hidden rounded-full border border-zinc-800 bg-zinc-900 p-1 transition-colors @lg:flex-row">
       <img
         src={member.profilePictureUrl}
-        className="aspect-video w-full shrink-0 object-cover @lg:block @lg:w-32"
+        className="aspect-square w-12 shrink-0 rounded-full object-cover @lg:block @lg:w-24"
       />
-      <div className="flex max-w-full flex-col gap-2 overflow-hidden px-8 py-4">
-        <span className="line-clamp-1 font-medium">
+      <div className="h-mi flex max-w-full flex-col gap-2 overflow-hidden px-8 py-4">
+        <span className="line-clamp-1 font-medium text-text-light">
           {member.firstName} {member.lastName}
         </span>
-        <div className="w-full text-text/50">
+        <div className="w-full">
           <span className="line-clamp-1">
             {member.specialRole ? member.specialRole : teamsString}
           </span>
@@ -109,7 +109,7 @@ const RegularMemberInfo = ({
       <p className="mb-1 text-base font-medium">
         {member.firstName} {member.lastName}
       </p>
-      <p className="text-xs text-text/50">{teamsString}</p>
+      <p className="text-text/50 text-xs">{teamsString}</p>
     </div>
   );
 };

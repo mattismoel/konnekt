@@ -50,7 +50,7 @@ function RouteComponent() {
             src={artist.imageUrl}
             alt={artist.name}
             className={cn(
-              "pointer-events-none fixed top-0 left-0 -z-10 h-lvh w-full scale-102 object-cover opacity-0 brightness-50 transition-[scale,opacity] duration-400",
+              "pointer-events-none fixed top-0 left-0 -z-10 h-lvh w-full scale-102 object-cover opacity-0 brightness-30 transition-[scale,opacity] duration-400",
               {
                 "scale-100 opacity-100": selected?.id === artist.id,
               },
@@ -60,7 +60,7 @@ function RouteComponent() {
 
         <div className="flex h-full flex-col">
           <section className="mb-8 flex flex-col">
-            <h1 className="mb-4 font-heading text-4xl font-bold text-shadow-md/15">
+            <h1 className="mb-4 font-heading text-4xl font-bold text-text-light text-shadow-md/15">
               Kommende kunstnere
             </h1>
           </section>
@@ -70,7 +70,7 @@ function RouteComponent() {
               {upcomingArtists.length > 0 ? (
                 <ArtistList artists={upcomingArtists} onSelect={onSelect} />
               ) : (
-                <p className="text-text/50 italic">
+                <p className="text-text-light-muted italic">
                   Der er ingen kommende kunstnere...
                 </p>
               )}
@@ -90,7 +90,7 @@ function RouteComponent() {
                 type="button"
                 variant="secondary"
                 onClick={() => setShowPrevious((prev) => !prev)}
-                className="w-full rounded-md border border-transparent bg-text/10 py-3 text-text/75 hover:border-text/15 hover:bg-text/15 hover:text-text"
+                className="w-full"
               >
                 {showPrevious ? "Skjul tidligere" : "Vis tidligere"}
               </Button>
@@ -134,18 +134,21 @@ const Entry = ({ artist, onSelect }: EntryProps) => {
   return (
     <li
       ref={ref}
-      className="group @container relative isolate overflow-hidden rounded-md border border-transparent px-4 transition-colors hover:border-text/25 hover:bg-text/5"
+      className={cn(
+        "group @container relative isolate overflow-hidden rounded-full border border-transparent px-8 transition-colors",
+        "hover:border-foreground/10 hover:bg-foreground/5",
+      )}
       onMouseEnter={onSelect}
     >
       <div className="grid grid-cols-1 items-center text-shadow-sm @md:grid-cols-2 @2xl:grid-cols-3">
         <Link
           to="/artists/$artistId"
           params={{ artistId: artist.id.toString() }}
-          className="w-full py-3 font-bold text-text/50 transition-colors group-hover:text-text"
+          className="w-full py-3 font-bold transition-colors group-hover:text-text-light"
         >
           {artist.name}
         </Link>
-        <span className="hidden cursor-default whitespace-nowrap text-text/75 transition-colors group-hover:text-text @md:block">
+        <span className="hidden cursor-default whitespace-nowrap transition-colors group-hover:text-foreground hover:text-text-light @md:block">
           {genreString}
         </span>
         <div className="hidden justify-end @2xl:flex">
@@ -164,7 +167,7 @@ const SocialList = ({ socials }: { socials: string[] }) => {
         return (
           <li
             key={social}
-            className="text-text/50 transition-colors hover:text-text"
+            className="text-foreground transition-colors hover:text-foreground"
           >
             <a href={social}>
               <Icon key={social} className="text-2xl" />
