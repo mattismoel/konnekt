@@ -1,13 +1,8 @@
-import { useState } from "react";
-import { format, isBefore, startOfToday } from "date-fns";
+import { format } from "date-fns";
 
-import { APIError } from "@/lib/api";
 import { DATETIME_FORMAT } from "@/lib/time";
-import { useToast } from "@/lib/context/toast";
-import { useAuth } from "@/lib/context/auth";
 
-import { earliestConcert } from "../concert";
-import { deleteEvent, type Event } from "../event";
+import { type Event } from "../event";
 import type { Artist } from "../../artist/artist";
 
 import { Link } from "@tanstack/react-router";
@@ -32,14 +27,7 @@ const formatArtists = (artists: Artist[]): string => {
 };
 
 const EventEntry = ({ event }: Props) => {
-  const { addToast } = useToast();
-  const { hasPermissions } = useAuth();
-  let [showContextMenu, setShowContextMenu] = useState(false);
-
   let artists = event.concerts.map((concert) => concert.artist);
-
-  const fromDate = earliestConcert(event.concerts)?.from || new Date();
-  let expired = isBefore(fromDate, startOfToday());
 
   return (
     <li className="group flex items-center rounded-xl border border-zinc-800 bg-zinc-900 transition-colors hover:border-zinc-700 hover:bg-zinc-800">
