@@ -6,9 +6,9 @@ import { useToast } from "@/lib/context/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { APIError } from "@/lib/api";
 import { FaCheckDouble, FaTrash } from "react-icons/fa";
-import { useState } from "react";
-import ContextMenu from "@/lib/components/context-menu";
 import { useAuth } from "@/lib/context/auth";
+import { Link } from "@tanstack/react-router";
+import Button from "@/lib/components/ui/button/button";
 
 type Props = {
   members: Member[];
@@ -33,7 +33,7 @@ const MemberList = ({ members, pendingMembers }: Props) => {
 
       <section>
         <h1 className="mb-4">Medlemmer</h1>
-        <List className="space-y-2">
+        <List>
           {members.map((member) => (
             <MemberEntry member={member} />
           ))}
@@ -48,75 +48,23 @@ type MemberEntryProps = {
 };
 
 const MemberEntry = ({ member }: MemberEntryProps) => {
-  let [showContextMenu, setShowContextMenu] = useState(false);
-  const { addToast } = useToast();
-  const { hasPermissions } = useAuth();
-  const queryClient = useQueryClient();
-
-  let fullName = `${member.firstName} ${member.lastName}`;
-
-  const handleDeleteMember = async () => {
-    if (
-      !confirm(
-        `Er du sikker på at du vil slette ${fullName} fra foreningen?\n\nHandlingen kan ikke fortrydes.`,
-      )
-    ) {
-      return;
-    }
-    try {
-      await deleteMember(member.id);
-      addToast("Medlem slettet");
-      await queryClient.invalidateQueries({ queryKey: ["members"] });
-    } catch (e) {
-      if (e instanceof APIError) {
-        addToast("Kunne ikke slette medlemmet", e.cause, "error");
-        throw e;
-      }
-      addToast("Kunne ikke slette medlemmet", "Noget gik galt...", "error");
-      throw e;
-    }
-  };
-
   return (
-    <List.Entry className="relative">
-      <List.Entry.LinkSection
+    <li className="group relative rounded-full border border-zinc-800 bg-zinc-900 p-1 transition-colors hover:border-zinc-700 hover:bg-zinc-800">
+      <Link
         to="/admin/members/$memberId"
         params={{ memberId: member.id.toString() }}
-        className="flex-row items-center gap-4"
+        className="flex w-full items-center gap-4"
       >
         <img
           src={member.profilePictureUrl || Avatar}
           alt="Profil"
-          className="h-8 w-8 rounded-full object-cover"
+          className="aspect-square h-12 rounded-full object-cover"
         />
-        <span className="line-clamp-1">
+        <p className="line-clamp-1 font-medium transition-colors group-hover:text-text-light">
           {member.firstName} {member.lastName}
-        </span>
-      </List.Entry.LinkSection>
-
-      <List.Entry.Section className="w-min flex-row items-center gap-4">
-        <ContextMenu.Button onClick={() => setShowContextMenu(true)} />
-      </List.Entry.Section>
-
-      <ContextMenu
-        show={showContextMenu}
-        onClose={() => setShowContextMenu(false)}
-      >
-        <ContextMenu.LinkEntry
-          to="/admin/members/$memberId"
-          params={{ memberId: member.id.toString() }}
-          disabled={!hasPermissions(["edit:member"])}
-        >
-          Redigér
-        </ContextMenu.LinkEntry>
-        <ContextMenu.Entry
-          onClick={handleDeleteMember}
-          disabled={!hasPermissions(["delete:member"])}
-        >
-          Slet
-        </ContextMenu.Entry>
-      </ContextMenu>
-    </List.Entry>
+        </p>
+      </Link>
+    </li>
   );
 };
 
@@ -161,10 +109,11 @@ const ApprovalEntry = ({ member }: ApprovalEntryProps) => {
   };
 
   return (
-    <List.Entry className="gap-4">
-      <List.Entry.LinkSection
+    <li className="flex gap-4">
+      <Link
         to="/admin/members/$memberId"
         params={{ memberId: member.id.toString() }}
+        className="w-full"
       >
         <div className="flex flex-1 items-center gap-4">
           <img
@@ -176,19 +125,17 @@ const ApprovalEntry = ({ member }: ApprovalEntryProps) => {
             {member.firstName} {member.lastName}{" "}
           </span>
         </div>
-      </List.Entry.LinkSection>
+      </Link>
 
-      <List.Entry.Section className="w-min flex-row gap-6">
-        <div className="flex gap-2 text-text/75">
-          <button className="p-1 hover:text-green-500" onClick={approve}>
-            <FaCheckDouble />
-          </button>
-          <button className="p-1 hover:text-red-500" onClick={disapprove}>
-            <FaTrash />
-          </button>
-        </div>
-      </List.Entry.Section>
-    </List.Entry>
+      <div className="flex w-min gap-2">
+        <Button variant="primary" onClick={approve}>
+          <FaCheckDouble /> Godkend
+        </Button>
+        <Button variant="dangerous" onClick={disapprove}>
+          <FaTrash /> Afvis
+        </Button>
+      </div>
+    </li>
   );
 };
 

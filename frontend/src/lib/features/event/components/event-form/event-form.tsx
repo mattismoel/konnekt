@@ -14,6 +14,7 @@ import ConcertList from "./concert-list";
 
 import {
   createEvent,
+  deleteEvent,
   eventForm,
   updateEvent,
   type Event,
@@ -30,12 +31,15 @@ import Button from "@/lib/components/ui/button/button";
 import Input from "@/lib/components/ui/input";
 import Selector from "@/lib/components/ui/selector";
 import LinkButton from "@/lib/components/ui/button/link-button";
-import { createSubmitHandler } from "@/lib/api";
+import { APIError, createSubmitHandler } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/context/auth";
 import { FaPen } from "react-icons/fa";
 import type { Member } from "@/lib/features/auth/member";
 import Audit from "@/lib/components/audit";
+import { BiTrash } from "react-icons/bi";
+import { useToast } from "@/lib/context/toast";
+import { useNavigate } from "@tanstack/react-router";
 
 // We must include the fieldArray as part of the context, to not create another
 // instance in children.
@@ -114,8 +118,32 @@ const EventForm = ({ event, venues, artists, updatedByMember }: Props) => {
     handleSubmit,
   } = methods;
 
+  const { addToast } = useToast();
+  const navigate = useNavigate();
+
   const fieldArrayMethods = useFieldArray({ control, name: "concerts" });
   const { fields, remove, append } = fieldArrayMethods;
+
+  const handleDeleteEvent = async () => {
+    if (!event) return;
+
+    if (!confirm(`Vil du slette ${event.title}?`)) return;
+
+    try {
+      await deleteEvent(event.id);
+      addToast("Event slettet");
+      // await invalidateAll();
+      navigate({ to: "/admin/events" });
+    } catch (e) {
+      if (e instanceof APIError) {
+        addToast("Kunne ikke slette event", e.cause, "error");
+        return;
+      }
+
+      addToast("Kunne ikke slette event", "Noget gik galt...", "error");
+      return;
+    }
+  };
 
   const onAddConcert = () => {
     const prevEnd =
@@ -194,20 +222,33 @@ const EventForm = ({ event, venues, artists, updatedByMember }: Props) => {
 
           <div className="flex flex-col gap-4">
             {isEditable && (
-              <Button className="w-full md:w-fit" type="submit">
-                {isToBePublished ? (
-                  <FaUpload />
-                ) : event ? (
-                  <FaPen />
-                ) : (
-                  <FaPlus />
+              <>
+                <Button className="w-full" type="submit">
+                  {isToBePublished ? (
+                    <FaUpload />
+                  ) : event ? (
+                    <FaPen />
+                  ) : (
+                    <FaPlus />
+                  )}
+                  {isToBePublished
+                    ? "Offentliggør"
+                    : event
+                      ? "Redigér"
+                      : "Tilføj"}
+                </Button>
+
+                {event && (
+                  <Button
+                    type="button"
+                    variant="dangerous"
+                    className="w-full"
+                    onClick={handleDeleteEvent}
+                  >
+                    <BiTrash /> Slet
+                  </Button>
                 )}
-                {isToBePublished
-                  ? "Offentliggør"
-                  : event
-                    ? "Redigér"
-                    : "Tilføj"}
-              </Button>
+              </>
             )}
             {event && (
               <Audit
@@ -237,7 +278,7 @@ const GeneralSection = () => {
           <Input {...register("title")} placeholder="Eventtitel" />
         </FormField>
 
-        <div className="flex flex-col gap-4 @xl:flex-row">
+        <div className="flex flex-col gap-12 @xl:flex-row">
           <FormField error={errors.ticketUrl}>
             <Input
               {...register("ticketUrl")}
@@ -293,7 +334,7 @@ const VenueSelector = () => {
             {...rest}
             onChange={(e) => onChange(parseInt(e.target.value))}
             placeholder="Vælg venue..."
-            className="w-full"
+            className="h-min w-full"
           >
             {venues.map(({ id, name }) => (
               <option key={id} value={id}>
@@ -304,12 +345,12 @@ const VenueSelector = () => {
 
           {isEditable && (
             <div className="flex gap-2">
-              <Button variant="ghost" className="aspect-square h-full">
+              <Button variant="secondary" className="h-full">
                 <FaArrowsRotate />
               </Button>
               <LinkButton
                 to="/admin/venues/create"
-                className="aspect-square h-full"
+                className="h-full"
                 target="__blank"
               >
                 <FaPlus />

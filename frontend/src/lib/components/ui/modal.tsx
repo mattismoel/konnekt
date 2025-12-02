@@ -57,13 +57,13 @@ const Header = ({ children }: PropsWithChildren) => {
   const { onClose } = useModalContext();
 
   return (
-    <div className="relative flex flex-col justify-center gap-2 bg-zinc-950 p-6 text-text">
+    <div className="relative flex flex-col justify-center bg-zinc-950 p-6 text-text-light-muted">
       {children}
 
       <button
         type="button"
         onClick={onClose}
-        className="absolute top-6 right-6 text-text/50 hover:text-text"
+        className="text-text/50 hover:text-text absolute top-6 right-6"
       >
         <FaXmark />
       </button>
@@ -72,7 +72,7 @@ const Header = ({ children }: PropsWithChildren) => {
 };
 
 const Title = ({ children, ...rest }: HTMLAttributes<HTMLHeadingElement>) => (
-  <h1 className="font-medium" {...rest}>
+  <h1 className="mb-2 font-medium text-text-light" {...rest}>
     {children}
   </h1>
 );
@@ -81,7 +81,7 @@ const Description = ({
   children,
   ...rest
 }: HTMLAttributes<HTMLParagraphElement>) => (
-  <p className="text-sm text-text/50" {...rest}>
+  <p className="text-base" {...rest}>
     {children}
   </p>
 );
@@ -89,7 +89,7 @@ const Description = ({
 const Content = ({ children, className }: HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "max-h-64 w-full overflow-y-scroll bg-zinc-950 p-6 text-text",
+      "text-text max-h-64 w-full overflow-y-scroll bg-zinc-950 p-6 text-text-light-muted",
       className,
     )}
   >

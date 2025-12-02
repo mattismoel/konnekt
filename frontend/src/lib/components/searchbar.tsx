@@ -1,5 +1,6 @@
 import type { InputHTMLAttributes } from "react";
 import { FaSearch } from "react-icons/fa";
+import { cn } from "../clsx";
 
 type Props = Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -15,7 +16,7 @@ const Searchbar = ({
   onChange,
   ...rest
 }: Props) => (
-  <div className="relative w-full">
+  <div className={cn("relative w-full", rest.className)}>
     <input
       {...rest}
       placeholder={placeholder}

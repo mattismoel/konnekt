@@ -1,46 +1,70 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import EventEntry from "./event-list-entry";
 import type { Event } from "../event";
-import SearchList from "@/lib/components/search-list";
+import List from "@/lib/components/list/list";
+import Button from "@/lib/components/ui/button/button";
+import { useSearch } from "@/lib/hooks/useSearch";
+import Searchbar from "@/lib/components/searchbar";
 
 type Props = {
   previousEvents: Event[];
   upcomingEvents: Event[];
 };
 
-const filterEventsBySearch = (events: Event[], query: string) =>
-  query
-    ? events.filter((e) => e.title.toLowerCase().includes(query.toLowerCase()))
-    : events;
-
 const EventList = ({ previousEvents, upcomingEvents }: Props) => {
-  let [search, setSearch] = useState("");
+  const [showPrevious, setShowPrevious] = useState(false);
 
-  let filteredEvents = useMemo(
-    () => filterEventsBySearch([...previousEvents, ...upcomingEvents], search),
-    [search, previousEvents, upcomingEvents],
+  const { search, setSearch, results } = useSearch(
+    [...previousEvents, ...upcomingEvents],
+    "title",
   );
 
   return (
-    <SearchList search={search} onChange={(newSearch) => setSearch(newSearch)}>
-      {search
-        ? filteredEvents.map((event) => (
-            <EventEntry key={event.id} event={event} />
-          ))
-        : upcomingEvents.map((event) => (
+    <>
+      <Searchbar search={search} onChange={setSearch} className="mb-8" />
+
+      {search ? (
+        <List>
+          {results.map((event) => (
             <EventEntry key={event.id} event={event} />
           ))}
+        </List>
+      ) : (
+        <>
+          <div className="mb-8">
+            <p className="mb-4 font-medium">Kommende events</p>
+            <List>
+              {upcomingEvents.map((event) => (
+                <EventEntry key={event.id} event={event} />
+              ))}
+            </List>
+          </div>
 
-      <details>
-        <summary className="mb-4">
-          Tidligere events ({previousEvents.length})
-        </summary>
-        {previousEvents.map((event) => (
-          <EventEntry key={event.id} event={event} />
-        ))}
-      </details>
-    </SearchList>
+          {showPrevious && (
+            <div className="mb-8">
+              <p className="mb-4 font-medium">Tidligere events</p>
+              <List>
+                {previousEvents.map((event) => (
+                  <EventEntry key={event.id} event={event} />
+                ))}
+              </List>
+            </div>
+          )}
+
+          {previousEvents.length > 0 && (
+            <Button
+              onClick={() => setShowPrevious((prev) => !prev)}
+              type="button"
+              variant="secondary"
+              className="w-full"
+            >
+              {showPrevious ? "Skjul tidligere events" : "Vis tidligere events"}
+            </Button>
+          )}
+        </>
+      )}
+    </>
   );
 };
 
