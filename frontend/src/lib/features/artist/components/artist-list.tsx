@@ -1,8 +1,4 @@
-import { useState } from "react";
 import { type Artist } from "../artist";
-import { useToast } from "@/lib/context/toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/lib/context/auth";
 import List from "@/lib/components/list/list";
 import { useSearch } from "@/lib/hooks/useSearch";
 import Searchbar from "@/lib/components/searchbar";
@@ -56,11 +52,6 @@ type EntryProps = {
 };
 
 const Entry = ({ artist }: EntryProps) => {
-  const { addToast } = useToast();
-  const queryClient = useQueryClient();
-  const { hasPermissions } = useAuth();
-  let [showContextMenu, setShowContextMenu] = useState(false);
-
   return (
     <li className="group flex rounded-xl border border-zinc-800 bg-zinc-900 transition-colors hover:border-zinc-700 hover:bg-zinc-800">
       <Link

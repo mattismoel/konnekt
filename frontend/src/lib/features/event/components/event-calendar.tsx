@@ -88,7 +88,7 @@ const EventCalendar = ({ event, ...rest }: Props) => {
                     hidden: i === timeMarkers.length - 1,
                   })}
                 >
-                  <div className="h-[1px] w-full bg-zinc-800"></div>
+                  <div className="h-px w-full bg-zinc-800"></div>
                   <span>{format(marker, "HH:mm")}</span>
                 </div>
               );
