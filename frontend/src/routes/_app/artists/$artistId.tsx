@@ -97,7 +97,7 @@ function RouteComponent() {
 
               {artistEvents.length > 0 && (
                 <section>
-                  <h1 className="mb-8 font-heading text-2xl font-bold">
+                  <h1 className="mb-8 font-heading text-2xl font-bold text-text-light">
                     Oplev {artist.name} her
                   </h1>
                   <EventGrid events={artistEvents} />

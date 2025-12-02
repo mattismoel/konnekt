@@ -28,7 +28,7 @@ const EventCard = ({ event }: Props) => {
     >
       <div
         role="none"
-        className="relative h-64 w-full overflow-hidden rounded-sm"
+        className="relative h-64 w-full overflow-hidden rounded-xl"
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           setMousePos(() => ({
@@ -45,11 +45,11 @@ const EventCard = ({ event }: Props) => {
         />
         <Fader direction="up" className="absolute h-48 from-black/80" />
         <div className="absolute bottom-0 left-0 h-full w-full border border-white/0 mix-blend-overlay transition-all group-hover:border-white/50" />
-        <div className="absolute bottom-0 left-0 flex flex-col px-5 pb-5 text-text transition-all duration-100 md:translate-y-full md:group-hover:translate-y-0">
-          <span className="mb-2 text-3xl font-bold text-shadow-md">
+        <div className="absolute bottom-0 left-0 flex flex-col p-8 transition-all duration-100 md:translate-y-full md:group-hover:translate-y-0">
+          <span className="mb-2 text-3xl font-bold text-text-light text-shadow-md">
             {event.title}
           </span>
-          <div className="flex flex-col text-text/75 text-shadow-sm">
+          <div className="flex flex-col text-base text-shadow-sm">
             {fromDate && <span>{format(fromDate, DATETIME_FORMAT)}</span>}
             <span>
               {event.venue.name}, {event.venue.city}
