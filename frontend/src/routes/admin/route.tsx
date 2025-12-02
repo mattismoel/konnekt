@@ -45,7 +45,7 @@ const AuthLayout = () => {
             <FaBars />
           </button>
           <Link to="/">
-            <Logo className="h-4" />
+            <Logo className="h-4 fill-text-light" />
           </Link>
         </Navbar.Header>
 
