@@ -33,7 +33,7 @@ function RouteComponent() {
 
           <div className="border-t border-t-zinc-900">
             <div className="mx-responsive flex flex-col pt-16 pb-16 md:pt-16">
-              <h1 className="mb-8 font-heading text-4xl font-bold text-shadow-md/15">
+              <h1 className="mb-8 font-heading text-4xl font-bold text-text-light">
                 Kommende events
               </h1>
               <EventGrid events={events} />
@@ -42,7 +42,7 @@ function RouteComponent() {
         </main>
       ) : (
         <main className="mx-responsive flex min-h-svh flex-col items-center justify-center">
-          <span className="text-center text-text/75 italic">
+          <span className="text-text/75 text-center italic">
             Der er ingen aktuelle events i øjeblikket...
           </span>
         </main>

@@ -17,6 +17,7 @@ import { FaPlus, FaTrash, FaPen } from "react-icons/fa";
 import {
   artistForm,
   createArtist,
+  deleteArtist,
   socialUrlToIcon,
   updateArtist,
   type Artist,
@@ -32,7 +33,7 @@ import Tiptap from "@/lib/components/tiptap/tiptap";
 import { trackIdFromUrl } from "@/lib/spotify";
 import SpotifyPreview from "@/lib/components/spotify-preview";
 import PillList from "@/lib/components/pill-list";
-import { createSubmitHandler } from "@/lib/api";
+import { APIError, createSubmitHandler } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/context/auth";
 import type { Entry as EntryType } from "@/lib/components/ui/picker/entry";
@@ -42,6 +43,8 @@ import Searchbar from "@/lib/components/searchbar";
 import { useToast } from "@/lib/context/toast";
 import Audit from "@/lib/components/audit";
 import type { Member } from "../../auth/member";
+import { BiTrash } from "react-icons/bi";
+import { useNavigate } from "@tanstack/react-router";
 
 const MAX_GENRES = 3;
 
@@ -86,6 +89,29 @@ const ArtistForm = ({ artist, genres, updatedByMember }: Props) => {
   const { hasPermissions } = useAuth();
   const isEditable = hasPermissions(["edit:artist"]);
 
+  const { addToast } = useToast();
+  const navigate = useNavigate();
+
+  const handleDelete = async () => {
+    if (!artist) return;
+
+    if (!confirm(`Er du sikke på, at du vil slette ${artist.name}?`)) return;
+
+    try {
+      await deleteArtist(artist.id);
+      addToast("Kunstner slettet");
+      navigate({ to: "/admin/artists" });
+    } catch (e) {
+      if (e instanceof APIError) {
+        addToast("Kunne ikke slette kunstner", e.cause, "error");
+        throw e;
+      }
+
+      addToast("Kunne ikke slette kunstner", "Noget gik galt...", "error");
+      throw e;
+    }
+  };
+
   const methods = useForm<InternalArtistForm>({
     disabled: !isEditable,
     defaultValues: {
@@ -103,8 +129,6 @@ const ArtistForm = ({ artist, genres, updatedByMember }: Props) => {
   } = methods;
   const fieldArrayMethods = useFieldArray({ control, name: "socials" });
 
-  const queryClient = useQueryClient();
-
   const onSubmit = createSubmitHandler({
     navigateTo: "/admin/artists",
     successMessage: artist ? "Kunstner redigeret" : "Kunstner skabt",
@@ -121,9 +145,11 @@ const ArtistForm = ({ artist, genres, updatedByMember }: Props) => {
         throw error;
       }
 
-      artist ? await updateArtist(artist.id, data) : await createArtist(data);
-
-      await queryClient.invalidateQueries({ queryKey: ["artists"] });
+      if (artist) {
+        await updateArtist(artist.id, data);
+      } else {
+        await createArtist(data);
+      }
     },
   });
 
@@ -161,10 +187,23 @@ const ArtistForm = ({ artist, genres, updatedByMember }: Props) => {
 
           <div className="flex flex-col gap-4">
             {isEditable && (
-              <Button type="submit" className="w-full md:w-fit">
-                {artist ? <FaPen /> : <FaPlus />}
-                {artist ? "Redigér" : "Tilføj"}
-              </Button>
+              <>
+                <Button type="submit" className="w-full">
+                  {artist ? <FaPen /> : <FaPlus />}
+                  {artist ? "Redigér" : "Tilføj"}
+                </Button>
+                {artist && (
+                  <Button
+                    type="button"
+                    onClick={handleDelete}
+                    variant="dangerous"
+                    className="w-full"
+                  >
+                    <BiTrash />
+                    Slet
+                  </Button>
+                )}
+              </>
             )}
 
             {artist && (
@@ -282,7 +321,7 @@ const GenreSection = () => {
         name="genreIds"
         render={({ field: { value, onChange } }) => {
           const selectedEntries = entries.filter((e) =>
-            value.includes(parseInt(e.value)),
+            value?.includes(parseInt(e.value)),
           );
 
           return (
@@ -291,9 +330,9 @@ const GenreSection = () => {
                 <PillList entries={selectedEntries.map((entry) => entry.name)}>
                   {isEditable && (
                     <Button
-                      variant="ghost"
+                      variant="primary"
                       onClick={() => setShowPicker(true)}
-                      className="h-10 rounded-full px-4"
+                      className="h-10 rounded-full"
                     >
                       <FaPen />
                       Vælg
@@ -390,13 +429,13 @@ const SocialMediaEntry = ({ index }: { index: number }) => {
   return (
     <div className="flex w-full items-center gap-4">
       <div className="relative w-full">
-        <Icon className="absolute top-1/2 right-4 -translate-y-1/2 text-text/50" />
+        <Icon className="text-text/50 absolute top-1/2 right-4 -translate-y-1/2" />
         <Input {...register(`socials.${index}.value`)} />
       </div>
       <button
         onClick={() => remove(index)}
         type="button"
-        className="h-full text-text/50 hover:text-text"
+        className="text-text/50 hover:text-text h-full"
       >
         <FaTrash />
       </button>

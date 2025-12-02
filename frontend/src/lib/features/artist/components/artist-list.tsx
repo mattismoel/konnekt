@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
-import { deleteArtist, type Artist } from "../artist";
-import SearchList from "@/lib/components/search-list";
+import { useState } from "react";
+import { type Artist } from "../artist";
 import { useToast } from "@/lib/context/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/context/auth";
-import { APIError } from "@/lib/api";
 import List from "@/lib/components/list/list";
-import ContextMenu from "@/lib/components/context-menu";
+import { useSearch } from "@/lib/hooks/useSearch";
+import Searchbar from "@/lib/components/searchbar";
+import { Link } from "@tanstack/react-router";
 
 type Props = {
   artists: Artist[];
@@ -14,33 +14,40 @@ type Props = {
 };
 
 const ArtistList = ({ artists, upcomingArtists }: Props) => {
-  let [search, setSearch] = useState("");
-
-  const filteredArtists = useMemo(
-    () =>
-      artists.filter((a) =>
-        a.name.toLowerCase().includes(search.toLowerCase()),
-      ),
-    [artists, search],
-  );
+  const { search, setSearch, results } = useSearch(artists, "name");
 
   return (
-    <SearchList search={search} onChange={(newSearch) => setSearch(newSearch)}>
-      {search
-        ? filteredArtists.map((artist) => (
-            <Entry key={artist.id} artist={artist} />
-          ))
-        : upcomingArtists.map((artist) => (
+    <>
+      <Searchbar search={search} onChange={setSearch} />
+      {search ? (
+        <List>
+          {results.map((artist) => (
             <Entry key={artist.id} artist={artist} />
           ))}
-
-      <details>
-        <summary className="mb-4">Alle kunstnere</summary>
-        {artists.map((artist) => (
-          <Entry key={artist.id} artist={artist} />
-        ))}
-      </details>
-    </SearchList>
+        </List>
+      ) : (
+        upcomingArtists.length > 0 && (
+          <>
+            <div>
+              <p className="mb-4 font-medium">Kommende kunstnere</p>
+              <List>
+                {upcomingArtists.map((artist) => (
+                  <Entry key={artist.id} artist={artist} />
+                ))}
+              </List>
+            </div>
+            <div>
+              <p className="mb-4 font-medium">Alle kunstnere</p>
+              <List>
+                {artists.map((artist) => (
+                  <Entry key={artist.id} artist={artist} />
+                ))}
+              </List>
+            </div>
+          </>
+        )
+      )}
+    </>
   );
 };
 
@@ -54,60 +61,19 @@ const Entry = ({ artist }: EntryProps) => {
   const { hasPermissions } = useAuth();
   let [showContextMenu, setShowContextMenu] = useState(false);
 
-  const handleDelete = async () => {
-    if (!confirm(`Er du sikke på, at du vil slette ${artist.name}?`)) return;
-
-    try {
-      await deleteArtist(artist.id);
-      addToast("Kunstner slettet");
-      queryClient.invalidateQueries({ queryKey: ["artists"] });
-    } catch (e) {
-      if (e instanceof APIError) {
-        addToast("Kunne ikke slette kunstner", e.cause, "error");
-        throw e;
-      }
-
-      addToast("Kunne ikke slette kunstner", "Noget gik galt...", "error");
-      throw e;
-    }
-  };
-
   return (
-    <List.Entry>
-      <List.Entry.LinkSection
+    <li className="group flex rounded-xl border border-zinc-800 bg-zinc-900 transition-colors hover:border-zinc-700 hover:bg-zinc-800">
+      <Link
         to="/admin/artists/$artistId/edit"
         params={{ artistId: artist.id.toString() }}
+        className="w-full py-4 pl-8"
       >
-        <span>{artist.name}</span>
-        <span className="text-text/50">
+        <p className="font-medium group-hover:text-text-light">{artist.name}</p>
+        <p className="text-base">
           {artist.genres.map((genre) => genre.name).join(", ")}
-        </span>
-      </List.Entry.LinkSection>
-
-      <List.Entry.Section className="w-min">
-        <ContextMenu.Button onClick={() => setShowContextMenu(true)} />
-      </List.Entry.Section>
-
-      <ContextMenu
-        show={showContextMenu}
-        onClose={() => setShowContextMenu(false)}
-        className="absolute top-1/2 right-4"
-      >
-        <ContextMenu.LinkEntry
-          disabled={!hasPermissions(["edit:artist"])}
-          to="/admin/artists/$artistId/edit"
-          params={{ artistId: artist.id.toString() }}
-        >
-          Redigér
-        </ContextMenu.LinkEntry>
-        <ContextMenu.Entry
-          onClick={handleDelete}
-          disabled={!hasPermissions(["delete:artist"])}
-        >
-          Slet
-        </ContextMenu.Entry>
-      </ContextMenu>
-    </List.Entry>
+        </p>
+      </Link>
+    </li>
   );
 };
 

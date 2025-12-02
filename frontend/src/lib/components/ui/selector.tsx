@@ -15,7 +15,7 @@ const Selector = forwardRef<HTMLSelectElement, Props>(
       {...rest}
       defaultValue={defaultValue || "placeholder"}
       className={cn(
-        "rounded-sm border border-zinc-900 bg-zinc-950 disabled:text-text/50",
+        "disabled:text-text/50 w-full rounded-full border border-zinc-800 bg-zinc-900 px-6 py-2",
         className,
       )}
     >

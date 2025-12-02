@@ -8,6 +8,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
+  deleteMember,
   editMember,
   memberForm,
   type Member,
@@ -20,8 +21,8 @@ import ProfilePictureSelector from "@/lib/components/profile-picture-selector";
 import FormField from "@/lib/components/form-field";
 import Input from "@/lib/components/ui/input";
 import Button from "@/lib/components/ui/button/button";
-import { createSubmitHandler } from "@/lib/api";
-import { createContext, useContext, useMemo, useState } from "react";
+import { APIError, createSubmitHandler } from "@/lib/api";
+import { createContext, useContext, useState } from "react";
 import PillList from "@/lib/components/pill-list";
 import { FaPen } from "react-icons/fa6";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,6 +32,8 @@ import type { Entry as EntryType } from "@/lib/components/ui/picker/entry";
 import MultiPicker from "@/lib/components/ui/picker/multi-picker";
 import Searchbar from "@/lib/components/searchbar";
 import { formatRelative } from "date-fns";
+import { useSearch } from "@/lib/hooks/useSearch";
+import { useToast } from "@/lib/context/toast";
 
 type MemberFormContext = {
   member: Member;
@@ -100,6 +103,30 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
     navigateTo: "/admin/members",
   });
 
+  const { addToast } = useToast();
+
+  const handleDeleteMember = async () => {
+    if (
+      !confirm(
+        `Er du sikker på at du vil slette ${fullName} fra foreningen?\n\nHandlingen kan ikke fortrydes.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      await deleteMember(member.id);
+      addToast("Medlem slettet");
+      await queryClient.invalidateQueries({ queryKey: ["members"] });
+    } catch (e) {
+      if (e instanceof APIError) {
+        addToast("Kunne ikke slette medlemmet", e.cause, "error");
+        throw e;
+      }
+      addToast("Kunne ikke slette medlemmet", "Noget gik galt...", "error");
+      throw e;
+    }
+  };
+
   return (
     <MemberFormContext.Provider
       value={{ member, teams, memberTeams, isCurrentMember, isEditable }}
@@ -122,7 +149,7 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
             <div className="flex flex-col items-center space-y-4 md:items-start">
               <div className="flex flex-col items-center space-y-1">
                 <h1 className="text-2xl font-semibold">{fullName}</h1>
-                <span className="text-center text-text/75 md:text-left">
+                <span className="text-text/75 text-center md:text-left">
                   {memberTeams.map(({ displayName }) => displayName).join(", ")}
                 </span>
               </div>
@@ -133,9 +160,18 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
           <TeamsSection />
 
           {(isEditable || isCurrentMember) && (
-            <Button type="submit" disabled={!isDirty}>
-              Opdatér
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button type="submit" disabled={!isDirty} className="w-full">
+                Opdatér
+              </Button>
+              <Button
+                variant="dangerous"
+                className="w-full"
+                onClick={handleDeleteMember}
+              >
+                Slet
+              </Button>
+            </div>
           )}
           <span className="text-text/50">
             Medlem siden {formatRelative(member.createdAt, new Date())}
@@ -196,7 +232,6 @@ const TeamsSection = () => {
   } = useFormContext<MemberFormValues>();
   const { teams, isEditable } = useMemberFormContext();
 
-  const [search, setSearch] = useState("");
   const [showPicker, setShowPicker] = useState(false);
 
   const entries: EntryType[] = teams.map(({ id, displayName }) => ({
@@ -205,13 +240,7 @@ const TeamsSection = () => {
     name: displayName,
   }));
 
-  const filteredEntries = useMemo(
-    () =>
-      entries.filter((e) =>
-        e.name.toLowerCase().includes(search.toLowerCase()),
-      ),
-    [search, entries],
-  );
+  const { search, results, setSearch } = useSearch(entries, "name");
 
   return (
     <section>
@@ -231,7 +260,7 @@ const TeamsSection = () => {
           name="memberTeams"
           render={({ field: { value, onChange }, fieldState: { error } }) => {
             const selectedEntries = entries.filter((e) =>
-              value.includes(parseInt(e.value)),
+              value?.includes(parseInt(e.value)),
             );
 
             return (
@@ -239,9 +268,9 @@ const TeamsSection = () => {
                 <PillList entries={selectedEntries.map((e) => e.name)}>
                   {isEditable && (
                     <Button
-                      variant="ghost"
+                      variant="primary"
                       onClick={() => setShowPicker(true)}
-                      className="h-10 rounded-full px-4"
+                      className="h-10"
                     >
                       <FaPen />
                       Vælg
@@ -265,7 +294,7 @@ const TeamsSection = () => {
                       />
                       <MultiPicker
                         selected={selectedEntries}
-                        entries={filteredEntries}
+                        entries={results}
                         onChange={(newEntries) =>
                           onChange(newEntries.map((e) => parseInt(e.value)))
                         }

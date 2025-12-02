@@ -18,7 +18,7 @@ const ConcertList = ({ children }: PropsWithChildren) => {
     <div className="flex flex-col gap-4">
       {children}
       {!disabled && (
-        <Button variant="ghost" onClick={onAddConcert}>
+        <Button variant="secondary" onClick={onAddConcert} className="w-full">
           <FaPlus />
           Tilføj
         </Button>
@@ -38,8 +38,8 @@ const Entry = ({ index }: EntryProps) => {
   } = useEventFormContext();
 
   return (
-    <Card className="relative">
-      <Card.Header>
+    <Card className="relative pb-6">
+      <Card.Header className="pb-0">
         <Card.Title>#{index + 1}</Card.Title>
         {!disabled && (
           <button
@@ -52,7 +52,7 @@ const Entry = ({ index }: EntryProps) => {
         )}
       </Card.Header>
 
-      <Card.Content className="@container gap-8">
+      <Card.Content className="@container gap-4">
         <div className="flex gap-4">
           <Controller
             control={control}
@@ -74,13 +74,13 @@ const Entry = ({ index }: EntryProps) => {
           />
           {!disabled && (
             <div className="flex gap-2">
-              <Button variant="ghost" className="aspect-square h-full">
+              <Button variant="secondary" className="h-full">
                 <FaArrowsRotate />
               </Button>
               <LinkButton
                 to="/admin/artists/create"
                 target="__blank"
-                className="aspect-square h-full"
+                className="h-full"
               >
                 <FaPlus />
               </LinkButton>

@@ -5,16 +5,12 @@ import { APIError } from "@/lib/api";
 import { DATETIME_FORMAT } from "@/lib/time";
 import { useToast } from "@/lib/context/toast";
 import { useAuth } from "@/lib/context/auth";
-import { cn } from "@/lib/clsx";
 
 import { earliestConcert } from "../concert";
 import { deleteEvent, type Event } from "../event";
 import type { Artist } from "../../artist/artist";
 
-import List from "@/lib/components/list/list";
-import ContextMenu from "@/lib/components/context-menu";
-
-import { FaMapMarker } from "react-icons/fa";
+import { Link } from "@tanstack/react-router";
 
 type Props = {
   event: Event;
@@ -45,89 +41,24 @@ const EventEntry = ({ event }: Props) => {
   const fromDate = earliestConcert(event.concerts)?.from || new Date();
   let expired = isBefore(fromDate, startOfToday());
 
-  const handleDeleteEvent = async () => {
-    if (!confirm(`Vil du slette ${event.title}?`)) return;
-
-    try {
-      await deleteEvent(event.id);
-      addToast("Event slettet");
-      // await invalidateAll();
-    } catch (e) {
-      if (e instanceof APIError) {
-        addToast("Kunne ikke slette event", e.cause, "error");
-        return;
-      }
-
-      addToast("Kunne ikke slette event", "Noget gik galt...", "error");
-      return;
-    }
-  };
-
   return (
-    <List.Entry
-      title="Redigér event"
-      className={`group ${expired ? "expired" : ""}`}
-    >
-      <List.Entry.LinkSection
+    <li className="group flex items-center rounded-xl border border-zinc-800 bg-zinc-900 transition-colors hover:border-zinc-700 hover:bg-zinc-800">
+      <Link
         to="/admin/events/$eventId/edit"
         params={{ eventId: event.id.toString() }}
+        className="w-full py-4 pl-8"
       >
-        <span className="line-clamp-1 group-[.expired]:line-through">
-          {event.title}
-        </span>
-        <span className="line-clamp-1 text-text/50">
-          {format(fromDate, DATETIME_FORMAT)}
-        </span>
-        <span className="line-clamp-1 text-text/50 md:hidden">
-          {event.venue.name}
-        </span>
-        <span className="line-clamp-1 hidden text-text/50 md:block">
-          {formatArtists(artists)}
-        </span>
-      </List.Entry.LinkSection>
-      <List.Entry.LinkSection
-        to="/admin/venues/$venueId/edit"
-        params={{ venueId: event.venue.id.toString() }}
-        className="group/venue hidden md:block"
-      >
-        <span
-          // className:disabled={!hasPermissions(authStore.permissions, ['edit:venue'])}
-          className={cn(
-            "hidden w-full items-center gap-2 text-text/50 group-hover/venue:text-text group-hover/venue:underline group-[.disabled]/venue:text-text/50 group-[.disabled]/venue:no-underline md:flex",
-            {
-              disabled: hasPermissions(["edit:venue"]),
-            },
-          )}
-        >
-          <FaMapMarker />
-          <span className="whitespace-nowrap">{event.venue.name}</span>
-        </span>
-      </List.Entry.LinkSection>
-
-      <List.Entry.Section className="w-min">
-        <ContextMenu.Button onClick={() => setShowContextMenu(true)} />
-      </List.Entry.Section>
-
-      <ContextMenu
-        show={showContextMenu}
-        onClose={() => setShowContextMenu(false)}
-        className="absolute top-1/2 right-4"
-      >
-        <ContextMenu.LinkEntry
-          disabled={!hasPermissions(["edit:event"])}
-          to="/admin/events/$eventId/edit"
-          params={{ eventId: event.id.toString() }}
-        >
-          Redigér
-        </ContextMenu.LinkEntry>
-        <ContextMenu.Entry
-          disabled={!hasPermissions(["delete:event"])}
-          onClick={handleDeleteEvent}
-        >
-          Slet
-        </ContextMenu.Entry>
-      </ContextMenu>
-    </List.Entry>
+        <div>
+          <p className="font-medium transition-colors group-hover:text-text-light group-hover:underline">
+            {event.title}
+          </p>
+          <div className="text-base">
+            <p>{format(event.concerts[0].from, DATETIME_FORMAT)}</p>
+            <p>{formatArtists(artists)}</p>
+          </div>
+        </div>
+      </Link>
+    </li>
   );
 };
 

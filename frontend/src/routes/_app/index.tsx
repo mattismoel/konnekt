@@ -69,16 +69,16 @@ function App() {
           </div>
           <section className="flex max-w-lg flex-col gap-16 overflow-hidden">
             <div className="flex flex-col">
-              <h2 className="mb-6 font-heading text-4xl leading-[1.2] text-shadow-lg/15 sm:text-5xl">
+              <h2 className="mb-6 font-heading text-4xl leading-[1.2] text-text-light text-shadow-lg/15 sm:text-5xl">
                 <b>Fynsk musik</b> med fremtiden for øje
               </h2>
-              <p className="leading-relaxed text-text/75 text-shadow-md">
+              <p className="text-text/75 leading-relaxed text-shadow-md">
                 Et springbræt for unge, aspirerende musiskere, og en indgang ind
                 til den danske musikscene.
               </p>
             </div>
 
-            <div className="z-10 flex w-full flex-col-reverse gap-4 sm:flex-row">
+            <div className="z-10 flex w-full flex-col-reverse gap-2 sm:flex-row">
               <LinkButton
                 to="/about"
                 variant="secondary"
@@ -104,7 +104,7 @@ function App() {
               <h1 className="mb-8 font-heading text-2xl font-bold">
                 Vores mission
               </h1>
-              <p className="leading-loose text-text/75">
+              <p className="text-text/75 leading-loose">
                 Konnekt er en ungedrevet forening og et koncertinitiativ, der
                 arbejder for at give unge musikere mulighed for at komme på
                 scenen og få kontakt til et publikum. Vi arrangerer koncerter,
@@ -126,7 +126,7 @@ function App() {
             </section>
 
             <section className="z-0 flex w-full flex-col gap-8">
-              <span className="text-center text-text/50">I samarbejde med</span>
+              <span className="text-text/50 text-center">I samarbejde med</span>
               <div className="relative isolate w-full">
                 <SponsorDisplay
                   srcs={

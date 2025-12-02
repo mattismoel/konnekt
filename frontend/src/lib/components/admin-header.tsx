@@ -10,7 +10,10 @@ const Title = ({
   className,
   ...rest
 }: HTMLAttributes<HTMLHeadingElement>) => (
-  <h1 {...rest} className={cn("font-heading text-4xl font-bold", className)}>
+  <h1
+    {...rest}
+    className={cn("font-heading text-4xl font-bold text-text-light", className)}
+  >
     {children}
   </h1>
 );

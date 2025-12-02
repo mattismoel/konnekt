@@ -10,7 +10,7 @@ const FilePicker = ({ onChange, className, ...rest }: Props) => (
     {...rest}
     type="file"
     className={cn(
-      "text-text file:rounded-md file:bg-zinc-100 file:px-4 file:py-2 file:font-medium file:text-zinc-900",
+      "text-text file:rounded-full file:bg-zinc-100 file:px-6 file:py-2 file:font-medium file:text-zinc-900 file:transition-[filter] hover:file:brightness-80",
       className,
     )}
     onChange={(e) => onChange(e.currentTarget.files)}

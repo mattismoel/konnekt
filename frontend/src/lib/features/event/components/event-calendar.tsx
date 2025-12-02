@@ -54,16 +54,16 @@ const EventCalendar = ({ event, ...rest }: Props) => {
     <div className="flex w-full flex-col gap-8" {...rest}>
       <div className="flex items-center-safe justify-between">
         <div>
-          <h3 className="mb-2 text-xl font-bold">Program for {event.title}</h3>
-          <span className="text-zinc-300">
-            {format(concerts[0].from, "EEEE, dd/MM/yyyy")}
-          </span>
+          <h3 className="mb-2 text-xl font-bold text-text-light">
+            Program for {event.title}
+          </h3>
+          <span>{format(concerts[0].from, "EEEE, dd/MM/yyyy")}</span>
         </div>
 
         {calendarUrl && (
           <LinkButton
             className="hidden sm:flex"
-            variant="ghost"
+            variant="secondary"
             to={calendarUrl.toString()}
             target="__blank"
           >
@@ -84,12 +84,9 @@ const EventCalendar = ({ event, ...rest }: Props) => {
                 <div
                   key={marker.getTime()}
                   style={{ top: `calc(${markerOffset / totalMinutes} * 100%)` }}
-                  className={cn(
-                    "absolute flex w-full flex-col gap-1 text-sm text-text/50",
-                    {
-                      hidden: i === timeMarkers.length - 1,
-                    },
-                  )}
+                  className={cn("absolute flex w-full flex-col gap-1 text-sm", {
+                    hidden: i === timeMarkers.length - 1,
+                  })}
                 >
                   <div className="h-[1px] w-full bg-zinc-800"></div>
                   <span>{format(marker, "HH:mm")}</span>
@@ -143,7 +140,7 @@ const Entry = ({ concert, totalMinutes, startHour }: EntryProps) => {
         top: `calc(${concertStartOffset / totalMinutes} * 100%)`,
         height: `calc(${concertDurationMinutes / totalMinutes} * 100% - 1px)`,
       }}
-      className="group absolute flex min-h-10 w-full justify-between overflow-hidden rounded-sm border border-t border-blue-800 bg-blue-950 p-2 text-sm transition-colors hover:border-blue-600 hover:bg-blue-900"
+      className="group absolute flex min-h-10 w-full justify-between overflow-hidden rounded-xl border border-t border-blue-800 bg-blue-950 p-4 text-sm transition-colors hover:border-blue-600 hover:bg-blue-900"
       to="/artists/$artistId"
       params={{ artistId: concert.artist.id.toString() }}
     >

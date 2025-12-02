@@ -4,10 +4,11 @@ import { Controller, useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { COUNTRIES_MAP } from "../countries";
-import { createSubmitHandler } from "@/lib/api";
+import { APIError, createSubmitHandler } from "@/lib/api";
 
 import {
   createVenue,
+  deleteVenue,
   editVenue,
   venueForm,
   type Venue,
@@ -22,6 +23,8 @@ import { useAuth } from "@/lib/context/auth";
 import { FaPen, FaPlus } from "react-icons/fa6";
 import Audit from "@/lib/components/audit";
 import type { Member } from "../../auth/member";
+import { useToast } from "@/lib/context/toast";
+import { BiTrash } from "react-icons/bi";
 
 type Props =
   | {
@@ -38,6 +41,28 @@ const VenueForm = ({ venue, updatedByMember }: Props) => {
   const queryClient = useQueryClient();
 
   const isEditable = hasPermissions(["edit:venue"]);
+
+  const { addToast } = useToast();
+
+  const handleDeleteVenue = async () => {
+    if (!venue) return;
+    if (!confirm(`Er sikker på, at du vil slette venue "${venue.name}"?`))
+      return;
+
+    try {
+      await deleteVenue(venue.id);
+      addToast("Venue slettet");
+      await queryClient.invalidateQueries({ queryKey: ["venues"] });
+    } catch (e) {
+      if (e instanceof APIError) {
+        addToast("Kunne ikke slette venue", e.cause, "error");
+        return;
+      }
+
+      addToast("Kunne ikke slette venue", "Noget gik galt...", "error");
+      return;
+    }
+  };
 
   const {
     control,
@@ -103,10 +128,24 @@ const VenueForm = ({ venue, updatedByMember }: Props) => {
 
       <div className="flex flex-col gap-4">
         {isEditable && (
-          <Button type="submit" className="w-full">
-            {venue ? <FaPen /> : <FaPlus />}
-            {venue ? "Redigér" : "Tilføj"}
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button type="submit" className="w-full">
+              {venue ? <FaPen /> : <FaPlus />}
+              {venue ? "Redigér" : "Tilføj"}
+            </Button>
+
+            {venue && (
+              <Button
+                type="button"
+                variant="dangerous"
+                className="w-full"
+                onClick={handleDeleteVenue}
+              >
+                <BiTrash />
+                Slet
+              </Button>
+            )}
+          </div>
         )}
         {venue && (
           <Audit
