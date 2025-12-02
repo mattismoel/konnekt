@@ -26,7 +26,7 @@ export class APIError extends Error {
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 type RequestBody<T> = {
-  bodySchema: Zod.Schema<T>;
+  bodySchema: ZodSchema<T>;
   body: T;
 };
 
@@ -48,7 +48,7 @@ export async function requestAndParse<TBody>(
 
 export async function requestAndParse<TBody, TResponse>(
   url: string | URL,
-  resSchema?: Zod.Schema<TResponse>,
+  resSchema?: ZodSchema<TResponse>,
   errorMsg?: string,
   bodyOpts?: RequestBody<TBody>,
   method?: Method,
