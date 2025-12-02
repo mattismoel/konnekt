@@ -50,7 +50,7 @@ const Slideshow = ({ srcs }: Props) => {
           src={src}
           alt={alt}
           className={cn(
-            "absolute h-full w-full object-cover opacity-0 brightness-60 transition-opacity duration-1000",
+            "absolute h-full w-full object-cover opacity-0 brightness-40 transition-opacity duration-1000",
             {
               "opacity-100": index === currentIdx,
             },
