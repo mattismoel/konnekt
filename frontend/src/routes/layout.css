@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@theme {
+	--color-background: var(--color-zinc-950);
+	--color-foreground: var(--color-zinc-100);
+
+	--color-text-light: var(--color-zinc-100);
+	--color-text-light-muted: var(--color-zinc-300);
+	--color-text-dark: var(--color-zinc-950);
+	--color-text-dark-muted: var(--color-zinc-800);
+
+	--spacing-max-content-width: 50em;
+	--spacing-nav: 3.5rem;
+}
+
+
+@utility mx-responsive {
+	--min-padding: 3rem;
+
+	max-width: min(var(--spacing-max-content-width), 100% - var(--min-padding));
+	margin: 0 auto;
+}

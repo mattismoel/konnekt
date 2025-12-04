@@ -1,45 +1,17 @@
-# ==============================================================================
-# Build stage.
-# 
-# CGO dependencies are installed, Golang project dependencies are installed,
-# and the project is built with CGO.
-# ==============================================================================
-FROM golang:1.25-alpine AS build
+FROM alpine:latest
 
-WORKDIR /app
+ARG PB_VERSION=0.25.8
 
-RUN apk add --no-cache gcc musl-dev
+RUN apk add --no-cache \
+    unzip \
+    ca-certificates \
+    # this is needed only if you want to use scp to copy later your pb_data locally
+    openssh
 
-COPY go.mod go.sum ./
-RUN go mod download
-
-COPY . .
-
-RUN CGO_ENABLED=0 go build -v -o /konnekt-backend ./cmd/http/main.go
-
-# ==============================================================================
-# Production stage.
-# ==============================================================================
-FROM alpine
-WORKDIR /app
-
-ENV DB_DIR=${DB_DIR:-/app/data}
-ENV ORIGIN=${ORIGIN:-http://localhost:4000}
-ENV DB_FILE_NAME=${DB_FILE_NAME:-data.db}
-
-COPY tables.sql seed.sql ./
-
-# System upgrade before SQLite install.
-RUN apk update && apk upgrade && apk add --no-cache sqlite
-
-# Copy build executable from 'build' stage.
-COPY --from=build /konnekt-backend .
-
-ENV TZ=Europe/Copenhagen
-
-# Make $DB_DIR directory for the database file.
-RUN mkdir -p ${DB_DIR}
+# download and unzip PocketBase
+ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
+RUN unzip /tmp/pb.zip -d /pb/
 
 EXPOSE 8080
-
-CMD ./konnekt-backend -origin=${ORIGIN} -host=0.0.0.0 -port=8080 -dbConnStr=${DB_DIR}/${DB_FILE_NAME}
+# start PocketBase
+CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8080"]

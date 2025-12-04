@@ -1,14 +1,8 @@
-import { z, type ZodTypeAny } from "zod";
+import z from "zod";
 
-export const createListResult = <T extends ZodTypeAny>(schema: T) =>
-  z.object({
-    page: z.number().positive(),
-    perPage: z.number().positive(),
-    pageCount: z.number().nonnegative(),
-    totalCount: z.number().nonnegative(),
-    records: schema.array(),
-  });
-
-export type ListResult<T> = z.infer<
-  ReturnType<typeof createListResult<z.ZodType<T>>>
->;
+export const queryOptions = z.object({
+	page: z.int().positive().optional(),
+	perPage: z.int().positive().optional(),
+	filter: z.string().optional(),
+	sort: z.string().optional()
+});

@@ -1,5 +1,0 @@
-*.db*
-*.db
-build/
-tmp/
-api/

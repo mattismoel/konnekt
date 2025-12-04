@@ -7,17 +7,18 @@ services:
       - /app/node_modules
     command: sh -c "bun install && bun run dev -- --host 0.0.0.0"
     ports:
-      - 3000:3000
+      - 5173:5173
     environment:
-    - NODE_ENV=development
+      - NODE_ENV=development
   backend:
-    image: cosmtrek/air:latest
-    working_dir: /app
-    ports:
-    - 8080:8080
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     volumes:
-      - ./backend:/app
-      - ~/.aws:/root/.aws:ro
+      - ./backend/pb/pb_data:/pb/pb_data
+      - ./backend/pb/pb_migrations:/pb/pb_migrations
+    ports:
+      - 8080:8080
   caddy:
     image: caddy:latest
     ports:
@@ -25,7 +26,11 @@ services:
       - 443:443
       - 443:443/udp
     volumes:
-    - ./Caddyfile.dev:/etc/caddy/Caddyfile
+      - ./Caddyfile.dev:/etc/caddy/Caddyfile
     depends_on:
       - frontend
       - backend
+
+volumes:
+  pb_data:
+  node_modules:
