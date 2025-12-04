@@ -6,12 +6,12 @@
 	import { createEvent, editEvent } from "../features/event.remote.ts";
 	import type { Event } from "../features/event";
 	import Input from "./ui/Input.svelte";
-	import ConcertCard from "./ConcertCard.svelte";
 	import { addMinutes, format, roundToNearestHours } from "date-fns";
 	import { getArtists } from "../features/artist.remote.ts";
 	import { INPUT_DATETIME_FORMAT } from "$lib/time";
 	import Select from "./ui/Select.svelte";
 	import { getVenues } from "../features/venue.remote.ts";
+	import Card from "./Card.svelte";
 
 	const DEFAULT_CHANGEOVER_MINUTES = 15;
 	const DEFAULT_CONCERT_DURATION = 40;
@@ -113,7 +113,34 @@
 
 			<ul class="flex flex-col gap-2">
 				{#each form.fields.concerts.value(), i}
-					<ConcertCard isEdit={event !== undefined} {artists} idx={i} />
+					<li>
+						<Card title="#{i + 1}">
+							<FormField
+								issues={form.fields.concerts[i].artistId.issues()?.map((i) => i.message)}
+								class="mb-4"
+							>
+								<Select class="w-full" {...form.fields.concerts[i].artistId.as("select")}>
+									{#each artists as artist}
+										<option selected value={artist.id}>{artist.name}</option>
+									{/each}
+								</Select>
+							</FormField>
+
+							<fieldset class="flex items-center gap-2">
+								<FormField
+									issues={form.fields.concerts[i].fromDate.issues()?.map((i) => i.message)}
+								>
+									<Input {...form.fields.concerts[i].fromDate.as("datetime-local")} />
+								</FormField>
+
+								<p>&gt;</p>
+
+								<FormField issues={form.fields.concerts[i].toDate.issues()?.map((i) => i.message)}>
+									<Input {...form.fields.concerts[i].toDate.as("datetime-local")} />
+								</FormField>
+							</fieldset>
+						</Card>
+					</li>
 				{/each}
 				<Button type="button" variant="secondary" onclick={addConcert}>Tilføj</Button>
 			</ul>

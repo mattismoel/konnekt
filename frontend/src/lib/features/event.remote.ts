@@ -2,11 +2,12 @@ import { form, getRequestEvent, query } from "$app/server";
 import { id } from "$lib/model";
 import { createFileUrl, createListResult, type PBConcert, type PBEvent } from "$lib/pocketbase";
 import { queryOptions } from "$lib/query";
-import { startOfToday } from "date-fns";
+import { parse, startOfToday } from "date-fns";
 import { getArtist } from "./artist.remote";
 import { concertSchema, eventSchema, type Event } from "./event";
 import { getVenue } from "./venue.remote";
 import { z } from "zod";
+import { INPUT_DATETIME_FORMAT } from "$lib/time";
 
 const concertForm = z.object({
 	artistId: id,
@@ -130,8 +131,27 @@ export const getEvent = query(id, async (eventId) => {
 });
 
 export const createEvent = form(createEventForm, async (data) => {
-	console.log("Hello");
-	console.log(data);
+	const { locals } = getRequestEvent()
+
+	console.log(data)
+
+	let concertIds: string[] = []
+
+	await Promise.all(data.concerts.map(async concert => {
+		const data = {
+			fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
+			toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
+			artist: concert.artistId,
+		}
+
+		const { id } = await locals.pb.collection("concerts").create(data)
+
+		concertIds.push(id)
+	}))
+
+	const postData = { ...data, venue: data.venueId, concerts: concertIds }
+
+	await locals.pb.collection("events").create(postData)
 });
 
-export const editEvent = form(editEventForm, async (data) => {});
+export const editEvent = form(editEventForm, async (data) => { });
