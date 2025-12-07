@@ -45,16 +45,16 @@
 	};
 
 	const toggleGenre = (id: string) => {
-		const prevGenres = genreIds.value();
+		const prevGenres = genreIds.value() ?? [];
 
-		const isSelected = genreIds.value().includes(id);
+		const isSelected = prevGenres.includes(id);
 
 		if (isSelected) {
 			genreIds.set(prevGenres.filter((genreId) => genreId !== id));
 			return;
 		}
 
-		if (genreIds.value().length >= MAX_GENRES) return;
+		if (prevGenres.length >= MAX_GENRES) return;
 
 		genreIds.set([...prevGenres, id]);
 	};
@@ -125,14 +125,15 @@
 
 			<ul class="flex flex-wrap gap-1">
 				{#each genres as genre}
-					{@const isToggled = genreIds.value()?.includes(genre.id)}
 					<li>
 						<button
 							type="button"
 							onclick={() => toggleGenre(genre.id)}
 							class={[
 								"rounded-full border px-4 py-2 ",
-								isToggled ? "border-zinc-500 bg-zinc-600" : "border-zinc-800 bg-zinc-900"
+								genreIds.value()?.includes(genre.id)
+									? "border-zinc-500 bg-zinc-600"
+									: "border-zinc-800 bg-zinc-900"
 							]}
 						>
 							{genre.name}
