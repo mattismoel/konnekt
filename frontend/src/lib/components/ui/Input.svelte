@@ -3,13 +3,20 @@
 
 	type Props = HTMLInputAttributes & {
 		variant?: "lighter" | "darker";
+		element?: HTMLInputElement;
 	};
 
-	let { variant = "lighter", value = $bindable(), ...rest }: Props = $props();
+	let {
+		variant = "lighter",
+		element = $bindable(),
+		value = $bindable(),
+		...rest
+	}: Props = $props();
 </script>
 
 <input
 	{...rest}
+	bind:this={element}
 	bind:value
 	class={[
 		"rounded-full border  px-8 py-2",
