@@ -15,11 +15,11 @@ const concertForm = z.object({
 	toDate: z.string()
 });
 
-const createConcertForm = concertForm
+const createConcertForm = concertForm;
 
 const editConcertForm = concertForm.extend({
 	id: id.optional()
-})
+});
 
 const eventForm = z.object({
 	title: z.string().nonempty(),
@@ -38,23 +38,23 @@ const editEventForm = eventForm.extend({
 	eventId: id,
 	concerts: editConcertForm.array().min(1),
 	cover: z.file().max(5_000_000).optional()
-})
+});
 
 export type ConcertForm = z.infer<typeof concertForm>;
 
 export const getUpcomingEvents = query(queryOptions.optional(), async (opts) => {
-	const { locals } = getRequestEvent()
+	const { locals } = getRequestEvent();
 
 	const filterStr = locals.pb.filter("concerts.fromDate >= {:today}", {
 		today: startOfToday().toISOString()
-	})
+	});
 
 	const result = await getEvents({
 		filter: opts?.filter ? [filterStr, opts?.filter].join("&&") : filterStr
-	})
+	});
 
-	return result
-})
+	return result;
+});
 
 export const getEvents = query(queryOptions.optional(), async (opts) => {
 	const { locals } = getRequestEvent();
@@ -144,59 +144,57 @@ export const getEvent = query(id, async (eventId) => {
 		cover: createFileUrl("events", record.id, record.cover)
 	});
 
-	console.log(event)
-
 	return event;
 });
 
 export const createEvent = form(createEventForm, async (data) => {
-	const { locals } = getRequestEvent()
+	const { locals } = getRequestEvent();
 
-	console.log(data)
+	let concertIds: string[] = [];
 
-	let concertIds: string[] = []
+	await Promise.all(
+		data.concerts.map(async (concert) => {
+			const data = {
+				fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
+				toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
+				artist: concert.artistId
+			};
 
-	await Promise.all(data.concerts.map(async concert => {
-		const data = {
-			fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
-			toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
-			artist: concert.artistId,
-		}
+			const { id } = await locals.pb.collection("concerts").create(data);
 
-		const { id } = await locals.pb.collection("concerts").create(data)
+			concertIds.push(id);
+		})
+	);
 
-		concertIds.push(id)
-	}))
+	const postData = { ...data, venue: data.venueId, concerts: concertIds };
 
-	const postData = { ...data, venue: data.venueId, concerts: concertIds }
-
-	await locals.pb.collection("events").create(postData)
+	await locals.pb.collection("events").create(postData);
 });
 
 export const editEvent = form(editEventForm, async (data) => {
-	const { locals } = getRequestEvent()
+	const { locals } = getRequestEvent();
 
-	console.log(data)
+	let concertIds = data.concerts.flatMap((c) => (c.id ? c.id : []));
 
-	let concertIds = data.concerts.flatMap(c => c.id ? c.id : [])
+	await Promise.all(
+		data.concerts.map(async (concert) => {
+			const data = {
+				fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
+				toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
+				artist: concert.artistId
+			};
 
-	await Promise.all(data.concerts.map(async concert => {
-		const data = {
-			fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
-			toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
-			artist: concert.artistId,
-		}
+			// If concert already exists, we want to update it, else create new concert and add ID.
+			if (concert.id) {
+				await locals.pb.collection("concerts").update(concert.id, data);
+			} else {
+				const { id } = await locals.pb.collection("concerts").create(data);
+				concertIds.push(id);
+			}
+		})
+	);
 
-		// If concert already exists, we want to update it, else create new concert and add ID.
-		if (concert.id) {
-			await locals.pb.collection("concerts").update(concert.id, data)
-		} else {
-			const { id } = await locals.pb.collection("concerts").create(data)
-			concertIds.push(id)
-		}
-	}))
+	const postData = { ...data, venue: data.venueId, concerts: concertIds };
 
-	const postData = { ...data, venue: data.venueId, concerts: concertIds }
-
-	await locals.pb.collection("events").update(data.eventId, postData)
+	await locals.pb.collection("events").update(data.eventId, postData);
 });
