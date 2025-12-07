@@ -36,6 +36,9 @@
 
 	let { title, description, cover, ticketUrl, venueId, isPublic } = rest.form.fields;
 
+	const { items: artists } = $derived(await getArtists(undefined));
+	const { items: venues } = $derived(await getVenues(undefined));
+
 	const isEditable = true;
 
 	const toaster = getToastContext();
@@ -63,7 +66,6 @@
 		const concertCount = rest.form.fields.concerts.value()?.length ?? 0;
 
 		if (concertCount === 0) {
-			console.log("first concert");
 			const fromDate = roundToNearestHours(new Date());
 			const toDate = addMinutes(fromDate, DEFAULT_CONCERT_DURATION);
 
@@ -101,7 +103,6 @@
 			toaster.add(
 				rest.variant === "create" ? "Kunne ikke lave event" : "Kunne ikke opdatere event"
 			);
-			console.error(e);
 			throw e;
 		}
 	})}
@@ -121,100 +122,106 @@
 	<section class="mb-16">
 		<h2 class="mb-4 font-medium">Generelt</h2>
 
-		<div class="flex flex-col gap-4">
-			<FormField issues={title.issues()?.map((i) => i.message)}>
-				<Input {...title.as("text")} placeholder="Eventtitel" />
-			</FormField>
+		<div class="flex flex-col gap-2">
+			<fieldset class="flex flex-col gap-4">
+				<div class="flex gap-2">
+					<FormField issues={title.issues()?.map((i) => i.message)} class="w-full">
+						<Input {...title.as("text")} placeholder="Eventtitel" />
+					</FormField>
+					<FormField issues={ticketUrl.issues()?.map((i) => i.message)} class="w-min min-w-72">
+						<Input {...ticketUrl.as("url")} placeholder="Billet-URL" />
+					</FormField>
+				</div>
+			</fieldset>
+
+			<div class="mb-4 flex gap-4">
+				<FormField issues={title.issues()?.map((i) => i.message)}>
+					<Select {...venueId.as("select")}>
+						{#each venues as venue}
+							<option value={venue.id}>{venue.name}</option>
+						{/each}
+					</Select>
+				</FormField>
+
+				<div class="flex gap-2">
+					<Button variant="secondary" type="button" onclick={() => getVenues(undefined).refresh()}>
+						Refresh
+					</Button>
+					<Button href="/admin/venues/create" target="_blank" class="shrink-0">+ Tilføj</Button>
+				</div>
+			</div>
+
+			<label for="" class="mb-4 flex items-center gap-4">
+				<input {...isPublic.as("checkbox")} />
+				Offentlig
+			</label>
 
 			<FormField issues={description.issues()?.map((i) => i.message)}>
 				<Input {...description.as("text")} placeholder="Beskrivelse" />
 			</FormField>
-
-			<fieldset class="flex gap-2">
-				<FormField issues={ticketUrl.issues()?.map((i) => i.message)}>
-					<Input {...ticketUrl.as("url")} placeholder="Billet-URL" />
-				</FormField>
-
-				{#await getVenues(undefined) then { items: venues }}
-					<FormField issues={title.issues()?.map((i) => i.message)}>
-						<Select {...venueId.as("select")}>
-							{#each venues as venue}
-								<option value={venue.id}>{venue.name}</option>
-							{/each}
-						</Select>
-					</FormField>
-				{/await}
-				<Button href="/admin/venues/create" target="_blank">+</Button>
-			</fieldset>
-
-			<label for="" class="flex items-center gap-4">
-				<input {...isPublic.as("checkbox")} />
-				Offentlig
-			</label>
 		</div>
 	</section>
 
-	{#await getArtists(undefined) then { items: artists }}
-		<section class="mb-16">
-			<h2 class="mb-4 font-medium">Koncerter</h2>
+	<section class="mb-16">
+		<h2 class="mb-4 font-medium">Koncerter</h2>
 
-			<ul class="flex flex-col gap-2">
-				{#each rest.form.fields.concerts.value(), i}
-					<li>
-						<Card title="#{i + 1}">
-							{#if rest.variant === "edit" && rest.form.fields.concerts[i].id.value()}
-								<input
-									{...rest.form.fields.concerts[i].id.as(
-										"hidden",
-										rest.form.fields.concerts[i].id.value()
-									)}
-								/>
-							{/if}
+		<ul class="flex flex-col gap-2">
+			{#each rest.form.fields.concerts.value(), i}
+				<li>
+					<Card title="#{i + 1}">
+						{#if rest.variant === "edit" && rest.form.fields.concerts[i].id.value()}
+							<input
+								{...rest.form.fields.concerts[i].id.as(
+									"hidden",
+									rest.form.fields.concerts[i].id.value()
+								)}
+							/>
+						{/if}
+
+						<div class="flex gap-8">
+							<FormField
+								issues={rest.form.fields.concerts[i].artistId.issues()?.map((i) => i.message)}
+								class="mb-4"
+							>
+								<Select class="w-full" {...rest.form.fields.concerts[i].artistId.as("select")}>
+									{#each artists as artist}
+										<option selected value={artist.id}>{artist.name}</option>
+									{/each}
+								</Select>
+							</FormField>
 
 							<div class="flex gap-2">
-								<FormField
-									issues={rest.form.fields.concerts[i].artistId.issues()?.map((i) => i.message)}
-									class="mb-4"
-								>
-									<Select class="w-full" {...rest.form.fields.concerts[i].artistId.as("select")}>
-										{#each artists as artist}
-											<option selected value={artist.id}>{artist.name}</option>
-										{/each}
-									</Select>
-								</FormField>
-
-								<Button href="/admin/artists/create" target="_blank" class="h-min">+</Button>
-
 								<Button
 									type="button"
 									variant="secondary"
 									class="h-min"
-									onclick={getArtists(undefined).refresh}>Refresh</Button
+									onclick={() => getArtists(undefined).refresh()}>Refresh</Button
 								>
+								<Button href="/admin/artists/create" target="_blank" class="h-min">+</Button>
 							</div>
+						</div>
 
-							<fieldset class="flex items-center gap-2">
-								<FormField
-									issues={rest.form.fields.concerts[i].fromDate.issues()?.map((i) => i.message)}
-								>
-									<Input {...rest.form.fields.concerts[i].fromDate.as("datetime-local")} />
-								</FormField>
+						<fieldset class="flex items-center gap-2">
+							<FormField
+								issues={rest.form.fields.concerts[i].fromDate.issues()?.map((i) => i.message)}
+							>
+								<Input {...rest.form.fields.concerts[i].fromDate.as("datetime-local")} />
+							</FormField>
 
-								<p>&gt;</p>
+							<p>&gt;</p>
 
-								<FormField
-									issues={rest.form.fields.concerts[i].toDate.issues()?.map((i) => i.message)}
-								>
-									<Input {...rest.form.fields.concerts[i].toDate.as("datetime-local")} />
-								</FormField>
-							</fieldset>
-						</Card>
-					</li>
-				{/each}
-				<Button type="button" variant="secondary" onclick={addConcert}>Tilføj</Button>
-			</ul>
-		</section>
-	{/await}
+							<FormField
+								issues={rest.form.fields.concerts[i].toDate.issues()?.map((i) => i.message)}
+							>
+								<Input {...rest.form.fields.concerts[i].toDate.as("datetime-local")} />
+							</FormField>
+						</fieldset>
+					</Card>
+				</li>
+			{/each}
+			<Button type="button" variant="secondary" onclick={addConcert}>Tilføj</Button>
+		</ul>
+	</section>
 
 	<p>
 		{rest.form.fields
@@ -223,17 +230,9 @@
 			.join(", ")}
 	</p>
 
-	<div class="flex flex-col gap-4">
+	<div class="flex flex-col gap-2">
 		{#if isEditable}
-			<Button class="w-full" type="submit">
-				{#if isPublic.value() === true}
-					Offentligør
-				{:else}
-					Upload
-				{/if}
-			</Button>
-
-			{#if rest.event}
+			{#if rest.variant === "edit"}
 				<Button
 					type="button"
 					variant="dangerous"
@@ -243,6 +242,13 @@
 					Slet
 				</Button>
 			{/if}
+			<Button class="w-full" type="submit">
+				{#if isPublic.value() === true}
+					Offentligør
+				{:else}
+					Upload
+				{/if}
+			</Button>
 		{/if}
 	</div>
 </form>
