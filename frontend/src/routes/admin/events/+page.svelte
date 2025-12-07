@@ -36,7 +36,7 @@
 	<li
 		class="group flex items-center rounded-xl border border-zinc-800 bg-zinc-900 transition-colors hover:border-zinc-700 hover:bg-zinc-800"
 	>
-		<a href="/admin/events/{event.id}/edit" class="w-full py-4 pl-8">
+		<a href="/admin/events/edit/{event.id}" class="w-full py-4 pl-8">
 			<div>
 				<p class="font-medium transition-colors group-hover:text-text-light group-hover:underline">
 					{event.title}
