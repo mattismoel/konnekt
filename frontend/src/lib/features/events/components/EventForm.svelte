@@ -13,7 +13,6 @@
 	import { getVenues } from "../../venues/venue.remote.ts";
 	import Card from "$lib/components/Card.svelte";
 	import { getToastContext } from "../../../components/toaster/toaster.svelte.ts";
-	import { goto } from "$app/navigation";
 	import { hasPermissions } from "../../../features/auth/auth.remote.ts";
 
 	const DEFAULT_CHANGEOVER_MINUTES = 15;
@@ -98,13 +97,9 @@
 	{...rest.form.enhance(async ({ submit }) => {
 		try {
 			await submit();
-			toaster.add(rest.variant === "create" ? "Event tilføjet" : "Event opdateret");
-			goto("/admin/events");
-		} catch (e) {
-			toaster.add(
-				rest.variant === "create" ? "Kunne ikke lave event" : "Kunne ikke opdatere event"
-			);
-			throw e;
+		} catch (error) {
+			console.error(error);
+			toaster.add("Kunne ikke lave event", "dangerous");
 		}
 	})}
 	enctype="multipart/form-data"
