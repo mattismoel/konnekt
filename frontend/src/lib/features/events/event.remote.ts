@@ -8,6 +8,7 @@ import { concertSchema, eventSchema, type Event } from "./event";
 import { getVenue } from "../venues/venue.remote";
 import { z } from "zod";
 import { INPUT_DATETIME_FORMAT } from "$lib/time";
+import { redirect } from "@sveltejs/kit";
 
 const concertForm = z.object({
 	artistId: id,
@@ -165,7 +166,9 @@ export const createEvent = form(createEventForm, async (data) => {
 	const concertIds = results.map((result) => result.body.id as string);
 	const postData = { ...data, venue: data.venueId, concerts: concertIds };
 
-	await locals.pb.collection("events").create(postData);
+	const { id } = await locals.pb.collection("events").create(postData);
+
+	redirect(302, `/events/${id}`);
 });
 
 export const editEvent = form(editEventForm, async (data) => {
@@ -194,4 +197,5 @@ export const editEvent = form(editEventForm, async (data) => {
 	const postData = { ...data, venue: data.venueId, concerts: concertIds };
 
 	await locals.pb.collection("events").update(data.eventId, postData);
+	redirect(302, `/events/${data.eventId}`);
 });
