@@ -26,6 +26,7 @@
 		variant === "primary" && "border-foreground bg-foreground text-text-dark",
 		variant === "secondary" &&
 			"text-text- border-foreground/10 bg-foreground/10 backdrop-blur-xs hover:border-foreground/30 hover:bg-foreground/20 hover:text-text-dark",
+		variant === "dangerous" && "border-red-900 bg-red-950 text-red-400",
 		rest.class
 	]}
 >
