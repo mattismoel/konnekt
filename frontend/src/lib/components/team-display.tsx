@@ -71,13 +71,13 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
   const teamsString = memberTeams.map((t) => t.displayName).join(", ");
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-full border border-zinc-800 bg-zinc-900 p-1 transition-colors @lg:flex-row">
+    <div className="group flex items-center overflow-hidden rounded-full border border-zinc-800 bg-zinc-900 p-1 transition-colors">
       <img
         src={member.profilePictureUrl}
-        className="aspect-square w-12 shrink-0 rounded-full object-cover @lg:block @lg:w-24"
+        className="aspect-square w-24 shrink-0 rounded-full object-cover @lg:w-32"
       />
-      <div className="h-mi flex max-w-full flex-col gap-2 overflow-hidden px-8 py-4">
-        <span className="line-clamp-1 font-medium text-text-light">
+      <div className="h-mi flex w-full flex-col gap-2 overflow-hidden px-8 py-4">
+        <span className="line-clamp-1 font-medium text-text-light @lg:text-xl">
           {member.firstName} {member.lastName}
         </span>
         <div className="w-full">
