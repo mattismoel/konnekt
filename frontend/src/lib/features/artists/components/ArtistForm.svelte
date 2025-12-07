@@ -6,7 +6,7 @@
 		type createArtist,
 		type editArtist
 	} from "$lib/features/artists/artist.remote";
-	import { getToastContext } from "$lib/toaster.svelte";
+	import { getToastContext } from "$lib/components/toaster/toaster.svelte";
 	import FormField from "$lib/components/FormField.svelte";
 	import ImagePreview from "$lib/components/ImagePreview.svelte";
 	import Button from "$lib/components/ui/Button.svelte";
@@ -78,8 +78,6 @@
 	{...rest.form.enhance(async ({ submit }) => {
 		try {
 			await submit();
-			toaster.add(rest.artist ? "Kunstner opdateret" : "Kunstner skabt");
-			goto("/admin/dashboard");
 		} catch (e) {
 			toaster.add(
 				rest.artist ? "Kunne ikke opdatere kunstner" : "Kunne ikke skabe kunstner",
@@ -87,6 +85,9 @@
 			);
 			throw e;
 		}
+
+		toaster.add(rest.artist ? "Kunstner opdateret" : "Kunstner skabt");
+		await goto("/admin/dashboard");
 	})}
 	enctype="multipart/form-data"
 >
