@@ -63,6 +63,7 @@ export const pbEvent = z.object({
 	venue: pbId,
 	ticketUrl: z.url(),
 	cover: z.string(),
+	isPublic: z.boolean(),
 	expand: z
 		.object({
 			concert: pbConcert.array().min(1),
