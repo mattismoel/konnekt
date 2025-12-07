@@ -11,6 +11,7 @@
 		getUpcomingArtists
 	} from "$lib/features/artists/artist.remote";
 	import ArtistListEntry from "$lib/features/artists/components/ArtistListEntry.svelte";
+	import { hasPermissions } from "$lib/features/auth/auth.remote";
 	import { ClientResponseError } from "pocketbase";
 
 	const upcomingArtists = await getUpcomingArtists();
@@ -31,7 +32,9 @@
 		title="Kunstnere"
 		description="Her har du overblik over alle kunstnere som medvirker og har medvirket til events."
 	>
-		<Button href="/admin/artists/create">+ Tilføj</Button>
+		{#if await hasPermissions(["artists:edit"])}
+			<Button href="/admin/artists/create">+ Tilføj</Button>
+		{/if}
 	</AdminPageHeader>
 
 	<section class="mb-16">
@@ -71,10 +74,12 @@
 		class="mb-8"
 	>
 		<h1 class="font-heading mb-4 text-2xl font-bold">Genrer</h1>
-		<div class="flex gap-2">
-			<Input {...createGenre.fields.name.as("text")} placeholder="Ny genre..." class="w-full" />
-			<Button class="shrink-0">+ Tilføj</Button>
-		</div>
+		{#if await hasPermissions(["artists:edit"])}
+			<div class="flex gap-2">
+				<Input {...createGenre.fields.name.as("text")} placeholder="Ny genre..." class="w-full" />
+				<Button class="shrink-0">+ Tilføj</Button>
+			</div>
+		{/if}
 	</form>
 
 	<ul class="flex gap-2">
@@ -101,7 +106,9 @@
 					<div class="flex gap-4">
 						<p>{genre.name}</p>
 
-						<button>X</button>
+						{#if await hasPermissions(["artists:edit"])}
+							<button>X</button>
+						{/if}
 					</div>
 				</form>
 			</li>

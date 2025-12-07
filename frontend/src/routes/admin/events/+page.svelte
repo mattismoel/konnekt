@@ -2,6 +2,7 @@
 	import AdminPageHeader from "$lib/components/AdminPageHeader.svelte";
 	import SearchBar from "$lib/components/SearchBar.svelte";
 	import Button from "$lib/components/ui/Button.svelte";
+	import { hasPermissions } from "$lib/features/auth/auth.remote";
 	import EventListEntry from "$lib/features/events/components/EventListEntry.svelte";
 	import { getPreviousEvents, getUpcomingEvents } from "$lib/features/events/event.remote";
 	import { EntrySearcher } from "$lib/search.svelte";
@@ -14,7 +15,9 @@
 
 <main class="mx-responsive min-h-svh py-32">
 	<AdminPageHeader title="Events" description="Overblik over alle events.">
-		<Button href="/admin/events/create">Tilføj</Button>
+		{#if await hasPermissions(["events:edit"])}
+			<Button href="/admin/events/create">Tilføj</Button>
+		{/if}
 	</AdminPageHeader>
 
 	<div>

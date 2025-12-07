@@ -14,6 +14,7 @@
 	import Card from "$lib/components/Card.svelte";
 	import { getToastContext } from "../../../components/toaster/toaster.svelte.ts";
 	import { goto } from "$app/navigation";
+	import { hasPermissions } from "../../../features/auth/auth.remote.ts";
 
 	const DEFAULT_CHANGEOVER_MINUTES = 15;
 	const DEFAULT_CONCERT_DURATION = 40;
@@ -39,11 +40,11 @@
 	const { items: artists } = $derived(await getArtists(undefined));
 	const { items: venues } = $derived(await getVenues(undefined));
 
-	const isEditable = true;
-
 	const toaster = getToastContext();
 
 	let coverInput = $state<HTMLInputElement>();
+
+	const disabled = $derived(!(await hasPermissions(["events:edit"])));
 
 	$effect(() => {
 		if (rest.variant === "create") return;
@@ -114,9 +115,16 @@
 	{/if}
 
 	<FormField issues={cover.issues()?.map((i) => i.message)} class="mb-16">
-		<input bind:this={coverInput} {...rest.form.fields.cover.as("file")} class="hidden" />
+		<input
+			bind:this={coverInput}
+			{...rest.form.fields.cover.as("file")}
+			class="hidden"
+			{disabled}
+		/>
 		<ImagePreview src={cover.value() ? URL.createObjectURL(cover.value()) : rest.event?.cover} />
-		<Button type="button" variant="secondary" onclick={() => coverInput?.click()}>Vælg...</Button>
+		{#if !disabled}
+			<Button type="button" variant="secondary" onclick={() => coverInput?.click()}>Vælg...</Button>
+		{/if}
 	</FormField>
 
 	<section class="mb-16">
@@ -126,38 +134,46 @@
 			<fieldset class="flex flex-col gap-4">
 				<div class="flex gap-2">
 					<FormField issues={title.issues()?.map((i) => i.message)} class="w-full">
-						<Input {...title.as("text")} placeholder="Eventtitel" />
+						<Input {...title.as("text")} placeholder="Eventtitel" {disabled} />
 					</FormField>
 					<FormField issues={ticketUrl.issues()?.map((i) => i.message)} class="w-min min-w-72">
-						<Input {...ticketUrl.as("url")} placeholder="Billet-URL" />
+						<Input {...ticketUrl.as("url")} placeholder="Billet-URL" {disabled} />
 					</FormField>
 				</div>
 			</fieldset>
 
 			<div class="mb-4 flex gap-4">
 				<FormField issues={title.issues()?.map((i) => i.message)}>
-					<Select {...venueId.as("select")}>
+					<Select {...venueId.as("select")} {disabled}>
 						{#each venues as venue}
 							<option value={venue.id}>{venue.name}</option>
 						{/each}
 					</Select>
 				</FormField>
 
-				<div class="flex gap-2">
-					<Button variant="secondary" type="button" onclick={() => getVenues(undefined).refresh()}>
-						Refresh
-					</Button>
-					<Button href="/admin/venues/create" target="_blank" class="shrink-0">+ Tilføj</Button>
-				</div>
+				{#if await hasPermissions(["venues:edit"])}
+					<div class="flex gap-2">
+						<Button
+							variant="secondary"
+							type="button"
+							onclick={() => getVenues(undefined).refresh()}
+						>
+							Refresh
+						</Button>
+						<Button href="/admin/venues/create" target="_blank" class="shrink-0">+ Tilføj</Button>
+					</div>
+				{/if}
 			</div>
 
-			<label for="" class="mb-4 flex items-center gap-4">
-				<input {...isPublic.as("checkbox")} />
-				Offentlig
-			</label>
+			{#if !disabled}
+				<label for="" class="mb-4 flex items-center gap-4">
+					<input {...isPublic.as("checkbox")} />
+					Offentlig
+				</label>
+			{/if}
 
 			<FormField issues={description.issues()?.map((i) => i.message)}>
-				<Input {...description.as("text")} placeholder="Beskrivelse" />
+				<Input {...description.as("text")} placeholder="Beskrivelse" {disabled} />
 			</FormField>
 		</div>
 	</section>
@@ -175,6 +191,7 @@
 									"hidden",
 									rest.form.fields.concerts[i].id.value()
 								)}
+								{disabled}
 							/>
 						{/if}
 
@@ -183,7 +200,11 @@
 								issues={rest.form.fields.concerts[i].artistId.issues()?.map((i) => i.message)}
 								class="mb-4"
 							>
-								<Select class="w-full" {...rest.form.fields.concerts[i].artistId.as("select")}>
+								<Select
+									class="w-full"
+									{...rest.form.fields.concerts[i].artistId.as("select")}
+									{disabled}
+								>
 									{#each artists as artist}
 										<option selected value={artist.id}>{artist.name}</option>
 									{/each}
@@ -197,7 +218,9 @@
 									class="h-min"
 									onclick={() => getArtists(undefined).refresh()}>Refresh</Button
 								>
-								<Button href="/admin/artists/create" target="_blank" class="h-min">+</Button>
+								{#if await hasPermissions(["artists:edit"])}
+									<Button href="/admin/artists/create" target="_blank" class="h-min">+</Button>
+								{/if}
 							</div>
 						</div>
 
@@ -205,7 +228,7 @@
 							<FormField
 								issues={rest.form.fields.concerts[i].fromDate.issues()?.map((i) => i.message)}
 							>
-								<Input {...rest.form.fields.concerts[i].fromDate.as("datetime-local")} />
+								<Input {...rest.form.fields.concerts[i].fromDate.as("datetime-local")} {disabled} />
 							</FormField>
 
 							<p>&gt;</p>
@@ -213,13 +236,15 @@
 							<FormField
 								issues={rest.form.fields.concerts[i].toDate.issues()?.map((i) => i.message)}
 							>
-								<Input {...rest.form.fields.concerts[i].toDate.as("datetime-local")} />
+								<Input {...rest.form.fields.concerts[i].toDate.as("datetime-local")} {disabled} />
 							</FormField>
 						</fieldset>
 					</Card>
 				</li>
 			{/each}
-			<Button type="button" variant="secondary" onclick={addConcert}>Tilføj</Button>
+			{#if !disabled}
+				<Button type="button" variant="secondary" onclick={addConcert}>Tilføj</Button>
+			{/if}
 		</ul>
 	</section>
 
@@ -231,7 +256,7 @@
 	</p>
 
 	<div class="flex flex-col gap-2">
-		{#if isEditable}
+		{#if await hasPermissions(["events:edit"])}
 			{#if rest.variant === "edit"}
 				<Button
 					type="button"
@@ -242,6 +267,7 @@
 					Slet
 				</Button>
 			{/if}
+
 			<Button class="w-full" type="submit">
 				{#if isPublic.value() === true}
 					Offentligør

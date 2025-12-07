@@ -3,6 +3,7 @@
 	import Button from "$lib/components/ui/Button.svelte";
 	import AdminPageHeader from "$lib/components/AdminPageHeader.svelte";
 	import EventListEntry from "$lib/features/events/components/EventListEntry.svelte";
+	import { hasPermissions } from "$lib/features/auth/auth.remote";
 
 	const { items: upcomingEvents } = await getUpcomingEvents(undefined);
 </script>
@@ -16,7 +17,9 @@
 	<div class="flex flex-col gap-16">
 		<div>
 			<div class="mb-8 flex gap-2">
-				<Button href="/admin/events/create">+ Tilføj</Button>
+				{#if await hasPermissions(["events:edit"])}
+					<Button href="/admin/events/create">+ Tilføj</Button>
+				{/if}
 				<Button href="/admin/events" variant="secondary">Vis alle</Button>
 			</div>
 			{#if upcomingEvents.length > 0}
