@@ -3,7 +3,7 @@
 	import FormField from "$lib/components/FormField.svelte";
 	import Button from "$lib/components/ui/Button.svelte";
 	import Input from "$lib/components/ui/Input.svelte";
-	import { login } from "$lib/features/auth.remote";
+	import { login } from "$lib/features/auth/auth.remote";
 </script>
 
 <main class="flex min-h-svh items-center justify-center">

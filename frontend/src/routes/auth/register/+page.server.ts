@@ -1,4 +1,4 @@
-import { registerForm, type RegisterForm } from "$lib/features/auth";
+import { registerForm, type RegisterForm } from "$lib/features/auth/auth";
 import { fail } from "@sveltejs/kit";
 import type { Actions } from "./$types";
 import { flattenError } from "zod";
