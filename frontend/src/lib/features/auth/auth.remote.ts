@@ -24,10 +24,38 @@ export const register = form(registerForm, async (data) => {
 	await locals.pb.collection("users").create({ ...data, teams: [memberTeamId] });
 });
 
-export const getUser = query(id, async (memberId) => {
+export const getAuthenticatedMember = query(() => {
 	const { locals } = getRequestEvent();
-	const record = await locals.pb.collection("usersr").getOne(memberId);
-	return userSchema.parse(record);
+
+	if (!locals.pb.authStore.isValid || !locals.pb.authStore.record) return null;
+
+	const member = getMember(locals.pb.authStore.record.id);
+	return member;
+});
+
+export const hasPermissions = query(permissionType.array(), async (permissions) => {
+	const member = await getAuthenticatedMember();
+	if (!member) return false;
+
+	const memberPermissions = member.teams.flatMap((teams) =>
+		teams.permissions.flatMap((permission) => permission.name)
+	);
+
+	return permissions.every((permission) =>
+		memberPermissions.some((memberPermission) => memberPermission === permission)
+	);
+});
+
+export const getMember = query(id, async (memberId) => {
+	const { locals } = getRequestEvent();
+	const record = await locals.pb.collection("users").getOne<PBUser>(memberId, {
+		expand: "teams,teams.permissions"
+	});
+	return memberSchema.parse({
+		...record,
+		avatar: record.avatar ? createFileUrl("users", record.id, record.avatar) : undefined,
+		teams: record.expand?.teams.map((team) => ({ ...team, permissions: team.expand?.permissions }))
+	});
 });
 
 export const login = form(loginForm, async ({ email, password }) => {
@@ -36,6 +64,7 @@ export const login = form(loginForm, async ({ email, password }) => {
 	await locals.pb.collection("users").authWithPassword(email, password);
 	return redirect(302, "/admin/dashboard");
 });
+
 export const getMembers = query(queryOptions.optional(), async (opts) => {
 	const { locals } = getRequestEvent();
 
@@ -60,3 +89,29 @@ export const getMembers = query(queryOptions.optional(), async (opts) => {
 	return { items: members, ...rest };
 });
 
+export const getTeam = query(id, async (id) => {
+	const { locals } = getRequestEvent();
+
+	const team = locals.pb.collection("teams").getOne<PBTeam>(id);
+	return teamSchema.parse(team);
+});
+
+export const getTeams = query(queryOptions.optional(), async (opts) => {
+	const { locals } = getRequestEvent();
+
+	const { items, ...rest } = await locals.pb
+		.collection("teams")
+		.getList<PBTeam>(opts?.page, opts?.perPage, {
+			sort: "name",
+			expand: "permissions"
+		});
+
+	const teams = teamSchema.array().parse(
+		items.map((record) => ({
+			...record,
+			permissions: record.expand?.permissions
+		}))
+	);
+
+	return { items: teams, ...rest };
+});

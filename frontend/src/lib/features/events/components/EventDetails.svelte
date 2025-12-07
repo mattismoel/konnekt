@@ -3,6 +3,7 @@
 	import { format } from "date-fns";
 	import Button from "../../../components/ui/Button.svelte";
 	import { DATE_FORMAT } from "$lib/time";
+	import { getAuthenticatedMember, hasPermissions } from "$lib/features/auth/auth.remote";
 
 	type Props = {
 		event: Event;
@@ -12,6 +13,8 @@
 
 	let { event, prefix, active }: Props = $props();
 	let fromDate = $derived(earliestConcert(event.concerts)?.fromDate);
+
+	const authenticatedMember = $derived(await getAuthenticatedMember());
 
 	const genres = $derived(
 		eventGenres(event)
@@ -81,6 +84,10 @@
 				</Button>
 				{#if !active}
 					<Button href="/events/{event.id}" variant="secondary" class="w-full">Læs mere</Button>
+				{/if}
+
+				{#if await hasPermissions(["events:edit"])}
+					<Button href="/admin/events/edit/{event.id}" variant="secondary">Redigér</Button>
 				{/if}
 			</div>
 		</div>

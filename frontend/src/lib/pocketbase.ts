@@ -1,5 +1,4 @@
 import { PUBLIC_POCKETBASE_URL } from "$env/static/public";
-import type { RecordModel } from "pocketbase";
 import { z, ZodType } from "zod";
 
 const pbId = z.string().nonempty();
@@ -8,6 +7,39 @@ const baseFields = z.object({
 	id: pbId,
 	created: z.coerce.date(),
 	updated: z.coerce.date()
+});
+
+export const pbPermission = z.object({
+	...baseFields.shape,
+	name: z.string().nonempty(),
+	description: z.string().optional()
+});
+
+export const pbTeam = z.object({
+	...baseFields.shape,
+	name: z.string().nonempty(),
+	description: z.string().optional(),
+	permissions: pbId.array(),
+	expand: z
+		.object({
+			permissions: pbPermission.array()
+		})
+		.optional()
+});
+
+export const pbUser = z.object({
+	...baseFields.shape,
+	email: z.email().optional(),
+	firstName: z.string().nonempty(),
+	lastName: z.string().nonempty(),
+	avatar: z.string().optional(),
+	teams: pbId.array().min(1),
+	approved: z.boolean(),
+	expand: z
+		.object({
+			teams: pbTeam.array().min(1)
+		})
+		.optional()
 });
 
 export const pbVenue = z.object({
@@ -102,3 +134,6 @@ export type PBVenue = z.infer<typeof pbVenue>;
 export type PBArtist = z.infer<typeof pbArtist>;
 export type PBGenre = z.infer<typeof pbGenre>;
 export type PBSocial = z.infer<typeof pbSocial>;
+
+export type PBUser = z.infer<typeof pbUser>;
+export type PBTeam = z.infer<typeof pbTeam>;
