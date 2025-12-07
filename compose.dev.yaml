@@ -18,18 +18,18 @@ services:
       - ./backend/pb/pb_data:/pb/pb_data
       - ./backend/pb/pb_migrations:/pb/pb_migrations
     ports:
-      - 8080:8080
-  caddy:
-    image: caddy:latest
-    ports:
-      - 80:80
-      - 443:443
-      - 443:443/udp
-    volumes:
-      - ./Caddyfile.dev:/etc/caddy/Caddyfile
-    depends_on:
-      - frontend
-      - backend
+      - 8090:8090
+  # caddy:
+  #   image: caddy:latest
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #     - 443:443/udp
+  #   volumes:
+  #     - ./Caddyfile.dev:/etc/caddy/Caddyfile
+  #   depends_on:
+  #     - frontend
+  #     - backend
 
 volumes:
   pb_data:
