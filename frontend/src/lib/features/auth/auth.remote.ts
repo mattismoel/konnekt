@@ -1,18 +1,9 @@
 import { form, getRequestEvent, query } from "$app/server";
-import {
-	loginForm,
-	registerForm,
-	teamSchema,
-	memberSchema,
-	teamType,
-	permissionSchema,
-	permissionType
-} from "./auth";
+import { loginForm, registerForm, teamSchema, memberSchema, permissionType } from "./auth";
 import { id } from "$lib/model";
 import { redirect } from "@sveltejs/kit";
 import { queryOptions } from "$lib/query";
 import { createFileUrl, type PBTeam, type PBUser } from "$lib/pocketbase";
-import z from "zod";
 
 export const register = form(registerForm, async (data) => {
 	const { locals } = getRequestEvent();

@@ -18,7 +18,7 @@ export const eventSchema = z.object({
 	cover: z.url(),
 	venue: venueSchema,
 	concerts: concertSchema.array(),
-	isPublic: z.boolean(),
+	isPublic: z.boolean()
 });
 
 export type Event = z.infer<typeof eventSchema>;

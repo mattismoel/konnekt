@@ -6,9 +6,9 @@ import { parse, startOfToday } from "date-fns";
 import { getArtist } from "../artists/artist.remote";
 import { concertSchema, eventSchema, type Event } from "./event";
 import { getVenue } from "../venues/venue.remote";
-import { z } from "zod";
 import { INPUT_DATETIME_FORMAT } from "$lib/time";
 import { redirect } from "@sveltejs/kit";
+import z from "zod";
 
 const concertForm = z.object({
 	artistId: id,

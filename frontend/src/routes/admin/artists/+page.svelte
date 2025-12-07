@@ -12,7 +12,6 @@
 	} from "$lib/features/artists/artist.remote";
 	import ArtistListEntry from "$lib/features/artists/components/ArtistListEntry.svelte";
 	import { hasPermissions } from "$lib/features/auth/auth.remote";
-	import { ClientResponseError } from "pocketbase";
 
 	const upcomingArtists = await getUpcomingArtists();
 
