@@ -4,29 +4,43 @@ import { createFileUrl, type PBArtist, type PBGenre } from "$lib/pocketbase";
 import { queryOptions } from "$lib/query";
 import z from "zod";
 import { artistSchema, genreSchema } from "./artist";
+import { getPreviousEvents, getUpcomingEvents } from "../events/event.remote";
+
+const genreForm = z.object({
+	name: z
+		.string()
+		.nonempty()
+		.transform((v) => v.charAt(0).toUpperCase() + v.slice(1))
+});
 
 const artistForm = z.object({
 	name: z.string().nonempty(),
 	description: z.string().nonempty(),
 	genreIds: id.array().min(1),
-	previewUrl: z.url().optional(),
-})
+	previewUrl: z.url().optional()
+});
 
 const createArtistForm = artistForm.extend({
 	cover: z.file().max(5_000_000).mime(["image/png", "image/jpeg", "image/webp"]),
-	socials: z.object({
-		url: z.url(),
-	}).array(),
-})
+	socials: z
+		.object({
+			url: z.url()
+		})
+		.array()
+		.optional()
+});
 
 const editArtistForm = artistForm.extend({
 	artistId: id,
 	cover: z.file().max(5_000_000).mime(["image/png", "image/jpeg", "image/webp"]).optional(),
-	socials: z.object({
-		url: z.url(),
-		id: id.optional(),
-	}).array().optional()
-})
+	socials: z
+		.object({
+			url: z.url(),
+			id: id.optional()
+		})
+		.array()
+		.optional()
+});
 
 export const getArtist = query(id, async (artistId) => {
 	const { locals } = getRequestEvent();
@@ -72,56 +86,86 @@ export const getArtists = query(queryOptions.optional(), async (opts) => {
 });
 
 export const createArtist = form(createArtistForm, async (data) => {
-	const { locals } = getRequestEvent()
+	const { locals } = getRequestEvent();
 
-	const socialIds: string[] = []
+	const socialIds: string[] = [];
 	if (data.socials) {
-		await Promise.all(data.socials.map(async social => {
-			const { id } = await locals.pb.collection("socials").create({ url: social.url })
-			socialIds.push(id)
-		}))
+		await Promise.all(
+			data.socials.map(async (social) => {
+				const { id } = await locals.pb.collection("socials").create({ url: social.url });
+				socialIds.push(id);
+			})
+		);
 	}
 
 	await locals.pb.collection("artists").create({
 		...data,
 		socials: socialIds,
-		genres: data.genreIds,
-	})
-})
+		genres: data.genreIds
+	});
+});
 
 export const editArtist = form(editArtistForm, async (data) => {
-	const { locals } = getRequestEvent()
+	const { locals } = getRequestEvent();
 
-	console.log(data)
-
-	let socialIds = data.socials?.flatMap(social => social.id ?? [])
+	let socialIds = data.socials?.flatMap((social) => social.id ?? []);
 
 	if (data.socials) {
-		await Promise.all(data.socials?.map(async social => {
-			console.log("social", social)
-			if (social.id) {
-				await locals.pb.collection("socials").update(social.id, { url: social.url })
-				return
-			}
+		await Promise.all(
+			data.socials?.map(async (social) => {
+				if (social.id) {
+					await locals.pb.collection("socials").update(social.id, { url: social.url });
+					return;
+				}
 
-			const { id } = await locals.pb.collection("socials").create({ url: social.url })
-			socialIds?.push(id)
-		}))
+				const { id } = await locals.pb.collection("socials").create({ url: social.url });
+				socialIds?.push(id);
+			})
+		);
 	}
-
 
 	await locals.pb.collection("artists").update(data.artistId, {
 		...data,
 		genres: data.genreIds,
-		socials: socialIds,
-	})
-})
+		socials: socialIds
+	});
+});
+
+export const getUpcomingArtists = query(async () => {
+	const { items: upcomingEvents } = await getUpcomingEvents(undefined);
+
+	const artists = upcomingEvents.flatMap((event) =>
+		event.concerts.flatMap((concert) => concert.artist)
+	);
+
+	return artists;
+});
+
+export const getPreviousArtists = query(async () => {
+	const { items: previousEvents } = await getPreviousEvents(undefined);
+
+	const artists = previousEvents.flatMap((event) =>
+		event.concerts.flatMap((concert) => concert.artist)
+	);
+
+	return artists;
+});
 
 export const getGenres = query(async () => {
-	const { locals } = getRequestEvent()
+	const { locals } = getRequestEvent();
 
-	const records = await locals.pb.collection("genres").getFullList<PBGenre>()
+	const records = await locals.pb.collection("genres").getFullList<PBGenre>();
 
-	const genres = genreSchema.array().parse(records)
-	return genres
-})
+	const genres = genreSchema.array().parse(records);
+	return genres;
+});
+
+export const createGenre = form(genreForm, async (data) => {
+	const { locals } = getRequestEvent();
+	await locals.pb.collection("genres").create(data);
+});
+
+export const deleteGenre = form(z.object({ id: id }), async (data) => {
+	const { locals } = getRequestEvent();
+	await locals.pb.collection("genres").delete(data.id);
+});
