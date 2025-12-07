@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Event } from "$lib/features/event";
+	import type { Event } from "$lib/features/events/event";
 	import EventEntry from "./EventEntry.svelte";
 
 	type Props = {

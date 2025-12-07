@@ -1,7 +1,7 @@
 import z from "zod";
-import { artistSchema } from "./artist";
+import { artistSchema } from "../artists/artist";
 import { baseFields } from "$lib/model";
-import { venueSchema } from "./venue";
+import { venueSchema } from "../venues/venue";
 
 export const concertSchema = z.object({
 	...baseFields.shape,
@@ -17,7 +17,8 @@ export const eventSchema = z.object({
 	ticketUrl: z.url(),
 	cover: z.url(),
 	venue: venueSchema,
-	concerts: concertSchema.array()
+	concerts: concertSchema.array(),
+	isPublic: z.boolean(),
 });
 
 export type Event = z.infer<typeof eventSchema>;

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Concert, Event } from "$lib/features/event";
+	import type { Concert, Event } from "$lib/features/events/event";
 	import { addHours, differenceInMinutes, format, startOfHour } from "date-fns";
-	import Button from "./ui/Button.svelte";
+	import Button from "../../../components/ui/Button.svelte";
 	import { generateGoogleCalendarEventUrl } from "$lib/google-calendar";
 
 	type Props = {

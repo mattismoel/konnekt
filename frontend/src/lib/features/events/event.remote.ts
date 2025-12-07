@@ -3,48 +3,31 @@ import { id } from "$lib/model";
 import { createFileUrl, createListResult, type PBConcert, type PBEvent } from "$lib/pocketbase";
 import { queryOptions } from "$lib/query";
 import { parse, startOfToday } from "date-fns";
-import { getArtist } from "./artist.remote";
+import { getArtist } from "../artists/artist.remote";
 import { concertSchema, eventSchema, type Event } from "./event";
-import { getVenue } from "./venue.remote";
+import { getVenue } from "../venues/venue.remote";
 import { z } from "zod";
 import { INPUT_DATETIME_FORMAT } from "$lib/time";
-
-const concertForm = z.object({
-	artistId: id,
-	fromDate: z.string(),
-	toDate: z.string()
-});
-
-const eventForm = z.object({
-	title: z.string().nonempty(),
-	description: z.string().nonempty(),
-	ticketUrl: z.url(),
-	venueId: id,
-	concerts: concertForm.array().min(1),
-	isPublic: z.coerce.boolean<boolean>()
-});
-
-const createEventForm = eventForm.extend({
-	cover: z.file().max(5_000_000)
-});
-
-const editEventForm = eventForm
-	.extend({
-		cover: z.union([z.file().max(5_000_000), z.undefined()])
-	})
-	.partial();
-
-export type ConcertForm = z.infer<typeof concertForm>;
-
 export const getUpcomingEvents = query(queryOptions.optional(), async (opts) => {
+	const { locals } = getRequestEvent()
+
+	const filterStr = locals.pb.filter("concerts.fromDate >= {:today}", {
+		today: startOfToday().toISOString()
+	})
+
+	const result = await getEvents({
+		filter: opts?.filter ? [filterStr, opts?.filter].join("&&") : filterStr
+	})
+
+	return result
+})
+
+export const getEvents = query(queryOptions.optional(), async (opts) => {
 	const { locals } = getRequestEvent();
 
 	const { items, ...rest } = await locals.pb
 		.collection("events")
 		.getList<PBEvent>(opts?.page, opts?.perPage, {
-			filter: locals.pb.filter("concerts.fromDate > {:date}", {
-				date: startOfToday().toISOString()
-			}),
 			...opts
 		});
 
@@ -127,31 +110,8 @@ export const getEvent = query(id, async (eventId) => {
 		cover: createFileUrl("events", record.id, record.cover)
 	});
 
+	console.log(event)
+
 	return event;
 });
 
-export const createEvent = form(createEventForm, async (data) => {
-	const { locals } = getRequestEvent()
-
-	console.log(data)
-
-	let concertIds: string[] = []
-
-	await Promise.all(data.concerts.map(async concert => {
-		const data = {
-			fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
-			toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
-			artist: concert.artistId,
-		}
-
-		const { id } = await locals.pb.collection("concerts").create(data)
-
-		concertIds.push(id)
-	}))
-
-	const postData = { ...data, venue: data.venueId, concerts: concertIds }
-
-	await locals.pb.collection("events").create(postData)
-});
-
-export const editEvent = form(editEventForm, async (data) => { });

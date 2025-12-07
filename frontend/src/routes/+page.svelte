@@ -10,13 +10,14 @@
 	import { Randomiser } from "$lib/random.svelte";
 	import Button from "$lib/components/ui/Button.svelte";
 	import SponsorDisplay from "$lib/components/SponsorDisplay.svelte";
-	import EventGrid from "$lib/components/EventGrid.svelte";
+	import EventGrid from "$lib/features/events/components/EventGrid.svelte";
 	import { getLandingImages } from "$lib/features/content/landing.remote.js";
+	import { getUpcomingEvents } from "$lib/features/events/event.remote.js";
 
-	let { data } = $props();
 	const { items: landingImages } = await getLandingImages(undefined);
+	const { items: upcomingEvents } = await getUpcomingEvents(undefined);
 
-	const randomiser = new Randomiser(data.landingImages);
+	const randomiser = new Randomiser(landingImages);
 
 	$effect(() => {
 		const interval = setInterval(() => {
@@ -65,10 +66,10 @@
 		<div class="z-10 flex w-full flex-col-reverse gap-2 sm:flex-row">
 			<Button href="/about" variant="secondary" class="w-full sm:w-fit">Læs mere</Button>
 			<Button
-				href={data.upcomingEvents.length > 0 ? "/events" : "/artists"}
+				href={upcomingEvents.length > 0 ? "/events" : "/artists"}
 				class="group w-full items-center gap-2 sm:w-fit"
 			>
-				{#if data.upcomingEvents.length > 0}
+				{#if upcomingEvents.length > 0}
 					Se events
 				{:else}
 					Se kunstnere
@@ -128,10 +129,10 @@
 			<h1 class="font-heading mb-16 text-center text-4xl font-bold">Mød holdet</h1>
 			<!-- <TeamDisplay allTeams={teams} {members} /> -->
 		</section>
-		{#if data.upcomingEvents.length > 0}
+		{#if upcomingEvents.length > 0}
 			<section>
 				<h1 class="font-heading mb-8 text-4xl font-bold">Ses vi her?</h1>
-				<EventGrid events={data.upcomingEvents} />
+				<EventGrid events={upcomingEvents} />
 			</section>
 		{/if}
 	</section>

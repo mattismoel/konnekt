@@ -1,8 +1,9 @@
-import { getRequestEvent, query } from "$app/server";
+import { form, getRequestEvent, query } from "$app/server";
 import { id } from "$lib/model";
-import { createFileUrl, type PBArtist } from "$lib/pocketbase";
+import { createFileUrl, type PBArtist, type PBGenre } from "$lib/pocketbase";
 import { queryOptions } from "$lib/query";
-import { artistSchema } from "./artist";
+import z from "zod";
+import { artistSchema, genreSchema } from "./artist";
 
 export const getArtist = query(id, async (artistId) => {
 	const { locals } = getRequestEvent();

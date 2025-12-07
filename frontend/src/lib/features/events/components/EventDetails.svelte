@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { earliestConcert, eventGenres, type Event } from "$lib/features/event";
+	import { earliestConcert, eventGenres, type Event } from "$lib/features/events/event";
 	import { format } from "date-fns";
-	import Button from "./ui/Button.svelte";
+	import Button from "../../../components/ui/Button.svelte";
 	import { DATE_FORMAT } from "$lib/time";
 
 	type Props = {

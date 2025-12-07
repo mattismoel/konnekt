@@ -2,9 +2,9 @@
 	import AdminPageHeader from "$lib/components/AdminPageHeader.svelte";
 	import SearchBar from "$lib/components/SearchBar.svelte";
 	import Button from "$lib/components/ui/Button.svelte";
-	import type { Artist } from "$lib/features/artist";
-	import { type Event } from "$lib/features/event";
-	import { getPreviousEvents, getUpcomingEvents } from "$lib/features/event.remote";
+	import type { Artist } from "$lib/features/artists/artist";
+	import { type Event } from "$lib/features/events/event";
+	import { getPreviousEvents, getUpcomingEvents } from "$lib/features/events/event.remote";
 	import { EntrySearcher } from "$lib/search.svelte";
 	import { DATETIME_FORMAT } from "$lib/time.js";
 	import { format } from "date-fns";

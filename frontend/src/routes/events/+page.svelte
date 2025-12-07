@@ -1,10 +1,10 @@
 <script lang="ts">
-	import EventDetails from "$lib/components/EventDetails.svelte";
-	import EventGrid from "$lib/components/EventGrid.svelte";
+	import EventDetails from "$lib/features/events/components/EventDetails.svelte";
+	import EventGrid from "$lib/features/events/components/EventGrid.svelte";
+	import { getUpcomingEvents } from "$lib/features/events/event.remote.js";
 
-	let { data } = $props();
-
-	const eventNames = $derived(data.events.map((e) => e.title).join(", "));
+	const { items: events } = await getUpcomingEvents({ filter: "isPublic=true" });
+	const eventNames = $derived(events.map((e) => e.title).join(", "));
 </script>
 
 <svelte:head>
@@ -15,14 +15,14 @@
 	/>
 </svelte:head>
 
-{#if data.events.length > 0}
+{#if events.length > 0}
 	<main class="min-h-svh">
-		<EventDetails event={data.events[0]} prefix="Næste event:" />
+		<EventDetails event={events[0]} prefix="Næste event:" />
 
 		<div class="border-t border-t-zinc-900">
 			<div class="mx-responsive flex flex-col pt-16 pb-16 md:pt-16">
 				<h1 class="font-heading mb-8 text-4xl font-bold text-text-light">Kommende events</h1>
-				<EventGrid events={data.events} />
+				<EventGrid {events} />
 			</div>
 		</div>
 	</main>

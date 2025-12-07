@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { earliestConcert, type Event } from "$lib/features/event";
+	import { earliestConcert, type Event } from "$lib/features/events/event";
 	import { DATETIME_FORMAT } from "$lib/time";
 	import { format } from "date-fns";
 
