@@ -1,22 +1,27 @@
 import { form, getRequestEvent, query } from "$app/server";
-import { loginForm, registerForm, userSchema } from "./auth";
+import {
+	loginForm,
+	registerForm,
+	teamSchema,
+	memberSchema,
+	teamType,
+	permissionSchema,
+	permissionType
+} from "./auth";
 import { id } from "$lib/model";
 import { redirect } from "@sveltejs/kit";
+import { queryOptions } from "$lib/query";
+import { createFileUrl, type PBTeam, type PBUser } from "$lib/pocketbase";
+import z from "zod";
 
 export const register = form(registerForm, async (data) => {
 	const { locals } = getRequestEvent();
 
-	const formData = new FormData();
-	formData.append("email", data.email);
-	formData.append("firstName", data.firstName);
-	formData.append("lastName", data.lastName);
-	formData.append("avatar", data.avatar);
-	formData.append("password", data.password);
-	formData.append("passwordConfirm", data.passwordConfirm);
+	const { id: memberTeamId } = await locals.pb
+		.collection("teams")
+		.getFirstListItem<PBTeam>(locals.pb.filter("name = {:name}", { name: "member" }));
 
-	await locals.pb.collection("users").create(formData, {
-		body: formData
-	});
+	await locals.pb.collection("users").create({ ...data, teams: [memberTeamId] });
 });
 
 export const getUser = query(id, async (memberId) => {
