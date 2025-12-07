@@ -8,14 +8,18 @@
 	import { DATETIME_FORMAT } from "$lib/time.js";
 	import { format } from "date-fns";
 
-	const event = await getEvent(page.params.id!);
-	let { id, title, description, concerts } = event;
+	let { params } = $props();
+	const event = $derived(await getEvent(params.id));
+
+	let { id, title, description, concerts } = $derived(event);
 
 	const fromDate = $derived(earliestConcert(concerts)?.fromDate);
 
-	const { items: upcomingEvents } = await getUpcomingEvents({
-		filter: `isPublic=true && id!="${id}"`
-	});
+	const { items: upcomingEvents } = $derived(
+		await getUpcomingEvents({
+			filter: `isPublic=true && id!="${params.id}"`
+		})
+	);
 </script>
 
 <svelte:head>
