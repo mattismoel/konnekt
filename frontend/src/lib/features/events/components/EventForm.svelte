@@ -243,13 +243,6 @@
 		</ul>
 	</section>
 
-	<p>
-		{rest.form.fields
-			.allIssues()
-			?.map((i) => `${i.path}, ${i.message}`)
-			.join(", ")}
-	</p>
-
 	<div class="flex flex-col gap-2">
 		{#if await hasPermissions(["events:edit"])}
 			{#if rest.variant === "edit"}
