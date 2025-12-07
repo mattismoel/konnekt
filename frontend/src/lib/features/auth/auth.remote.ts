@@ -36,3 +36,27 @@ export const login = form(loginForm, async ({ email, password }) => {
 	await locals.pb.collection("users").authWithPassword(email, password);
 	return redirect(302, "/admin/dashboard");
 });
+export const getMembers = query(queryOptions.optional(), async (opts) => {
+	const { locals } = getRequestEvent();
+
+	const { items, ...rest } = await locals.pb
+		.collection("users")
+		.getList<PBUser>(opts?.page, opts?.perPage, {
+			sort: "firstName",
+			expand: "teams,teams.permissions"
+		});
+
+	const members = memberSchema.array().parse(
+		items.map((member) => ({
+			...member,
+			avatar: member.avatar ? createFileUrl("users", member.id, member.avatar) : undefined,
+			teams: member.expand?.teams.map((team) => ({
+				...team,
+				permissions: team.expand?.permissions
+			}))
+		}))
+	);
+
+	return { items: members, ...rest };
+});
+

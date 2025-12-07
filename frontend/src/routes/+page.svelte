@@ -13,9 +13,12 @@
 	import EventGrid from "$lib/features/events/components/EventGrid.svelte";
 	import { getLandingImages } from "$lib/features/content/landing.remote.js";
 	import { getUpcomingEvents } from "$lib/features/events/event.remote.js";
+	import MemberDisplay from "$lib/components/MemberDisplay.svelte";
+	import { getMembers } from "$lib/features/auth/auth.remote";
 
 	const { items: landingImages } = await getLandingImages(undefined);
 	const { items: upcomingEvents } = await getUpcomingEvents(undefined);
+	const { items: members } = await getMembers(undefined);
 
 	const randomiser = new Randomiser(landingImages);
 
@@ -127,7 +130,7 @@
 		</section>
 		<section>
 			<h1 class="font-heading mb-16 text-center text-4xl font-bold">Mød holdet</h1>
-			<!-- <TeamDisplay allTeams={teams} {members} /> -->
+			<MemberDisplay {members} />
 		</section>
 		{#if upcomingEvents.length > 0}
 			<section>
