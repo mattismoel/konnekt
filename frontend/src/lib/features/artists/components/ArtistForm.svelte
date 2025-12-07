@@ -115,7 +115,7 @@
 	<section class="mb-16">
 		<div class="mb-4 flex justify-between">
 			<h1 class="text-2xl font-bold">Genrer</h1>
-			<Button>+ Tilføj</Button>
+			<Button href="/admin/genres">+ Tilføj</Button>
 		</div>
 
 		<FormField issues={genreIds.issues()?.map((i) => i.message)}>
