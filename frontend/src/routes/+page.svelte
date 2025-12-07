@@ -11,8 +11,10 @@
 	import Button from "$lib/components/ui/Button.svelte";
 	import SponsorDisplay from "$lib/components/SponsorDisplay.svelte";
 	import EventGrid from "$lib/components/EventGrid.svelte";
+	import { getLandingImages } from "$lib/features/content/landing.remote.js";
 
 	let { data } = $props();
+	const { items: landingImages } = await getLandingImages(undefined);
 
 	const randomiser = new Randomiser(data.landingImages);
 
@@ -36,7 +38,7 @@
 	>
 		<div class="absolute h-full w-full">
 			<GlowCursor class="z-10" />
-			{#each data.landingImages as { image: src, id }, i}
+			{#each landingImages as { image: src, id }, i}
 				<img
 					{src}
 					alt="Baggrundsbillede {i}"
