@@ -16,7 +16,6 @@
 			<p
 				class={[
 					"mb-2 text-2xl font-bold text-text-light",
-
 					isBefore(event.concerts[0].fromDate, startOfToday()) && "line-through"
 				]}
 			>
