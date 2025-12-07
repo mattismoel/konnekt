@@ -8,6 +8,40 @@ import { concertSchema, eventSchema, type Event } from "./event";
 import { getVenue } from "../venues/venue.remote";
 import { z } from "zod";
 import { INPUT_DATETIME_FORMAT } from "$lib/time";
+
+const concertForm = z.object({
+	artistId: id,
+	fromDate: z.string(),
+	toDate: z.string()
+});
+
+const createConcertForm = concertForm
+
+const editConcertForm = concertForm.extend({
+	id: id.optional()
+})
+
+const eventForm = z.object({
+	title: z.string().nonempty(),
+	description: z.string().nonempty(),
+	ticketUrl: z.url(),
+	venueId: id,
+	isPublic: z.coerce.boolean<boolean>()
+});
+
+const createEventForm = eventForm.extend({
+	concerts: createConcertForm.array().min(1),
+	cover: z.file().max(5_000_000)
+});
+
+const editEventForm = eventForm.extend({
+	eventId: id,
+	concerts: editConcertForm.array().min(1),
+	cover: z.file().max(5_000_000).optional()
+})
+
+export type ConcertForm = z.infer<typeof concertForm>;
+
 export const getUpcomingEvents = query(queryOptions.optional(), async (opts) => {
 	const { locals } = getRequestEvent()
 
@@ -115,3 +149,54 @@ export const getEvent = query(id, async (eventId) => {
 	return event;
 });
 
+export const createEvent = form(createEventForm, async (data) => {
+	const { locals } = getRequestEvent()
+
+	console.log(data)
+
+	let concertIds: string[] = []
+
+	await Promise.all(data.concerts.map(async concert => {
+		const data = {
+			fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
+			toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
+			artist: concert.artistId,
+		}
+
+		const { id } = await locals.pb.collection("concerts").create(data)
+
+		concertIds.push(id)
+	}))
+
+	const postData = { ...data, venue: data.venueId, concerts: concertIds }
+
+	await locals.pb.collection("events").create(postData)
+});
+
+export const editEvent = form(editEventForm, async (data) => {
+	const { locals } = getRequestEvent()
+
+	console.log(data)
+
+	let concertIds = data.concerts.flatMap(c => c.id ? c.id : [])
+
+	await Promise.all(data.concerts.map(async concert => {
+		const data = {
+			fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
+			toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
+			artist: concert.artistId,
+		}
+
+		// If concert already exists, we want to update it, else create new concert and add ID.
+		if (concert.id) {
+			await locals.pb.collection("concerts").update(concert.id, data)
+		} else {
+			const { id } = await locals.pb.collection("concerts").create(data)
+			concertIds.push(id)
+		}
+	}))
+
+	const postData = { ...data, venue: data.venueId, concerts: concertIds }
+
+	await locals.pb.collection("events").update(data.eventId, postData)
+});
