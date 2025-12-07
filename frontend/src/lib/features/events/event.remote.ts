@@ -150,22 +150,19 @@ export const getEvent = query(id, async (eventId) => {
 export const createEvent = form(createEventForm, async (data) => {
 	const { locals } = getRequestEvent();
 
-	let concertIds: string[] = [];
+	const concertBatch = locals.pb.createBatch();
+	data.concerts.forEach(async (concert) => {
+		const data = {
+			fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
+			toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
+			artist: concert.artistId
+		};
 
-	await Promise.all(
-		data.concerts.map(async (concert) => {
-			const data = {
-				fromDate: parse(concert.fromDate, INPUT_DATETIME_FORMAT, new Date()),
-				toDate: parse(concert.toDate, INPUT_DATETIME_FORMAT, new Date()),
-				artist: concert.artistId
-			};
+		concertBatch.collection("concerts").create(data);
+	});
 
-			const { id } = await locals.pb.collection("concerts").create(data);
-
-			concertIds.push(id);
-		})
-	);
-
+	const results = await concertBatch.send();
+	const concertIds = results.map((result) => result.body.id as string);
 	const postData = { ...data, venue: data.venueId, concerts: concertIds };
 
 	await locals.pb.collection("events").create(postData);
