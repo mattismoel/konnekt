@@ -5,6 +5,29 @@ import { queryOptions } from "$lib/query";
 import z from "zod";
 import { artistSchema, genreSchema } from "./artist";
 
+const artistForm = z.object({
+	name: z.string().nonempty(),
+	description: z.string().nonempty(),
+	genreIds: id.array().min(1),
+	previewUrl: z.url().optional(),
+})
+
+const createArtistForm = artistForm.extend({
+	cover: z.file().max(5_000_000).mime(["image/png", "image/jpeg", "image/webp"]),
+	socials: z.object({
+		url: z.url(),
+	}).array(),
+})
+
+const editArtistForm = artistForm.extend({
+	artistId: id,
+	cover: z.file().max(5_000_000).mime(["image/png", "image/jpeg", "image/webp"]).optional(),
+	socials: z.object({
+		url: z.url(),
+		id: id.optional(),
+	}).array().optional()
+})
+
 export const getArtist = query(id, async (artistId) => {
 	const { locals } = getRequestEvent();
 
@@ -47,3 +70,58 @@ export const getArtists = query(queryOptions.optional(), async (opts) => {
 
 	return { items: artists, ...rest };
 });
+
+export const createArtist = form(createArtistForm, async (data) => {
+	const { locals } = getRequestEvent()
+
+	const socialIds: string[] = []
+	if (data.socials) {
+		await Promise.all(data.socials.map(async social => {
+			const { id } = await locals.pb.collection("socials").create({ url: social.url })
+			socialIds.push(id)
+		}))
+	}
+
+	await locals.pb.collection("artists").create({
+		...data,
+		socials: socialIds,
+		genres: data.genreIds,
+	})
+})
+
+export const editArtist = form(editArtistForm, async (data) => {
+	const { locals } = getRequestEvent()
+
+	console.log(data)
+
+	let socialIds = data.socials?.flatMap(social => social.id ?? [])
+
+	if (data.socials) {
+		await Promise.all(data.socials?.map(async social => {
+			console.log("social", social)
+			if (social.id) {
+				await locals.pb.collection("socials").update(social.id, { url: social.url })
+				return
+			}
+
+			const { id } = await locals.pb.collection("socials").create({ url: social.url })
+			socialIds?.push(id)
+		}))
+	}
+
+
+	await locals.pb.collection("artists").update(data.artistId, {
+		...data,
+		genres: data.genreIds,
+		socials: socialIds,
+	})
+})
+
+export const getGenres = query(async () => {
+	const { locals } = getRequestEvent()
+
+	const records = await locals.pb.collection("genres").getFullList<PBGenre>()
+
+	const genres = genreSchema.array().parse(records)
+	return genres
+})
