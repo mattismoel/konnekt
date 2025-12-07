@@ -5,7 +5,7 @@
 	const toaster = getToastContext();
 </script>
 
-<div class="fixed bottom-8 flex min-h-4 w-full justify-end">
+<div class="fixed bottom-8 flex w-full justify-end">
 	<ul class="mx-responsive flex w-full flex-col items-end gap-1">
 		{#each toaster.toasts as toast}
 			{@render toastEntry(toast)}
@@ -33,7 +33,8 @@
 					D
 				{/if}
 			</p>
-			{toast.text}
+
+			<p>{toast.text}</p>
 		</div>
 		<button type="button" onclick={() => toaster.remove(toast.id)}>X</button>
 	</li>
