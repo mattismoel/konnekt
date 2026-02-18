@@ -8,6 +8,7 @@ import {
   Outlet,
   useLocation,
 } from "@tanstack/react-router";
+import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { BiMenu } from "react-icons/bi";
 
@@ -29,7 +30,10 @@ function RouteComponent() {
       <Navbar>
         <Navbar.Header>
           <button
-            className="block md:hidden"
+            className={clsx(
+              "block transition-[rotate] md:hidden",
+              expanded && "-rotate-90",
+            )}
             aria-label="Navigation menu button"
             onClick={() => setExpanded(true)}
           >
