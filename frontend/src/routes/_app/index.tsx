@@ -173,7 +173,7 @@ function App() {
 
             {upcomingEvents.length > 0 && (
               <section>
-                <h1 className="mb-8 font-heading text-4xl font-bold">
+                <h1 className="mb-8 font-heading text-4xl font-bold text-text-light">
                   Ses vi her?
                 </h1>
                 <EventGrid events={[upcomingEvents[0]]} />
