@@ -228,7 +228,7 @@ const GeneralSection = () => {
 
   return (
     <section>
-      <h1 className="mb-4 font-heading text-2xl font-bold text-text-light">
+      <h1 className="mb-4 font-heading text-2xl font-bold text-heading">
         Generelt
       </h1>
       <div className="flex flex-col gap-4">
@@ -257,7 +257,7 @@ const SpotifySection = () => {
 
   return (
     <section>
-      <h1 className="mb-8 font-heading text-2xl font-bold text-text-light">
+      <h1 className="mb-8 font-heading text-2xl font-bold text-heading">
         Spotify Preview
       </h1>
       <div className="flex flex-col gap-4">
@@ -318,7 +318,7 @@ const GenreSection = () => {
 
   return (
     <section>
-      <h1 className="mb-8 font-heading text-2xl font-bold text-text-light">
+      <h1 className="mb-8 font-heading text-2xl font-bold text-heading">
         Genrer
       </h1>
 
@@ -402,7 +402,7 @@ const SocialsSection = () => {
 
   return (
     <section>
-      <h1 className="mb-4 font-heading text-2xl font-bold text-text-light">
+      <h1 className="mb-4 font-heading text-2xl font-bold text-heading">
         Sociale medier
       </h1>
 

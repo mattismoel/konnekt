@@ -72,7 +72,7 @@ const Header = ({ children }: PropsWithChildren) => {
 };
 
 const Title = ({ children, ...rest }: HTMLAttributes<HTMLHeadingElement>) => (
-  <h1 className="mb-2 font-medium text-text-light" {...rest}>
+  <h1 className="mb-2 font-medium text-heading" {...rest}>
     {children}
   </h1>
 );

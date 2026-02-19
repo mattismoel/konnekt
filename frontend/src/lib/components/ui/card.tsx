@@ -49,7 +49,7 @@ const Title = ({
     <h1
       {...rest}
       className={cn(
-        "mb-4 font-heading text-3xl font-bold text-text-light",
+        "mb-4 font-heading text-3xl font-bold text-heading",
         className,
       )}
     >

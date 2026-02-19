@@ -33,7 +33,7 @@ function RouteComponent() {
 
           <div className="border-t border-t-zinc-900">
             <div className="mx-responsive flex flex-col pt-16 pb-16 md:pt-16">
-              <h1 className="mb-8 font-heading text-4xl font-bold text-text-light">
+              <h1 className="mb-8 font-heading text-4xl font-bold text-heading">
                 Kommende events
               </h1>
               <EventGrid events={events} />

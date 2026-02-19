@@ -272,7 +272,9 @@ const GeneralSection = () => {
 
   return (
     <section>
-      <h1 className="mb-4 font-heading text-2xl font-bold">Generelt</h1>
+      <h1 className="mb-4 font-heading text-2xl font-bold text-heading">
+        Generelt
+      </h1>
       <div className="flex flex-col gap-4">
         <FormField error={errors.title}>
           <Input {...register("title")} placeholder="Eventtitel" />
@@ -306,7 +308,9 @@ const ConcertsSection = () => {
   const { fields } = useEventFormContext();
   return (
     <section>
-      <h1 className="mb-4 font-heading text-2xl font-bold">Koncerter</h1>
+      <h1 className="mb-4 font-heading text-2xl font-bold text-heading">
+        Koncerter
+      </h1>
       <ConcertList>
         {fields.map((field, index) => (
           <ConcertList.Entry key={field.id} index={index} />

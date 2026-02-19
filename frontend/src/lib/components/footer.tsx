@@ -44,7 +44,7 @@ const Footer = () => {
       <div className="mx-responsive">
         <div className="mb-8 grid w-full grid-cols-1 gap-8 sm:grid-cols-2">
           <div className="flex-1">
-            <span className="mb-2 inline-block align-top font-heading leading-none font-bold text-text-light">
+            <span className="mb-2 inline-block align-top font-heading leading-none font-bold text-heading">
               Find rundt
             </span>
             <NavList links={navMap} />
@@ -52,7 +52,7 @@ const Footer = () => {
 
           <div className="flex flex-1 flex-col items-start gap-4 sm:items-end">
             <Logo className="mb-2 hidden h-4 fill-text-light sm:block" />
-            <span className="mb-2 font-heading font-bold text-text-light sm:hidden">
+            <span className="mb-2 font-heading font-bold text-heading sm:hidden">
               Kontakt os
             </span>
 

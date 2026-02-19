@@ -64,7 +64,7 @@ function RouteComponent() {
             <div className="z-10 mx-responsive flex w-full flex-col items-start justify-between gap-8 md:flex-row md:items-end">
               <h1
                 style={{ wordSpacing: "100vw" }}
-                className="font-heading text-7xl font-bold text-text-light text-shadow-md md:text-8xl lg:text-9xl"
+                className="font-heading text-7xl font-bold text-heading text-shadow-md md:text-8xl lg:text-9xl"
               >
                 {artist.name}
               </h1>
@@ -97,7 +97,7 @@ function RouteComponent() {
 
               {artistEvents.length > 0 && (
                 <section>
-                  <h1 className="mb-8 font-heading text-2xl font-bold text-text-light">
+                  <h1 className="mb-8 font-heading text-2xl font-bold text-heading">
                     Oplev {artist.name} her
                   </h1>
                   <EventGrid events={artistEvents} />

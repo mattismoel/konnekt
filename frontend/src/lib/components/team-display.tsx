@@ -77,7 +77,7 @@ const MemberInfo = ({ member, includedTeams }: MemberInfoProps) => {
         className="aspect-square w-24 shrink-0 rounded-full object-cover @lg:w-32"
       />
       <div className="h-mi flex w-full flex-col gap-2 overflow-hidden px-8 py-4">
-        <span className="line-clamp-1 font-medium text-text-light @lg:text-xl">
+        <span className="line-clamp-1 font-medium text-heading @lg:text-xl">
           {member.firstName} {member.lastName}
         </span>
         <div className="w-full">

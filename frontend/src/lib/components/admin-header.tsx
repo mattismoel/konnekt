@@ -12,7 +12,7 @@ const Title = ({
 }: HTMLAttributes<HTMLHeadingElement>) => (
   <h1
     {...rest}
-    className={cn("font-heading text-4xl font-bold text-text-light", className)}
+    className={cn("font-heading text-4xl font-bold text-heading", className)}
   >
     {children}
   </h1>
@@ -23,7 +23,7 @@ const Description = ({
   className,
   ...rest
 }: HTMLAttributes<HTMLParagraphElement>) => (
-  <p {...rest} className={cn("text-text/50", className)}>
+  <p {...rest} className={cn("text-text-light-muted", className)}>
     {children}
   </p>
 );
