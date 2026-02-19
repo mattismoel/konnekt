@@ -2,6 +2,7 @@ import Logo from "@/lib/assets/logo";
 import { Link } from "@tanstack/react-router";
 import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa6";
 import type { IconType } from "react-icons/lib";
+import InlineLink from "./inline-link";
 
 type Src = {
   icon: IconType;
@@ -91,12 +92,12 @@ const ContactEntry = ({
   type: ContactType;
   value: string;
 }) => (
-  <a
+  <InlineLink
     href={`${contactTypeMap.get(type)}:${value}`}
-    className="transition-colors hover:text-text-light hover:underline"
+    className="font-normal no-underline"
   >
     {value}
-  </a>
+  </InlineLink>
 );
 
 const NavList = ({ links }: { links: Map<NavPath, string> }) => (

@@ -1,4 +1,5 @@
 import Accordion from "@/lib/components/accordion";
+import InlineLink from "@/lib/components/inline-link";
 import Switch from "@/lib/components/switch";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -35,10 +36,10 @@ function RouteComponent() {
   return (
     <main className="mx-responsive flex min-h-svh flex-col gap-32 py-32">
       <section>
-        <h1 className="mb-4 font-heading text-4xl font-bold">
+        <h1 className="mb-4 font-heading text-4xl font-bold text-text-light">
           Er du i tvivl om noget?
         </h1>
-        <p className="mb-16 leading-relaxed text-text/75">
+        <p className="text-text/75 mb-16 leading-relaxed">
           Lad os se, om ikke vi kan besvare dine spørgsmål. Hvis ikke dit
           spørgsmål kan findes herunder, så skal du være velkommen til at tage
           fat i os&nbsp;&mdash;&nbsp;så svarer vi hurtigst muligt.
@@ -62,10 +63,12 @@ function RouteComponent() {
               <Accordion title="Hvordan bliver jeg booket?">
                 Konnekt er altid på udkig efter nye, spændende navne til vores
                 koncerter. Hvis du eller dit band har lyst til at spille, kan I{" "}
-                <a href="mailto:booking.konnekt@gmail.com">sende en mail</a> med
-                lidt info om jer selv, og et lydklip fra en øver, koncert eller
-                demo til. Vi gennemgår løbende alle henvendelser og tager jer
-                med i overvejelserne til kommende koncerter.
+                <InlineLink href="mailto:booking.konnekt@gmail.com">
+                  sende en mail
+                </InlineLink>{" "}
+                med lidt info om jer selv, og et lydklip fra en øver, koncert
+                eller demo til. Vi gennemgår løbende alle henvendelser og tager
+                jer med i overvejelserne til kommende koncerter.
               </Accordion>
               <Accordion title="Kan man blive booket, hvis man ikke er fra Fyn?">
                 Ja, det kan du godt! Konnekt har som kerneværdi at styrke det
@@ -91,8 +94,11 @@ function RouteComponent() {
                 er med til at forme det. Derfor lytter vi til nye perspektiver
                 og er altid åbne for friske inputs og kreative hjerner. Har du
                 lyst til at være med, så{" "}
-                <a href="mailto:konnekt.samarbejde@gmail.com">skriv til os</a>,
-                og fortæl hvad du brænder for. Vi glæder os til at høre fra dig.
+                <InlineLink href="mailto:konnekt.samarbejde@gmail.com">
+                  skriv til os
+                </InlineLink>
+                , og fortæl hvad du brænder for. Vi glæder os til at høre fra
+                dig.
               </Accordion>
               <Accordion title="Hvad laver man som frivillig?">
                 Som frivillig i Konnekts bestyrelse er du med til at forme alt
@@ -110,9 +116,9 @@ function RouteComponent() {
                 <br />
                 <br />
                 Har du lyst til at være med? Så{" "}
-                <a href="mailto:konnekt.samarbejde@gmail.com">
+                <InlineLink href="mailto:konnekt.samarbejde@gmail.com">
                   send os endelig en mail
-                </a>
+                </InlineLink>
                 . Vi vil gerne høre fra dig!
               </Accordion>
             </>
@@ -131,9 +137,9 @@ function RouteComponent() {
                 <br />
                 Vil du være med til at støtte vækstlaget og engagere flere unge
                 i kulturlivet? Så{" "}
-                <a href="mailto:konnekt.samarbejde@gmail.com">
+                <InlineLink href="mailto:konnekt.samarbejde@gmail.com">
                   send os en mail
-                </a>
+                </InlineLink>
                 . Vi tager gerne en uforpligtende snak.
               </Accordion>
             </>
@@ -141,14 +147,11 @@ function RouteComponent() {
         </div>
 
         <div className="w-full">
-          <p className="leading-relaxed text-text/75">
+          <p className="text-text/75 leading-relaxed">
             Fik du ikke svar? Kontakt os på&nbsp;
-            <a
-              href={`mailto:${categoryDetails?.email}`}
-              className="font-medium underline hover:text-text"
-            >
+            <InlineLink href={`mailto:${categoryDetails?.email}`}>
               {categoryDetails?.email}
-            </a>
+            </InlineLink>
             .
           </p>
         </div>

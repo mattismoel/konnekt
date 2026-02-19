@@ -11,9 +11,10 @@ const Accordion = ({ title, children }: PropsWithChildren<Props>) => {
 
   return (
     <div
-      className={cn("group overflow-hidden rounded-xl border border-zinc-800", {
-        expanded: expanded,
-      })}
+      className={cn(
+        "group overflow-hidden rounded-xl border border-zinc-800 hover:text-text-light",
+        expanded && "expanded text-text-light",
+      )}
     >
       <button
         type="button"
@@ -25,7 +26,9 @@ const Accordion = ({ title, children }: PropsWithChildren<Props>) => {
       </button>
 
       <div className="hidden cursor-default overflow-hidden px-8 py-8 group-[.expanded]:block">
-        <p className="prose leading-loose prose-invert">{children}</p>
+        <p className="prose leading-loose text-text-light-muted prose-invert prose-a:text-text-light-muted">
+          {children}
+        </p>
       </div>
     </div>
   );

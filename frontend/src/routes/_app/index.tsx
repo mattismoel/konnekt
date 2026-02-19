@@ -101,7 +101,7 @@ function App() {
         <section className="border-t border-t-zinc-900 bg-zinc-950">
           <section className="mx-responsive flex flex-col gap-32 py-16">
             <section>
-              <h1 className="mb-8 font-heading text-2xl font-bold">
+              <h1 className="mb-8 font-heading text-2xl font-bold text-text-light">
                 Vores mission
               </h1>
               <p className="text-text/75 leading-loose">
@@ -165,7 +165,7 @@ function App() {
               </div>
             </section>
             <section>
-              <h1 className="mb-16 text-center font-heading text-4xl font-bold">
+              <h1 className="mb-16 text-center font-heading text-4xl font-bold text-text-light">
                 Mød holdet
               </h1>
               <TeamDisplay allTeams={teams} members={members} />
