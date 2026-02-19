@@ -93,7 +93,6 @@ const Entry = ({ index }: EntryProps) => {
             name={`concerts.${index}.from`}
             render={({ field }) => <DatetimePicker {...field} />}
           />
-          <FaArrowRight className="hidden shrink-0 @xl:block" />
           <Controller
             control={control}
             name={`concerts.${index}.to`}
