@@ -13,11 +13,11 @@ export const baseClasses =
 export const variantClasses = new Map<Variant, string>([
   [
     "primary",
-    "bg-foreground text-text-dark border-foreground hover:brightness-65",
+    "bg-foreground text-text-dark border-foreground hover:brightness-90",
   ],
   [
     "secondary",
-    "text-text-light-muted hover:text-text border-foreground/10 bg-foreground/5 backdrop-blur-sm hover:border-foreground/30 hover:bg-foreground/10 text-text-light",
+    "text-text-light-muted hover:text-text border-foreground/10 bg-foreground/10 hover:border-foreground/30 hover:bg-foreground/40 hover:text-text-dark text-text-light",
   ],
   [
     "dangerous",
