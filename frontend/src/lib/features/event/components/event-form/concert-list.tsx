@@ -53,7 +53,7 @@ const Entry = ({ index }: EntryProps) => {
       </Card.Header>
 
       <Card.Content className="@container gap-4">
-        <div className="flex gap-4">
+        <div className="mb-4 flex gap-4">
           <Controller
             control={control}
             name={`concerts.${index}.artistID`}
@@ -87,6 +87,7 @@ const Entry = ({ index }: EntryProps) => {
             </div>
           )}
         </div>
+
         <div className="flex flex-col items-center gap-4">
           <Controller
             control={control}
