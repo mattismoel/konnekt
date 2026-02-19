@@ -26,7 +26,9 @@ function RouteComponent() {
   return (
     <main className="mx-responsive flex min-h-svh items-center justify-center py-32">
       <div>
-        <h1 className="mb-4 font-heading text-2xl font-bold">Redigér venue</h1>
+        <h1 className="mb-4 font-heading text-2xl font-bold text-text-light">
+          Redigér venue
+        </h1>
         <VenueForm venue={venue} updatedByMember={updatedByMember} />
       </div>
     </main>

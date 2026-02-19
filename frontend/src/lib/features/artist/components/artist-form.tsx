@@ -228,7 +228,9 @@ const GeneralSection = () => {
 
   return (
     <section>
-      <h1 className="mb-4 font-heading text-2xl font-bold">Generelt</h1>
+      <h1 className="mb-4 font-heading text-2xl font-bold text-text-light">
+        Generelt
+      </h1>
       <div className="flex flex-col gap-4">
         <FormField error={errors.name}>
           <Input placeholder="Kunstnernavn" {...register("name")} />
@@ -255,7 +257,9 @@ const SpotifySection = () => {
 
   return (
     <section>
-      <h1 className="mb-8 font-heading text-2xl font-bold">Spotify Preview</h1>
+      <h1 className="mb-8 font-heading text-2xl font-bold text-text-light">
+        Spotify Preview
+      </h1>
       <div className="flex flex-col gap-4">
         <Input
           placeholder="Spotify Preview-URL..."
@@ -314,7 +318,9 @@ const GenreSection = () => {
 
   return (
     <section>
-      <h1 className="mb-8 font-heading text-2xl font-bold">Genrer</h1>
+      <h1 className="mb-8 font-heading text-2xl font-bold text-text-light">
+        Genrer
+      </h1>
 
       <Controller
         control={control}
@@ -396,7 +402,9 @@ const SocialsSection = () => {
 
   return (
     <section>
-      <h1 className="mb-4 font-heading text-2xl font-bold">Sociale medier</h1>
+      <h1 className="mb-4 font-heading text-2xl font-bold text-text-light">
+        Sociale medier
+      </h1>
 
       {isEditable && (
         <div className="mb-8 flex w-full gap-4">
