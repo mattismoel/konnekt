@@ -1,4 +1,4 @@
-import { FaArrowRight, FaArrowsRotate, FaPlus, FaXmark } from "react-icons/fa6";
+import { FaArrowsRotate, FaPlus, FaXmark } from "react-icons/fa6";
 import { useEventFormContext } from "./event-form";
 import { Controller } from "react-hook-form";
 import type { PropsWithChildren } from "react";
