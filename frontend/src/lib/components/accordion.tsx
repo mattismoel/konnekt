@@ -11,9 +11,10 @@ const Accordion = ({ title, children }: PropsWithChildren<Props>) => {
 
   return (
     <div
-      className={cn("group overflow-hidden rounded-xl border border-zinc-800", {
-        expanded: expanded,
-      })}
+      className={cn(
+        "group overflow-hidden rounded-xl border border-zinc-800 hover:text-text-light",
+        expanded && "expanded text-text-light",
+      )}
     >
       <button
         type="button"
