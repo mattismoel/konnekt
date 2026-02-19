@@ -35,10 +35,10 @@ function RouteComponent() {
   return (
     <main className="mx-responsive flex min-h-svh flex-col gap-32 py-32">
       <section>
-        <h1 className="mb-4 font-heading text-4xl font-bold">
+        <h1 className="mb-4 font-heading text-4xl font-bold text-text-light">
           Er du i tvivl om noget?
         </h1>
-        <p className="mb-16 leading-relaxed text-text/75">
+        <p className="text-text/75 mb-16 leading-relaxed">
           Lad os se, om ikke vi kan besvare dine spørgsmål. Hvis ikke dit
           spørgsmål kan findes herunder, så skal du være velkommen til at tage
           fat i os&nbsp;&mdash;&nbsp;så svarer vi hurtigst muligt.
@@ -141,11 +141,11 @@ function RouteComponent() {
         </div>
 
         <div className="w-full">
-          <p className="leading-relaxed text-text/75">
+          <p className="text-text/75 leading-relaxed">
             Fik du ikke svar? Kontakt os på&nbsp;
             <a
               href={`mailto:${categoryDetails?.email}`}
-              className="font-medium underline hover:text-text"
+              className="hover:text-text font-medium underline"
             >
               {categoryDetails?.email}
             </a>

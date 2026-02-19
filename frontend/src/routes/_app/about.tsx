@@ -30,7 +30,9 @@ function RouteComponent() {
             aspirerende musikere og det skal ændres."
       />
       <main className="mx-responsive flex min-h-svh flex-col py-32">
-        <h1 className="mb-4 font-heading text-4xl font-bold">Hvem er vi?</h1>
+        <h1 className="mb-4 font-heading text-4xl font-bold text-text-light">
+          Hvem er vi?
+        </h1>
         <p className="mb-16 leading-relaxed">
           Konnekt er en ungedrevet forening og et koncertinitiativ, der arbejder
           for at give unge musikere mulighed for at komme på scenen og få
@@ -49,7 +51,7 @@ function RouteComponent() {
         </p>
 
         <section className="flex flex-col">
-          <h1 className="mb-16 text-center font-heading text-4xl font-bold">
+          <h1 className="mb-16 text-center font-heading text-4xl font-bold text-text-light">
             Mød holdet
           </h1>
           <TeamDisplay allTeams={teams} members={members} />
