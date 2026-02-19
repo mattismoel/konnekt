@@ -13,12 +13,12 @@ const formatName = (m: Member): string => `${m.firstName} ${m.lastName}`;
 const Audit = ({ updatedByMember, updatedAt }: Props) => {
   const { member } = useAuth();
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2">
       <img
         src={updatedByMember.profilePictureUrl}
         className="aspect-square h-6 rounded-full"
       />
-      <span className="text-text/75">
+      <span className="text-text/75 text-xs">
         Redigeret af&nbsp;
         {member?.id === updatedByMember.id ? (
           "dig"
