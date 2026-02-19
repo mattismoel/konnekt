@@ -87,7 +87,7 @@ const Entry = ({ index }: EntryProps) => {
             </div>
           )}
         </div>
-        <div className="flex flex-col items-center gap-4 @xl:flex-row @xl:gap-8">
+        <div className="flex flex-col items-center gap-4">
           <Controller
             control={control}
             name={`concerts.${index}.from`}
