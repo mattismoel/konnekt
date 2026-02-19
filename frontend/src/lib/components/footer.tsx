@@ -52,7 +52,7 @@ const Footer = () => {
 
           <div className="flex flex-1 flex-col items-start gap-4 sm:items-end">
             <Logo className="mb-2 hidden h-4 fill-text-light sm:block" />
-            <span className="mb-2 font-heading font-bold sm:hidden">
+            <span className="mb-2 font-heading font-bold text-text-light sm:hidden">
               Kontakt os
             </span>
 
