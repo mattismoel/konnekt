@@ -148,7 +148,7 @@ const MemberForm = ({ member, memberTeams, teams }: Props) => {
             />
             <div className="flex flex-col items-center space-y-4 md:items-start">
               <div className="flex flex-col items-center space-y-1">
-                <h1 className="text-2xl font-semibold text-text-light">
+                <h1 className="text-2xl font-semibold text-heading">
                   {fullName}
                 </h1>
                 <span className="text-text/75 text-center md:text-left">
@@ -193,7 +193,7 @@ const GeneralSection = () => {
 
   return (
     <section>
-      <h1 className="mb-4 font-heading text-2xl font-bold text-text-light">
+      <h1 className="mb-4 font-heading text-2xl font-bold text-heading">
         Generelt
       </h1>
 
@@ -248,7 +248,7 @@ const TeamsSection = () => {
 
   return (
     <section>
-      <h1 className="mb-8 font-heading text-2xl font-bold text-text-light">
+      <h1 className="mb-8 font-heading text-2xl font-bold text-heading">
         Hold
       </h1>
 

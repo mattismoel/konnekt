@@ -36,7 +36,7 @@ function RouteComponent() {
   return (
     <main className="mx-responsive flex min-h-svh flex-col gap-32 py-32">
       <section>
-        <h1 className="mb-4 font-heading text-4xl font-bold text-text-light">
+        <h1 className="mb-4 font-heading text-4xl font-bold text-heading">
           Er du i tvivl om noget?
         </h1>
         <p className="text-text/75 mb-16 leading-relaxed">

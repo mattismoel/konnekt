@@ -17,6 +17,8 @@
 	--color-text-light: var(--color-zinc-100);
 	--color-text-light-muted: var(--color-zinc-400);
 
+  --color-heading: var(--color-text-light);
+
 	--color-text-dark: var(--color-zinc-950);
 	--color-text-dark-muted: var(--color-zinc-800);
 

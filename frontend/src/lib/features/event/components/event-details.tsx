@@ -47,7 +47,7 @@ const EventDetails = ({ event, active, prefix }: Props) => {
       <div className="mx-responsive flex w-full flex-col">
         {prefix && <span className="text-shadow-sm">{prefix}</span>}
 
-        <h1 className="mb-6 font-heading text-5xl font-bold text-text-light text-shadow-md md:mb-8 md:text-7xl">
+        <h1 className="mb-6 font-heading text-5xl font-bold text-heading text-shadow-md md:mb-8 md:text-7xl">
           {event.title}
         </h1>
 

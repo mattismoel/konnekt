@@ -104,8 +104,8 @@ const RouteEntry = createLink(
           <a
             ref={ref}
             {...rest}
-            className={cn("text-text/50 text-3xl", {
-              "font-bold text-text-light": isActive,
+            className={cn("text-3xl text-text-light-muted", {
+              "font-bold text-heading": isActive,
             })}
           >
             {children}

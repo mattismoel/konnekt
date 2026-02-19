@@ -69,7 +69,7 @@ function App() {
           </div>
           <section className="flex max-w-lg flex-col gap-16 overflow-hidden">
             <div className="flex flex-col">
-              <h2 className="mb-6 font-heading text-4xl leading-[1.2] text-text-light text-shadow-lg/15 sm:text-5xl">
+              <h2 className="mb-6 font-heading text-4xl leading-[1.2] text-heading text-shadow-lg/15 sm:text-5xl">
                 <b>Fynsk musik</b> med fremtiden for øje
               </h2>
               <p className="text-text/75 leading-relaxed text-shadow-md">
@@ -101,7 +101,7 @@ function App() {
         <section className="border-t border-t-zinc-900 bg-zinc-950">
           <section className="mx-responsive flex flex-col gap-32 py-16">
             <section>
-              <h1 className="mb-8 font-heading text-2xl font-bold text-text-light">
+              <h1 className="mb-8 font-heading text-2xl font-bold text-heading">
                 Vores mission
               </h1>
               <p className="text-text/75 leading-loose">
@@ -165,7 +165,7 @@ function App() {
               </div>
             </section>
             <section>
-              <h1 className="mb-16 text-center font-heading text-4xl font-bold text-text-light">
+              <h1 className="mb-16 text-center font-heading text-4xl font-bold text-heading">
                 Mød holdet
               </h1>
               <TeamDisplay allTeams={teams} members={members} />
@@ -173,7 +173,7 @@ function App() {
 
             {upcomingEvents.length > 0 && (
               <section>
-                <h1 className="mb-8 font-heading text-4xl font-bold text-text-light">
+                <h1 className="mb-8 font-heading text-4xl font-bold text-heading">
                   Ses vi her?
                 </h1>
                 <EventGrid events={[upcomingEvents[0]]} />

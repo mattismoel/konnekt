@@ -60,7 +60,7 @@ function RouteComponent() {
 
         <div className="flex h-full flex-col">
           <section className="mb-8 flex flex-col">
-            <h1 className="mb-4 font-heading text-4xl font-bold text-text-light text-shadow-md/15">
+            <h1 className="mb-4 font-heading text-4xl font-bold text-heading text-shadow-md/15">
               Kommende kunstnere
             </h1>
           </section>

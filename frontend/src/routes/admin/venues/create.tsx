@@ -10,7 +10,7 @@ function RouteComponent() {
   return (
     <main className="mx-responsive flex min-h-svh items-center justify-center py-32">
       <div>
-        <h1 className="mb-4 font-heading text-2xl font-bold text-text-light">
+        <h1 className="mb-4 font-heading text-2xl font-bold text-heading">
           Lav venue
         </h1>
         <VenueForm />

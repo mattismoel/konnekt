@@ -46,7 +46,7 @@ const EventCard = ({ event }: Props) => {
         <Fader direction="up" className="absolute h-48 from-black/80" />
         <div className="absolute bottom-0 left-0 h-full w-full border border-white/0 mix-blend-overlay transition-all group-hover:border-white/50" />
         <div className="absolute bottom-0 left-0 flex flex-col p-8 transition-all duration-100 md:translate-y-full md:group-hover:translate-y-0">
-          <span className="mb-2 text-3xl font-bold text-text-light text-shadow-md">
+          <span className="mb-2 text-3xl font-bold text-heading text-shadow-md">
             {event.title}
           </span>
           <div className="flex flex-col text-base text-shadow-sm">
