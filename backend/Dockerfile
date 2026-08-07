@@ -31,6 +31,7 @@ RUN apk update && apk upgrade && apk add --no-cache sqlite
 
 # Copy build executable from 'build' stage.
 COPY --from=build /konnekt-backend .
+COPY ./migrations ./migrations
 
 ENV TZ=Europe/Copenhagen
 
