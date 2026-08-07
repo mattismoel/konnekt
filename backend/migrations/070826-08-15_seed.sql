@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 -- INSERT TEAMS --
 INSERT OR IGNORE INTO team (id, name, display_name, description) VALUES
 (1, 'admin', 'Administrator', 'Administrator af hjemmesiden.'),
@@ -92,5 +90,3 @@ WHERE name IN (
   'view:artist', 'edit:artist',
   'view:content', 'edit:content', 'delete:content'
 );
-
-COMMIT;

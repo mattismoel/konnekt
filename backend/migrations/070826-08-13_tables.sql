@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 CREATE TABLE IF NOT EXISTS member (
   id INTEGER PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
@@ -19,7 +17,7 @@ CREATE TABLE IF NOT EXISTS member (
 );
 
 -- Trigger for updating members 'updated_at' field on any update of that member.
-CREATE TRIGGER update_members_updated_at
+CREATE TRIGGER IF NOT EXISTS update_members_updated_at
 AFTER UPDATE ON member
 FOR EACH ROW WHEN NEW.id = OLD.id
 BEGIN
@@ -78,7 +76,7 @@ CREATE TABLE IF NOT EXISTS event (
 	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
 
-CREATE TRIGGER update_events_updated_at
+CREATE TRIGGER IF NOT EXISTS update_events_updated_at
 AFTER UPDATE ON event
 FOR EACH ROW WHEN NEW.id = OLD.id
 BEGIN
@@ -99,7 +97,7 @@ CREATE TABLE IF NOT EXISTS concert (
   FOREIGN KEY (artist_id) REFERENCES artist (id)
 );
 
-CREATE TRIGGER update_concerts_updated_at
+CREATE TRIGGER IF NOT EXISTS update_concerts_updated_at
 AFTER UPDATE ON concert
 FOR EACH ROW WHEN NEW.id = OLD.id
 BEGIN
@@ -122,7 +120,7 @@ CREATE TABLE IF NOT EXISTS venue (
 	FOREIGN KEY (updated_by) REFERENCES member(id)
 );
 
-CREATE TRIGGER update_venues_updated_at
+CREATE TRIGGER IF NOT EXISTS update_venues_updated_at
 AFTER UPDATE ON venue
 FOR EACH ROW WHEN NEW.id = OLD.id
 BEGIN
@@ -147,7 +145,7 @@ CREATE TABLE IF NOT EXISTS artist (
 );
 
 -- Trigger for updating artists 'updated_at' field on any update of that member.
-CREATE TRIGGER update_artists_updated_at
+CREATE TRIGGER IF NOT EXISTS update_artists_updated_at
 AFTER UPDATE ON artist
 FOR EACH ROW WHEN NEW.id = OLD.id
 BEGIN
@@ -186,5 +184,3 @@ CREATE TABLE IF NOT EXISTS landing_image (
 
 	FOREIGN KEY (created_by) REFERENCES member(id)
 );
-
-COMMIT;

@@ -25,6 +25,7 @@ func main() {
 	defer cancel()
 
 	dbConnStr := flag.String("dbConnStr", "file:./local.db", "The database connection string")
+	migrationDir := flag.String("migrationDir", "./migrations", "The directory containing all DB migrations")
 	origin := flag.String("origin", "http://localhost:4000", "The origin of the proxy web server")
 	host := flag.String("host", "127.0.0.1", "The host of the web server")
 	port := flag.Int("port", 8080, "The port of the web server")
@@ -33,14 +34,22 @@ func main() {
 
 	flag.Parse()
 
+	slog.Info("Opening database", "database", *dbConnStr)
 	db, err := sql.Open("sqlite", *dbConnStr)
 	if err != nil {
 		slog.Error("Could not create database connection", "error", err)
 		return
 	}
 
+	slog.Info("Pinging database", "database", *dbConnStr)
 	if err := db.PingContext(ctx); err != nil {
 		slog.Error("Could not ping database", "error", err)
+		return
+	}
+
+	slog.Info("Applying migrations", "directory", *migrationDir)
+	if err := applyMigrations(ctx, db, *migrationDir); err != nil {
+		slog.Error("Could not apply migrations", "error", err)
 		return
 	}
 
@@ -91,8 +100,8 @@ func main() {
 		slog.Error("Could not create auth service", "error", err)
 	}
 
+	slog.Info("Connecting to S3 bucket", "bucket", *s3Bucket, "region", *s3Region)
 	s3Store, err := s3.NewS3ObjectStore(ctx, *s3Region, *s3Bucket)
-
 	if err != nil {
 		slog.Error("Could not create S3 store", "error", err)
 		return
@@ -121,6 +130,7 @@ func main() {
 	teamService := service.NewTeamService(teamRepo, memberRepo, authRepo)
 	contentService := service.NewContentService(s3Store, contentRepo)
 
+	slog.Info("Setting up server", "host", *host, "port", *port)
 	srv, err := server.New(
 		server.WithContentService(contentService),
 		server.WithTeamService(teamService),
