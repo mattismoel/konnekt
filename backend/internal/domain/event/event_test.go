@@ -194,7 +194,7 @@ func TestWithTicketURL(t *testing.T) {
 			wantErr: nil,
 		},
 		"Inaccessible URL": {
-			url:     "https://google.com/no-exist",
+			url:     "https://some-weird-non-existant-domain.com/no-exist",
 			wantURL: "",
 			wantErr: event.ErrTicketURLInaccessible,
 		},
