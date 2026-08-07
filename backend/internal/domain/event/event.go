@@ -108,16 +108,8 @@ func WithTicketURL(u string) cfg.Func[Event] {
 			return ErrTicketURLInvalid
 		}
 
-		resp, err := http.Get(url.String())
-		if err != nil {
-			return ErrTicketURLInaccessible
-		}
+		e.TicketURL = url.String()
 
-		if !(resp.StatusCode >= 200) || !(resp.StatusCode < 400) {
-			return ErrTicketURLInaccessible
-		}
-
-		e.TicketURL = u
 		return nil
 	}
 }
